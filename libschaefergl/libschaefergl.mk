@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Christopher Joseph Dean Schaefer
-Date                   :=07/28/2014
+Date                   :=07/29/2014
 CodeLitePath           :="/home/cschaefer/.codelite"
 LinkerName             :=g++
 SharedObjectLinkerName :=g++ -shared -fPIC
@@ -58,7 +58,7 @@ CFLAGS   :=  -g $(Preprocessors)
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects=
+Objects=$(IntermediateDirectory)/i_unknown$(ObjectSuffix) 
 
 ##
 ## Main Build Targets 
@@ -83,12 +83,23 @@ PreBuild:
 ##
 ## Objects
 ##
+$(IntermediateDirectory)/i_unknown$(ObjectSuffix): i_unknown.cpp $(IntermediateDirectory)/i_unknown$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_unknown.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_unknown$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_unknown$(DependSuffix): i_unknown.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_unknown$(ObjectSuffix) -MF$(IntermediateDirectory)/i_unknown$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_unknown.cpp"
+
+$(IntermediateDirectory)/i_unknown$(PreprocessSuffix): i_unknown.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_unknown$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_unknown.cpp"
+
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
 ##
 ## Clean
 ##
 clean:
+	$(RM) $(IntermediateDirectory)/i_unknown$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_unknown$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_unknown$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) "/home/cschaefer/Documents/SchaeferGL/.build-debug/libschaefergl"
 

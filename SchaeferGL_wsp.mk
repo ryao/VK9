@@ -1,8 +1,8 @@
 .PHONY: clean All
 
 All:
-	@echo ----------Building project:[ Tests - Debug ]----------
-	@cd "Tests" && "$(MAKE)" -f "Tests.mk"
+	@echo ----------Building project:[ libschaefergl - Debug ]----------
+	@cd "libschaefergl" && "$(MAKE)" -f "libschaefergl.mk"
 clean:
-	@echo ----------Cleaning project:[ Tests - Debug ]----------
-	@cd "Tests" && "$(MAKE)" -f "Tests.mk" clean
+	@echo ----------Cleaning project:[ libschaefergl - Debug ]----------
+	@cd "libschaefergl" && "$(MAKE)" -f "libschaefergl.mk" clean
