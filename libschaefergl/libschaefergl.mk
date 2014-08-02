@@ -58,7 +58,8 @@ CFLAGS   :=  -g $(Preprocessors)
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects=$(IntermediateDirectory)/i_unknown$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_device9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_resource9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_surface9$(ObjectSuffix) 
+Objects=$(IntermediateDirectory)/i_unknown$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_device9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_resource9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_surface9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_swap_chain9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_base_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_cube_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_index_buffer9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_pixel_shader9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_query9$(ObjectSuffix) \
+	$(IntermediateDirectory)/i_direct3d_state_block9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_shader9$(ObjectSuffix) 
 
 ##
 ## Main Build Targets 
@@ -115,6 +116,94 @@ $(IntermediateDirectory)/i_direct3d_surface9$(DependSuffix): i_direct3d_surface9
 $(IntermediateDirectory)/i_direct3d_surface9$(PreprocessSuffix): i_direct3d_surface9.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_surface9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_surface9.cpp"
 
+$(IntermediateDirectory)/i_direct3d_swap_chain9$(ObjectSuffix): i_direct3d_swap_chain9.cpp $(IntermediateDirectory)/i_direct3d_swap_chain9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_swap_chain9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_swap_chain9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_swap_chain9$(DependSuffix): i_direct3d_swap_chain9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_swap_chain9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_swap_chain9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_swap_chain9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_swap_chain9$(PreprocessSuffix): i_direct3d_swap_chain9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_swap_chain9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_swap_chain9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_base_texture9$(ObjectSuffix): i_direct3d_base_texture9.cpp $(IntermediateDirectory)/i_direct3d_base_texture9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_base_texture9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_base_texture9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_base_texture9$(DependSuffix): i_direct3d_base_texture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_base_texture9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_base_texture9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_base_texture9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_base_texture9$(PreprocessSuffix): i_direct3d_base_texture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_base_texture9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_base_texture9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_cube_texture9$(ObjectSuffix): i_direct3d_cube_texture9.cpp $(IntermediateDirectory)/i_direct3d_cube_texture9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_cube_texture9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_cube_texture9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_cube_texture9$(DependSuffix): i_direct3d_cube_texture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_cube_texture9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_cube_texture9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_cube_texture9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_cube_texture9$(PreprocessSuffix): i_direct3d_cube_texture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_cube_texture9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_cube_texture9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_index_buffer9$(ObjectSuffix): i_direct3d_index_buffer9.cpp $(IntermediateDirectory)/i_direct3d_index_buffer9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_index_buffer9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_index_buffer9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_index_buffer9$(DependSuffix): i_direct3d_index_buffer9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_index_buffer9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_index_buffer9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_index_buffer9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_index_buffer9$(PreprocessSuffix): i_direct3d_index_buffer9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_index_buffer9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_index_buffer9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_pixel_shader9$(ObjectSuffix): i_direct3d_pixel_shader9.cpp $(IntermediateDirectory)/i_direct3d_pixel_shader9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_pixel_shader9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_pixel_shader9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_pixel_shader9$(DependSuffix): i_direct3d_pixel_shader9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_pixel_shader9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_pixel_shader9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_pixel_shader9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_pixel_shader9$(PreprocessSuffix): i_direct3d_pixel_shader9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_pixel_shader9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_pixel_shader9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_query9$(ObjectSuffix): i_direct3d_query9.cpp $(IntermediateDirectory)/i_direct3d_query9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_query9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_query9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_query9$(DependSuffix): i_direct3d_query9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_query9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_query9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_query9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_query9$(PreprocessSuffix): i_direct3d_query9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_query9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_query9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_state_block9$(ObjectSuffix): i_direct3d_state_block9.cpp $(IntermediateDirectory)/i_direct3d_state_block9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_state_block9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_state_block9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_state_block9$(DependSuffix): i_direct3d_state_block9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_state_block9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_state_block9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_state_block9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_state_block9$(PreprocessSuffix): i_direct3d_state_block9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_state_block9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_state_block9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_texture9$(ObjectSuffix): i_direct3d_texture9.cpp $(IntermediateDirectory)/i_direct3d_texture9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_texture9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_texture9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_texture9$(DependSuffix): i_direct3d_texture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_texture9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_texture9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_texture9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_texture9$(PreprocessSuffix): i_direct3d_texture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_texture9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_texture9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_vertex_buffer9$(ObjectSuffix): i_direct3d_vertex_buffer9.cpp $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_buffer9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_vertex_buffer9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_vertex_buffer9$(DependSuffix): i_direct3d_vertex_buffer9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_vertex_buffer9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_vertex_buffer9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_buffer9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_vertex_buffer9$(PreprocessSuffix): i_direct3d_vertex_buffer9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_buffer9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_vertex_declaration9$(ObjectSuffix): i_direct3d_vertex_declaration9.cpp $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_declaration9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_vertex_declaration9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_vertex_declaration9$(DependSuffix): i_direct3d_vertex_declaration9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_vertex_declaration9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_vertex_declaration9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_declaration9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_vertex_declaration9$(PreprocessSuffix): i_direct3d_vertex_declaration9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_declaration9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_vertex_shader9$(ObjectSuffix): i_direct3d_vertex_shader9.cpp $(IntermediateDirectory)/i_direct3d_vertex_shader9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_shader9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/i_direct3d_vertex_shader9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/i_direct3d_vertex_shader9$(DependSuffix): i_direct3d_vertex_shader9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/i_direct3d_vertex_shader9$(ObjectSuffix) -MF$(IntermediateDirectory)/i_direct3d_vertex_shader9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_shader9.cpp"
+
+$(IntermediateDirectory)/i_direct3d_vertex_shader9$(PreprocessSuffix): i_direct3d_vertex_shader9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/i_direct3d_vertex_shader9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_vertex_shader9.cpp"
+
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
 ##
@@ -133,6 +222,39 @@ clean:
 	$(RM) $(IntermediateDirectory)/i_direct3d_surface9$(ObjectSuffix)
 	$(RM) $(IntermediateDirectory)/i_direct3d_surface9$(DependSuffix)
 	$(RM) $(IntermediateDirectory)/i_direct3d_surface9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_swap_chain9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_swap_chain9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_swap_chain9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_base_texture9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_base_texture9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_base_texture9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_cube_texture9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_cube_texture9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_cube_texture9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_index_buffer9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_index_buffer9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_index_buffer9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_pixel_shader9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_pixel_shader9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_pixel_shader9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_query9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_query9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_query9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_state_block9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_state_block9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_state_block9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_texture9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_texture9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_texture9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_shader9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_shader9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/i_direct3d_vertex_shader9$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) "/home/cschaefer/Documents/SchaeferGL/.build-debug/libschaefergl"
 

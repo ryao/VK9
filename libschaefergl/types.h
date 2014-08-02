@@ -35,15 +35,19 @@ typedef signed long LONG;
 typedef unsigned int UINT;
 typedef int INT;
 typedef unsigned char BYTE;
+typedef int BOOL;
+#define VOID void
 
 typedef LONG HRESULT;
 typedef GUID IID;
 typedef IID *REFIID;
 typedef unsigned long DWORD;
+typedef unsigned short WORD;
 typedef DWORD D3DCOLOR;
 typedef void *PVOID;
 typedef PVOID HANDLE;
 typedef HANDLE HDC;
+typedef HANDLE HWND;
 
 #define MAKEFOURCC(c0,c1,c2,c3) ((DWORD)(BYTE)(c0)|((DWORD)(BYTE)(c1)<<8)|((DWORD)(BYTE)(c2)<<16)|((DWORD)(BYTE)(c3)<<24))
 
@@ -185,5 +189,135 @@ typedef struct D3DSURFACE_DESC {
   UINT                Width;
   UINT                Height;
 } D3DSURFACE_DESC, *LPD3DSURFACE_DESC;
+
+typedef enum D3DSWAPEFFECT { 
+  D3DSWAPEFFECT_DISCARD      = 1,
+  D3DSWAPEFFECT_FLIP         = 2,
+  D3DSWAPEFFECT_COPY         = 3,
+  D3DSWAPEFFECT_OVERLAY      = 4,
+  D3DSWAPEFFECT_FLIPEX       = 5,
+  D3DSWAPEFFECT_FORCE_DWORD  = 0xFFFFFFFF
+} D3DSWAPEFFECT, *LPD3DSWAPEFFECT;
+
+typedef struct D3DPRESENT_PARAMETERS {
+  UINT                BackBufferWidth;
+  UINT                BackBufferHeight;
+  D3DFORMAT           BackBufferFormat;
+  UINT                BackBufferCount;
+  D3DMULTISAMPLE_TYPE MultiSampleType;
+  DWORD               MultiSampleQuality;
+  D3DSWAPEFFECT       SwapEffect;
+  HWND                hDeviceWindow;
+  BOOL                Windowed;
+  BOOL                EnableAutoDepthStencil;
+  D3DFORMAT           AutoDepthStencilFormat;
+  DWORD               Flags;
+  UINT                FullScreen_RefreshRateInHz;
+  UINT                PresentationInterval;
+} D3DPRESENT_PARAMETERS, *LPD3DPRESENT_PARAMETERS;
+
+typedef enum D3DBACKBUFFER_TYPE { 
+  D3DBACKBUFFER_TYPE_MONO         = 0,
+  D3DBACKBUFFER_TYPE_LEFT         = 1,
+  D3DBACKBUFFER_TYPE_RIGHT        = 2,
+  D3DBACKBUFFER_TYPE_FORCE_DWORD  = 0x7fffffff
+} D3DBACKBUFFER_TYPE, *LPD3DBACKBUFFER_TYPE;
+
+typedef struct D3DDISPLAYMODE {
+  UINT      Width;
+  UINT      Height;
+  UINT      RefreshRate;
+  D3DFORMAT Format;
+} D3DDISPLAYMODE, *LPD3DDISPLAYMODE;
+
+typedef struct D3DRASTER_STATUS {
+  BOOL InVBlank;
+  UINT ScanLine;
+} D3DRASTER_STATUS, *LPD3DRASTER_STATUS;
+
+typedef struct _RGNDATAHEADER {
+  DWORD dwSize;
+  DWORD iType;
+  DWORD nCount;
+  DWORD nRgnSize;
+  RECT  rcBound;
+} RGNDATAHEADER, *PRGNDATAHEADER;
+
+typedef struct _RGNDATA {
+  RGNDATAHEADER rdh;
+  char          Buffer[1];
+} RGNDATA, *PRGNDATA;
+
+typedef enum D3DTEXTUREFILTERTYPE { 
+  D3DTEXF_NONE             = 0,
+  D3DTEXF_POINT            = 1,
+  D3DTEXF_LINEAR           = 2,
+  D3DTEXF_ANISOTROPIC      = 3,
+  D3DTEXF_PYRAMIDALQUAD    = 6,
+  D3DTEXF_GAUSSIANQUAD     = 7,
+  D3DTEXF_CONVOLUTIONMONO  = 8,
+  D3DTEXF_FORCE_DWORD      = 0x7fffffff
+} D3DTEXTUREFILTERTYPE, *LPD3DTEXTUREFILTERTYPE;
+
+typedef enum D3DCUBEMAP_FACES { 
+  D3DCUBEMAP_FACE_POSITIVE_X   = 0,
+  D3DCUBEMAP_FACE_NEGATIVE_X   = 1,
+  D3DCUBEMAP_FACE_POSITIVE_Y   = 2,
+  D3DCUBEMAP_FACE_NEGATIVE_Y   = 3,
+  D3DCUBEMAP_FACE_POSITIVE_Z   = 4,
+  D3DCUBEMAP_FACE_NEGATIVE_Z   = 5,
+  D3DCUBEMAP_FACE_FORCE_DWORD  = 0xffffffff
+} D3DCUBEMAP_FACES, *LPD3DCUBEMAP_FACES;
+
+typedef struct D3DINDEXBUFFER_DESC {
+  D3DFORMAT       Format;
+  D3DRESOURCETYPE Type;
+  DWORD           Usage;
+  D3DPOOL         Pool;
+  UINT            Size;
+} D3DINDEXBUFFER_DESC, *LPD3DINDEXBUFFER_DESC;
+
+typedef enum D3DQUERYTYPE { 
+  D3DQUERYTYPE_VCACHE             = 4,
+  D3DQUERYTYPE_ResourceManager    = 5,
+  D3DQUERYTYPE_VERTEXSTATS        = 6,
+  D3DQUERYTYPE_EVENT              = 8,
+  D3DQUERYTYPE_OCCLUSION          = 9,
+  D3DQUERYTYPE_TIMESTAMP          = 10,
+  D3DQUERYTYPE_TIMESTAMPDISJOINT  = 11,
+  D3DQUERYTYPE_TIMESTAMPFREQ      = 12,
+  D3DQUERYTYPE_PIPELINETIMINGS    = 13,
+  D3DQUERYTYPE_INTERFACETIMINGS   = 14,
+  D3DQUERYTYPE_VERTEXTIMINGS      = 15,
+  D3DQUERYTYPE_PIXELTIMINGS       = 16,
+  D3DQUERYTYPE_BANDWIDTHTIMINGS   = 17,
+  D3DQUERYTYPE_CACHEUTILIZATION   = 18,
+  D3DQUERYTYPE_MEMORYPRESSURE     = 19
+} D3DQUERYTYPE, *LPD3DQUERYTYPE;
+
+typedef enum _D3DSTATEBLOCKTYPE { 
+  D3DSBT_ALL          = 1,
+  D3DSBT_PIXELSTATE   = 2,
+  D3DSBT_VERTEXSTATE  = 3,
+  D3DSBT_FORCE_DWORD  = 0x7fffffff
+} D3DSTATEBLOCKTYPE;
+
+typedef struct D3DVERTEXBUFFER_DESC {
+  D3DFORMAT       Format;
+  D3DRESOURCETYPE Type;
+  DWORD           Usage;
+  D3DPOOL         Pool;
+  UINT            Size;
+  DWORD           FVF;
+} D3DVERTEXBUFFER_DESC, *LPD3DVERTEXBUFFER_DESC;
+
+typedef struct D3DVERTEXELEMENT9 {
+  WORD Stream;
+  WORD Offset;
+  BYTE Type;
+  BYTE Method;
+  BYTE Usage;
+  BYTE UsageIndex;
+} D3DVERTEXELEMENT9, *LPD3DVERTEXELEMENT9;
 
 #endif // TYPES

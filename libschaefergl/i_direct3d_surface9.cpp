@@ -17,6 +17,7 @@
  */
  
 #include "i_direct3d_surface9.h"
+#include <iostream> 
 
 IDirect3DSurface9::IDirect3DSurface9()
 {
@@ -26,3 +27,32 @@ IDirect3DSurface9::~IDirect3DSurface9()
 {
 }
 
+HRESULT IDirect3DSurface9::GetContainer(REFIID riid,void **ppContainer)
+{
+	std::cout << "IDirect3DSurface9::GetContainer(REFIID riid,void **ppContainer)" << std::endl;	
+}
+
+HRESULT IDirect3DSurface9::GetDC(HDC *phdc)
+{
+	std::cout << "IDirect3DSurface9::GetDC(HDC *phdc)" << std::endl;	
+}
+
+HRESULT IDirect3DSurface9::GetDesc(D3DSURFACE_DESC *pDesc)
+{
+	std::cout << "IDirect3DSurface9::GetDesc(D3DSURFACE_DESC *pDesc)" << std::endl;	
+}
+
+HRESULT IDirect3DSurface9::LockRect(D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags)
+{
+	std::cout << "IDirect3DSurface9::LockRect(D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags)" << std::endl;	
+}
+
+HRESULT IDirect3DSurface9::ReleaseDC(HDC hdc)
+{
+	std::cout << "IDirect3DSurface9::ReleaseDC(HDC hdc)" << std::endl;	
+}
+
+HRESULT IDirect3DSurface9::UnlockRect()
+{
+	std::cout << "IDirect3DSurface9::UnlockRect()" << std::endl;	
+}

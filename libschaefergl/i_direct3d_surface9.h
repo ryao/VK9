@@ -53,6 +53,12 @@ public:
 	 */
 	HRESULT ReleaseDC(HDC hdc);
 	
+	/*
+	 * Unlocks a rectangle on a surface.
+	 */
+	HRESULT UnlockRect();
 };
+
+typedef struct IDirect3DSurface9 *LPDIRECT3DSURFACE9, *PDIRECT3DSURFACE9;
 
 #endif // IDIRECT3DSURFACE9_H

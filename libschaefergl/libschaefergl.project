@@ -96,6 +96,17 @@
     <File Name="i_direct3d_device9.cpp"/>
     <File Name="i_direct3d_resource9.cpp"/>
     <File Name="i_direct3d_surface9.cpp"/>
+    <File Name="i_direct3d_swap_chain9.cpp"/>
+    <File Name="i_direct3d_base_texture9.cpp"/>
+    <File Name="i_direct3d_cube_texture9.cpp"/>
+    <File Name="i_direct3d_index_buffer9.cpp"/>
+    <File Name="i_direct3d_pixel_shader9.cpp"/>
+    <File Name="i_direct3d_query9.cpp"/>
+    <File Name="i_direct3d_state_block9.cpp"/>
+    <File Name="i_direct3d_texture9.cpp"/>
+    <File Name="i_direct3d_vertex_buffer9.cpp"/>
+    <File Name="i_direct3d_vertex_declaration9.cpp"/>
+    <File Name="i_direct3d_vertex_shader9.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="i_unknown.h"/>
@@ -103,5 +114,16 @@
     <File Name="i_direct3d_device9.h"/>
     <File Name="i_direct3d_resource9.h"/>
     <File Name="i_direct3d_surface9.h"/>
+    <File Name="i_direct3d_swap_chain9.h"/>
+    <File Name="i_direct3d_base_texture9.h"/>
+    <File Name="i_direct3d_cube_texture9.h"/>
+    <File Name="i_direct3d_index_buffer9.h"/>
+    <File Name="i_direct3d_pixel_shader9.h"/>
+    <File Name="i_direct3d_query9.h"/>
+    <File Name="i_direct3d_state_block9.h"/>
+    <File Name="i_direct3d_texture9.h"/>
+    <File Name="i_direct3d_vertex_buffer9.h"/>
+    <File Name="i_direct3d_vertex_declaration9.h"/>
+    <File Name="i_direct3d_vertex_shader9.h"/>
   </VirtualDirectory>
 </CodeLite_Project>
