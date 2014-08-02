@@ -1,1 +1,1 @@
-./Debug/i_unknown.o
+./Debug/i_unknown.o ./Debug/i_direct3d_device9.o ./Debug/i_direct3d_resource9.o ./Debug/i_direct3d_surface9.o

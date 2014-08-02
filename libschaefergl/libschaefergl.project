@@ -21,6 +21,7 @@
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName).so" IntermediateDirectory="./Debug" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[
+      
       ]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
@@ -59,6 +60,7 @@
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName).so" IntermediateDirectory="./Release" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[
+      
       ]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
@@ -91,9 +93,15 @@
   </Settings>
   <VirtualDirectory Name="src">
     <File Name="i_unknown.cpp"/>
+    <File Name="i_direct3d_device9.cpp"/>
+    <File Name="i_direct3d_resource9.cpp"/>
+    <File Name="i_direct3d_surface9.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="i_unknown.h"/>
     <File Name="types.h"/>
+    <File Name="i_direct3d_device9.h"/>
+    <File Name="i_direct3d_resource9.h"/>
+    <File Name="i_direct3d_surface9.h"/>
   </VirtualDirectory>
 </CodeLite_Project>
