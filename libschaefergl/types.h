@@ -36,6 +36,8 @@ typedef unsigned int UINT;
 typedef int INT;
 typedef unsigned char BYTE;
 typedef int BOOL;
+typedef float FLOAT;
+#define VOID void
 #define VOID void
 
 typedef LONG HRESULT;
@@ -50,6 +52,11 @@ typedef HANDLE HDC;
 typedef HANDLE HWND;
 
 #define MAKEFOURCC(c0,c1,c2,c3) ((DWORD)(BYTE)(c0)|((DWORD)(BYTE)(c1)<<8)|((DWORD)(BYTE)(c2)<<16)|((DWORD)(BYTE)(c3)<<24))
+
+typedef struct tagPOINT {
+  LONG x;
+  LONG y;
+} POINT, *PPOINT;
 
 typedef struct _RECT {
   LONG left;
@@ -319,5 +326,418 @@ typedef struct D3DVERTEXELEMENT9 {
   BYTE Usage;
   BYTE UsageIndex;
 } D3DVERTEXELEMENT9, *LPD3DVERTEXELEMENT9;
+
+typedef struct D3DBOX {
+  UINT Left;
+  UINT Top;
+  UINT Right;
+  UINT Bottom;
+  UINT Front;
+  UINT Back;
+} D3DBOX, *LPD3DBOX;
+
+typedef struct D3DLOCKED_BOX {
+  int  RowPitch;
+  int  SlicePitch;
+  void *pBits;
+} D3DLOCKED_BOX, *LPD3DLOCKED_BOX;
+
+typedef struct D3DVOLUME_DESC {
+  D3DFORMAT       Format;
+  D3DRESOURCETYPE Type;
+  DWORD           Usage;
+  D3DPOOL         Pool;
+  UINT            Width;
+  UINT            Height;
+  UINT            Depth;
+} D3DVOLUME_DESC, *LPD3DVOLUME_DESC;
+
+typedef enum D3DPRIMITIVETYPE { 
+  D3DPT_POINTLIST      = 1,
+  D3DPT_LINELIST       = 2,
+  D3DPT_LINESTRIP      = 3,
+  D3DPT_TRIANGLELIST   = 4,
+  D3DPT_TRIANGLESTRIP  = 5,
+  D3DPT_TRIANGLEFAN    = 6,
+  D3DPT_FORCE_DWORD    = 0x7fffffff
+} D3DPRIMITIVETYPE, *LPD3DPRIMITIVETYPE;
+
+typedef enum D3DBASISTYPE { 
+  D3DBASIS_BEZIER       = 0,
+  D3DBASIS_BSPLINE      = 1,
+  D3DBASIS_CATMULL_ROM  = 2,
+  D3DBASIS_FORCE_DWORD  = 0x7fffffff
+} D3DBASISTYPE, *LPD3DBASISTYPE;
+
+typedef enum D3DDEGREETYPE { 
+  D3DDEGREE_LINEAR     = 1,
+  D3DDEGREE_QUADRATIC  = 2,
+  D3DDEGREE_CUBIC      = 3,
+  D3DDEGREE_QUINTIC    = 5,
+  D3DCULL_FORCE_DWORD  = 0x7fffffff
+} D3DDEGREETYPE, *LPD3DDEGREETYPE;
+
+typedef struct D3DRECTPATCH_INFO {
+  UINT          StartVertexOffsetWidth;
+  UINT          StartVertexOffsetHeight;
+  UINT          Width;
+  UINT          Height;
+  UINT          Stride;
+  D3DBASISTYPE  Basis;
+  D3DDEGREETYPE Degree;
+} D3DRECTPATCH_INFO, *LPD3DRECTPATCH_INFO;
+
+typedef struct D3DTRIPATCH_INFO {
+  UINT          StartVertexOffset;
+  UINT          NumVertices;
+  D3DBASISTYPE  Basis;
+  D3DDEGREETYPE Degree;
+} D3DTRIPATCH_INFO, *LPD3DTRIPATCH_INFO;
+
+typedef struct D3DCLIPSTATUS9 {
+  DWORD ClipUnion;
+  DWORD ClipIntersection;
+} D3DCLIPSTATUS9, *LPD3DCLIPSTATUS9;
+
+typedef enum D3DDEVTYPE { 
+  D3DDEVTYPE_HAL          = 1,
+  D3DDEVTYPE_NULLREF      = 4,
+  D3DDEVTYPE_REF          = 2,
+  D3DDEVTYPE_SW           = 3,
+  D3DDEVTYPE_FORCE_DWORD  = 0xffffffff
+} D3DDEVTYPE, *LPD3DDEVTYPE;
+
+typedef struct D3DDEVICE_CREATION_PARAMETERS {
+  UINT       AdapterOrdinal;
+  D3DDEVTYPE DeviceType;
+  HWND       hFocusWindow;
+  DWORD      BehaviorFlags;
+} D3DDEVICE_CREATION_PARAMETERS, *LPD3DDEVICE_CREATION_PARAMETERS;
+
+typedef struct D3DVSHADERCAPS2_0 {
+  DWORD Caps;
+  INT   DynamicFlowControlDepth;
+  INT   NumTemps;
+  INT   StaticFlowControlDepth;
+} D3DVSHADERCAPS2_0, *LPD3DVSHADERCAPS2_0;
+
+typedef struct D3DPSHADERCAPS2_0 {
+  DWORD Caps;
+  INT   DynamicFlowControlDepth;
+  INT   NumTemps;
+  INT   StaticFlowControlDepth;
+  INT   NumInstructionSlots;
+} D3DPSHADERCAPS2_0, *LPD3DPSHADERCAPS2_0;
+
+typedef struct D3DCAPS9 {
+  D3DDEVTYPE        DeviceType;
+  UINT              AdapterOrdinal;
+  DWORD             Caps;
+  DWORD             Caps2;
+  DWORD             Caps3;
+  DWORD             PresentationIntervals;
+  DWORD             CursorCaps;
+  DWORD             DevCaps;
+  DWORD             PrimitiveMiscCaps;
+  DWORD             RasterCaps;
+  DWORD             ZCmpCaps;
+  DWORD             SrcBlendCaps;
+  DWORD             DestBlendCaps;
+  DWORD             AlphaCmpCaps;
+  DWORD             ShadeCaps;
+  DWORD             TextureCaps;
+  DWORD             TextureFilterCaps;
+  DWORD             CubeTextureFilterCaps;
+  DWORD             VolumeTextureFilterCaps;
+  DWORD             TextureAddressCaps;
+  DWORD             VolumeTextureAddressCaps;
+  DWORD             LineCaps;
+  DWORD             MaxTextureWidth;
+  DWORD             MaxTextureHeight;
+  DWORD             MaxVolumeExtent;
+  DWORD             MaxTextureRepeat;
+  DWORD             MaxTextureAspectRatio;
+  DWORD             MaxAnisotropy;
+  float             MaxVertexW;
+  float             GuardBandLeft;
+  float             GuardBandTop;
+  float             GuardBandRight;
+  float             GuardBandBottom;
+  float             ExtentsAdjust;
+  DWORD             StencilCaps;
+  DWORD             FVFCaps;
+  DWORD             TextureOpCaps;
+  DWORD             MaxTextureBlendStages;
+  DWORD             MaxSimultaneousTextures;
+  DWORD             VertexProcessingCaps;
+  DWORD             MaxActiveLights;
+  DWORD             MaxUserClipPlanes;
+  DWORD             MaxVertexBlendMatrices;
+  DWORD             MaxVertexBlendMatrixIndex;
+  float             MaxPointSize;
+  DWORD             MaxPrimitiveCount;
+  DWORD             MaxVertexIndex;
+  DWORD             MaxStreams;
+  DWORD             MaxStreamStride;
+  DWORD             VertexShaderVersion;
+  DWORD             MaxVertexShaderConst;
+  DWORD             PixelShaderVersion;
+  float             PixelShader1xMaxValue;
+  DWORD             DevCaps2;
+  UINT              MasterAdapterOrdinal;
+  UINT              AdapterOrdinalInGroup;
+  UINT              NumberOfAdaptersInGroup;
+  DWORD             DeclTypes;
+  DWORD             NumSimultaneousRTs;
+  DWORD             StretchRectFilterCaps;
+  D3DVSHADERCAPS2_0 VS20Caps;
+  D3DPSHADERCAPS2_0 PS20Caps;
+  DWORD             VertexTextureFilterCaps;
+  DWORD             MaxVShaderInstructionsExecuted;
+  DWORD             MaxPShaderInstructionsExecuted;
+  DWORD             MaxVertexShader30InstructionSlots;
+  DWORD             MaxPixelShader30InstructionSlots;
+  DWORD             Reserved2;
+  DWORD             Reserved3;
+} D3DCAPS9, *LPD3DCAPS9;
+
+typedef struct D3DGAMMARAMP {
+  WORD red[256];
+  WORD green[256];
+  WORD blue[256];
+} D3DGAMMARAMP, *LPD3DGAMMARAMP;
+
+typedef enum D3DLIGHTTYPE { 
+  D3DLIGHT_POINT        = 1,
+  D3DLIGHT_SPOT         = 2,
+  D3DLIGHT_DIRECTIONAL  = 3,
+  D3DLIGHT_FORCE_DWORD  = 0x7fffffff
+} D3DLIGHTTYPE, *LPD3DLIGHTTYPE;
+
+typedef struct _D3DCOLORVALUE {
+  float r;
+  float g;
+  float b;
+  float a;
+} D3DCOLORVALUE;
+
+typedef struct D3DVECTOR {
+  float x;
+  float y;
+  float z;
+} D3DVECTOR;
+
+typedef struct D3DLIGHT9 {
+  D3DLIGHTTYPE  Type;
+  D3DCOLORVALUE Diffuse;
+  D3DCOLORVALUE Specular;
+  D3DCOLORVALUE Ambient;
+  D3DVECTOR     Position;
+  D3DVECTOR     Direction;
+  float         Range;
+  float         Falloff;
+  float         Attenuation0;
+  float         Attenuation1;
+  float         Attenuation2;
+  float         Theta;
+  float         Phi;
+} D3DLIGHT9, *LPD3DLIGHT;
+
+typedef struct D3DMATERIAL9 {
+  D3DCOLORVALUE Diffuse;
+  D3DCOLORVALUE Ambient;
+  D3DCOLORVALUE Specular;
+  D3DCOLORVALUE Emissive;
+  float         Power;
+} D3DMATERIAL9, *LPD3DMATERIAL9;
+
+typedef struct PALETTEENTRY {
+  BYTE peRed;
+  BYTE peGreen;
+  BYTE peBlue;
+  BYTE peFlags;
+} PALETTEENTRY, *LPPALETTEENTRY;
+
+typedef enum D3DRENDERSTATETYPE { 
+  D3DRS_ZENABLE                     = 7,
+  D3DRS_FILLMODE                    = 8,
+  D3DRS_SHADEMODE                   = 9,
+  D3DRS_ZWRITEENABLE                = 14,
+  D3DRS_ALPHATESTENABLE             = 15,
+  D3DRS_LASTPIXEL                   = 16,
+  D3DRS_SRCBLEND                    = 19,
+  D3DRS_DESTBLEND                   = 20,
+  D3DRS_CULLMODE                    = 22,
+  D3DRS_ZFUNC                       = 23,
+  D3DRS_ALPHAREF                    = 24,
+  D3DRS_ALPHAFUNC                   = 25,
+  D3DRS_DITHERENABLE                = 26,
+  D3DRS_ALPHABLENDENABLE            = 27,
+  D3DRS_FOGENABLE                   = 28,
+  D3DRS_SPECULARENABLE              = 29,
+  D3DRS_FOGCOLOR                    = 34,
+  D3DRS_FOGTABLEMODE                = 35,
+  D3DRS_FOGSTART                    = 36,
+  D3DRS_FOGEND                      = 37,
+  D3DRS_FOGDENSITY                  = 38,
+  D3DRS_RANGEFOGENABLE              = 48,
+  D3DRS_STENCILENABLE               = 52,
+  D3DRS_STENCILFAIL                 = 53,
+  D3DRS_STENCILZFAIL                = 54,
+  D3DRS_STENCILPASS                 = 55,
+  D3DRS_STENCILFUNC                 = 56,
+  D3DRS_STENCILREF                  = 57,
+  D3DRS_STENCILMASK                 = 58,
+  D3DRS_STENCILWRITEMASK            = 59,
+  D3DRS_TEXTUREFACTOR               = 60,
+  D3DRS_WRAP0                       = 128,
+  D3DRS_WRAP1                       = 129,
+  D3DRS_WRAP2                       = 130,
+  D3DRS_WRAP3                       = 131,
+  D3DRS_WRAP4                       = 132,
+  D3DRS_WRAP5                       = 133,
+  D3DRS_WRAP6                       = 134,
+  D3DRS_WRAP7                       = 135,
+  D3DRS_CLIPPING                    = 136,
+  D3DRS_LIGHTING                    = 137,
+  D3DRS_AMBIENT                     = 139,
+  D3DRS_FOGVERTEXMODE               = 140,
+  D3DRS_COLORVERTEX                 = 141,
+  D3DRS_LOCALVIEWER                 = 142,
+  D3DRS_NORMALIZENORMALS            = 143,
+  D3DRS_DIFFUSEMATERIALSOURCE       = 145,
+  D3DRS_SPECULARMATERIALSOURCE      = 146,
+  D3DRS_AMBIENTMATERIALSOURCE       = 147,
+  D3DRS_EMISSIVEMATERIALSOURCE      = 148,
+  D3DRS_VERTEXBLEND                 = 151,
+  D3DRS_CLIPPLANEENABLE             = 152,
+  D3DRS_POINTSIZE                   = 154,
+  D3DRS_POINTSIZE_MIN               = 155,
+  D3DRS_POINTSPRITEENABLE           = 156,
+  D3DRS_POINTSCALEENABLE            = 157,
+  D3DRS_POINTSCALE_A                = 158,
+  D3DRS_POINTSCALE_B                = 159,
+  D3DRS_POINTSCALE_C                = 160,
+  D3DRS_MULTISAMPLEANTIALIAS        = 161,
+  D3DRS_MULTISAMPLEMASK             = 162,
+  D3DRS_PATCHEDGESTYLE              = 163,
+  D3DRS_DEBUGMONITORTOKEN           = 165,
+  D3DRS_POINTSIZE_MAX               = 166,
+  D3DRS_INDEXEDVERTEXBLENDENABLE    = 167,
+  D3DRS_COLORWRITEENABLE            = 168,
+  D3DRS_TWEENFACTOR                 = 170,
+  D3DRS_BLENDOP                     = 171,
+  D3DRS_POSITIONDEGREE              = 172,
+  D3DRS_NORMALDEGREE                = 173,
+  D3DRS_SCISSORTESTENABLE           = 174,
+  D3DRS_SLOPESCALEDEPTHBIAS         = 175,
+  D3DRS_ANTIALIASEDLINEENABLE       = 176,
+  D3DRS_MINTESSELLATIONLEVEL        = 178,
+  D3DRS_MAXTESSELLATIONLEVEL        = 179,
+  D3DRS_ADAPTIVETESS_X              = 180,
+  D3DRS_ADAPTIVETESS_Y              = 181,
+  D3DRS_ADAPTIVETESS_Z              = 182,
+  D3DRS_ADAPTIVETESS_W              = 183,
+  D3DRS_ENABLEADAPTIVETESSELLATION  = 184,
+  D3DRS_TWOSIDEDSTENCILMODE         = 185,
+  D3DRS_CCW_STENCILFAIL             = 186,
+  D3DRS_CCW_STENCILZFAIL            = 187,
+  D3DRS_CCW_STENCILPASS             = 188,
+  D3DRS_CCW_STENCILFUNC             = 189,
+  D3DRS_COLORWRITEENABLE1           = 190,
+  D3DRS_COLORWRITEENABLE2           = 191,
+  D3DRS_COLORWRITEENABLE3           = 192,
+  D3DRS_BLENDFACTOR                 = 193,
+  D3DRS_SRGBWRITEENABLE             = 194,
+  D3DRS_DEPTHBIAS                   = 195,
+  D3DRS_WRAP8                       = 198,
+  D3DRS_WRAP9                       = 199,
+  D3DRS_WRAP10                      = 200,
+  D3DRS_WRAP11                      = 201,
+  D3DRS_WRAP12                      = 202,
+  D3DRS_WRAP13                      = 203,
+  D3DRS_WRAP14                      = 204,
+  D3DRS_WRAP15                      = 205,
+  D3DRS_SEPARATEALPHABLENDENABLE    = 206,
+  D3DRS_SRCBLENDALPHA               = 207,
+  D3DRS_DESTBLENDALPHA              = 208,
+  D3DRS_BLENDOPALPHA                = 209,
+  D3DRS_FORCE_DWORD                 = 0x7fffffff
+} D3DRENDERSTATETYPE, *LPD3DRENDERSTATETYPE;
+
+typedef enum D3DSAMPLERSTATETYPE { 
+  D3DSAMP_ADDRESSU       = 1,
+  D3DSAMP_ADDRESSV       = 2,
+  D3DSAMP_ADDRESSW       = 3,
+  D3DSAMP_BORDERCOLOR    = 4,
+  D3DSAMP_MAGFILTER      = 5,
+  D3DSAMP_MINFILTER      = 6,
+  D3DSAMP_MIPFILTER      = 7,
+  D3DSAMP_MIPMAPLODBIAS  = 8,
+  D3DSAMP_MAXMIPLEVEL    = 9,
+  D3DSAMP_MAXANISOTROPY  = 10,
+  D3DSAMP_SRGBTEXTURE    = 11,
+  D3DSAMP_ELEMENTINDEX   = 12,
+  D3DSAMP_DMAPOFFSET     = 13,
+  D3DSAMP_FORCE_DWORD    = 0x7fffffff
+} D3DSAMPLERSTATETYPE, *LPD3DSAMPLERSTATETYPE;
+
+typedef enum D3DTEXTURESTAGESTATETYPE { 
+  D3DTSS_COLOROP                = 1,
+  D3DTSS_COLORARG1              = 2,
+  D3DTSS_COLORARG2              = 3,
+  D3DTSS_ALPHAOP                = 4,
+  D3DTSS_ALPHAARG1              = 5,
+  D3DTSS_ALPHAARG2              = 6,
+  D3DTSS_BUMPENVMAT00           = 7,
+  D3DTSS_BUMPENVMAT01           = 8,
+  D3DTSS_BUMPENVMAT10           = 9,
+  D3DTSS_BUMPENVMAT11           = 10,
+  D3DTSS_TEXCOORDINDEX          = 11,
+  D3DTSS_BUMPENVLSCALE          = 22,
+  D3DTSS_BUMPENVLOFFSET         = 23,
+  D3DTSS_TEXTURETRANSFORMFLAGS  = 24,
+  D3DTSS_COLORARG0              = 26,
+  D3DTSS_ALPHAARG0              = 27,
+  D3DTSS_RESULTARG              = 28,
+  D3DTSS_CONSTANT               = 32,
+  D3DTSS_FORCE_DWORD            = 0x7fffffff
+} D3DTEXTURESTAGESTATETYPE, *LPD3DTEXTURESTAGESTATETYPE;
+
+typedef enum D3DTRANSFORMSTATETYPE { 
+  D3DTS_VIEW         = 2,
+  D3DTS_PROJECTION   = 3,
+  D3DTS_TEXTURE0     = 16,
+  D3DTS_TEXTURE1     = 17,
+  D3DTS_TEXTURE2     = 18,
+  D3DTS_TEXTURE3     = 19,
+  D3DTS_TEXTURE4     = 20,
+  D3DTS_TEXTURE5     = 21,
+  D3DTS_TEXTURE6     = 22,
+  D3DTS_TEXTURE7     = 23,
+  D3DTS_FORCE_DWORD  = 0x7fffffff
+} D3DTRANSFORMSTATETYPE, *LPD3DTRANSFORMSTATETYPE;
+
+typedef struct _D3DMATRIX {
+    union {
+        struct {
+            float        _11, _12, _13, _14;
+            float        _21, _22, _23, _24;
+            float        _31, _32, _33, _34;
+            float        _41, _42, _43, _44;
+
+        };
+        float m[4][4];
+    };
+} D3DMATRIX;
+
+typedef struct D3DVIEWPORT9 {
+  DWORD X;
+  DWORD Y;
+  DWORD Width;
+  DWORD Height;
+  float MinZ;
+  float MaxZ;
+} D3DVIEWPORT9, *LPD3DVIEWPORT9;
 
 #endif // TYPES
