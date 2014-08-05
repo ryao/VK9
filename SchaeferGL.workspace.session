@@ -4,9 +4,9 @@
   <wxString Value="/home/cschaefer/Documents/SchaeferGL/SchaeferGL.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
-      <wxString Value="/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3d_device9.cpp" Name="FileName"/>
-      <int Value="1" Name="FirstVisibleLine"/>
-      <int Value="33" Name="CurrentLine"/>
+      <wxString Value="/home/cschaefer/Documents/SchaeferGL/libschaefergl/i_direct3_d9.cpp" Name="FileName"/>
+      <int Value="61" Name="FirstVisibleLine"/>
+      <int Value="80" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
     </TabInfo>
   </TabInfoArray>

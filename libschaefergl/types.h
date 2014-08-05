@@ -19,6 +19,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <inttypes.h>
+
 #if ! (defined _GUID_DEFINED || defined GUID_DEFINED) /* also defined in winnt.h */
 #define GUID_DEFINED
 typedef struct _GUID
@@ -739,5 +741,38 @@ typedef struct D3DVIEWPORT9 {
   float MinZ;
   float MaxZ;
 } D3DVIEWPORT9, *LPD3DVIEWPORT9;
+
+typedef int64_t LONGLONG; 
+
+typedef union _LARGE_INTEGER {
+  struct {
+    DWORD LowPart;
+    LONG  HighPart;
+  };
+  struct {
+    DWORD LowPart;
+    LONG  HighPart;
+  } u;
+  LONGLONG QuadPart;
+} LARGE_INTEGER, *PLARGE_INTEGER;
+
+#define MAX_DEVICE_IDENTIFIER_STRING        512
+
+typedef struct D3DADAPTER_IDENTIFIER9 {
+  char          Driver[MAX_DEVICE_IDENTIFIER_STRING];
+  char          Description[MAX_DEVICE_IDENTIFIER_STRING];
+  char          DeviceName[32];
+  LARGE_INTEGER DriverVersion;
+  DWORD         DriverVersionLowPart;
+  DWORD         DriverVersionHighPart;
+  DWORD         VendorId;
+  DWORD         DeviceId;
+  DWORD         SubSysId;
+  DWORD         Revision;
+  GUID          DeviceIdentifier;
+  DWORD         WHQLLevel;
+} D3DADAPTER_IDENTIFIER9, *LPD3DADAPTER_IDENTIFIER9;
+
+typedef HANDLE HMONITOR;
 
 #endif // TYPES
