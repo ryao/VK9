@@ -32,27 +32,27 @@ public:
 	/*
 	 * Polls a queried resource to get the query state or a query result.
 	 */
-	HRESULT GetData(void *pData,DWORD dwSize,DWORD dwGetDataFlags);
+	virtual HRESULT GetData(void *pData,DWORD dwSize,DWORD dwGetDataFlags);
 	
 	/*
 	 * Gets the number of bytes in the query data.
 	 */
-	DWORD GetDataSize();
+	virtual DWORD GetDataSize();
 
 	/*
 	 * Gets the device that is being queried.
 	 */
-	HRESULT GetDevice(IDirect3DDevice9 **pDevice);
+	virtual HRESULT GetDevice(IDirect3DDevice9 **pDevice);
 
 	/*
 	 * Gets the query type.
 	 */
-	D3DQUERYTYPE GetType();
+	virtual D3DQUERYTYPE GetType();
 
 	/*
 	 * Issue a query.
 	 */
-	HRESULT Issue(DWORD dwIssueFlags);
+	virtual HRESULT Issue(DWORD dwIssueFlags);
 	
 };
 

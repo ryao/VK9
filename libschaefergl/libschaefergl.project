@@ -1,18 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CodeLite_Project Name="libschaefergl" InternalType="Library">
+  <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00010001N0005Debug000000000000]]>
+    </Plugin>
+  </Plugins>
   <Description/>
   <Dependencies/>
+  <VirtualDirectory Name="src">
+    <File Name="i_unknown.cpp"/>
+    <File Name="i_direct3d_device9.cpp"/>
+    <File Name="i_direct3d_resource9.cpp"/>
+    <File Name="i_direct3d_surface9.cpp"/>
+    <File Name="i_direct3d_swap_chain9.cpp"/>
+    <File Name="i_direct3d_base_texture9.cpp"/>
+    <File Name="i_direct3d_cube_texture9.cpp"/>
+    <File Name="i_direct3d_index_buffer9.cpp"/>
+    <File Name="i_direct3d_pixel_shader9.cpp"/>
+    <File Name="i_direct3d_query9.cpp"/>
+    <File Name="i_direct3d_state_block9.cpp"/>
+    <File Name="i_direct3d_texture9.cpp"/>
+    <File Name="i_direct3d_vertex_buffer9.cpp"/>
+    <File Name="i_direct3d_vertex_declaration9.cpp"/>
+    <File Name="i_direct3d_vertex_shader9.cpp"/>
+    <File Name="i_direct3d_volume_texture9.cpp"/>
+    <File Name="i_direct3d_volume9.cpp"/>
+    <File Name="i_direct3_d9.cpp"/>
+    <File Name="D3D9.cpp"/>
+    <VirtualDirectory Name="Gallium3D">
+      <File Name="galliumd3_d9.h"/>
+      <File Name="galliumd3_d9.cpp"/>
+      <File Name="galliumd3d_device9.h"/>
+      <File Name="galliumd3d_device9.cpp"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="include">
+    <File Name="i_unknown.h"/>
+    <File Name="types.h"/>
+    <File Name="i_direct3d_device9.h"/>
+    <File Name="i_direct3d_resource9.h"/>
+    <File Name="i_direct3d_surface9.h"/>
+    <File Name="i_direct3d_swap_chain9.h"/>
+    <File Name="i_direct3d_base_texture9.h"/>
+    <File Name="i_direct3d_cube_texture9.h"/>
+    <File Name="i_direct3d_index_buffer9.h"/>
+    <File Name="i_direct3d_pixel_shader9.h"/>
+    <File Name="i_direct3d_query9.h"/>
+    <File Name="i_direct3d_state_block9.h"/>
+    <File Name="i_direct3d_texture9.h"/>
+    <File Name="i_direct3d_vertex_buffer9.h"/>
+    <File Name="i_direct3d_vertex_declaration9.h"/>
+    <File Name="i_direct3d_vertex_shader9.h"/>
+    <File Name="i_direct3d_volume_texture9.h"/>
+    <File Name="i_direct3d_volume9.h"/>
+    <File Name="i_direct3_d9.h"/>
+    <File Name="D3D9.h"/>
+  </VirtualDirectory>
   <Settings Type="Dynamic Library">
     <GlobalSettings>
       <Compiler Options="" C_Options="">
-        <IncludePath Value="."/>
+        <IncludePath Value="/home/cschaefer/Documents/mesa/src/gallium/include/"/>
+        <IncludePath Value="/home/cschaefer/Documents/mesa/include/"/>
       </Compiler>
       <Linker Options="">
         <LibraryPath Value="."/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
-    <Configuration Name="Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Dynamic Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g" C_Options="-g" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
         <IncludePath Value="."/>
       </Compiler>
@@ -20,9 +75,7 @@
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName).so" IntermediateDirectory="./Debug" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
-        <![CDATA[
-      
-      ]]>
+        <![CDATA[]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
         <PostConnectCommands/>
@@ -61,6 +114,8 @@
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[
       
+      
+      
       ]]>
       </Environment>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
@@ -91,47 +146,4 @@
       </Completion>
     </Configuration>
   </Settings>
-  <VirtualDirectory Name="src">
-    <File Name="i_unknown.cpp"/>
-    <File Name="i_direct3d_device9.cpp"/>
-    <File Name="i_direct3d_resource9.cpp"/>
-    <File Name="i_direct3d_surface9.cpp"/>
-    <File Name="i_direct3d_swap_chain9.cpp"/>
-    <File Name="i_direct3d_base_texture9.cpp"/>
-    <File Name="i_direct3d_cube_texture9.cpp"/>
-    <File Name="i_direct3d_index_buffer9.cpp"/>
-    <File Name="i_direct3d_pixel_shader9.cpp"/>
-    <File Name="i_direct3d_query9.cpp"/>
-    <File Name="i_direct3d_state_block9.cpp"/>
-    <File Name="i_direct3d_texture9.cpp"/>
-    <File Name="i_direct3d_vertex_buffer9.cpp"/>
-    <File Name="i_direct3d_vertex_declaration9.cpp"/>
-    <File Name="i_direct3d_vertex_shader9.cpp"/>
-    <File Name="i_direct3d_volume_texture9.cpp"/>
-    <File Name="i_direct3d_volume9.cpp"/>
-    <File Name="i_direct3_d9.cpp"/>
-    <File Name="D3D9.cpp"/>
-  </VirtualDirectory>
-  <VirtualDirectory Name="include">
-    <File Name="i_unknown.h"/>
-    <File Name="types.h"/>
-    <File Name="i_direct3d_device9.h"/>
-    <File Name="i_direct3d_resource9.h"/>
-    <File Name="i_direct3d_surface9.h"/>
-    <File Name="i_direct3d_swap_chain9.h"/>
-    <File Name="i_direct3d_base_texture9.h"/>
-    <File Name="i_direct3d_cube_texture9.h"/>
-    <File Name="i_direct3d_index_buffer9.h"/>
-    <File Name="i_direct3d_pixel_shader9.h"/>
-    <File Name="i_direct3d_query9.h"/>
-    <File Name="i_direct3d_state_block9.h"/>
-    <File Name="i_direct3d_texture9.h"/>
-    <File Name="i_direct3d_vertex_buffer9.h"/>
-    <File Name="i_direct3d_vertex_declaration9.h"/>
-    <File Name="i_direct3d_vertex_shader9.h"/>
-    <File Name="i_direct3d_volume_texture9.h"/>
-    <File Name="i_direct3d_volume9.h"/>
-    <File Name="i_direct3_d9.h"/>
-    <File Name="D3D9.h"/>
-  </VirtualDirectory>
 </CodeLite_Project>

@@ -31,32 +31,32 @@ public:
 	 * Provides access to the parent cube texture or texture object if this surface is a cube texture or mipmap child.
 	 * This method can also provide access to the parent swap chain if hte surface is a back-buffer child.
 	 */
-	HRESULT GetContainer(REFIID riid,void **ppContainer);
+	virtual HRESULT GetContainer(REFIID riid,void **ppContainer);
 
 	/*
 	 * Retrieves a device context.
 	 */
-	HRESULT GetDC(HDC *phdc);
+	virtual HRESULT GetDC(HDC *phdc);
 	
 	/*
 	 * Retrieves a description of the surface.
 	 */
-	HRESULT GetDesc(D3DSURFACE_DESC *pDesc);
+	virtual HRESULT GetDesc(D3DSURFACE_DESC *pDesc);
 	
 	/*
 	 * Locks a rectangle on a surface.
 	 */
-	HRESULT LockRect(D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags);
+	virtual HRESULT LockRect(D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags);
 	
 	/*
 	 * Release a device context handle.
 	 */
-	HRESULT ReleaseDC(HDC hdc);
+	virtual HRESULT ReleaseDC(HDC hdc);
 	
 	/*
 	 * Unlocks a rectangle on a surface.
 	 */
-	HRESULT UnlockRect();
+	virtual HRESULT UnlockRect();
 };
 
 typedef struct IDirect3DSurface9 *LPDIRECT3DSURFACE9, *PDIRECT3DSURFACE9;

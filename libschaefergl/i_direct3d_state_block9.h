@@ -33,17 +33,17 @@ public:
 	/*
 	 * Apply the state block to the current device state.
 	 */
-	HRESULT Apply();
+	virtual HRESULT Apply();
 	
 	/*
 	 * Capture the current value of states that are included in a stateblock.
 	 */
-	HRESULT Capture();
+	virtual HRESULT Capture();
 	
 	/*
 	 * Gets the device
 	 */
-	HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
+	virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
 };
 
 typedef struct IDirect3DStateBlock9 *LPDIRECT3DSTATEBLOCK9, *PDIRECT3DSTATEBLOCK9;

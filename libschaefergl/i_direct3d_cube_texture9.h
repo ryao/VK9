@@ -31,27 +31,27 @@ public:
 	/*
 	 * Adds a dirty region to a cube texture resource.
 	 */
-	HRESULT AddDirtyRect(D3DCUBEMAP_FACES FaceType,const RECT *pDirtyRect);
+	virtual HRESULT AddDirtyRect(D3DCUBEMAP_FACES FaceType,const RECT *pDirtyRect);
 	
 	/*
 	 * Retrieves a cube texture map surface.
 	 */
-	HRESULT GetCubeMapSurface(D3DCUBEMAP_FACES FaceType,UINT Level,IDirect3DSurface9 **ppCubeMapSurface);
+	virtual HRESULT GetCubeMapSurface(D3DCUBEMAP_FACES FaceType,UINT Level,IDirect3DSurface9 **ppCubeMapSurface);
 	
 	/*
 	 * Retrieves a description of one face of the specified cube texture level.
 	 */
-	HRESULT GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc);
+	virtual HRESULT GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc);
 	
 	/*
 	 * Locks a rectangle on a cube texture resource.
 	 */
-	HRESULT LockRect(D3DCUBEMAP_FACES FaceType,UINT Level,D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags);
+	virtual HRESULT LockRect(D3DCUBEMAP_FACES FaceType,UINT Level,D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags);
 	
 	/*
 	 * Unlocks a rectangle on a cube texture resource.
 	 */
-	HRESULT UnlockRect(D3DCUBEMAP_FACES FaceType,UINT Level);
+	virtual HRESULT UnlockRect(D3DCUBEMAP_FACES FaceType,UINT Level);
 };
 
 #endif // IDIRECT3DCUBETEXTURE9_H

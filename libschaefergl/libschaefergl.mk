@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Christopher Joseph Dean Schaefer
-Date                   :=08/04/2014
+Date                   :=08/08/2014
 CodeLitePath           :="/home/cschaefer/.codelite"
 LinkerName             :=g++
 SharedObjectLinkerName :=g++ -shared -fPIC
@@ -36,7 +36,7 @@ ObjectsFileList        :="/home/cschaefer/Documents/SchaeferGL/libschaefergl/lib
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
 LinkOptions            :=  
-IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). 
+IncludePath            :=  $(IncludeSwitch)/home/cschaefer/Documents/mesa/src/gallium/include/ $(IncludeSwitch)/home/cschaefer/Documents/mesa/include/ $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
 Libs                   := 
@@ -59,7 +59,8 @@ CFLAGS   :=  -g $(Preprocessors)
 ##
 CodeLiteDir:=/usr/share/codelite
 Objects=$(IntermediateDirectory)/i_unknown$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_device9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_resource9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_surface9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_swap_chain9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_base_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_cube_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_index_buffer9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_pixel_shader9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_query9$(ObjectSuffix) \
-	$(IntermediateDirectory)/i_direct3d_state_block9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_shader9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_volume_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_volume9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3_d9$(ObjectSuffix) $(IntermediateDirectory)/D3D9$(ObjectSuffix) 
+	$(IntermediateDirectory)/i_direct3d_state_block9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_buffer9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_declaration9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_shader9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_volume_texture9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_volume9$(ObjectSuffix) $(IntermediateDirectory)/i_direct3_d9$(ObjectSuffix) $(IntermediateDirectory)/D3D9$(ObjectSuffix) $(IntermediateDirectory)/galliumd3_d9$(ObjectSuffix) \
+	$(IntermediateDirectory)/galliumd3d_device9$(ObjectSuffix) 
 
 ##
 ## Main Build Targets 
@@ -236,6 +237,22 @@ $(IntermediateDirectory)/D3D9$(DependSuffix): D3D9.cpp
 $(IntermediateDirectory)/D3D9$(PreprocessSuffix): D3D9.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/D3D9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/D3D9.cpp"
 
+$(IntermediateDirectory)/galliumd3_d9$(ObjectSuffix): galliumd3_d9.cpp $(IntermediateDirectory)/galliumd3_d9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3_d9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/galliumd3_d9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/galliumd3_d9$(DependSuffix): galliumd3_d9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/galliumd3_d9$(ObjectSuffix) -MF$(IntermediateDirectory)/galliumd3_d9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3_d9.cpp"
+
+$(IntermediateDirectory)/galliumd3_d9$(PreprocessSuffix): galliumd3_d9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/galliumd3_d9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3_d9.cpp"
+
+$(IntermediateDirectory)/galliumd3d_device9$(ObjectSuffix): galliumd3d_device9.cpp $(IntermediateDirectory)/galliumd3d_device9$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3d_device9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/galliumd3d_device9$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/galliumd3d_device9$(DependSuffix): galliumd3d_device9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/galliumd3d_device9$(ObjectSuffix) -MF$(IntermediateDirectory)/galliumd3d_device9$(DependSuffix) -MM "/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3d_device9.cpp"
+
+$(IntermediateDirectory)/galliumd3d_device9$(PreprocessSuffix): galliumd3d_device9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/galliumd3d_device9$(PreprocessSuffix) "/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3d_device9.cpp"
+
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
 ##
@@ -299,6 +316,12 @@ clean:
 	$(RM) $(IntermediateDirectory)/D3D9$(ObjectSuffix)
 	$(RM) $(IntermediateDirectory)/D3D9$(DependSuffix)
 	$(RM) $(IntermediateDirectory)/D3D9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/galliumd3_d9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/galliumd3_d9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/galliumd3_d9$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/galliumd3d_device9$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/galliumd3d_device9$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/galliumd3d_device9$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) "/home/cschaefer/Documents/SchaeferGL/.build-debug/libschaefergl"
 

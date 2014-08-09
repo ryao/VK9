@@ -32,37 +32,37 @@ public:
 	/*
 	 * Frees the specified private data associated with this resource.
 	 */
-	HRESULT FreePrivateData(REFGUID refguid);
+	virtual HRESULT FreePrivateData(REFGUID refguid);
 
 	/*
 	 * Retrieves the device associated with a resource.
 	 */
-	HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
+	virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
 	
 	/*
 	 * Retrieves the priority for this resource.
 	 */
-	DWORD GetPriority();
+	virtual DWORD GetPriority();
 	
 	/*
 	 * Copies the private data associated with the resource to a provided buffer.
 	 */
-	HRESULT GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData);
+	virtual HRESULT GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData);
 	
 	/*
 	 * Returns the type of the resource.
 	 */
-	D3DRESOURCETYPE GetType();
+	virtual D3DRESOURCETYPE GetType();
 	
 	/*
 	 * Preloads a managed resource.
 	 */
-	void PreLoad();
+	virtual void PreLoad();
 	
 	/*
 	 * Assigns the priority of a resource for scheduling purposes.
 	 */
-	DWORD SetPriority(DWORD PriorityNew);
+	virtual DWORD SetPriority(DWORD PriorityNew);
 	
 };
 

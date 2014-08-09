@@ -32,12 +32,12 @@ public:
 	/*
 	 * Gets the device.
 	 */
-	HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
+	virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
 	
 	/*
 	 * Gets a pointer to the shader data.
 	 */
-	HRESULT GetFunction(void *pData,UINT *pSizeOfData);
+	virtual HRESULT GetFunction(void *pData,UINT *pSizeOfData);
 	
 };
 

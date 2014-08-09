@@ -31,17 +31,17 @@ public:
 	/*
 	 * Retrieves a description of the index buffer resource.
 	 */
-	HRESULT GetDesc(D3DINDEXBUFFER_DESC *pDesc);
+	virtual HRESULT GetDesc(D3DINDEXBUFFER_DESC *pDesc);
 	
 	/*
 	 * Locks a range of index data obtains a pointer to the index buffer memory.
 	 */
-	HRESULT Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags);
+	virtual HRESULT Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags);
 	
 	/*
 	 * Unlocks index data.
 	 */
-	HRESULT Unlock();
+	virtual HRESULT Unlock();
 };
 
 #endif // IDIRECT3DINDEXBUFFER9_H

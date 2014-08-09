@@ -18,9 +18,14 @@
  
 #include "D3D9.h"
 #include <iostream> 
+#include "galliumd3_d9.h"
 
 IDirect3D9* Direct3DCreate9(UINT SDKVersion)
 {
-	std::cout << "Direct3DCreate9(UINT SDKVersion)" << std::endl;	
+	/*
+	 * Currently only teh Gallium3D implementation is supported 
+	 * but others can be added if needed.
+	 */
+	return new GalliumD3D9();	
 }
 

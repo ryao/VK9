@@ -33,37 +33,37 @@ public:
 	/*
 	 * Retrieves a back buffer from the swap chain of the device.
 	 */
-	HRESULT GetBackBuffer(UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer);
+	virtual HRESULT GetBackBuffer(UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer);
 
 	/*
 	 * Retrieves the device associated with the swap chain.
 	 */
-	HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
+	virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
 	
 	/*
 	 * Retrieves the display mode's spatial resolution, color resolution, and refresh frequency.
 	 */
-	HRESULT GetDisplayMode(D3DDISPLAYMODE *pMode);
+	virtual HRESULT GetDisplayMode(D3DDISPLAYMODE *pMode);
 	
 	/*
 	 * Generates a copy of the swapchain's front buffer and places that copy in a system memory buffer provided by the application.
 	 */
-	HRESULT GetFrontBufferData(IDirect3DSurface9 *pDestSurface);
+	virtual HRESULT GetFrontBufferData(IDirect3DSurface9 *pDestSurface);
 	
 	/*
 	 * Retrieves the presentation parameters associated with a swap chain.
 	 */
-	HRESULT GetPresentParameters(D3DPRESENT_PARAMETERS *pPresentationParameters);
+	virtual HRESULT GetPresentParameters(D3DPRESENT_PARAMETERS *pPresentationParameters);
 	
 	/*
 	 * Returns information describing the raster of the monitor on which the swap chain is presented.
 	 */
-	HRESULT GetRasterStatus(D3DRASTER_STATUS *pRasterStatus);
+	virtual HRESULT GetRasterStatus(D3DRASTER_STATUS *pRasterStatus);
 	
 	/*
 	 * Presents the contents of the next buffer in the sequence of back buffers owned by the swap chain.
 	 */
-	HRESULT Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion,DWORD dwFlags);
+	virtual HRESULT Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion,DWORD dwFlags);
 };
 
 #endif // IDIRECT3DSWAPCHAIN9_H

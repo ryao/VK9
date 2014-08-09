@@ -30,32 +30,32 @@ public:
 	/*
 	 * Generate mipmap sublevels
 	 */
-	VOID GenerateMipSubLevels();
+	virtual VOID GenerateMipSubLevels();
 
 	/*
 	 * Get the filter type that is used for automatically generated mipmap sublevels.
 	 */
-	D3DTEXTUREFILTERTYPE GetAutoGenFilterType();
+	virtual D3DTEXTUREFILTERTYPE GetAutoGenFilterType();
 	
 	/*
 	 * Returns the number of texture levels in a multilevel texture.
 	 */
-	DWORD GetLevelCount();
+	virtual DWORD GetLevelCount();
 	
 	/*
 	 * Returns a value clamped to the maximum level-of-detail set for a managed texture.
 	 */
-	DWORD GetLOD();
+	virtual DWORD GetLOD();
 	
 	/*
 	 * Set the filter type that is used for automatically generated mipmap sublevels.
 	 */
-	HRESULT SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType);
+	virtual HRESULT SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType);
 	
 	/*
 	 * Sets the most detailed level-of-detail for a managed texture.
 	 */
-	DWORD SetLOD(DWORD LODNew);
+	virtual DWORD SetLOD(DWORD LODNew);
 };
 
 typedef struct IDirect3DBaseTexture9 *LPDIRECT3DBASETEXTURE9, *PDIRECT3DBASETEXTURE9;

@@ -31,27 +31,27 @@ public:
 	/*
 	 * Adds a dirty region to a volume texture resource.
 	 */
-	HRESULT AddDirtyBox(const D3DBOX *pDirtyBox);
+	virtual HRESULT AddDirtyBox(const D3DBOX *pDirtyBox);
 
 	/*
 	 * Retrieves a level description of a volume texture resource.
 	 */
-	HRESULT GetLevelDesc(UINT Level,D3DVOLUME_DESC *pDesc);
+	virtual HRESULT GetLevelDesc(UINT Level,D3DVOLUME_DESC *pDesc);
 	
 	/*
 	 * Retrieves the specified volume texture level.
 	 */
-	HRESULT GetVolumeLevel(UINT Level,IDirect3DVolume9 **ppVolumeLevel);
+	virtual HRESULT GetVolumeLevel(UINT Level,IDirect3DVolume9 **ppVolumeLevel);
 
 	/*
 	 * Locks a box on a volume texture resource.
 	 */
-	HRESULT LockBox(UINT Level,D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags);
+	virtual HRESULT LockBox(UINT Level,D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags);
 	
 	/*
 	 * Unlocks a box on a volume texture resource.
 	 */
-	HRESULT UnlockBox(UINT Level);
+	virtual HRESULT UnlockBox(UINT Level);
 };
 
 typedef struct IDirect3DVolumeTexture9 *LPDIRECT3DVOLUMETEXTURE9, *PDIRECT3DVOLUMETEXTURE9;

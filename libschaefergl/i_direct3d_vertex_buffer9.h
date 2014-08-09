@@ -30,17 +30,17 @@ public:
 	/*
 	 * Retrieves a description of the vertex buffer resource.
 	 */
-	HRESULT GetDesc(D3DVERTEXBUFFER_DESC *pDesc);
+	virtual HRESULT GetDesc(D3DVERTEXBUFFER_DESC *pDesc);
 	
 	/*
 	 * Locks a range of vertex data and obtains a pointer to the vertex buffer memory.
 	 */
-	HRESULT Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags);
+	virtual HRESULT Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags);
 	
 	/*
 	 * Unlocks vertex data.
 	 */
-	HRESULT Unlock();
+	virtual HRESULT Unlock();
 };
 
 #endif // IDIRECT3DVERTEXBUFFER9_H

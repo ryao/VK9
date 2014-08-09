@@ -32,27 +32,27 @@ public:
 	/*
 	 * Adds a dirty region to a texture resource.
 	 */
-	HRESULT AddDirtyRect(const RECT *pDirtyRect);
+	virtual HRESULT AddDirtyRect(const RECT *pDirtyRect);
 
 	/*
 	 * Retrieves a level description of a texture resource.
 	 */
-	HRESULT GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc);
+	virtual HRESULT GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc);
 	
 	/*
 	 * Retrieves the specified texture surface level.
 	 */
-	HRESULT GetSurfaceLevel(UINT Level,IDirect3DSurface9 **ppSurfaceLevel);
+	virtual HRESULT GetSurfaceLevel(UINT Level,IDirect3DSurface9 **ppSurfaceLevel);
 	
 	/*
 	 * Locks a rectangle on a texture resource.
 	 */
-	HRESULT LockRect(UINT Level,D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags);
+	virtual HRESULT LockRect(UINT Level,D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags);
 	
 	/*
 	 * Unlocks a rectangle on a texture resource.
 	 */
-	HRESULT UnlockRect(UINT Level);
+	virtual HRESULT UnlockRect(UINT Level);
 };
 
 #endif // IDIRECT3DTEXTURE9_H

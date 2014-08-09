@@ -32,12 +32,12 @@ public:
 	/*
 	 * Gets the vertex shader declaration.
 	 */
-	HRESULT GetDeclaration(D3DVERTEXELEMENT9 *pDecl,UINT *pNumElements);
+	virtual HRESULT GetDeclaration(D3DVERTEXELEMENT9 *pDecl,UINT *pNumElements);
 	
 	/*
 	 * Gets the current device
 	 */
-	HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
+	virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
 };
 
 typedef struct IDirect3DVertexDeclaration9 *LPDIRECT3DVERTEXDECLARATION9, *PDIRECT3DVERTEXDECLARATION9;

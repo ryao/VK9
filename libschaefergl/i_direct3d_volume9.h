@@ -32,42 +32,42 @@ public:
 	/*
 	 * Frees the specified private data associated with this volume.
 	 */
-	HRESULT FreePrivateData(REFGUID refguid);
+	virtual HRESULT FreePrivateData(REFGUID refguid);
 	
 	/*
 	 * Provides access to the parent volume texture object.
 	 */
-	HRESULT GetContainer(REFIID riid,void **ppContainer);
+	virtual HRESULT GetContainer(REFIID riid,void **ppContainer);
 	
 	/*
 	 * Retieves a description of the volume.
 	 */
-	HRESULT GetDesc(D3DVOLUME_DESC *pDesc);
+	virtual HRESULT GetDesc(D3DVOLUME_DESC *pDesc);
 	
 	/*
 	 * Retrieves the device associated with a volume.
 	 */
-	HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
+	virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
 	
 	/*
 	 * Copies the private data associated with the volume to a provided buffer.
 	 */
-	HRESULT GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData);
+	virtual HRESULT GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData);
 	
 	/*
 	 * Locks a box on a volume resource.
 	 */
-	HRESULT LockBox(D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags);
+	virtual HRESULT LockBox(D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags);
 	
 	/*
 	 * Associates data with the volume that is intended for use by the application.
 	 */
-	HRESULT SetPrivateData(REFGUID refguid,const void *pData,DWORD SizeOfData,DWORD Flags);
+	virtual HRESULT SetPrivateData(REFGUID refguid,const void *pData,DWORD SizeOfData,DWORD Flags);
 	
 	/*
 	 * Unlocks a box on a volume resource.
 	 */
-	HRESULT UnlockBox();
+	virtual HRESULT UnlockBox();
 };
 
 typedef struct IDirect3DVolume9 *LPDIRECT3DVOLUME9, *PDIRECT3DVOLUME9;
