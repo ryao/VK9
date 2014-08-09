@@ -18,11 +18,16 @@
  
 #include "galliumd3d_device9.h"
 
-GalliumD3DDevice9::GalliumD3DDevice9()
+GalliumD3DDevice9::GalliumD3DDevice9(pipe_screen* screen)
+: mScreen(screen)
 {
 }
 
 GalliumD3DDevice9::~GalliumD3DDevice9()
 {
+	if(mScreen!=NULL)
+	{
+		mScreen->destroy(mScreen);
+	}
 }
 

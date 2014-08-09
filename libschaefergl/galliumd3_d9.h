@@ -19,7 +19,12 @@
 #ifndef GALLIUMD3D9_H
 #define GALLIUMD3D9_H
 
+#define HAVE_PIPE_LOADER_DRM //DRM support must exist.
+
 #include "i_direct3_d9.h" // Base class: IDirect3D9
+#include "pipe-loader/pipe_loader.h"
+
+static const char* GetLibrarySearchPath();
 
 class GalliumD3D9 : public IDirect3D9
 {
@@ -28,10 +33,25 @@ public:
 	~GalliumD3D9();
 
 	/*
+	 * Returns the number of adapters on the system.
+	 */
+	UINT GetAdapterCount();
+
+	/*
 	 * Creates a device to represent the display adapter.
 	 */
 	HRESULT CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DDevice9 **ppReturnedDeviceInterface);
 
+	/*
+	 * Retrieves device-specific information about a device.
+	 */
+	HRESULT GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps);
+	
+	
+private:
+	pipe_loader_device* mPipeDevices;
+	int mPipeDeviceCount;
+	
 };
 
 #endif // GALLIUMD3D9_H

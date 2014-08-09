@@ -61,6 +61,7 @@
       <Compiler Options="" C_Options="">
         <IncludePath Value="/home/cschaefer/Documents/mesa/src/gallium/include/"/>
         <IncludePath Value="/home/cschaefer/Documents/mesa/include/"/>
+        <IncludePath Value="/home/cschaefer/Documents/mesa/src/gallium/auxiliary/"/>
       </Compiler>
       <Linker Options="">
         <LibraryPath Value="."/>
