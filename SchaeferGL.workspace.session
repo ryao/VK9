@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Session Name="/home/cschaefer/Documents/SchaeferGL/SchaeferGL.workspace">
-  <int Value="2" Name="m_selectedTab"/>
+  <int Value="1" Name="m_selectedTab"/>
   <wxString Value="/home/cschaefer/Documents/SchaeferGL/SchaeferGL.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
-      <wxString Value="/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3d_device9.cpp" Name="FileName"/>
-      <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="25" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3d_device9.h" Name="FileName"/>
-      <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="28" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-    </TabInfo>
-    <TabInfo>
       <wxString Value="/home/cschaefer/Documents/SchaeferGL/libschaefergl/galliumd3_d9.cpp" Name="FileName"/>
-      <int Value="13" Name="FirstVisibleLine"/>
-      <int Value="37" Name="CurrentLine"/>
+      <int Value="106" Name="FirstVisibleLine"/>
+      <int Value="136" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/cschaefer/Documents/Mesa-3D-gallium-nine/src/gallium/state_trackers/nine/adapter9.c" Name="FileName"/>
+      <int Value="946" Name="FirstVisibleLine"/>
+      <int Value="932" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
     </TabInfo>
   </TabInfoArray>

@@ -24,6 +24,9 @@
 #include "i_direct3_d9.h" // Base class: IDirect3D9
 #include "pipe-loader/pipe_loader.h"
 
+/*
+ * Returns a location used to search for pipe devices to load.
+ */
 static const char* GetLibrarySearchPath();
 
 class GalliumD3D9 : public IDirect3D9
@@ -51,6 +54,14 @@ public:
 private:
 	pipe_loader_device* mPipeDevices;
 	int mPipeDeviceCount;
+	
+	/*
+	 * Array of pointers.
+	 * This is used to track the last screen created for a device so we can pull the caps.
+	 * It is assumed that D3D devices will clean up their own screens.
+	 */
+	pipe_screen** mPipeScreens;
+	
 	
 };
 

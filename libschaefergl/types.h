@@ -1053,4 +1053,13 @@ typedef HANDLE HMONITOR;
 #define D3DMIN30SHADERINSTRUCTIONS                      512
 #define D3DMAX30SHADERINSTRUCTIONS                      32768
 
+//9ex caps
+#define D3DPBLENDCAPS_SRCCOLOR2         0x00004000L
+#define D3DPBLENDCAPS_INVSRCCOLOR2      0x00008000L
+
+#define D3DPS_VERSION(major, minor) (0xFFFF0000 | ((major) << 8) | (minor))
+#define D3DVS_VERSION(major, minor) (0xFFFE0000 | ((major) << 8) | (minor))
+#define D3DSHADER_VERSION_MAJOR(version) (((version) >> 8) & 0xFF)
+#define D3DSHADER_VERSION_MINOR(version) (((version) >> 0) & 0xFF)
+
 #endif // TYPES
