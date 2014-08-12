@@ -30,39 +30,55 @@ IDirect3DVolume9::~IDirect3DVolume9()
 HRESULT IDirect3DVolume9::FreePrivateData(REFGUID refguid)
 {
 	std::cout << "IDirect3DVolume9::FreePrivateData(REFGUID refguid)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVolume9::GetContainer(REFIID riid,void **ppContainer)
 {
 	std::cout << "IDirect3DVolume9::GetContainer(REFIID riid,void **ppContainer)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVolume9::GetDesc(D3DVOLUME_DESC *pDesc)
 {
 	std::cout << "IDirect3DVolume9::GetDesc(D3DVOLUME_DESC *pDesc)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVolume9::GetDevice(IDirect3DDevice9 **ppDevice)
 {
 	std::cout << "IDirect3DVolume9::GetDevice(IDirect3DDevice9 **ppDevice)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVolume9::GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData)
 {
 	std::cout << "IDirect3DVolume9::GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVolume9::LockBox(D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags)
 {
 	std::cout << "IDirect3DVolume9::LockBox(D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVolume9::SetPrivateData(REFGUID refguid,const void *pData,DWORD SizeOfData,DWORD Flags)
 {
 	std::cout << "IDirect3DVolume9::SetPrivateData(REFGUID refguid,const void *pData,DWORD SizeOfData,DWORD Flags)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVolume9::UnlockBox()
 {
 	std::cout << "IDirect3DVolume9::UnlockBox()" << std::endl;	
+	
+	return E_NOTIMPL;
 }

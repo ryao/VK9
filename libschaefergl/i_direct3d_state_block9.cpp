@@ -30,14 +30,20 @@ IDirect3DStateBlock9::~IDirect3DStateBlock9()
 HRESULT IDirect3DStateBlock9::Apply()
 {
 	std::cout << "IDirect3DStateBlock9::Apply()" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DStateBlock9::Capture()
 {
 	std::cout << "IDirect3DStateBlock9::Capture()" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DStateBlock9::GetDevice(IDirect3DDevice9 **ppDevice)
 {
 	std::cout << "IDirect3DStateBlock9::GetDevice(IDirect3DDevice9 **ppDevice)" << std::endl;	
+	
+	return E_NOTIMPL;
 }

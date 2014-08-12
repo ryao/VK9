@@ -30,21 +30,29 @@ IDirect3DResource9::~IDirect3DResource9()
 HRESULT IDirect3DResource9::FreePrivateData(REFGUID refguid)
 {
 	std::cout << "IDirect3DResource9::FreePrivateData(REFGUID refguid)" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DResource9::GetDevice(IDirect3DDevice9 **ppDevice)
 {
 	std::cout << "IDirect3DResource9::GetDevice(IDirect3DDevice9 **ppDevice)" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 DWORD IDirect3DResource9::GetPriority()
 {
 	std::cout << "IDirect3DResource9::GetPriority()" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DResource9::GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData)
 {
 	std::cout << "IDirect3DResource9::GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData)" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE IDirect3DResource9::GetType()
@@ -55,9 +63,13 @@ D3DRESOURCETYPE IDirect3DResource9::GetType()
 void IDirect3DResource9::PreLoad()
 {
 	std::cout << "IDirect3DResource9::PreLoad()" << std::endl;
+	
+	return;
 }
 
 DWORD IDirect3DResource9::SetPriority(DWORD PriorityNew)
 {
 	std::cout << "IDirect3DResource9::SetPriority(DWORD PriorityNew)" << std::endl;
+	
+	return E_NOTIMPL;
 }

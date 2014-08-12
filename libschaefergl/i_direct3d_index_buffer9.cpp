@@ -31,14 +31,20 @@ IDirect3DIndexBuffer9::~IDirect3DIndexBuffer9()
 HRESULT IDirect3DIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC *pDesc)
 {
 	std::cout << "IDirect3DIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC *pDesc)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DIndexBuffer9::Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags)
 {
 	std::cout << "IDirect3DIndexBuffer9::Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags)" << std::endl;		
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DIndexBuffer9::Unlock()
 {
-	std::cout << "IDirect3DIndexBuffer9::Unlock()" << std::endl;		
+	std::cout << "IDirect3DIndexBuffer9::Unlock()" << std::endl;	
+
+	return E_NOTIMPL;
 }

@@ -26,7 +26,7 @@
 class GalliumD3DDevice9 : public IDirect3DDevice9
 {
 public:
-	GalliumD3DDevice9(pipe_screen* screen);
+	GalliumD3DDevice9(pipe_screen* screen,D3DDEVICE_CREATION_PARAMETERS* parameters,D3DCAPS9* capabilities);
 	~GalliumD3DDevice9();
 
 private:

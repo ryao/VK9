@@ -30,25 +30,35 @@ IDirect3DVolumeTexture9::~IDirect3DVolumeTexture9()
 HRESULT AddDirtyBox(const D3DBOX *pDirtyBox)
 {
 	std::cout << "AddDirtyBox(const D3DBOX *pDirtyBox)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT GetLevelDesc(UINT Level,D3DVOLUME_DESC *pDesc)
 {
 	std::cout << "GetLevelDesc(UINT Level,D3DVOLUME_DESC *pDesc)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT GetVolumeLevel(UINT Level,IDirect3DVolume9 **ppVolumeLevel)
 {
 	std::cout << "GetVolumeLevel(UINT Level,IDirect3DVolume9 **ppVolumeLevel)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT LockBox(UINT Level,D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags)
 {
-	std::cout << "LockBox(UINT Level,D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags)" << std::endl;	
+	std::cout << "LockBox(UINT Level,D3DLOCKED_BOX *pLockedVolume,const D3DBOX *pBox,DWORD Flags)" << std::endl;
+
+	return E_NOTIMPL;	
 }
 
 HRESULT UnlockBox(UINT Level)
 {
 	std::cout << "UnlockBox(UINT Level)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 

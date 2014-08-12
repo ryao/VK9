@@ -29,26 +29,36 @@ IDirect3DTexture9::~IDirect3DTexture9()
 
 HRESULT IDirect3DTexture9::AddDirtyRect(const RECT *pDirtyRect)
 {
-	std::cout << "IDirect3DTexture9::AddDirtyRect(const RECT *pDirtyRect)" << std::endl;	
+	std::cout << "IDirect3DTexture9::AddDirtyRect(const RECT *pDirtyRect)" << std::endl;
+
+	return E_NOTIMPL;	
 }
 
 HRESULT IDirect3DTexture9::GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc)
 {
 	std::cout << "IDirect3DTexture9::GetLevelDesc(UINT Level,D3DSURFACE_DESC *pDesc)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DTexture9::GetSurfaceLevel(UINT Level,IDirect3DSurface9 **ppSurfaceLevel)
 {
 	std::cout << "IDirect3DTexture9::GetSurfaceLevel(UINT Level,IDirect3DSurface9 **ppSurfaceLevel)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DTexture9::LockRect(UINT Level,D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags)
 {
 	std::cout << "IDirect3DTexture9::LockRect(UINT Level,D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DTexture9::UnlockRect(UINT Level)
 {
 	std::cout << "IDirect3DTexture9::UnlockRect(UINT Level)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 

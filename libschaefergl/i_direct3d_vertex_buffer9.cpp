@@ -30,14 +30,20 @@ IDirect3DVertexBuffer9::~IDirect3DVertexBuffer9()
 HRESULT IDirect3DVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC *pDesc)
 {
 	std::cout << "IDirect3DVertexBuffer9::etDesc(D3DVERTEXBUFFER_DESC *pDesc)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVertexBuffer9::Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags)
 {
 	std::cout << "IDirect3DVertexBuffer9::Lock(UINT OffsetToLock,UINT SizeToLock,VOID **ppbData,DWORD Flags)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVertexBuffer9::Unlock()
 {
 	std::cout << "IDirect3DVertexBuffer9::Unlock()" << std::endl;	
+	
+	return E_NOTIMPL;
 }

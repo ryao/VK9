@@ -32,14 +32,20 @@ IUnknown::~IUnknown()
 ULONG IUnknown::AddRef()
 {
 	std::cout << "IUnknown::AddRef()" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IUnknown::QueryInterface(REFIID riid,void **ppvObject)
 {
 	std::cout << "IUnknown::QueryInterface(REFIID riid,void **ppvObject)" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 ULONG IUnknown::Release()
 {
 	std::cout << "IUnknown::Release()" << std::endl;
+	
+	return E_NOTIMPL;
 }

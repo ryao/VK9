@@ -30,9 +30,13 @@ IDirect3DVertexShader9::~IDirect3DVertexShader9()
 HRESULT IDirect3DVertexShader9::GetDevice(IDirect3DDevice9 **ppDevice)
 {
 	std::cout << "IDirect3DVertexShader9::GetDevice(IDirect3DDevice9 **ppDevice)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVertexShader9::GetFunction(void *pData,UINT *pSizeOfData)
 {
 	std::cout << "IDirect3DVertexShader9::GetFunction(void *pData,UINT *pSizeOfData)" << std::endl;	
+	
+	return E_NOTIMPL;
 }

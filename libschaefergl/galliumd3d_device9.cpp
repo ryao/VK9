@@ -18,7 +18,7 @@
  
 #include "galliumd3d_device9.h"
 
-GalliumD3DDevice9::GalliumD3DDevice9(pipe_screen* screen)
+GalliumD3DDevice9::GalliumD3DDevice9(pipe_screen* screen,D3DDEVICE_CREATION_PARAMETERS* parameters,D3DCAPS9* capabilities)
 : mScreen(screen)
 {
 }

@@ -30,9 +30,13 @@ IDirect3DVertexDeclaration9::~IDirect3DVertexDeclaration9()
 HRESULT IDirect3DVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9 *pDecl,UINT *pNumElements)
 {
 	std::cout << "IDirect3DVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9 *pDecl,UINT *pNumElements)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DVertexDeclaration9::GetDevice(IDirect3DDevice9 **ppDevice)
 {
 	std::cout << "IDirect3DVertexDeclaration9::GetDevice(IDirect3DDevice9 **ppDevice)" << std::endl;	
+	
+	return E_NOTIMPL;
 }

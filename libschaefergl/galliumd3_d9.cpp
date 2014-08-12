@@ -90,6 +90,7 @@ HRESULT GalliumD3D9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocus
 	GalliumD3DDevice9* device = NULL;
 	IDirect3DDevice9* deviceInterface = NULL;
 	D3DCAPS9 capabilities;
+	D3DDEVICE_CREATION_PARAMETERS parameters;
 	
 	if(Adapter<mPipeDeviceCount)
 	{
@@ -126,7 +127,12 @@ HRESULT GalliumD3D9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocus
 		return E_FAIL;
 	}
 	
-	device = new (std::nothrow) GalliumD3DDevice9(screen);
+	parameters.AdapterOrdinal = Adapter;
+    parameters.DeviceType = DeviceType;
+    parameters.hFocusWindow = hFocusWindow;
+    parameters.BehaviorFlags = BehaviorFlags;
+	
+	device = new (std::nothrow) GalliumD3DDevice9(screen,&parameters,&capabilities);
 	
 	if(device==NULL)
 	{
@@ -142,6 +148,19 @@ HRESULT GalliumD3D9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocus
 HRESULT GalliumD3D9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
 {
 	struct pipe_screen *screen;
+	
+	/*
+	 * Pull the screen so we can use it to test teh caps. If that screen does not exist then bail out.
+	 * (May need to create screen on the fly instead of just failing)
+	 */
+	if(this->mPipeDeviceCount>Adapter)
+	{
+		screen = this->mPipeScreens[Adapter];
+	}
+	if(screen==NULL)
+	{
+		return E_FAIL;
+	}
 	
 	//Misc setup.
 	pCaps->DeviceType = DeviceType;

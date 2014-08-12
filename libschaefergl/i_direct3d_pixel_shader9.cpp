@@ -30,9 +30,13 @@ IDirect3DPixelShader9::~IDirect3DPixelShader9()
 HRESULT IDirect3DPixelShader9::GetDevice(IDirect3DDevice9 **ppDevice)
 {
 	std::cout << "IDirect3DPixelShader9::GetDevice(IDirect3DDevice9 **ppDevice)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DPixelShader9::GetFunction(void *pData,UINT *pSizeOfData)
 {
 	std::cout << "IDirect3DPixelShader9::GetFunction(void *pData,UINT *pSizeOfData)" << std::endl;	
+	
+	return E_NOTIMPL;
 }

@@ -30,34 +30,48 @@ IDirect3DSwapChain9::~IDirect3DSwapChain9()
 HRESULT IDirect3DSwapChain9::GetBackBuffer(UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer)
 {
 	std::cout << "IDirect3DSwapChain9::GetBackBuffer(UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer)" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DSwapChain9::GetDevice(IDirect3DDevice9 **ppDevice)
 {
 	std::cout << "IDirect3DSwapChain9::GetDevice(IDirect3DDevice9 **ppDevice)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DSwapChain9::GetDisplayMode(D3DDISPLAYMODE *pMode)
 {
 	std::cout << "IDirect3DSwapChain9::GetDisplayMode(D3DDISPLAYMODE *pMode)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DSwapChain9::GetFrontBufferData(IDirect3DSurface9 *pDestSurface)
 {
 	std::cout << "IDirect3DSwapChain9::GetFrontBufferData(IDirect3DSurface9 *pDestSurface)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DSwapChain9::GetPresentParameters(D3DPRESENT_PARAMETERS *pPresentationParameters)
 {
 	std::cout << "IDirect3DSwapChain9::GetPresentParameters(D3DPRESENT_PARAMETERS *pPresentationParameters)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DSwapChain9::GetRasterStatus(D3DRASTER_STATUS *pRasterStatus)
 {
 	std::cout << "IDirect3DSwapChain9::GetRasterStatus(D3DRASTER_STATUS *pRasterStatus)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DSwapChain9::Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion,DWORD dwFlags)
 {
 	std::cout << "IDirect3DSwapChain9::Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion,DWORD dwFlags)" << std::endl;	
+	
+	return E_NOTIMPL;
 }

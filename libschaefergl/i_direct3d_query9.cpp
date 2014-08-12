@@ -30,16 +30,22 @@ IDirect3DQuery9::~IDirect3DQuery9()
 HRESULT IDirect3DQuery9::GetData(void *pData,DWORD dwSize,DWORD dwGetDataFlags)
 {
 	std::cout << "IDirect3DQuery9::GetData(void *pData,DWORD dwSize,DWORD dwGetDataFlags)" << std::endl;
+	
+	return E_NOTIMPL;
 }
 
 DWORD IDirect3DQuery9::GetDataSize()
 {
 	std::cout << "IDirect3DQuery9::GetDataSize()" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 HRESULT IDirect3DQuery9::GetDevice(IDirect3DDevice9 **pDevice)
 {
 	std::cout << "IDirect3DQuery9::GetDevice(IDirect3DDevice9 **pDevice)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
 
 D3DQUERYTYPE IDirect3DQuery9::GetType()
@@ -50,4 +56,6 @@ D3DQUERYTYPE IDirect3DQuery9::GetType()
 HRESULT IDirect3DQuery9::Issue(DWORD dwIssueFlags)
 {
 	std::cout << "IDirect3DQuery9::Issue(DWORD dwIssueFlags)" << std::endl;	
+	
+	return E_NOTIMPL;
 }
