@@ -888,3 +888,8 @@ HRESULT GalliumD3D9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *
 	
 	return D3D_OK;
 }
+
+HRESULT GalliumD3D9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
+{
+	
+}

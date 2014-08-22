@@ -50,6 +50,10 @@ public:
 	 */
 	HRESULT GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps);
 	
+	/*
+	 * Retrieves the current display mode of the adapter.
+	 */
+	HRESULT GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode);
 	
 private:
 	pipe_loader_device* mPipeDevices;

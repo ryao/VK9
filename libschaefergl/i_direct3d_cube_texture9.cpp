@@ -47,7 +47,7 @@ HRESULT IDirect3DCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType,UINT Level,D3D
 	std::cout << "IDirect3DCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType,UINT Level,D3DLOCKED_RECT *pLockedRect,const RECT *pRect,DWORD Flags)" << std::endl;		
 }
 
-HRESULT UnlockRect(D3DCUBEMAP_FACES FaceType,UINT Level)
+HRESULT IDirect3DCubeTexture9::UnlockRect(D3DCUBEMAP_FACES FaceType,UINT Level)
 {
 	std::cout << "UnlockRect(D3DCUBEMAP_FACES FaceType,UINT Level)" << std::endl;		
 }
