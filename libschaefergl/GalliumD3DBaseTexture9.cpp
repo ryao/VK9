@@ -16,23 +16,50 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
  
-#ifndef GALLIUMD3DDEVICE9_H
-#define GALLIUMD3DDEVICE9_H
+#include "GalliumD3DBaseTexture9.h"
 
-#include "i_direct3d_device9.h" // Base class: IDirect3DDevice9
-
+#include "pipe/p_state.h"
+#include "pipe/p_context.h"
 #include "pipe/p_screen.h"
+#include "util/u_inlines.h"
+#include "util/u_resource.h"
 
-class GalliumD3DDevice9 : public IDirect3DDevice9
+GalliumD3DBaseTexture9::GalliumD3DBaseTexture9(GalliumD3DDevice9* device,GalliumD3DUnknown* container,BOOL Allocate,D3DRESOURCETYPE Type,D3DPOOL Pool)
+: GalliumD3DResource9(device,container,Allocate,Type,Pool)
 {
-public:
-	GalliumD3DDevice9(pipe_screen* screen,D3DDEVICE_CREATION_PARAMETERS* parameters,D3DCAPS9* capabilities);
-	~GalliumD3DDevice9();
+	
+}
 
-	pipe_screen* GetScreen(){return mScreen;}
-private:
+GalliumD3DBaseTexture9::~GalliumD3DBaseTexture9()
+{
+	
+}
 
-	pipe_screen* mScreen;
-};
+VOID GalliumD3DBaseTexture9::GenerateMipSubLevels()
+{
+	
+}
 
-#endif // GALLIUMD3DDEVICE9_H
+D3DTEXTUREFILTERTYPE GalliumD3DBaseTexture9::GetAutoGenFilterType()
+{
+	
+}
+
+DWORD GalliumD3DBaseTexture9::GetLOD()
+{
+	
+}
+
+DWORD GalliumD3DBaseTexture9::GetLevelCount()
+{
+	
+}
+HRESULT GalliumD3DBaseTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
+{
+	
+}
+
+DWORD GalliumD3DBaseTexture9::SetLOD(DWORD LODNew)
+{
+	
+}

@@ -44,6 +44,15 @@
       <File Name="galliumd3_d9.cpp"/>
       <File Name="galliumd3d_device9.h"/>
       <File Name="galliumd3d_device9.cpp"/>
+      <File Name="GalliumD3DBaseTexture9.h"/>
+      <File Name="GalliumD3DBaseTexture9.cpp"/>
+      <File Name="GalliumD3DUnknown.cpp"/>
+      <File Name="GalliumD3DUnknown.h"/>
+      <File Name="GalliumD3DResource9.h"/>
+      <File Name="GalliumD3DResource9.cpp"/>
+      <File Name="nine_pdata.h"/>
+      <File Name="guid.c"/>
+      <File Name="guid.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="include">

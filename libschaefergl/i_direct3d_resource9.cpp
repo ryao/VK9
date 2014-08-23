@@ -73,3 +73,10 @@ DWORD IDirect3DResource9::SetPriority(DWORD PriorityNew)
 	
 	return E_NOTIMPL;
 }
+
+HRESULT IDirect3DResource9::SetPrivateData(REFGUID refguid,const void *pData,DWORD SizeOfData,DWORD Flags)
+{
+	std::cout << "IDirect3DResource9::SetPrivateData(REFGUID refguid,const void *pData,DWORD SizeOfData,DWORD Flags)" << std::endl;
+	
+	return E_NOTIMPL;	
+}

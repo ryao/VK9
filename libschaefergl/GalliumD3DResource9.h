@@ -16,38 +16,53 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
  
-#ifndef IDIRECT3DRESOURCE9_H
-#define IDIRECT3DRESOURCE9_H
+#ifndef GALLIUMD3DRESOURCE9_H
+#define GALLIUMD3DRESOURCE9_H
 
-#include "i_unknown.h" // Base class: IUnknown
-//#include "i_direct3d_device9.h"
-class IDirect3DDevice9;
+#include "i_direct3d_resource9.h" // Base class: IDirect3DResource9
+#include "GalliumD3DUnknown.h"
+#include "pipe/p_state.h"
+#include "util/u_hash_table.h"
 
-class IDirect3DResource9 : public IUnknown
+#include "nine_pdata.h"
+
+class GalliumD3DResource9 : public IDirect3DResource9, public GalliumD3DUnknown
 {
+protected:	
+	pipe_resource* mResource;
+	pipe_resource mResourceConfiguration;
+
+    uint8_t* mData;
+	util_hash_table* mPrivateData;
+	
+    D3DRESOURCETYPE mType;
+    D3DPOOL mPool;
+    DWORD mPriority;
+    DWORD mUsage;
+
 public:
-	IDirect3DResource9();
-	~IDirect3DResource9();
+	GalliumD3DResource9(GalliumD3DDevice9* device,GalliumD3DUnknown* container,BOOL Allocate,D3DRESOURCETYPE Type,D3DPOOL Pool);
+	~GalliumD3DResource9();
 
 	/*
 	 * Frees the specified private data associated with this resource.
 	 */
 	virtual HRESULT FreePrivateData(REFGUID refguid);
-
+	
 	/*
 	 * Retrieves the device associated with a resource.
-	 */
-	virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice);
+	 */	
+	virtual HRESULT GetDevice(IDirect3DDevice9** ppDevice);
 	
 	/*
 	 * Retrieves the priority for this resource.
-	 */
+	 */	
 	virtual DWORD GetPriority();
 	
 	/*
 	 * Copies the private data associated with the resource to a provided buffer.
-	 */
-	virtual HRESULT GetPrivateData(REFGUID refguid,void *pData,DWORD *pSizeOfData);
+	 */	
+	virtual HRESULT GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
 	
 	/*
 	 * Returns the type of the resource.
@@ -56,7 +71,7 @@ public:
 	
 	/*
 	 * Preloads a managed resource.
-	 */
+	 */	
 	virtual void PreLoad();
 	
 	/*
@@ -70,4 +85,5 @@ public:
 	virtual HRESULT SetPrivateData(REFGUID refguid,const void *pData,DWORD SizeOfData,DWORD Flags);
 };
 
-#endif // IDIRECT3DRESOURCE9_H
+
+#endif // GALLIUMD3DRESOURCE9_H

@@ -38,22 +38,22 @@ public:
 	/*
 	 * Returns the number of adapters on the system.
 	 */
-	UINT GetAdapterCount();
+	virtual UINT GetAdapterCount();
 
 	/*
 	 * Creates a device to represent the display adapter.
 	 */
-	HRESULT CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DDevice9 **ppReturnedDeviceInterface);
+	virtual HRESULT CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DDevice9 **ppReturnedDeviceInterface);
 
 	/*
 	 * Retrieves device-specific information about a device.
 	 */
-	HRESULT GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps);
+	virtual HRESULT GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps);
 	
 	/*
 	 * Retrieves the current display mode of the adapter.
 	 */
-	HRESULT GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode);
+	virtual HRESULT GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode);
 	
 private:
 	pipe_loader_device* mPipeDevices;

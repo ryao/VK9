@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=
-Date                   :=08/21/14
+Date                   :=08/23/14
 CodeLitePath           :="/home/chris/.codelite"
 LinkerName             :=/usr/bin/g++ 
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -62,7 +62,7 @@ AS       := /usr/bin/as
 CodeLiteDir:=/usr/share/codelite
 Objects0=$(IntermediateDirectory)/i_unknown.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_device9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_resource9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_surface9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_swap_chain9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_base_texture9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_cube_texture9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_index_buffer9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_pixel_shader9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_query9.cpp$(ObjectSuffix) \
 	$(IntermediateDirectory)/i_direct3d_state_block9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_texture9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_buffer9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_declaration9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_vertex_shader9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_volume_texture9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3d_volume9.cpp$(ObjectSuffix) $(IntermediateDirectory)/i_direct3_d9.cpp$(ObjectSuffix) $(IntermediateDirectory)/D3D9.cpp$(ObjectSuffix) $(IntermediateDirectory)/galliumd3_d9.cpp$(ObjectSuffix) \
-	$(IntermediateDirectory)/galliumd3d_device9.cpp$(ObjectSuffix) 
+	$(IntermediateDirectory)/galliumd3d_device9.cpp$(ObjectSuffix) $(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(ObjectSuffix) $(IntermediateDirectory)/GalliumD3DUnknown.cpp$(ObjectSuffix) $(IntermediateDirectory)/GalliumD3DResource9.cpp$(ObjectSuffix) $(IntermediateDirectory)/guid.c$(ObjectSuffix) 
 
 
 
@@ -259,6 +259,38 @@ $(IntermediateDirectory)/galliumd3d_device9.cpp$(DependSuffix): galliumd3d_devic
 $(IntermediateDirectory)/galliumd3d_device9.cpp$(PreprocessSuffix): galliumd3d_device9.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/galliumd3d_device9.cpp$(PreprocessSuffix) "galliumd3d_device9.cpp"
 
+$(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(ObjectSuffix): GalliumD3DBaseTexture9.cpp $(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/chris/Documents/SchaeferGL/libschaefergl/GalliumD3DBaseTexture9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(DependSuffix): GalliumD3DBaseTexture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(DependSuffix) -MM "GalliumD3DBaseTexture9.cpp"
+
+$(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(PreprocessSuffix): GalliumD3DBaseTexture9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(PreprocessSuffix) "GalliumD3DBaseTexture9.cpp"
+
+$(IntermediateDirectory)/GalliumD3DUnknown.cpp$(ObjectSuffix): GalliumD3DUnknown.cpp $(IntermediateDirectory)/GalliumD3DUnknown.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/chris/Documents/SchaeferGL/libschaefergl/GalliumD3DUnknown.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/GalliumD3DUnknown.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/GalliumD3DUnknown.cpp$(DependSuffix): GalliumD3DUnknown.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/GalliumD3DUnknown.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/GalliumD3DUnknown.cpp$(DependSuffix) -MM "GalliumD3DUnknown.cpp"
+
+$(IntermediateDirectory)/GalliumD3DUnknown.cpp$(PreprocessSuffix): GalliumD3DUnknown.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/GalliumD3DUnknown.cpp$(PreprocessSuffix) "GalliumD3DUnknown.cpp"
+
+$(IntermediateDirectory)/GalliumD3DResource9.cpp$(ObjectSuffix): GalliumD3DResource9.cpp $(IntermediateDirectory)/GalliumD3DResource9.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/chris/Documents/SchaeferGL/libschaefergl/GalliumD3DResource9.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/GalliumD3DResource9.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/GalliumD3DResource9.cpp$(DependSuffix): GalliumD3DResource9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/GalliumD3DResource9.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/GalliumD3DResource9.cpp$(DependSuffix) -MM "GalliumD3DResource9.cpp"
+
+$(IntermediateDirectory)/GalliumD3DResource9.cpp$(PreprocessSuffix): GalliumD3DResource9.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/GalliumD3DResource9.cpp$(PreprocessSuffix) "GalliumD3DResource9.cpp"
+
+$(IntermediateDirectory)/guid.c$(ObjectSuffix): guid.c $(IntermediateDirectory)/guid.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/home/chris/Documents/SchaeferGL/libschaefergl/guid.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/guid.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/guid.c$(DependSuffix): guid.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/guid.c$(ObjectSuffix) -MF$(IntermediateDirectory)/guid.c$(DependSuffix) -MM "guid.c"
+
+$(IntermediateDirectory)/guid.c$(PreprocessSuffix): guid.c
+	@$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/guid.c$(PreprocessSuffix) "guid.c"
+
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
 ##
@@ -328,6 +360,18 @@ clean:
 	$(RM) $(IntermediateDirectory)/galliumd3d_device9.cpp$(ObjectSuffix)
 	$(RM) $(IntermediateDirectory)/galliumd3d_device9.cpp$(DependSuffix)
 	$(RM) $(IntermediateDirectory)/galliumd3d_device9.cpp$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DBaseTexture9.cpp$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DUnknown.cpp$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DUnknown.cpp$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DUnknown.cpp$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DResource9.cpp$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DResource9.cpp$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/GalliumD3DResource9.cpp$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/guid.c$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/guid.c$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/guid.c$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) "../.build-debug/libschaefergl"
 
