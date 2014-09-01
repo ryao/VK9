@@ -48,7 +48,7 @@ public:
 	CGLMBuffer				*m_vtxBuffer;
 	D3DVERTEXBUFFER_DESC	m_vtxDesc;		// to satisfy GetDesc
 
-	void UnlockActualSize( uint nActualSize, const void *pActualData = NULL );
+	void UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
 	
 public:
 	//virtual HRESULT GetDesc(D3DVERTEXBUFFER_DESC* pDesc);

@@ -322,7 +322,7 @@ HRESULT	COpenGLDevice9::Create( IDirect3DDevice9Params *params )
 void COpenGLDevice9::UpdateBoundFBO()
 {
 	RenderTargetState_t renderTargetState;
-	for ( uint i = 0; i < 4; i++ )
+	for ( unsigned int i = 0; i < 4; i++ )
 	{
 		renderTargetState.m_pRenderTargets[i] = m_pRenderTargets[i] ? m_pRenderTargets[i]->m_tex : NULL;
 	}
@@ -343,7 +343,7 @@ void COpenGLDevice9::UpdateBoundFBO()
 		
 		uint nNumBound = 0;
 
-		for ( uint i = 0; i < 4; i++ )
+		for ( unsigned int i = 0; i < 4; i++ )
 		{
 			if ( !m_pRenderTargets[i] )
 				continue;
@@ -795,7 +795,7 @@ void COpenGLDevice9::ReleaseThreadOwnership( )
 	m_ctx->ReleaseCurrent( true );
 }
 
-void COpenGLDevice9::SetMaxUsedVertexShaderConstantsHintNonInline( uint nMaxReg )
+void COpenGLDevice9::SetMaxUsedVertexShaderConstantsHintNonInline( unsigned int nMaxReg )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	m_ctx->SetMaxUsedVertexShaderConstantsHint( nMaxReg );
@@ -855,7 +855,7 @@ HRESULT COpenGLDevice9::Clear(DWORD Count,const D3DRECT *pRects,DWORD Flags,D3DC
 		GLScissorBox_t	tempbox;
 		
 		// do the rects one by one and convert each one to GL form
-		for( uint i=0; i<Count; i++)
+		for( unsigned int i=0; i<Count; i++)
 		{
 			D3DRECT d3dtempbox = pRects[i];
 			d3drect_to_glmbox( &d3dtempbox, &tempbox );
@@ -1767,7 +1767,7 @@ HRESULT COpenGLDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertex
 	// and how big each one is in terms of stride.
 
 	// all that is left is to go back and write the strides - the stride comes from the stream offset cursors accumulated earlier.
-	for( uint j=0; j< decl9->m_elemCount; j++)
+	for( unsigned int j=0; j< decl9->m_elemCount; j++)
 	{
 		D3DVERTEXELEMENT9_GL *elem = &decl9->m_elements[ j ];
 		
@@ -1776,7 +1776,7 @@ HRESULT COpenGLDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertex
 		
 	memset( decl9->m_VertexAttribDescToStreamIndex, 0xFF, sizeof( decl9->m_VertexAttribDescToStreamIndex ) );
 	D3DVERTEXELEMENT9_GL *pDeclElem = decl9->m_elements;
-	for( uint j = 0; j < decl9->m_elemCount; j++, pDeclElem++)
+	for( unsigned int j = 0; j < decl9->m_elemCount; j++, pDeclElem++)
 	{
 		uint nPackedVertexAttribDesc = ( pDeclElem->m_dxdecl.Usage << 4 ) | pDeclElem->m_dxdecl.UsageIndex;
 		if ( nPackedVertexAttribDesc == 0xBB )
@@ -2914,7 +2914,7 @@ HRESULT COpenGLDevice9::SetPixelShaderConstantF(UINT StartRegister,const float *
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	TOGL_NULL_DEVICE_CHECK;
 #if 0
-	const uint nRegToWatch = 3;
+	const unsigned int nRegToWatch = 3;
 	if ( ( ( StartRegister + Vector4fCount ) > nRegToWatch ) && ( StartRegister <= nRegToWatch ) )
 	{
 		char buf[256];

@@ -1,5 +1,9 @@
+
+
 #ifndef COPENGLTYPES_H
 #define COPENGLTYPES_H
+
+#include "togl/rendermechanism.h"
 
 	struct ObjectStats_t
 	{

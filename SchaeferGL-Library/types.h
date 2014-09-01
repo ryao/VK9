@@ -28,6 +28,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <windows.h>
+
 typedef __int64 int64_t;
 typedef __int32 int32_t;
 typedef __int16 int16_t;
@@ -56,29 +58,33 @@ typedef float FLOAT;
 
 typedef LONG HRESULT;
 typedef GUID IID;
-typedef IID *REFIID;
+//typedef IID *REFIID;
 typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef DWORD D3DCOLOR;
 typedef void *PVOID;
 typedef PVOID HANDLE;
-typedef HANDLE HDC;
-typedef HANDLE HWND;
+//typedef HANDLE HDC;
+//typedef HANDLE HWND;
 
 #define MAKEFOURCC(c0,c1,c2,c3) ((DWORD)(BYTE)(c0)|((DWORD)(BYTE)(c1)<<8)|((DWORD)(BYTE)(c2)<<16)|((DWORD)(BYTE)(c3)<<24))
 #define MAKE_HRESULT(sev,fac,code) ((HRESULT) (((unsigned long)(sev)<<31) | ((unsigned long)(fac)<<16) | ((unsigned long)(code))) )
-	
+
+/*
 typedef struct tagPOINT {
   LONG x;
   LONG y;
 } POINT, *PPOINT;
+*/
 
+/*
 typedef struct _RECT {
   LONG left;
   LONG top;
   LONG right;
   LONG bottom;
 } RECT, *PRECT;
+*/
 
 typedef struct D3DRECT {
   LONG x1;
@@ -257,6 +263,7 @@ typedef struct D3DRASTER_STATUS {
   UINT ScanLine;
 } D3DRASTER_STATUS, *LPD3DRASTER_STATUS;
 
+/*
 typedef struct _RGNDATAHEADER {
   DWORD dwSize;
   DWORD iType;
@@ -264,11 +271,14 @@ typedef struct _RGNDATAHEADER {
   DWORD nRgnSize;
   RECT  rcBound;
 } RGNDATAHEADER, *PRGNDATAHEADER;
+*/
 
+/*
 typedef struct _RGNDATA {
   RGNDATAHEADER rdh;
   char          Buffer[1];
 } RGNDATA, *PRGNDATA;
+*/
 
 typedef enum D3DTEXTUREFILTERTYPE { 
   D3DTEXF_NONE             = 0,
@@ -566,12 +576,14 @@ typedef struct D3DMATERIAL9 {
   float         Power;
 } D3DMATERIAL9, *LPD3DMATERIAL9;
 
+/*
 typedef struct PALETTEENTRY {
   BYTE peRed;
   BYTE peGreen;
   BYTE peBlue;
   BYTE peFlags;
 } PALETTEENTRY, *LPPALETTEENTRY;
+*/
 
 typedef enum D3DRENDERSTATETYPE { 
   D3DRS_ZENABLE                     = 7,
@@ -757,6 +769,7 @@ typedef struct D3DVIEWPORT9 {
 
 typedef int64_t LONGLONG; 
 
+/*
 typedef union _LARGE_INTEGER {
   struct {
     DWORD LowPart;
@@ -768,6 +781,7 @@ typedef union _LARGE_INTEGER {
   } u;
   LONGLONG QuadPart;
 } LARGE_INTEGER, *PLARGE_INTEGER;
+*/
 
 #define MAX_DEVICE_IDENTIFIER_STRING        512
 
@@ -786,7 +800,9 @@ typedef struct D3DADAPTER_IDENTIFIER9 {
   DWORD         WHQLLevel;
 } D3DADAPTER_IDENTIFIER9, *LPD3DADAPTER_IDENTIFIER9;
 
+/*
 typedef HANDLE HMONITOR;
+*/
 
 #define D3D_SDK_VERSION    31
 #define D3DCREATE_FPU_PRESERVE    0x02

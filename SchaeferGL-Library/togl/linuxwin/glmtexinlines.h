@@ -1,7 +1,7 @@
-//========= Copyright Christopher Joseph Dean Schaefer, All rights reserved. ============//
-//                       SchaeferGL CODE LICENSE
+//========= Copyright Valve Corporation, All rights reserved. ============//
+//                       TOGL CODE LICENSE
 //
-//  Copyright 2014 Christopher Joseph Dean Schaefer
+//  Copyright 2011-2014 Valve Corporation
 //  All Rights Reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,42 +21,9 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//
-//
-//==================================================================================================
- 
-#include "IUnknown.h"
-#include <iostream> 
+#ifndef CGLMTEXINLINES_H
+#define	CGLMTEXINLINES_H
 
-#ifndef _WINDOWS_
-IUnknown::IUnknown()
-{
+#pragma once
 
-}
-
-IUnknown::~IUnknown()
-{
-
-}
-
-ULONG IUnknown::AddRef()
-{
-	std::cout << "IUnknown::AddRef()" << std::endl;
-	
-	return E_NOTIMPL;
-}
-
-HRESULT IUnknown::QueryInterface(REFIID riid,void **ppvObject)
-{
-	std::cout << "IUnknown::QueryInterface(REFIID riid,void **ppvObject)" << std::endl;
-	
-	return E_NOTIMPL;
-}
-
-ULONG IUnknown::Release()
-{
-	std::cout << "IUnknown::Release()" << std::endl;
-	
-	return E_NOTIMPL;
-}
-#endif
+#endif // CGLMTEXINLINES_H

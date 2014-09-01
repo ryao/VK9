@@ -34,6 +34,8 @@
 #define COPENGLUNKNOWN_H
 
 #include "IUnknown.h" // Base class: IUnknown
+#include "togl/rendermechanism.h"
+#include "COpenGLTypes.h"
 
 class COpenGLUnknown : public IUnknown
 {

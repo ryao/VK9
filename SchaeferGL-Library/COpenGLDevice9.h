@@ -125,7 +125,7 @@ public:
 	void RestoreGLState();
 	void AcquireThreadOwnership( );
 	void ReleaseThreadOwnership( );
-	void SetMaxUsedVertexShaderConstantsHintNonInline( uint nMaxReg );
+	void SetMaxUsedVertexShaderConstantsHintNonInline( unsigned int nMaxReg );
 	void SetSamplerStatesNonInline(
 	DWORD Sampler, DWORD AddressU, DWORD AddressV, DWORD AddressW,
 	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter );
@@ -619,7 +619,7 @@ public:
 		return SetRenderStateInline( State, Value );
 	}
 
-	FORCEINLINE void IDirect3DDevice9::SetMaxUsedVertexShaderConstantsHint( uint nMaxReg )
+	FORCEINLINE void IDirect3DDevice9::SetMaxUsedVertexShaderConstantsHint( unsigned int nMaxReg )
 	{
 	#if GLMDEBUG || GL_BATCH_PERF_ANALYSIS
 		return SetMaxUsedVertexShaderConstantsHintNonInline( nMaxReg );

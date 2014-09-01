@@ -30,6 +30,7 @@
 
 #include "types.h"
 
+#ifndef _WINDOWS_
 class IUnknown
 {
 public:
@@ -52,5 +53,6 @@ public:
 	 */
 	virtual ULONG Release();
 };
+#endif
 
 #endif // IUNKNOWN_H

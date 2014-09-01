@@ -62,7 +62,7 @@ COpenGLIndexBuffer9::~COpenGLIndexBuffer9()
 	GLMPRINTF(( "<-A- ~IDirect3DIndexBuffer9" ));	
 }
 
-void COpenGLIndexBuffer9::UnlockActualSize( uint nActualSize, const void *pActualData = NULL )
+void COpenGLIndexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

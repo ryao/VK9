@@ -22,36 +22,40 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 //
-// dxabstract.h
+// intelglmallocworkaround.h
+//  class responsible for setting up a malloc override that zeroes allocated 
+//  memory of less than 96 bytes. this is to work around a bug
+//  in the Intel GLSL compiler on Mac OS X 10.8 due to uninitialized memory.
+//  
+//  96 was chosen due to this quote from Apple: 
+//    "I verified that the size of the structure is exactly 64 bytes on 10.8.3, 10.8.4 and will be on 10.8.5."
 //
-//==================================================================================================
+//  certain GLSL shaders would (intermittently) cause a crash the first time they
+//  were drawn, and the bug has supposedly been fixed in 10.9, but is unlikely to
+//  ever make it to 10.8.
+//
+//===============================================================================
 
-/*
- * Code from ToGL has been modified to fit the design.
- */
- 
-#ifndef COPENGLINDEXBUFFER9_H
-#define COPENGLINDEXBUFFER9_H
+#ifndef INTELGLMALLOCWORKAROUND_H
+#define	INTELGLMALLOCWORKAROUND_H
 
-#include "IDirect3DIndexBuffer9.h" // Base class: IDirect3DIndexBuffer9
-#include "COpenGLResource9.h"
+#include <stdlib.h>
 
-class COpenGLIndexBuffer9 : public IDirect3DIndexBuffer9,COpenGLResource9
+class IntelGLMallocWorkaround
 {
 public:
-	COpenGLIndexBuffer9();
-	~COpenGLIndexBuffer9();
+	static IntelGLMallocWorkaround *Get();
+	bool Enable();
 
-	GLMContext				*m_ctx;
-	CGLMBuffer				*m_idxBuffer;
-	D3DINDEXBUFFER_DESC		m_idxDesc;		// to satisfy GetDesc
+protected:
+	IntelGLMallocWorkaround() :m_pfnMallocReentry(NULL) {}
+	~IntelGLMallocWorkaround() {}
 
-	void UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
-	
-public:
-	virtual HRESULT GetDesc(D3DINDEXBUFFER_DESC* pDesc);
-	virtual HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
-	virtual HRESULT Unlock();
+	static IntelGLMallocWorkaround *s_pWorkaround;
+	static void* ZeroingAlloc(size_t);
+
+	typedef void* (*pfnMalloc_t)(size_t);
+	pfnMalloc_t m_pfnMallocReentry;
 };
 
-#endif // COPENGLINDEXBUFFER9_H
+#endif // INTELGLMALLOCWORKAROUND_H

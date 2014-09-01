@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;S:\Git\SchaeferGL\SchaeferGL-Library\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -171,6 +172,90 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\togl\linuxwin\cglmbuffer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmfbo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmprogram.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmquery.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmtex.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGL9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLBaseTexture9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLCubeTexture9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLDevice9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLIndexBuffer9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLPixelShader9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLQuery9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLResource9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLSurface9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLTexture9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLTypes.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLUnknown.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVertexBuffer9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVertexDeclaration9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVertexShader9.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVolumeTexture9.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\D3D9.cpp"
 				>
 			</File>
@@ -195,6 +280,30 @@
 						CompileAsManaged="0"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\dx9asmtogl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\dx9asmtogl2.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\dxabstract.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glentrypoints.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmgrbasics.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\IDirect3D9.cpp"
@@ -265,6 +374,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\togl\linuxwin\intelglmallocworkaround.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IUnknown.cpp"
 				>
 			</File>
@@ -299,7 +412,155 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\togl\linuxwin\cglmbuffer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmfbo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmprogram.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmquery.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\cglmtex.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGL9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLBaseTexture9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLCubeTexture9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLDevice9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLIndexBuffer9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLPixelShader9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLQuery9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLResource9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLSurface9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLTexture9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLTypes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLUnknown.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVertexBuffer9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVertexDeclaration9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVertexShader9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\COpenGLVolumeTexture9.h"
+				>
+			</File>
+			<File
 				RelativePath=".\D3D9.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\dx9asmtogl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\dx9asmtogl2.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\dxabstract.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\dxabstract_types.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glbase.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glentrypoints.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glfuncs.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\glfuncs.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmdebug.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmdisplay.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmdisplaydb.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmgr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmgr_flush.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmgrbasics.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmgrext.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\glmtexinlines.h"
 				>
 			</File>
 			<File
@@ -371,7 +632,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\togl\linuxwin\intelglmallocworkaround.h"
+				>
+			</File>
+			<File
 				RelativePath=".\IUnknown.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\rendermechanism.h"
 				>
 			</File>
 			<File

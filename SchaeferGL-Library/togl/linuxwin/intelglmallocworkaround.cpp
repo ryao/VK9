@@ -21,37 +21,51 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
-//
-// dxabstract.h
-//
-//==================================================================================================
+#include "intelglmallocworkaround.h"
+#include "mach_override.h"
 
-/*
- * Code from ToGL has been modified to fit the design.
- */
- 
-#ifndef COPENGLINDEXBUFFER9_H
-#define COPENGLINDEXBUFFER9_H
+// memdbgon -must- be the last include file in a .cpp file.
+#include "tier0/memdbgon.h"
 
-#include "IDirect3DIndexBuffer9.h" // Base class: IDirect3DIndexBuffer9
-#include "COpenGLResource9.h"
+IntelGLMallocWorkaround* IntelGLMallocWorkaround::s_pWorkaround = NULL;
 
-class COpenGLIndexBuffer9 : public IDirect3DIndexBuffer9,COpenGLResource9
+void *IntelGLMallocWorkaround::ZeroingAlloc(size_t size)
 {
-public:
-	COpenGLIndexBuffer9();
-	~COpenGLIndexBuffer9();
+	// We call into this pointer that resumes the original malloc.
+	void *memory = s_pWorkaround->m_pfnMallocReentry(size);
+	if (size < 96)
+	{
+		// Since the Intel driver has an issue with a small allocation 
+		// that's left uninitialized, we use memset to ensure it's zero-initialized.
+		memset(memory, 0, size);
+	}
 
-	GLMContext				*m_ctx;
-	CGLMBuffer				*m_idxBuffer;
-	D3DINDEXBUFFER_DESC		m_idxDesc;		// to satisfy GetDesc
+	return memory;
+}
 
-	void UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
-	
-public:
-	virtual HRESULT GetDesc(D3DINDEXBUFFER_DESC* pDesc);
-	virtual HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
-	virtual HRESULT Unlock();
-};
+IntelGLMallocWorkaround* IntelGLMallocWorkaround::Get()
+{
+	if (!s_pWorkaround)
+	{
+		s_pWorkaround = new IntelGLMallocWorkaround();
+	}
 
-#endif // COPENGLINDEXBUFFER9_H
+	return s_pWorkaround;
+}
+
+bool IntelGLMallocWorkaround::Enable()
+{
+	if ( m_pfnMallocReentry != NULL )
+	{
+		return true;
+	}
+
+	mach_error_t error = mach_override_ptr( (void*)&malloc, (const void*)&ZeroingAlloc, (void**)&m_pfnMallocReentry );
+	if ( error == err_cannot_override )
+	{
+		m_pfnMallocReentry = NULL;
+		return false;
+	}
+
+	return true;
+}

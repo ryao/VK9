@@ -59,7 +59,7 @@ COpenGLVertexBuffer9::~COpenGLVertexBuffer9()
 	GLMPRINTF(( "<-A- ~IDirect3DVertexBuffer9" ));	
 }
 
-void COpenGLVertexBuffer9::UnlockActualSize( uint nActualSize, const void *pActualData = NULL )
+void COpenGLVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

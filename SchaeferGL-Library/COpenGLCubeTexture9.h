@@ -34,9 +34,9 @@
 #define COPENGLCUBETEXTURE9_H
 
 #include "IDirect3DCubeTexture9.h" // Base class: IDirect3DCubeTexture9
-#include "COpenGLCubeTexture9.h"
+#include "COpenGLBaseTexture9.h"
 
-class COpenGLCubeTexture9 : public IDirect3DCubeTexture9,COpenGLCubeTexture9
+class COpenGLCubeTexture9 : public IDirect3DCubeTexture9,COpenGLBaseTexture9
 {
 public:
 	COpenGLCubeTexture9();
