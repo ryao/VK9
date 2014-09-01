@@ -104,7 +104,6 @@
     <File Name="dllmain.cpp"/>
     <File Name="IDirect3D9.cpp"/>
     <File Name="IDirect3DBaseTexture9.cpp"/>
-    <File Name="IDirect3DCubeTexture9.cpp"/>
     <File Name="IDirect3DDevice9.cpp"/>
     <File Name="IDirect3DIndexBuffer9.cpp"/>
     <File Name="IDirect3DPixelShader9.cpp"/>
@@ -122,6 +121,21 @@
     <File Name="IUnknown.cpp"/>
     <File Name="SchaeferGL-Library.cpp"/>
     <File Name="stdafx.cpp"/>
+    <File Name="COpenGLUnknown.cpp"/>
+    <File Name="COpenGLResource9.cpp"/>
+    <File Name="COpenGLBaseTexture9.cpp"/>
+    <File Name="COpenGLTexture9.cpp"/>
+    <File Name="COpenGLCubeTexture9.cpp"/>
+    <File Name="COpenGLVolumeTexture9.cpp"/>
+    <File Name="COpenGLSurface9.cpp"/>
+    <File Name="COpenGL9.cpp"/>
+    <File Name="COpenGLVertexDeclaration9.cpp"/>
+    <File Name="COpenGLQuery9.cpp"/>
+    <File Name="COpenGLVertexBuffer9.cpp"/>
+    <File Name="COpenGLIndexBuffer9.cpp"/>
+    <File Name="COpenGLPixelShader9.cpp"/>
+    <File Name="COpenGLVertexShader9.cpp"/>
+    <File Name="COpenGLDevice9.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Header Files">
     <File Name="D3D9.h"/>
@@ -147,6 +161,21 @@
     <File Name="stdafx.h"/>
     <File Name="targetver.h"/>
     <File Name="types.h"/>
+    <File Name="COpenGLUnknown.h"/>
+    <File Name="COpenGLResource9.h"/>
+    <File Name="COpenGLBaseTexture9.h"/>
+    <File Name="COpenGLTexture9.h"/>
+    <File Name="COpenGLCubeTexture9.h"/>
+    <File Name="COpenGLVolumeTexture9.h"/>
+    <File Name="COpenGLSurface9.h"/>
+    <File Name="COpenGL9.h"/>
+    <File Name="COpenGLVertexDeclaration9.h"/>
+    <File Name="COpenGLQuery9.h"/>
+    <File Name="COpenGLVertexBuffer9.h"/>
+    <File Name="COpenGLIndexBuffer9.h"/>
+    <File Name="COpenGLPixelShader9.h"/>
+    <File Name="COpenGLVertexShader9.h"/>
+    <File Name="COpenGLDevice9.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Resource Files"/>
 </CodeLite_Project>
