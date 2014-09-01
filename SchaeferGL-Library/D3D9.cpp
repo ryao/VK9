@@ -26,11 +26,12 @@
 //==================================================================================================
  
 #include "D3D9.h"
-#include <iostream> 
+#include "COpenGL9.h"
 
 IDirect3D9* Direct3DCreate9(UINT SDKVersion)
 {
-	//TODO: add new backend.
-	return NULL;	
+	GLMPRINTF(( "-X- Direct3DCreate9: %d", SDKVersion ));
+
+	return new IDirect3D9;
 }
 

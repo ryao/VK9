@@ -39,7 +39,27 @@ COpenGLQuery9::COpenGLQuery9()
 
 COpenGLQuery9::~COpenGLQuery9()
 {
+	GL_BATCH_PERF_CALL_TIMER;
+	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
+	GLMPRINTF((">-A- ~IDirect3DQuery9"));
+
+	if (m_device)
+	{
+		m_device->ReleasedQuery( this );
+
+		if (m_query)
+		{
+			GLMPRINTF((">-A- ~IDirect3DQuery9 freeing m_query"));
+			
+			m_query->m_ctx->DelQuery( m_query );
+			m_query = NULL;
+
+			GLMPRINTF(("<-A- ~IDirect3DQuery9 freeing m_query done"));
+		}
+		m_device = NULL;
+	}
 	
+	GLMPRINTF(("<-A- ~IDirect3DQuery9"));	
 }
 
 HRESULT COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)

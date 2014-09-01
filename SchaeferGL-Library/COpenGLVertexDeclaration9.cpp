@@ -38,6 +38,11 @@ COpenGLVertexDeclaration9::COpenGLVertexDeclaration9()
 
 COpenGLVertexDeclaration9::~COpenGLVertexDeclaration9()
 {
+	GL_BATCH_PERF_CALL_TIMER;
+	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
+	GLMPRINTF(("-A- ~IDirect3DVertexDeclaration9 signpost"));
+
+	m_device->ReleasedVertexDeclaration( this );	
 }
 
 /*

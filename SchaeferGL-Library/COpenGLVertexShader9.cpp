@@ -38,6 +38,27 @@ COpenGLVertexShader9::COpenGLVertexShader9()
 
 COpenGLVertexShader9::~COpenGLVertexShader9()
 {
+	GL_BATCH_PERF_CALL_TIMER;
+	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
+	GLMPRINTF(( ">-A- ~IDirect3DVertexShader9" ));
+
+	if (m_device)
+	{
+		m_device->ReleasedVertexShader( this );
+
+		if (m_vtxProgram)
+		{
+			m_vtxProgram->m_ctx->DelProgram( m_vtxProgram );
+			m_vtxProgram = NULL;
+		}
+		m_device = NULL;
+	}
+	else
+	{
+	}
+
+	
+	GLMPRINTF(( "<-A- ~IDirect3DVertexShader9" ));	
 }
 
 /*

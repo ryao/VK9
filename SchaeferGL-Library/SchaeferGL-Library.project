@@ -136,6 +136,8 @@
     <File Name="COpenGLPixelShader9.cpp"/>
     <File Name="COpenGLVertexShader9.cpp"/>
     <File Name="COpenGLDevice9.cpp"/>
+    <File Name="IDirect3DCubeTexture9.cpp"/>
+    <File Name="COpenGLTypes.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Header Files">
     <File Name="D3D9.h"/>
@@ -176,6 +178,7 @@
     <File Name="COpenGLPixelShader9.h"/>
     <File Name="COpenGLVertexShader9.h"/>
     <File Name="COpenGLDevice9.h"/>
+    <File Name="COpenGLTypes.h"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Resource Files"/>
 </CodeLite_Project>

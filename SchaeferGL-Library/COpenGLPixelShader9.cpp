@@ -39,7 +39,23 @@ COpenGLPixelShader9::COpenGLPixelShader9()
 
 COpenGLPixelShader9::~COpenGLPixelShader9()
 {
+	GL_BATCH_PERF_CALL_TIMER;
+	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
+	GLMPRINTF(( ">-A- ~IDirect3DPixelShader9" ));
+
+	if (m_device)
+	{
+		m_device->ReleasedPixelShader( this );
+
+		if (m_pixProgram)
+		{
+			m_pixProgram->m_ctx->DelProgram( m_pixProgram );
+			m_pixProgram = NULL;
+		}
+		m_device = NULL;
+	}
 	
+	GLMPRINTF(( "<-A- ~IDirect3DPixelShader9" ));	
 }
 
 /*
