@@ -25,6 +25,7 @@
 // DX9AsmToGL2.cpp
 //------------------------------------------------------------------------------
 // Immediately include gl.h, etc. here to avoid compilation warnings.
+#include <windows.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 

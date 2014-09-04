@@ -32,11 +32,16 @@
 
 #pragma once
 
-#ifdef OSX
+//#ifdef OSX
 #include "glmgrbasics.h"
-#endif
-#include "tier1/utlhash.h"
-#include "tier1/utlmap.h"
+//#endif
+//#include "tier1/utlhash.h"
+//#include "tier1/utlmap.h"
+#include <map>
+#include <functional>
+
+#define CUtlMap std::map
+//#define CUtlHash std::hash
 
 //===============================================================================
 

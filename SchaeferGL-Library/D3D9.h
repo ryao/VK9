@@ -30,6 +30,8 @@
 
 #include "IDirect3D9.h"
 
+#define D3D_SDK_VERSION   32
+
 /*
  * Create an IDirect3D9 object and return an interface to it.
  */

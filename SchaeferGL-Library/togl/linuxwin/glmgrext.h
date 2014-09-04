@@ -29,14 +29,13 @@
 
 #pragma once
 
+#include <windows.h>
 #ifdef OSX
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
-#elif defined(DX_TO_GL_ABSTRACTION)
+#else
 #include <GL/gl.h>
 #include <GL/glext.h>
-#else
-#error
 #endif
 
 #ifndef GL_EXT_framebuffer_sRGB

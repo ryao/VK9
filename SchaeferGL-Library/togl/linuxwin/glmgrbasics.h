@@ -46,15 +46,16 @@
 
 //#include "tier0/platform.h"
 
-#include "bitmap/imageformat.h"
-#include "bitvec.h"
-#include "tier1/checksum_md5.h"
-#include "tier1/utlvector.h"
-#include "tier1/convar.h"
+//#include "bitmap/imageformat.h"
+//#include "bitvec.h"
+//#include "tier1/checksum_md5.h"
+//#include "tier1/utlvector.h"
+//#include "tier1/convar.h"
 
 #include <sys/stat.h>
-
-#include "dxabstract_types.h"
+#include "types.h"
+#include "COpenGLTypes.h"
+//#include "dxabstract_types.h"
 
 struct GLMRect;
 typedef void *PseudoGLContextPtr;
@@ -118,9 +119,9 @@ typedef enum
 
 // these will look at the string to guess its flavor: <, >, ---, -M-, -S- 
 #ifdef TOGL_DLL_EXPORT
-	DLL_EXPORT const char* GLMDecode( GLMThing_t type, unsigned long value );		// decode a numeric const
+	/*DLL_EXPORT*/ const char* GLMDecode( GLMThing_t type, unsigned long value );		// decode a numeric const
 #else
-	DLL_IMPORT const char* GLMDecode( GLMThing_t type, unsigned long value );		// decode a numeric const
+	/*DLL_IMPORT*/ const char* GLMDecode( GLMThing_t type, unsigned long value );		// decode a numeric const
 #endif
 		
 const char* GLMDecodeMask( GLMThing_t type, unsigned long value );	// decode a bitmask
@@ -134,8 +135,8 @@ void GLMEnableTrace( bool on );
 
 // expose these in release now
 // Mimic PIX events so we can decorate debug spew
-DLL_EXPORT void	GLMBeginPIXEvent( const char *str );
-DLL_EXPORT void	GLMEndPIXEvent( void );
+/*DLL_EXPORT*/ void	GLMBeginPIXEvent( const char *str );
+/*DLL_EXPORT*/ void	GLMEndPIXEvent( void );
 
 class CScopedGLMPIXEvent
 {
@@ -242,7 +243,7 @@ public:
 	struct stat	m_stat;		// stat results for the file (last time checked)
 	
 	char		*m_data;	// content of file
-	uint		m_size;		// length of content
+	unsigned int		m_size;		// length of content
 
 };
 
@@ -273,12 +274,12 @@ public:
 
 	// members
 	// orig
-	uint			m_origSize;
+	unsigned int	m_origSize;
 	char			*m_origText;						// what was submitted
 	unsigned char	m_origDigest[MD5_DIGEST_LENGTH];	// digest of what was submitted
 	
 	// munged
-	uint			m_mungedSize;
+	unsigned int	m_mungedSize;
 	char			*m_mungedText;						// re-processed edition, initial content submission to the file mirror
 
 	// mirror
@@ -297,7 +298,7 @@ extern unsigned char g_glmDebugFontMap[16384];
 struct GLMTextSection
 {
 	int		m_markerIndex;		// based on table of markers passed in to constructor
-	uint	m_textOffset;		// where is the text - offset
+	unsigned int	m_textOffset;		// where is the text - offset
 	int		m_textLength;		// how big is the section
 };
 

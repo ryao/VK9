@@ -55,8 +55,8 @@ enum EGLMBufferType
 
 struct GLMBuffLockParams
 {
-	uint m_nOffset;
-	uint m_nSize;
+	unsigned int m_nOffset;
+	unsigned int m_nSize;
 	bool m_bNoOverwrite;		
 	bool m_bDiscard;			
 };
@@ -160,23 +160,23 @@ public:
 	
 	GLMContext				*m_pCtx;					// link back to parent context
 	EGLMBufferType			m_type;
-	uint					m_nSize;
-	uint					m_nActualSize;
+	unsigned int			m_nSize;
+	unsigned int			m_nActualSize;
 	
 	bool					m_bDynamic;
 	
 	GLenum					m_buffGLTarget;			// GL_ARRAY_BUFFER_ARB / GL_ELEMENT_BUFFER_ARB	
 	GLuint					m_nHandle;					// name of this program in the context	
 
-	uint					m_nRevision;				// bump anytime the size changes or buffer is orphaned
+	unsigned int			m_nRevision;				// bump anytime the size changes or buffer is orphaned
 
 	bool					m_bEnableAsyncMap;		// mirror of the buffer state
 	bool					m_bEnableExplicitFlush;	// mirror of the buffer state
 		
 	bool					m_bMapped;				// is it currently mapped
 
-	uint					m_dirtyMinOffset;		// when equal, range is empty
-	uint					m_dirtyMaxOffset;
+	unsigned int			m_dirtyMinOffset;		// when equal, range is empty
+	unsigned int			m_dirtyMaxOffset;
 	
 	float					*m_pLastMappedAddress;
 
