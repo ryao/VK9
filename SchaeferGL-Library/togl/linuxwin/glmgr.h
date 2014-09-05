@@ -45,10 +45,12 @@
 #include "cglmbuffer.h"
 #include "cglmquery.h"
 
-#include "tier0/vprof_telemetry.h"
-#include "materialsystem/ishader.h"
-#include "dxabstract_types.h"
-#include "tier0/icommandline.h"
+//#include "tier0/vprof_telemetry.h"
+//#include "materialsystem/ishader.h"
+//#include "dxabstract_types.h"
+//#include "tier0/icommandline.h"
+#include "types.h"
+#include "COpenGLTypes.h"
 
 #undef FORCEINLINE
 #define FORCEINLINE inline
@@ -98,16 +100,16 @@ class GLMDisplayParams
 
 	// height and width have to match the display mode info if full screen.
 	
-	uint				m_backBufferWidth;		// pixel width (aka screen h-resolution if full screen)
-	uint				m_backBufferHeight;		// pixel height (aka screen v-resolution if full screen)
+	unsigned int				m_backBufferWidth;		// pixel width (aka screen h-resolution if full screen)
+	unsigned int				m_backBufferHeight;		// pixel height (aka screen v-resolution if full screen)
 	D3DFORMAT           m_backBufferFormat;		// pixel format
-	uint				m_multiSampleCount;		// 0 means no MSAA, 2 means 2x MSAA, etc
+	unsigned int				m_multiSampleCount;		// 0 means no MSAA, 2 means 2x MSAA, etc
 		// unsigned int				m_multiSampleQuality;	// no MSAA quality control yet
 		
 	bool				m_enableAutoDepthStencil;	// generally set to 'TRUE' per CShaderDeviceDx8::SetPresentParameters
 	D3DFORMAT			m_autoDepthStencilFormat;
 	
-	uint				m_fsRefreshHz;			// if full screen, this refresh rate (likely 0 for LCD's)
+	unsigned int				m_fsRefreshHz;			// if full screen, this refresh rate (likely 0 for LCD's)
 	
 	//uint				m_rootRendererID;		// only used if m_rendererIndex is -1.
 	//uint				m_rootDisplayMask;		// only used if m_rendererIndex is -1.

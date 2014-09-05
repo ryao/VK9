@@ -39,10 +39,11 @@
 //#include "tier1/utlmap.h"
 #include <map>
 #include <functional>
+#include <bitset>
 
 #define CUtlMap std::map
 //#define CUtlHash std::hash
-
+#define CBitVec std::bitset
 //===============================================================================
 
 // forward declarations
@@ -251,19 +252,19 @@ enum EGLMTexSliceFlag
 
 struct GLMTexPackedSamplingParams
 {
-	uint32 m_addressU		: GLM_PACKED_SAMPLER_PARAMS_ADDRESS_BITS;
-	uint32 m_addressV		: GLM_PACKED_SAMPLER_PARAMS_ADDRESS_BITS;
-	uint32 m_addressW		: GLM_PACKED_SAMPLER_PARAMS_ADDRESS_BITS;
+	unsigned __int32 m_addressU		: GLM_PACKED_SAMPLER_PARAMS_ADDRESS_BITS;
+	unsigned __int32 m_addressV		: GLM_PACKED_SAMPLER_PARAMS_ADDRESS_BITS;
+	unsigned __int32 m_addressW		: GLM_PACKED_SAMPLER_PARAMS_ADDRESS_BITS;
 
-	uint32 m_minFilter		: GLM_PACKED_SAMPLER_PARAMS_MIN_FILTER_BITS;
-	uint32 m_magFilter		: GLM_PACKED_SAMPLER_PARAMS_MAG_FILTER_BITS;
-	uint32 m_mipFilter		: GLM_PACKED_SAMPLER_PARAMS_MIP_FILTER_BITS;
+	unsigned __int32 m_minFilter		: GLM_PACKED_SAMPLER_PARAMS_MIN_FILTER_BITS;
+	unsigned __int32 m_magFilter		: GLM_PACKED_SAMPLER_PARAMS_MAG_FILTER_BITS;
+	unsigned __int32 m_mipFilter		: GLM_PACKED_SAMPLER_PARAMS_MIP_FILTER_BITS;
 
-	uint32 m_minLOD			: GLM_PACKED_SAMPLER_PARAMS_MIN_LOD_BITS;
-	uint32 m_maxAniso		: GLM_PACKED_SAMPLER_PARAMS_MAX_ANISO_BITS;
-	uint32 m_compareMode	: GLM_PACKED_SAMPLER_PARAMS_COMPARE_MODE_BITS;
-	uint32 m_srgb			: GLM_PACKED_SAMPLER_PARAMS_SRGB_BITS;
-	uint32 m_isValid		: 1;
+	unsigned __int32 m_minLOD			: GLM_PACKED_SAMPLER_PARAMS_MIN_LOD_BITS;
+	unsigned __int32 m_maxAniso		: GLM_PACKED_SAMPLER_PARAMS_MAX_ANISO_BITS;
+	unsigned __int32 m_compareMode	: GLM_PACKED_SAMPLER_PARAMS_COMPARE_MODE_BITS;
+	unsigned __int32 m_srgb			: GLM_PACKED_SAMPLER_PARAMS_SRGB_BITS;
+	unsigned __int32 m_isValid		: 1;
 };
 
 struct GLMTexSamplingParams
@@ -271,10 +272,10 @@ struct GLMTexSamplingParams
 	union
 	{
 		GLMTexPackedSamplingParams m_packed;
-		uint32 m_bits;
+		unsigned __int32 m_bits;
 	};
 
-	uint32 m_borderColor;
+	unsigned __int32 m_borderColor;
 
 	FORCEINLINE bool operator== (const GLMTexSamplingParams& rhs ) const
 	{
@@ -498,13 +499,13 @@ protected:
 
 	GLuint					m_texName;			// name of this texture in the context
 	GLenum					m_texGLTarget;
-	uint					m_nSamplerType;		// SAMPLER_2D, etc.
+	unsigned int					m_nSamplerType;		// SAMPLER_2D, etc.
 	
 	GLMTexSamplingParams	m_SamplingParams;
 
 	GLMTexLayout			*m_layout;		// layout of texture (shared across all tex with same layout)
 	
-	uint					m_nLastResolvedBatchCounter;
+	unsigned int					m_nLastResolvedBatchCounter;
 					
 	int						m_minActiveMip;//index of lowest mip that has been written.  used to drive setting of GL_TEXTURE_MAX_LEVEL.
 	int						m_maxActiveMip;//index of highest mip that has been written.  used to drive setting of GL_TEXTURE_MAX_LEVEL.

@@ -374,10 +374,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\togl\linuxwin\intelglmallocworkaround.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\IUnknown.cpp"
 				>
 			</File>
@@ -629,10 +625,6 @@
 			</File>
 			<File
 				RelativePath=".\IDirect3DVolumeTexture9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\togl\linuxwin\intelglmallocworkaround.h"
 				>
 			</File>
 			<File

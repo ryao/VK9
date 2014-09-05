@@ -27,22 +27,18 @@
 //===============================================================================
 #include "togl/rendermechanism.h"
 
-#include "tier0/icommandline.h"
+///#include "tier0/icommandline.h"
 
-#include "tier0/vprof.h"
+//#include "tier0/vprof.h"
 #include "glmtexinlines.h"
 
-#include "materialsystem/ishader.h"
-#include "appframework/ilaunchermgr.h"
+//#include "materialsystem/ishader.h"
+//#include "appframework/ilaunchermgr.h"
 
 #include "convar.h"
 
 #include "glmgr_flush.inl"
 
-#ifdef OSX
-#include <OpenGL/OpenGL.h>
-#include "intelglmallocworkaround.h"
-#endif
 
 // memdbgon -must- be the last include file in a .cpp file.
 #include "tier0/memdbgon.h"

@@ -155,7 +155,7 @@ public:
 
 	EGLMProgramType			m_type;					// vertex or pixel
 
-	uint					m_nHashTag;				// serial number for hashing
+	unsigned int					m_nHashTag;				// serial number for hashing
 	
 	char					*m_text;				// copy of text passed into constructor.  Can change if editable shaders is enabled.
 													// note - it can contain multiple flavors, so use CGLMTextSectioner to scan it and locate them
@@ -165,16 +165,16 @@ public:
 	
 	GLMShaderDesc			m_descs[ kGLMNumProgramLangs ];	
 
-	uint					m_samplerMask;			// (1<<n) mask of sampler active locs, if this is a fragment shader (dxabstract sets this field)
-	uint					m_samplerTypes;			// SAMPLER_2D, etc.
-	uint					m_fragDataMask;			// (1<<n) mask of gl_FragData[n] outputs referenced, if this is a fragment shader (dxabstract sets this field)
-	uint					m_numDrawBuffers;		// number of draw buffers used
+	unsigned int					m_samplerMask;			// (1<<n) mask of sampler active locs, if this is a fragment shader (dxabstract sets this field)
+	unsigned int					m_samplerTypes;			// SAMPLER_2D, etc.
+	unsigned int					m_fragDataMask;			// (1<<n) mask of gl_FragData[n] outputs referenced, if this is a fragment shader (dxabstract sets this field)
+	unsigned int					m_numDrawBuffers;		// number of draw buffers used
 	GLenum					m_drawBuffers[4];		// GL_COLOR_ATTACHMENT0_EXT1, etc
-	uint					m_nNumUsedSamplers;
-	uint					m_maxSamplers;
-	uint					m_maxVertexAttrs;
-	uint					m_nCentroidMask;
-	uint					m_nShadowDepthSamplerMask;
+	unsigned int					m_nNumUsedSamplers;
+	unsigned int					m_maxSamplers;
+	unsigned int					m_maxVertexAttrs;
+	unsigned int					m_nCentroidMask;
+	unsigned int					m_nShadowDepthSamplerMask;
 	
 	bool					m_bTranslatedProgram;
 
@@ -272,10 +272,10 @@ public:
 
 	// other stuff
 	bool					m_valid;				// true on successful link
-	uint					m_revision;				// if this pair is relinked, bump this number.
+	unsigned int					m_revision;				// if this pair is relinked, bump this number.
 
 	GLint					m_locVertexScreenParams; // vcscreen
-	uint					m_nScreenWidthHeight;
+	unsigned int					m_nScreenWidthHeight;
 		
 };	
 
@@ -290,7 +290,7 @@ struct CGLMPairCacheEntry
 	long long		m_lastMark;				// a mark of zero means an empty entry
 	CGLMProgram		*m_vertexProg;
 	CGLMProgram		*m_fragmentProg;
-	uint			m_extraKeyBits;
+	unsigned int			m_extraKeyBits;
 	CGLMShaderPair	*m_pair;
 };
 
@@ -339,21 +339,21 @@ protected:
 
 	long long				m_mark;
 
-	uint					m_rowsLg2;
-	uint					m_rows;
-	uint					m_rowsMask;
+	unsigned int					m_rowsLg2;
+	unsigned int					m_rows;
+	unsigned int					m_rowsMask;
 	
-	uint					m_waysLg2;
-	uint					m_ways;
+	unsigned int					m_waysLg2;
+	unsigned int					m_ways;
 	
-	uint					m_entryCount;
+	unsigned int					m_entryCount;
 	
 	CGLMPairCacheEntry		*m_entries;				// array[ m_rows ][ m_ways ]
 
-	uint					*m_evictions;			// array[ m_rows ];
+	unsigned int					*m_evictions;			// array[ m_rows ];
 
 #if GL_SHADER_PAIR_CACHE_STATS
-	uint					*m_hits;				// array[ m_rows ];
+	unsigned int					*m_hits;				// array[ m_rows ];
 #endif
 };	
 
@@ -410,7 +410,7 @@ FORCEINLINE void CGLMShaderPairCache::HashRowProbe( CGLMPairCacheEntry *row, CGL
 FORCEINLINE CGLMShaderPair *CGLMShaderPairCache::SelectShaderPair( CGLMProgram *vp, CGLMProgram *fp, unsigned int extraKeyBits )
 {
 	// select row where pair would be found if it exists
-	uint rowIndex = HashRowIndex( vp, fp, extraKeyBits );
+	unsigned int rowIndex = HashRowIndex( vp, fp, extraKeyBits );
 
 	CGLMPairCacheEntry *pCursor = HashRowPtr( rowIndex );
 	

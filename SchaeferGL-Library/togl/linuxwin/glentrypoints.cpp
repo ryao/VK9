@@ -29,19 +29,19 @@
 
 #include "togl/rendermechanism.h"
 
-#include "appframework/appframework.h"
-#include "appframework/iappsystemgroup.h"
-#include "tier0/dbg.h"
-#include "tier0/icommandline.h"
-#include "tier0/platform.h"
+//#include "appframework/appframework.h"
+//#include "appframework/iappsystemgroup.h"
+//#include "tier0/dbg.h"
+//#include "tier0/icommandline.h"
+//#include "tier0/platform.h"
 #include "interface.h"
 #include "filesystem.h"
 #include "filesystem_init.h"
-#include "tier1/convar.h"
+//#include "tier1/convar.h"
 #include "vstdlib/cvar.h"
 #include "inputsystem/buttoncode.h"
-#include "tier1.h"
-#include "tier2/tier2.h"
+//#include "tier1.h"
+//#include "tier2/tier2.h"
 
 #ifdef _LINUX
 #include <GL/glx.h>

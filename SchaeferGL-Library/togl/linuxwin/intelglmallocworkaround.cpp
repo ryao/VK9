@@ -22,10 +22,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 #include "intelglmallocworkaround.h"
-#include "mach_override.h"
+//#include "mach_override.h"
 
 // memdbgon -must- be the last include file in a .cpp file.
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 IntelGLMallocWorkaround* IntelGLMallocWorkaround::s_pWorkaround = NULL;
 
