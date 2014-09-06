@@ -36,7 +36,7 @@
 #include "IDirect3DSurface9.h" // Base class: IDirect3DSurface9
 #include "COpenGLResource9.h"
 
-class COpenGLSurface9 : public IDirect3DSurface9,COpenGLResource9
+class COpenGLSurface9 : public IDirect3DSurface9,public COpenGLResource9
 {
 public:
 	COpenGLSurface9();

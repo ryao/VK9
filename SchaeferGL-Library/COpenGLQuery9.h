@@ -36,7 +36,7 @@
 #include "IDirect3DQuery9.h" // Base class: IDirect3DQuery9
 #include "COpenGLResource9.h"
 
-class COpenGLQuery9 : public IDirect3DQuery9,COpenGLResource9
+class COpenGLQuery9 : public IDirect3DQuery9,public COpenGLResource9
 {
 public:
 	COpenGLQuery9();
@@ -46,15 +46,15 @@ public:
 	GLMContext				*m_ctx;
 	CGLMQuery				*m_query;
 	
-	uint					m_nIssueStartThreadID, m_nIssueEndThreadID;
-	uint					m_nIssueStartDrawCallIndex, m_nIssueEndDrawCallIndex;
-	uint					m_nIssueStartFrameIndex, m_nIssueEndFrameIndex;
-	uint					m_nIssueStartQueryCreationCounter, m_nIssueEndQueryCreationCounter;
+	unsigned int					m_nIssueStartThreadID, m_nIssueEndThreadID;
+	unsigned int					m_nIssueStartDrawCallIndex, m_nIssueEndDrawCallIndex;
+	unsigned int					m_nIssueStartFrameIndex, m_nIssueEndFrameIndex;
+	unsigned int					m_nIssueStartQueryCreationCounter, m_nIssueEndQueryCreationCounter;
 
 public:
 	virtual HRESULT GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags);
 	//virtual DWORD GetDataSize();
-	v//irtual HRESULT GetDevice(IDirect3DDevice9** pDevice);
+	//virtual HRESULT GetDevice(IDirect3DDevice9** pDevice);
 	//virtual D3DQUERYTYPE GetType();
 	virtual HRESULT Issue(DWORD dwIssueFlags);
 };

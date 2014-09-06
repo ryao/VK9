@@ -36,7 +36,7 @@
 #include "IDirect3DVolumeTexture9.h" // Base class: IDirect3DVolumeTexture9
 #include "COpenGLBaseTexture9.h"
 
-class COpenGLVolumeTexture9 : public IDirect3DVolumeTexture9,COpenGLBaseTexture9
+class COpenGLVolumeTexture9 : public IDirect3DVolumeTexture9,public COpenGLBaseTexture9
 {
 public:
 	COpenGLVolumeTexture9();

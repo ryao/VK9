@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLResource9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLResource9::COpenGLResource9()
 {

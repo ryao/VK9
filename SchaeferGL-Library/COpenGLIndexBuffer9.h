@@ -36,7 +36,7 @@
 #include "IDirect3DIndexBuffer9.h" // Base class: IDirect3DIndexBuffer9
 #include "COpenGLResource9.h"
 
-class COpenGLIndexBuffer9 : public IDirect3DIndexBuffer9,COpenGLResource9
+class COpenGLIndexBuffer9 : public IDirect3DIndexBuffer9,public COpenGLResource9
 {
 public:
 	COpenGLIndexBuffer9();

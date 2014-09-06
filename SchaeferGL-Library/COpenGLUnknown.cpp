@@ -56,7 +56,7 @@ COpenGLUnknown::~COpenGLUnknown()
 	#endif	
 }
 
-ULONG COpenGLUnknown::AddRef()
+/*ULONG COpenGLUnknown::AddRef()
 {
 	Assert( which >= 0 );
 	Assert( which < 2 );
@@ -72,14 +72,14 @@ ULONG COpenGLUnknown::AddRef()
 			}
 		}
 	#endif	
-}
+}*/
 
 /*HRESULT COpenGLUnknown::QueryInterface(REFIID riid, void** ppvObject)
 {
 	
 }*/
 
-ULONG COpenGLUnknown::Release()
+/*ULONG COpenGLUnknown::Release()
 {
 	Assert( which >= 0 );
 	Assert( which < 2 );
@@ -117,4 +117,4 @@ ULONG COpenGLUnknown::Release()
 	{
 		return m_refcount[0];
 	}	
-}
+}*/

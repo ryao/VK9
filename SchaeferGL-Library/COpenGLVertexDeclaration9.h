@@ -36,17 +36,19 @@
 #include "IDirect3DVertexDeclaration9.h" // Base class: IDirect3DVertexDeclaration9
 #include "COpenGLUnknown.h"
 
-class COpenGLVertexDeclaration9 : public IDirect3DVertexDeclaration9,COpenGLUnknown
+class COpenGLDevice9;
+
+class COpenGLVertexDeclaration9 : public IDirect3DVertexDeclaration9,public COpenGLUnknown
 {
 public:
 	COpenGLVertexDeclaration9();
 	~COpenGLVertexDeclaration9();
 
-	IDirect3DDevice9		*m_device;
-	uint					m_elemCount;
+	COpenGLDevice9		*m_device;
+	unsigned int					m_elemCount;
 	D3DVERTEXELEMENT9_GL	m_elements[ MAX_D3DVERTEXELEMENTS ];
 		
-	uint8					m_VertexAttribDescToStreamIndex[256];
+	unsigned __int8					m_VertexAttribDescToStreamIndex[256];
 
 public:
 	//virtual HRESULT GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements);

@@ -451,7 +451,7 @@ void COpenGLDevice9::ScrubFBOMap( CGLMTex *pTex )
 	//GLMDebugPrintf( "IDirect3DDevice9::ScrubFBOMap: Removed %u entries\n", fbosToRemove.Count() );
 }
 
-void COpenGLDevice9::ReleasedVertexDeclaration( IDirect3DVertexDeclaration9 *pDecl )
+void COpenGLDevice9::ReleasedVertexDeclaration( COpenGLVertexDeclaration9 *pDecl )
 {
 	m_ctx->ClearCurAttribs();
 
@@ -459,7 +459,7 @@ void COpenGLDevice9::ReleasedVertexDeclaration( IDirect3DVertexDeclaration9 *pDe
 	m_ObjectStats.m_nTotalVertexDecls--;
 }
 
-void COpenGLDevice9::ReleasedTexture( IDirect3DBaseTexture9 *baseTex )
+void COpenGLDevice9::ReleasedTexture( COpenGLBaseTexture9 *baseTex )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	TOGL_NULL_DEVICE_CHECK_RET_VOID;
@@ -490,7 +490,7 @@ void COpenGLDevice9::ReleasedCGLMTex( CGLMTex *pTex)
 		}
 	}
 }
-void COpenGLDevice9::ReleasedSurface( IDirect3DSurface9 *pSurface )
+void COpenGLDevice9::ReleasedSurface( COpenGLSurface9 *pSurface )
 {
 	for( int i = 0; i < 4; i++ )
 	{
@@ -526,7 +526,7 @@ void COpenGLDevice9::ReleasedSurface( IDirect3DSurface9 *pSurface )
 	m_ObjectStats.m_nTotalSurfaces--;
 }
 
-void COpenGLDevice9::ReleasedPixelShader( IDirect3DPixelShader9 *pixelShader )
+void COpenGLDevice9::ReleasedPixelShader( COpenGLPixelShader9 *pixelShader )
 {
 	if ( m_pixelShader == pixelShader )
 	{
@@ -539,7 +539,7 @@ void COpenGLDevice9::ReleasedPixelShader( IDirect3DPixelShader9 *pixelShader )
 	m_ObjectStats.m_nTotalPixelShaders--;
 }
 
-void COpenGLDevice9::ReleasedVertexShader( IDirect3DVertexShader9 *vertexShader )
+void COpenGLDevice9::ReleasedVertexShader( COpenGLVertexShader9 *vertexShader )
 {
 	if ( m_vertexShader == vertexShader )
 	{
@@ -553,7 +553,7 @@ void COpenGLDevice9::ReleasedVertexShader( IDirect3DVertexShader9 *vertexShader 
 	m_ObjectStats.m_nTotalVertexShaders--;
 }
 
-void COpenGLDevice9::ReleasedVertexBuffer( IDirect3DVertexBuffer9 *vertexBuffer )
+void COpenGLDevice9::ReleasedVertexBuffer( COpenGLVertexBuffer9 *vertexBuffer )
 {
 	for (int i=0; i< D3D_MAX_STREAMS; i++)
 	{
@@ -571,7 +571,7 @@ void COpenGLDevice9::ReleasedVertexBuffer( IDirect3DVertexBuffer9 *vertexBuffer 
 	m_ObjectStats.m_nTotalVertexBuffers--;
 }
 
-void COpenGLDevice9::ReleasedIndexBuffer( IDirect3DIndexBuffer9 *indexBuffer )
+void COpenGLDevice9::ReleasedIndexBuffer( COpenGLIndexBuffer9 *indexBuffer )
 {
 	if ( m_indices.m_idxBuffer == indexBuffer )
 	{
@@ -583,7 +583,7 @@ void COpenGLDevice9::ReleasedIndexBuffer( IDirect3DIndexBuffer9 *indexBuffer )
 	m_ObjectStats.m_nTotalIndexBuffers--;
 }
 
-void COpenGLDevice9::ReleasedQuery( IDirect3DQuery9 *query )
+void COpenGLDevice9::ReleasedQuery( COpenGLQuery9 *query )
 {
 	Assert( m_ObjectStats.m_nTotalQueries >= 1 );
 	m_ObjectStats.m_nTotalQueries--;
@@ -988,7 +988,7 @@ HRESULT COpenGLDevice9::CreateDepthStencilSurface(UINT Width,UINT Height,D3DFORM
 	m_ObjectStats.m_nTotalSurfaces++;
 	m_ObjectStats.m_nTotalRenderTargets++;
 
-	IDirect3DSurface9 *surf = new IDirect3DSurface9;
+	COpenGLSurface9 *surf = new COpenGLSurface9;
 	surf->m_restype = D3DRTYPE_SURFACE;
 
 	surf->m_device = this;				// always set device on creations!
@@ -1046,7 +1046,7 @@ HRESULT COpenGLDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D3DFORMAT Form
 	
 	m_ObjectStats.m_nTotalIndexBuffers++;
 
-	IDirect3DIndexBuffer9 *newbuff = new IDirect3DIndexBuffer9;
+	COpenGLIndexBuffer9 *newbuff = new COpenGLIndexBuffer9;
 
 	newbuff->m_device = this;
 
@@ -1090,7 +1090,7 @@ HRESULT COpenGLDevice9::CreateOffscreenPlainSurface(UINT Width,UINT Height,D3DFO
 	m_ObjectStats.m_nTotalSurfaces++;
 	m_ObjectStats.m_nTotalRenderTargets++;
 
-	IDirect3DSurface9 *surf = new IDirect3DSurface9;
+	COpenGLSurface9 *surf = new COpenGLSurface9;
 	surf->m_restype = D3DRTYPE_SURFACE;
 
 	surf->m_device		= this;				// always set device on creations!
@@ -1198,7 +1198,7 @@ HRESULT COpenGLDevice9::CreatePixelShader(const DWORD *pFunction,IDirect3DPixelS
 		{
 			m_ObjectStats.m_nTotalPixelShaders++;
 
-			IDirect3DPixelShader9 *newprog = new IDirect3DPixelShader9;
+			COpenGLPixelShader9 *newprog = new COpenGLPixelShader9;
 
 			newprog->m_pixHighWater = 0;
 			newprog->m_pixSamplerMask = 0;
@@ -1350,7 +1350,7 @@ HRESULT COpenGLDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery)
 	{
 		m_ObjectStats.m_nTotalQueries++;
 
-		IDirect3DQuery9	*newquery = new IDirect3DQuery9;
+		COpenGLQuery9	*newquery = new COpenGLQuery9;
 		
 		newquery->m_device = this;
 		
@@ -1410,7 +1410,7 @@ HRESULT COpenGLDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Form
 	m_ObjectStats.m_nTotalSurfaces++;
 	m_ObjectStats.m_nTotalRenderTargets++;
 
-	IDirect3DSurface9 *surf = new IDirect3DSurface9;
+	COpenGLSurface9 *surf = new COpenGLSurface9;
 	surf->m_restype = D3DRTYPE_SURFACE;
 
 	surf->m_device		= this;				// always set device on creations!
@@ -1476,7 +1476,7 @@ HRESULT COpenGLDevice9::CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD U
 	m_ObjectStats.m_nTotalTextures++;
 
 	GLMPRINTF((">-A-IDirect3DDevice9::CreateTexture"));
-	IDirect3DTexture9	*dxtex = new IDirect3DTexture9;
+	COpenGLTexture9	*dxtex = new COpenGLTexture9;
 	dxtex->m_restype = D3DRTYPE_TEXTURE;
 	
 	dxtex->m_device		= this;
@@ -1599,7 +1599,7 @@ HRESULT COpenGLDevice9::CreateVertexBuffer(UINT Length,DWORD Usage,DWORD FVF,D3D
 	
 	m_ObjectStats.m_nTotalVertexBuffers++;
 
-	IDirect3DVertexBuffer9 *newbuff = new IDirect3DVertexBuffer9;
+	COpenGLVertexBuffer9 *newbuff = new COpenGLVertexBuffer9;
 	
 	newbuff->m_device = this;
 	
@@ -1640,18 +1640,18 @@ HRESULT COpenGLDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertex
 	// -> what the stride and offset is for each decl.  Size you can figure out on the spot, stride requires surveying all the components in each stream first.
 	//	so init an array of per-stream offsets to 0.
 	//	each one is a cursor that gets bumped by decls.
-	uint	streamOffsets[ D3D_MAX_STREAMS ];
-	uint	streamCount = 0;
+	unsigned int	streamOffsets[ D3D_MAX_STREAMS ];
+	unsigned int	streamCount = 0;
 	
-	uint	attribMap[16];
-	uint	attribMapIndex = 0;
+	unsigned int	attribMap[16];
+	unsigned int	attribMapIndex = 0;
 	memset( attribMap, 0xFF, sizeof( attribMap ) );
 	
 	memset( streamOffsets, 0, sizeof( streamOffsets ) );
 
 	m_ObjectStats.m_nTotalVertexDecls++;
 
-	IDirect3DVertexDeclaration9 *decl9 = new IDirect3DVertexDeclaration9;
+	COpenGLVertexDeclaration9 *decl9 = new COpenGLVertexDeclaration9;
 	decl9->m_device = this;
 	
 	decl9->m_elemCount = 0;
@@ -1778,7 +1778,7 @@ HRESULT COpenGLDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertex
 	D3DVERTEXELEMENT9_GL *pDeclElem = decl9->m_elements;
 	for( unsigned int j = 0; j < decl9->m_elemCount; j++, pDeclElem++)
 	{
-		uint nPackedVertexAttribDesc = ( pDeclElem->m_dxdecl.Usage << 4 ) | pDeclElem->m_dxdecl.UsageIndex;
+		unsigned int nPackedVertexAttribDesc = ( pDeclElem->m_dxdecl.Usage << 4 ) | pDeclElem->m_dxdecl.UsageIndex;
 		if ( nPackedVertexAttribDesc == 0xBB )
 		{
 			// 0xBB is a reserved packed vertex attrib value - shouldn't encounter in practice
@@ -1835,11 +1835,11 @@ HRESULT COpenGLDevice9::CreateVertexShader(const DWORD *pFunction,IDirect3DVerte
 			glslVertexShaderOptions |= D3DToGL_OptionDoUserClipPlanes; 
 		}
 			
-		if ( !CommandLine()->CheckParm("-disableboneuniformbuffers") )
+		/*if ( !CommandLine()->CheckParm("-disableboneuniformbuffers") )
 		{
 			// If using GLSL, enabling a uniform buffer specifically for bone registers. (Not currently supported with ARB shaders, which are not optimized at all anyway.)
 			glslVertexShaderOptions |= D3DToGL_OptionGenerateBoneUniformBuffer;
-		}
+		}*/
 
 		g_D3DToOpenGLTranslatorGLSL.TranslateShader( (uint32 *) pFunction, &tempbuf, &bVertexShader, glslVertexShaderOptions, -1, nCentroidMask, pDebugLabel );
 			
@@ -1856,7 +1856,7 @@ HRESULT COpenGLDevice9::CreateVertexShader(const DWORD *pFunction,IDirect3DVerte
 		{
 			m_ObjectStats.m_nTotalVertexShaders++;
 
-			IDirect3DVertexShader9 *newprog = new IDirect3DVertexShader9;
+			COpenGLVertexShader9 *newprog = new COpenGLVertexShader9;
 
 			newprog->m_device = this;
 					
@@ -1971,7 +1971,7 @@ HRESULT COpenGLDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UI
 
 	m_ObjectStats.m_nTotalTextures++;
 
-	IDirect3DVolumeTexture9	*dxtex = new IDirect3DVolumeTexture9;
+	COpenGLVolumeTexture9	*dxtex = new COpenGLVolumeTexture9;
 	dxtex->m_restype = D3DRTYPE_VOLUMETEXTURE;
 	
 	dxtex->m_device			= this;

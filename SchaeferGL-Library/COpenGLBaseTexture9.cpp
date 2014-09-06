@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLBaseTexture9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLBaseTexture9::COpenGLBaseTexture9()
 {

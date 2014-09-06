@@ -51,6 +51,7 @@
 //#include "tier0/icommandline.h"
 #include "types.h"
 #include "COpenGLTypes.h"
+#include "D3D9.h"
 
 #undef FORCEINLINE
 #define FORCEINLINE inline
@@ -1053,7 +1054,7 @@ struct	GLMTexSampler
 
 struct GLMVertexSetup
 {
-	uint m_attrMask;					// which attrs are enabled (1<<n) mask where n is a GLMVertexAttributeIndex.
+	unsigned int m_attrMask;					// which attrs are enabled (1<<n) mask where n is a GLMVertexAttributeIndex.
 	
 	GLMVertexAttributeDesc m_attrs[ kGLMVertexAttributeIndexMax ];
 
@@ -1108,13 +1109,13 @@ struct GLMProgramParamsF
 struct GLMProgramParamsB
 {
 	int		m_values[kGLMProgramParamBoolLimit];			// bools, 4 of them
-	uint	m_dirtySlotCount;
+	unsigned int	m_dirtySlotCount;
 };
 
 struct GLMProgramParamsI
 {
 	int		m_values[kGLMProgramParamInt4Limit][4];			// int4s, 16 of them
-	uint	m_dirtySlotCount;
+	unsigned int	m_dirtySlotCount;
 };
 
 enum EGLMParamWriteMode
@@ -1183,21 +1184,21 @@ public:
 		memset(this, 0, sizeof(*this));
 	}
 
-	uint m_nTotalBatchFlushes;
-	uint m_nTotalProgramPairChanges;
+	unsigned int m_nTotalBatchFlushes;
+	unsigned int m_nTotalProgramPairChanges;
 
-	uint m_nNumChangedSamplers;
-	uint m_nNumSamplingParamsChanged;
-	uint m_nIndexBufferChanged;
-	uint m_nVertexBufferChanged;
+	unsigned int m_nNumChangedSamplers;
+	unsigned int m_nNumSamplingParamsChanged;
+	unsigned int m_nIndexBufferChanged;
+	unsigned int m_nVertexBufferChanged;
 
-	uint m_nFirstVSConstant;
-	uint m_nNumVSConstants;
-	uint m_nNumVSBoneConstants;
-	uint m_nFirstPSConstant;
-	uint m_nNumPSConstants;
-	uint m_nNewPS;
-	uint m_nNewVS;
+	unsigned int m_nFirstVSConstant;
+	unsigned int m_nNumVSConstants;
+	unsigned int m_nNumVSBoneConstants;
+	unsigned int m_nFirstPSConstant;
+	unsigned int m_nNumPSConstants;
+	unsigned int m_nNewPS;
+	unsigned int m_nNewVS;
 };
 
 //===========================================================================//
@@ -1229,7 +1230,7 @@ public:
 
 		// Guarantee 64KB alignment
 		m_pRawBuf = malloc( nSize + 65535 );
-		m_pBuf = reinterpret_cast<void *>((reinterpret_cast<uint64>(m_pRawBuf) + 65535) & (~65535));
+		m_pBuf = reinterpret_cast<void *>((reinterpret_cast<unsigned __int64>(m_pRawBuf) + 65535) & (~65535));
 		m_nSize = nSize;
 		m_nOfs = 0;
 
@@ -1303,8 +1304,8 @@ public:
 private:
 	void *m_pRawBuf;
 	void *m_pBuf;
-	uint m_nSize;
-	uint m_nOfs;
+	unsigned int m_nSize;
+	unsigned int m_nOfs;
 
 	GLuint m_nBufferObj;
 	
@@ -1526,7 +1527,11 @@ class GLMContext
 		friend struct IDirect3D9;
 		friend struct IDirect3DDevice9;
 		friend struct IDirect3DQuery9;
-		
+
+		friend class COpenGL9;
+		friend class COpenGLDevice9;
+		friend class COpenGLQuery9;
+
 		// methods------------------------------------------
 		
 				// old GLMContext( GLint displayMask, GLint rendererID, PseudoNSGLContextPtr nsglShareCtx );
@@ -1565,10 +1570,10 @@ class GLMContext
 
 		struct CurAttribs_t
 		{
-			uint m_nTotalBufferRevision;
+			unsigned int m_nTotalBufferRevision;
 			IDirect3DVertexDeclaration9	*m_pVertDecl;
 			D3DStreamDesc m_streams[ D3D_MAX_STREAMS ];
-			uint64 m_vtxAttribMap[2];
+			unsigned __int64 m_vtxAttribMap[2];
 		};
 
 		CurAttribs_t m_CurAttribs;
@@ -1627,7 +1632,7 @@ class GLMContext
 						
 		// context
 		DWORD							m_nCurOwnerThreadId;
-		uint							m_nThreadOwnershipReleaseCounter;
+		unsigned int							m_nThreadOwnershipReleaseCounter;
 
 		bool							m_bUseSamplerObjects;
 
@@ -1697,9 +1702,9 @@ class GLMContext
 		int								m_activeTexture;		// mirror for glActiveTexture
 		GLMTexSampler					m_samplers[GLM_SAMPLER_COUNT];
 		
-		uint8							m_nDirtySamplerFlags[GLM_SAMPLER_COUNT];	// 0 if the sampler is dirty, 1 if not
-		uint32							m_nNumDirtySamplers;						// # of unique dirty sampler indices in m_nDirtySamplers
-		uint8							m_nDirtySamplers[GLM_SAMPLER_COUNT + 1];	// dirty sampler indices
+		unsigned __int8							m_nDirtySamplerFlags[GLM_SAMPLER_COUNT];	// 0 if the sampler is dirty, 1 if not
+		unsigned __int32							m_nNumDirtySamplers;						// # of unique dirty sampler indices in m_nDirtySamplers
+		unsigned __int8							m_nDirtySamplers[GLM_SAMPLER_COUNT + 1];	// dirty sampler indices
 
 		void MarkAllSamplersDirty();
 						
@@ -1714,7 +1719,7 @@ class GLMContext
 			cSamplerObjectHashBits = 9, cSamplerObjectHashSize = 1 << cSamplerObjectHashBits 
 		};
 		SamplerHashEntry				m_samplerObjectHash[cSamplerObjectHashSize];
-		uint							m_nSamplerObjectHashNumEntries;
+		unsigned int							m_nSamplerObjectHashNumEntries;
 					
 		// texture lock tracking - CGLMTex objects share usage of this
 		CUtlVector< GLMTexLockDesc >	m_texLocks;
@@ -1736,7 +1741,7 @@ class GLMContext
 		
 		CUtlVector< CGLMFBO* >			m_fboTable;				// each live FBO goes in the table
 
-		uint							m_fragDataMask;
+		unsigned int							m_fragDataMask;
 		
 		// program bindings
 		EGLMProgramLang					m_drawingLangAtFrameStart;	// selector for start of frame (spills into m_drawingLang)
@@ -1774,11 +1779,11 @@ class GLMContext
 			GLboolean m_normalized;
 			GLuint m_stride;
 			const void *m_pPtr;
-			uint m_revision;
+			unsigned int m_revision;
 		};
 
 		VertexAttribs_t					m_boundVertexAttribs[ kGLMVertexAttributeIndexMax ];	// tracked per attrib for dupe-set-absorb
-		uint							m_lastKnownVertexAttribMask;								// tracked for dupe-enable-absorb
+		unsigned int							m_lastKnownVertexAttribMask;								// tracked for dupe-enable-absorb
 		int								m_nNumSetVertexAttributes;
 						
 		// FIXME: Remove this, it's no longer used
@@ -1801,15 +1806,15 @@ class GLMContext
 												
 		int							    m_nMaxUsedVertexProgramConstantsHint;
 		
-		uint32							m_dwRenderThreadId;
+		unsigned __int32							m_dwRenderThreadId;
 		volatile bool					m_bIsThreading;
 
-		uint m_nCurFrame;
-		uint m_nBatchCounter;
+		unsigned int m_nCurFrame;
+		unsigned int m_nBatchCounter;
 
 		enum { cNumPinnedMemoryBuffers = 4 };
 		CPinnedMemoryBuffer m_PinnedMemoryBuffers[cNumPinnedMemoryBuffers];
-		uint m_nCurPinnedMemoryBuffer;
+		unsigned int m_nCurPinnedMemoryBuffer;
 		
 		void SaveColorMaskAndSetToDefault();
 		void RestoreSavedColorMask();
@@ -1827,7 +1832,7 @@ class GLMContext
 																// may be desirable to re-pause in that event, as user was expecting a hold to occur
 
 		bool							m_debugDelayEnable;		// allow sleep delay
-		uint							m_debugDelay;			// sleep time per hook call in microseconds (for usleep())
+		unsigned int							m_debugDelay;			// sleep time per hook call in microseconds (for usleep())
 		
 		// pre-draw global toggles / options
 		bool							m_autoClearColor,m_autoClearDepth,m_autoClearStencil;
@@ -1839,12 +1844,12 @@ class GLMContext
 #endif
 
 #if GL_BATCH_PERF_ANALYSIS
-		uint m_nTotalVSUniformCalls;
-		uint m_nTotalVSUniformBoneCalls;
-		uint m_nTotalVSUniformsSet;
-		uint m_nTotalVSUniformsBoneSet;
-		uint m_nTotalPSUniformCalls;
-		uint m_nTotalPSUniformsSet;
+		unsigned int m_nTotalVSUniformCalls;
+		unsigned int m_nTotalVSUniformBoneCalls;
+		unsigned int m_nTotalVSUniformsSet;
+		unsigned int m_nTotalVSUniformsBoneSet;
+		unsigned int m_nTotalPSUniformCalls;
+		unsigned int m_nTotalPSUniformsSet;
 		
 		CFlushDrawStatesStats m_FlushStats;
 #endif
@@ -2267,7 +2272,7 @@ FORCEINLINE void GLMContext::BindVertexBufferToCtx( CGLMBuffer *buff )
 
 FORCEINLINE void GLMContext::SetMaxUsedVertexShaderConstantsHint( unsigned int nMaxConstants )
 {
-	static bool bUseMaxVertexShadeConstantHints = !CommandLine()->CheckParm("-disablemaxvertexshaderconstanthints");
+	static bool bUseMaxVertexShadeConstantHints = true; // !CommandLine()->CheckParm("-disablemaxvertexshaderconstanthints");
 	if ( bUseMaxVertexShadeConstantHints )
 	{
 		m_nMaxUsedVertexProgramConstantsHint = nMaxConstants;
@@ -2344,8 +2349,8 @@ public:
 class CStackCrawlParams
 {
 	public:
-	uint					m_frameLimit;							// input: max frames to retrieve
-	uint					m_frameCount;							// output: frames found
+	unsigned int					m_frameLimit;							// input: max frames to retrieve
+	unsigned int					m_frameCount;							// output: frames found
 	void					*m_crawl[kMaxCrawlFrames];				// call site addresses
 	char					*m_crawlNames[kMaxCrawlFrames];			// pointers into text following, one per decoded name
 	char					m_crawlText[kMaxCrawlText];

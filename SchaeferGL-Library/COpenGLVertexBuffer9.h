@@ -36,7 +36,7 @@
 #include "IDirect3DVertexBuffer9.h" // Base class: IDirect3DVertexBuffer9
 #include "COpenGLResource9.h"
 
-class COpenGLVertexBuffer9 : public IDirect3DVertexBuffer9,COpenGLResource9
+class COpenGLVertexBuffer9 : public IDirect3DVertexBuffer9,public COpenGLResource9
 {
 private:
 	

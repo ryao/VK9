@@ -38,7 +38,7 @@
 
 static void FillD3DCaps9( const GLMRendererInfoFields &glmRendererInfo, D3DCAPS9* pCaps );
 
-class COpenGL9 : public IDirect3D9,COpenGLUnknown
+class COpenGL9 : public IDirect3D9,public COpenGLUnknown
 {
 public:
 	COpenGL9();

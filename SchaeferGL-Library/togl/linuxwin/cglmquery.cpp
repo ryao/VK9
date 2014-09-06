@@ -33,21 +33,21 @@
 #endif
 
 // memdbgon -must- be the last include file in a .cpp file.
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 //===============================================================================
 
 // http://www.opengl.org/registry/specs/ARB/occlusion_query.txt
 // Workaround for "Calling either GenQueriesARB or DeleteQueriesARB while any query of any target is active causes an INVALID_OPERATION error to be generated."
-uint CGLMQuery::s_nTotalOcclusionQueryCreatesOrDeletes;
+unsigned int CGLMQuery::s_nTotalOcclusionQueryCreatesOrDeletes;
 
-extern ConVar gl_errorcheckall;
-extern ConVar gl_errorcheckqueries;
-extern ConVar gl_errorchecknone;
+//extern ConVar gl_errorcheckall;
+//extern ConVar gl_errorcheckqueries;
+//extern ConVar gl_errorchecknone;
 
 // how many microseconds to wait after a failed query-available test
 // presently on MTGL this doesn't happen, but it could change, keep this handy
-ConVar  gl_nullqueries( "gl_nullqueries", "0" );
+//ConVar  gl_nullqueries( "gl_nullqueries", "0" );
 
 
 //===============================================================================
@@ -147,7 +147,7 @@ CGLMQuery::~CGLMQuery()
 
 void	CGLMQuery::Start( void )		// "start counting"
 {
-	m_nullQuery = (gl_nullqueries.GetInt() != 0);	// latch value for remainder of query life
+	m_nullQuery = false; //(gl_nullqueries.GetInt() != 0);	// latch value for remainder of query life
 
 	m_started = true;
 	m_stopped = false;
@@ -283,7 +283,7 @@ bool	CGLMQuery::IsDone( void )
 
 void	CGLMQuery::Complete( unsigned int *result )
 {
-	uint resultval = 0;
+	unsigned int resultval = 0;
 	//bool bogus_available = false;
 	
 	// blocking call if not done

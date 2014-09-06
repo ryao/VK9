@@ -334,17 +334,19 @@ public:
 extern COpenGLEntryPoints *gGL;
 typedef void * (*GL_GetProcAddressCallbackFunc_t)(const char *, bool &, const bool, void *);
 
+/*
 #ifdef TOGL_DLL_EXPORT
 	DLL_EXPORT COpenGLEntryPoints *ToGLConnectLibraries( CreateInterfaceFn factory );
 	DLL_EXPORT void ToGLDisconnectLibraries();
 	DLL_EXPORT COpenGLEntryPoints *GetOpenGLEntryPoints(GL_GetProcAddressCallbackFunc_t callback);
 	DLL_EXPORT void ClearOpenGLEntryPoints();
 #else
-	/*DLL_IMPORT*/ COpenGLEntryPoints *ToGLConnectLibraries( CreateInterfaceFn factory );
-	/*DLL_IMPORT*/ void ToGLDisconnectLibraries();
-	/*DLL_IMPORT*/ COpenGLEntryPoints *GetOpenGLEntryPoints(GL_GetProcAddressCallbackFunc_t callback);
-	/*DLL_IMPORT*/ void ClearOpenGLEntryPoints();
+	DLL_IMPORT COpenGLEntryPoints *ToGLConnectLibraries( CreateInterfaceFn factory );
+	DLL_IMPORT void ToGLDisconnectLibraries();
+	DLL_IMPORT COpenGLEntryPoints *GetOpenGLEntryPoints(GL_GetProcAddressCallbackFunc_t callback);
+	DLL_IMPORT void ClearOpenGLEntryPoints();
 #endif
+*/
 
 #if GL_USE_EXECUTE_HELPER_FOR_ALL_API_CALLS
 inline void CGLExecuteHelperBase::StartCall(const char *pName) 

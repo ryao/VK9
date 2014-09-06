@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLVertexDeclaration9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLVertexDeclaration9::COpenGLVertexDeclaration9()
 {

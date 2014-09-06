@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLCubeTexture9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLCubeTexture9::COpenGLCubeTexture9()
 {
@@ -88,7 +89,7 @@ HRESULT COpenGLCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT L
 
 	m_device->m_ObjectStats.m_nTotalSurfaces++;
 
-	IDirect3DSurface9 *surf = new IDirect3DSurface9;
+	COpenGLSurface9 *surf = new COpenGLSurface9;
 	surf->m_restype = (D3DRESOURCETYPE)0;	// 0 is special and means this 'surface' does not own its m_tex
 	
 	GLMTexLayoutSlice *slice = &m_tex->m_layout->m_slices[ m_tex->CalcSliceIndex( FaceType, Level ) ];

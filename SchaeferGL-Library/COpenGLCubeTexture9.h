@@ -35,14 +35,15 @@
 
 #include "IDirect3DCubeTexture9.h" // Base class: IDirect3DCubeTexture9
 #include "COpenGLBaseTexture9.h"
+#include "COpenGLSurface9.h"
 
-class COpenGLCubeTexture9 : public IDirect3DCubeTexture9,COpenGLBaseTexture9
+class COpenGLCubeTexture9 : public IDirect3DCubeTexture9,public COpenGLBaseTexture9
 {
 public:
 	COpenGLCubeTexture9();
 	~COpenGLCubeTexture9();
 
-	IDirect3DSurface9		*m_surfZero[6];			// surfs of top level.
+	COpenGLSurface9		*m_surfZero[6];			// surfs of top level.
 
 public:
 	//virtual HRESULT AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT* pDirtyRect);

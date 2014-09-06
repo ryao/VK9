@@ -36,17 +36,17 @@
 #include "IDirect3DVertexShader9.h" // Base class: IDirect3DVertexShader9
 #include "COpenGLResource9.h"
 
-class COpenGLVertexShader9 : public IDirect3DVertexShader9,COpenGLResource9
+class COpenGLVertexShader9 : public IDirect3DVertexShader9,public COpenGLResource9
 {
 public:
 	COpenGLVertexShader9();
 	~COpenGLVertexShader9();
 
 	CGLMProgram				*m_vtxProgram;
-	uint					m_vtxHighWater;		// count of active constant slots referenced by shader.
-	uint					m_vtxHighWaterBone;
+	unsigned int					m_vtxHighWater;		// count of active constant slots referenced by shader.
+	unsigned int					m_vtxHighWaterBone;
 	unsigned char			m_vtxAttribMap[16];	// high nibble is usage, low nibble is usageindex, array position is attrib number
-	uint					m_maxVertexAttrs;
+	unsigned int					m_maxVertexAttrs;
 
 public:
 	//virtual HRESULT GetDevice(IDirect3DDevice9** ppDevice);

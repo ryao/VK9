@@ -68,7 +68,7 @@
 #include "togl/linuxwin/cglmprogram.h"
 #include "togl/linuxwin/cglmquery.h"
 #include "togl/linuxwin/glmgr.h"
-#include "togl/linuxwin/dxabstract_types.h"
-#include "togl/linuxwin/dxabstract.h"
+//#include "togl/linuxwin/dxabstract_types.h"
+//#include "togl/linuxwin/dxabstract.h"
 
 #endif // RENDERMECHANISM_H

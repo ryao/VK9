@@ -28,23 +28,25 @@
 
 #include "togl/rendermechanism.h"
 
-#include "filesystem.h"
-#include "tier1/fmtstr.h"
-#include "tier1/keyvalues.h"
+//#include "filesystem.h"
+//#include "tier1/fmtstr.h"
+//#include "tier1/keyvalues.h"
 
 #if GLMDEBUG && defined( _MSC_VER )
 #include <direct.h>
 #endif
 
 // memdbgon -must- be the last include file in a .cpp file.
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 
 //===============================================================================
 
+/*
 ConVar	gl_shaderpair_cacherows_lg2( "gl_paircache_rows_lg2", "10");		// 10 is minimum
 ConVar	gl_shaderpair_cacheways_lg2( "gl_paircache_ways_lg2", "5");		// 5 is minimum
 ConVar	gl_shaderpair_cachelog( "gl_shaderpair_cachelog", "0" );
+*/
 
 //===============================================================================
 
@@ -135,7 +137,7 @@ CGLMProgram::~CGLMProgram( )
 	GLMShaderDesc *glslDesc = &m_descs[kGLMGLSL];
 	if (glslDesc->m_object.glsl)
 	{
-		gGL->glDeleteShader( (uint)glslDesc->m_object.glsl );	// why do I need a cast here again ?
+		gGL->glDeleteShader( (unsigned int)glslDesc->m_object.glsl );	// why do I need a cast here again ?
 		glslDesc->m_object.glsl = 0;
 	}
 
@@ -240,8 +242,8 @@ void	CGLMProgram::SetProgramText( char *text )
 	int sectionCount = sections.Count();
 	for( int i=0; i < sectionCount; i++ )
 	{
-		uint subtextOffset	= 0;
-		uint subtextLength	= 0;
+		unsigned int subtextOffset	= 0;
+		unsigned int subtextLength	= 0;
 		int markerIndex		= 0;
 		
 		sections.GetSection( i, &subtextOffset, &subtextLength, &markerIndex );
@@ -323,7 +325,7 @@ bool	CGLMProgram::Compile( EGLMProgramLang lang )
 {
 	bool result = true;	// indicating validity..
 	bool noisy = false; noisy;
-	int loglevel = gl_shaderpair_cachelog.GetInt();
+	int loglevel = 0; //gl_shaderpair_cachelog.GetInt();
 	
 	switch( lang )
 	{
@@ -933,7 +935,7 @@ bool CGLMShaderPair::SetProgramPair( CGLMProgram *vp, CGLMProgram *fp )
 			}
 		}
 
-		if (CommandLine()->CheckParm("-dumpallshaders"))
+		/*if (CommandLine()->CheckParm("-dumpallshaders"))
 		{
 			// Dump all shaders, for debugging.
 			FILE* pFile = fopen("shaderdump.txt", "a+");
@@ -943,7 +945,7 @@ bool CGLMShaderPair::SetProgramPair( CGLMProgram *vp, CGLMProgram *fp )
 				fprintf(pFile, "--------------FP:%s\n%s\n", fp->m_shaderName, fp->m_text);
 				fclose(pFile);
 			}
-		}
+		}*/
 			
 		// now link
 		gGL->glLinkProgramARB( m_program );
@@ -1034,7 +1036,7 @@ bool CGLMShaderPair::SetProgramPair( CGLMProgram *vp, CGLMProgram *fp )
 
  		m_locFragmentParams = gGL->glGetUniformLocationARB( m_program, "pc");
 						
-		for (uint i = 0; i < kGLMNumProgramTypes; i++)
+		for (unsigned int i = 0; i < kGLMNumProgramTypes; i++)
 		{
 			m_NumUniformBufferParams[i] = 0;
 
@@ -1048,7 +1050,7 @@ bool CGLMShaderPair::SetProgramPair( CGLMProgram *vp, CGLMProgram *fp )
 
 			const unsigned int nNum = (i == kGLMVertexProgram) ? m_vertexProg->m_descs[kGLMGLSL].m_highWater : m_fragmentProg->m_descs[kGLMGLSL].m_highWater;
 						
-			uint j;
+			unsigned int j;
 			for (j = 0; j < nNum; j++)
 			{
 				char buf[256];
@@ -1136,25 +1138,25 @@ CGLMShaderPairCache::CGLMShaderPairCache( GLMContext *ctx  )
 	
 	m_mark = 1;
 	
-	m_rowsLg2 = gl_shaderpair_cacherows_lg2.GetInt();
+	m_rowsLg2 = 10; //gl_shaderpair_cacherows_lg2.GetInt();
 	if (m_rowsLg2 < 10)
 			m_rowsLg2 = 10;
 	m_rows = 1<<m_rowsLg2;
 	m_rowsMask = m_rows - 1;
 
-	m_waysLg2 = gl_shaderpair_cacheways_lg2.GetInt();
+	m_waysLg2 = 5; //gl_shaderpair_cacheways_lg2.GetInt();
 	if (m_waysLg2 < 5)
 		m_waysLg2 = 5;
 	m_ways = 1<<m_waysLg2;
 
 	m_entryCount = m_rows * m_ways;
 	
-	uint entryTableSize = m_rows * m_ways * sizeof(CGLMPairCacheEntry);
+	unsigned int entryTableSize = m_rows * m_ways * sizeof(CGLMPairCacheEntry);
 	m_entries = (CGLMPairCacheEntry*)malloc( entryTableSize );				// array[ m_rows ][ m_ways ]
 	memset( m_entries, 0, entryTableSize );
 	
-	uint evictTableSize = m_rows * sizeof(uint);
-	m_evictions = (uint*)malloc( evictTableSize );
+	unsigned int evictTableSize = m_rows * sizeof(unsigned int);
+	m_evictions = (unsigned int*)malloc( evictTableSize );
 	memset (m_evictions, 0, evictTableSize);
 
 #if GL_SHADER_PAIR_CACHE_STATS
@@ -1166,10 +1168,10 @@ CGLMShaderPairCache::CGLMShaderPairCache( GLMContext *ctx  )
 
 CGLMShaderPairCache::~CGLMShaderPairCache( )
 {
-	if (gl_shaderpair_cachelog.GetInt())
+	/*if (gl_shaderpair_cachelog.GetInt())
 	{
 		DumpStats();
-	}
+	}*/
 
 	// free all the built pairs
 	// free the entry table
@@ -1200,7 +1202,7 @@ CGLMShaderPairCache::~CGLMShaderPairCache( )
 
 // Set this convar internally to build or add to the shader pair cache file (link hints)
 // We really only expect this to work on POSIX
-static ConVar glm_cacheprograms( "glm_cacheprograms", "0", FCVAR_DEVELOPMENTONLY );
+//static ConVar glm_cacheprograms( "glm_cacheprograms", "0", FCVAR_DEVELOPMENTONLY );
 
 #define PROGRAM_CACHE_FILE "program_cache.cfg"
 
@@ -1251,7 +1253,7 @@ CGLMShaderPair	*CGLMShaderPairCache::SelectShaderPairInternal( CGLMProgram *vp, 
 	CGLMShaderPair	*result = NULL;
 		
 #if GLMDEBUG
-	int loglevel = gl_shaderpair_cachelog.GetInt();
+	int loglevel = 0; //gl_shaderpair_cachelog.GetInt();
 #else
 	const int loglevel = 0;
 #endif
@@ -1345,17 +1347,17 @@ CGLMShaderPair	*CGLMShaderPairCache::SelectShaderPairInternal( CGLMProgram *vp, 
 
 	result = newentry->m_pair;
 
-	if (glm_cacheprograms.GetInt())
+	/*if (glm_cacheprograms.GetInt())
 	{
 		WriteToProgramCache( newentry->m_pair );
-	}
+	}*/
 		
 	return result;
 }
 
 void	CGLMShaderPairCache::QueryShaderPair( int index, GLMShaderPairInfo *infoOut )
 {
-	if ( (index<0) || ( static_cast<uint>(index) >= (m_rows*m_ways) ) )
+	if ( (index<0) || ( static_cast<unsigned int>(index) >= (m_rows*m_ways) ) )
 	{
 		// no such location
 		memset( infoOut, 0, sizeof(*infoOut) );

@@ -36,13 +36,15 @@
 #include "IDirect3DResource9.h" // Base class: IDirect3DResource9
 #include "COpenGLUnknown.h"
 
-class COpenGLResource9 : public IDirect3DResource9,COpenGLUnknown
+class COpenGLDevice9;
+
+class COpenGLResource9 : public IDirect3DResource9,public COpenGLUnknown
 {
 public:
 	COpenGLResource9();
 	~COpenGLResource9();
 
-	IDirect3DDevice9	*m_device;		// parent device
+	COpenGLDevice9	*m_device;		// parent device
 	D3DRESOURCETYPE		m_restype;
 
 public:

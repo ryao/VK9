@@ -47,9 +47,9 @@ public:
 	bool m_mark;
 
 public:
-	virtual ULONG AddRef();
+	//virtual ULONG AddRef();
 	//virtual HRESULT QueryInterface(REFIID riid, void** ppvObject);
-	virtual ULONG Release();
+	//virtual ULONG Release();
 };
 
 #endif // COPENGLUNKNOWN_H

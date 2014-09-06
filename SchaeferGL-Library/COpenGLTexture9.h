@@ -35,14 +35,15 @@
 
 #include "IDirect3DTexture9.h" // Base class: IDirect3DTexture9
 #include "COpenGLBaseTexture9.h"
+#include "COpenGLSurface9.h"
 
-class COpenGLTexture9 : public IDirect3DTexture9,COpenGLBaseTexture9
+class COpenGLTexture9 : public IDirect3DTexture9,public COpenGLBaseTexture9
 {
 public:
 	COpenGLTexture9();
 	~COpenGLTexture9();
 
-	IDirect3DSurface9 *m_surfZero;				// surf of top level.
+	COpenGLSurface9 *m_surfZero;				// surf of top level.
 
 public:
 	virtual HRESULT AddDirtyRect(const RECT* pDirtyRect);

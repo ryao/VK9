@@ -45,7 +45,7 @@ bool g_bDisableStaticBuffer = false; //( Plat_GetCommandLineA() ) ? ( strstr( Pl
 
 // #define REPORT_LOCK_TIME	0
 
-ConVar gl_bufmode( "gl_bufmode", "1" );
+//ConVar gl_bufmode( "gl_bufmode", "1" );
 
 char ALIGN16 CGLMBuffer::m_StaticBuffers[ GL_MAX_STATIC_BUFFERS ][ GL_STATIC_BUFFER_SIZE ] ALIGN16_POST;
 bool CGLMBuffer::m_bStaticBufferUsed[ GL_MAX_STATIC_BUFFERS ];
@@ -287,11 +287,11 @@ void glBufferSubDataMaxSize( GLenum target, GLintptr offset, GLsizeiptr size, co
 	if ( g_bNullD3DDevice ) return;
 #endif
 
-	uint nBytesLeft = size;
-	uint nOfs = 0;
+	unsigned int nBytesLeft = size;
+	unsigned int nOfs = 0;
 	while ( nBytesLeft )
 	{
-		uint nBytesToCopy = MIN( nMaxSizePerCall, nBytesLeft );
+		unsigned int nBytesToCopy = MIN( nMaxSizePerCall, nBytesLeft );
 
 		gGL->glBufferSubData( target, offset + nOfs, nBytesToCopy, static_cast<const unsigned char *>( data ) + nOfs );
 
@@ -649,7 +649,8 @@ void CGLMBuffer::Lock( GLMBuffLockParams *pParams, char **pAddressOut )
 
 				// observe gl_bufmode on any orphan event.
 				// if orphaned and bufmode is nonzero, flip it to dynamic.
-				GLenum hint = gl_bufmode.GetInt() ? GL_DYNAMIC_DRAW_ARB : GL_STATIC_DRAW_ARB;
+				//GLenum hint = gl_bufmode.GetInt() ? GL_DYNAMIC_DRAW_ARB : GL_STATIC_DRAW_ARB;
+				GLenum hint = 1 ? GL_DYNAMIC_DRAW_ARB : GL_STATIC_DRAW_ARB;
 				gGL->glBufferDataARB( m_buffGLTarget, m_nSize, (const GLvoid*)NULL, hint );
 			
 				m_nRevision++; // revision grows on orphan event
@@ -692,7 +693,8 @@ void CGLMBuffer::Lock( GLMBuffLockParams *pParams, char **pAddressOut )
 			// if orphaned and bufmode is nonzero, flip it to dynamic.
 			
 			// We always want to call glBufferData( ..., NULL ) on discards, even though we're using the GL_MAP_INVALIDATE_BUFFER_BIT flag, because this flag is actually only a hint according to AMD.
-			GLenum hint = gl_bufmode.GetInt() ? GL_DYNAMIC_DRAW_ARB : GL_STATIC_DRAW_ARB;
+			//GLenum hint = gl_bufmode.GetInt() ? GL_DYNAMIC_DRAW_ARB : GL_STATIC_DRAW_ARB;
+			GLenum hint = 1 ? GL_DYNAMIC_DRAW_ARB : GL_STATIC_DRAW_ARB;
 			gGL->glBufferDataARB( m_buffGLTarget, m_nSize, (const GLvoid*)NULL, hint );
 									
 			m_nRevision++;	// revision grows on orphan event

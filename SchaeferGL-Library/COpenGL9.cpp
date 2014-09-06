@@ -31,6 +31,7 @@
  */
  
 #include "COpenGL9.h"
+#include "rendermechanism.h"
 
 static void FillD3DCaps9( const GLMRendererInfoFields &glmRendererInfo, D3DCAPS9* pCaps )
 {
@@ -100,10 +101,10 @@ static void FillD3DCaps9( const GLMRendererInfoFields &glmRendererInfo, D3DCAPS9
 	pCaps->MaxUserClipPlanes			=	2;		// assume good news
 
 	// is user asking for it to be off ?
-	if ( CommandLine()->CheckParm( "-nouserclip" ) )
-	{
-		pCaps->MaxUserClipPlanes		=	0;
-	}
+	//if ( CommandLine()->CheckParm( "-nouserclip" ) )
+	//{
+		//pCaps->MaxUserClipPlanes		=	0;
+	//}
 
 	pCaps->MaxVertexBlendMatrices		=	0;		// see if anyone cares
 	pCaps->MaxVertexBlendMatrixIndex	=	0;		// see if anyone cares

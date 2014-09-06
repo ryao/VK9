@@ -29,7 +29,6 @@
 #ifndef GLBASE_H
 #define	GLBASE_H
 
-#ifdef DX_TO_GL_ABSTRACTION
 
 #undef HAVE_GL_ARB_SYNC
 
@@ -44,7 +43,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#ifdef DX_TO_GL_ABSTRACTION
 	#ifndef WIN32
 	#define Debugger DebuggerBreak
 	#endif
@@ -53,7 +51,6 @@
 	#if defined( USE_SDL )
 		#include "SDL.h"
 	#endif
-#endif
 
 //===============================================================================
 // glue to call out to Obj-C land (these are in glmgrcocoa.mm)
@@ -109,7 +106,5 @@
 
 #define	kGLMUserClipPlanes			2
 #define kGLMScratchFBOCount			4
-
-#endif // DX_TO_GL_ABSTRACTION
 
 #endif // GLBASE_H

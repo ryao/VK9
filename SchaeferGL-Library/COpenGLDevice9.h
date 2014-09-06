@@ -38,6 +38,16 @@
 #include "IDirect3DDevice9.h" // Base class: IDirect3DDevice9
 #include "COpenGLUnknown.h"
 
+#include "COpenGLVertexDeclaration9.h"
+#include "COpenGLSurface9.h"
+
+#include "COpenGLPixelShader9.h"
+#include "COpenGLVertexShader9.h"
+#include "COpenGLVertexBuffer9.h"
+#include "COpenGLIndexBuffer9.h"
+#include "COpenGLQuery9.h"
+#include "COpenGLBaseTexture9.h"
+
 void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst );
 
 	struct ObjectStats_t
@@ -120,27 +130,27 @@ void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst );
 		GLMTexSamplingParams		m_samplers[GLM_SAMPLER_COUNT];
 	} gl;
 
-class COpenGLDevice9 : public IDirect3DDevice9,COpenGLUnknown
+class COpenGLDevice9 : public IDirect3DDevice9,public COpenGLUnknown
 {
-private:
+public:
 
 	// D3D flavor stuff
-	IDirect3DSurface9			*m_pRenderTargets[4];
-	IDirect3DSurface9			*m_pDepthStencil;
+	COpenGLSurface9			*m_pRenderTargets[4];
+	COpenGLSurface9			*m_pDepthStencil;
 
-	IDirect3DSurface9			*m_pDefaultColorSurface;			// default color surface.
-	IDirect3DSurface9			*m_pDefaultDepthStencilSurface;	// queried by GetDepthStencilSurface.
+	COpenGLSurface9			*m_pDefaultColorSurface;			// default color surface.
+	COpenGLSurface9			*m_pDefaultDepthStencilSurface;	// queried by GetDepthStencilSurface.
 
-	IDirect3DVertexDeclaration9	*m_pVertDecl;					// Set by SetVertexDeclaration...
+	COpenGLVertexDeclaration9	*m_pVertDecl;					// Set by SetVertexDeclaration...
 	D3DStreamDesc				m_streams[ D3D_MAX_STREAMS ];	// Set by SetStreamSource..
 	CGLMBuffer					*m_vtx_buffers[ D3D_MAX_STREAMS ];
 	CGLMBuffer					*m_pDummy_vtx_buffer;
 	D3DIndexDesc				m_indices;						// Set by SetIndices..
 
-	IDirect3DVertexShader9		*m_vertexShader;				// Set by SetVertexShader...
-	IDirect3DPixelShader9		*m_pixelShader;					// Set by SetPixelShader...
+	COpenGLVertexShader9		*m_vertexShader;				// Set by SetVertexShader...
+	COpenGLPixelShader9		*m_pixelShader;					// Set by SetPixelShader...
 
-	IDirect3DBaseTexture9		*m_textures[GLM_SAMPLER_COUNT];				// set by SetTexture... NULL if stage inactive
+	COpenGLBaseTexture9		*m_textures[GLM_SAMPLER_COUNT];				// set by SetTexture... NULL if stage inactive
 	
 	// GLM flavor stuff
 	GLMContext					*m_ctx;
@@ -189,15 +199,15 @@ public:
 	void UpdateBoundFBO();
 	void ResetFBOMap();
 	void ScrubFBOMap( CGLMTex *pTex );
-	void ReleasedVertexDeclaration( IDirect3DVertexDeclaration9 *pDecl );
-	void ReleasedTexture( IDirect3DBaseTexture9 *baseTex );
+	void ReleasedVertexDeclaration( COpenGLVertexDeclaration9 *pDecl );
+	void ReleasedTexture( COpenGLBaseTexture9 *baseTex );
 	void ReleasedCGLMTex( CGLMTex *pTex);
-	void ReleasedSurface( IDirect3DSurface9 *pSurface );
-	void ReleasedPixelShader( IDirect3DPixelShader9 *pixelShader );
-	void ReleasedVertexShader( IDirect3DVertexShader9 *vertexShader );
-	void ReleasedVertexBuffer( IDirect3DVertexBuffer9 *vertexBuffer );
-	void ReleasedIndexBuffer( IDirect3DIndexBuffer9 *indexBuffer );
-	void ReleasedQuery( IDirect3DQuery9 *query );
+	void ReleasedSurface( COpenGLSurface9 *pSurface );
+	void ReleasedPixelShader( COpenGLPixelShader9 *pixelShader );
+	void ReleasedVertexShader( COpenGLVertexShader9 *vertexShader );
+	void ReleasedVertexBuffer( COpenGLVertexBuffer9 *vertexBuffer );
+	void ReleasedIndexBuffer( COpenGLIndexBuffer9 *indexBuffer );
+	void ReleasedQuery( COpenGLQuery9 *query );
 	void FlushClipPlaneEquation();
 	void InitStates();
 	void FullFlushStates();
@@ -327,7 +337,7 @@ public:
 	virtual HRESULT UpdateSurface(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestinationSurface,const POINT *pDestinationPoint);
 	virtual HRESULT ValidateDevice(DWORD *pNumPasses);
 	
-	FORCEINLINE void TOGLMETHODCALLTYPE IDirect3DDevice9::SetSamplerStates(
+	FORCEINLINE void TOGLMETHODCALLTYPE SetSamplerStates(
 	DWORD Sampler, DWORD AddressU, DWORD AddressV, DWORD AddressW,
 	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter )
 	{
@@ -425,7 +435,7 @@ public:
 		}
 	}
 
-	FORCEINLINE HRESULT TOGLMETHODCALLTYPE IDirect3DDevice9::SetRenderStateInline( D3DRENDERSTATETYPE State, DWORD Value )
+	FORCEINLINE HRESULT TOGLMETHODCALLTYPE SetRenderStateInline( D3DRENDERSTATETYPE State, DWORD Value )
 	{
 	#if GLMDEBUG || GL_BATCH_PERF_ANALYSIS
 		return SetRenderState( State, Value );
@@ -693,13 +703,13 @@ public:
 	#endif
 	}
 
-	FORCEINLINE HRESULT TOGLMETHODCALLTYPE IDirect3DDevice9::SetRenderStateConstInline( D3DRENDERSTATETYPE State, DWORD Value )
+	FORCEINLINE HRESULT TOGLMETHODCALLTYPE SetRenderStateConstInline( D3DRENDERSTATETYPE State, DWORD Value )
 	{
 		// State is a compile time constant - luckily no need to do anything special to get the compiler to optimize this case.
 		return SetRenderStateInline( State, Value );
 	}
 
-	FORCEINLINE void IDirect3DDevice9::SetMaxUsedVertexShaderConstantsHint( unsigned int nMaxReg )
+	FORCEINLINE void SetMaxUsedVertexShaderConstantsHint( unsigned int nMaxReg )
 	{
 	#if GLMDEBUG || GL_BATCH_PERF_ANALYSIS
 		return SetMaxUsedVertexShaderConstantsHintNonInline( nMaxReg );

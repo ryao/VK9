@@ -36,18 +36,18 @@
 #include "IDirect3DPixelShader9.h" // Base class: IDirect3DPixelShader9
 #include "COpenGLResource9.h"
 
-class COpenGLPixelShader9 : public IDirect3DPixelShader9,COpenGLResource9
+class COpenGLPixelShader9 : public IDirect3DPixelShader9,public COpenGLResource9
 {
 public:
 	COpenGLPixelShader9();
 	~COpenGLPixelShader9();
 
 	CGLMProgram				*m_pixProgram;
-	uint					m_pixHighWater;		// count of active constant slots referenced by shader.
-	uint					m_pixSamplerMask;	// (1<<n) mask of samplers referemnced by this pixel shader
+	unsigned int					m_pixHighWater;		// count of active constant slots referenced by shader.
+	unsigned int					m_pixSamplerMask;	// (1<<n) mask of samplers referemnced by this pixel shader
 												// this can help FlushSamplers avoid SRGB flipping on textures not being referenced...
-	uint					m_pixSamplerTypes;  // SAMPLER_TYPE_2D, etc.
-	uint					m_pixFragDataMask;  // (1<<n) mask of gl_FragData[n] referenced by this pixel shader
+	unsigned int					m_pixSamplerTypes;  // SAMPLER_TYPE_2D, etc.
+	unsigned int					m_pixFragDataMask;  // (1<<n) mask of gl_FragData[n] referenced by this pixel shader
 
 public:
 	//virtual HRESULT GetDevice(IDirect3DDevice9** ppDevice);

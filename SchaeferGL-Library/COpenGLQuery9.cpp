@@ -129,7 +129,7 @@ HRESULT COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 				
 			if ( flush )
 				{
-				uint oqValue = 0;
+				unsigned int oqValue = 0;
 					CFastTimer tm;
 					tm.Start();
 										

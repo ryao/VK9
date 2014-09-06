@@ -28,11 +28,11 @@
 
 #include "togl/rendermechanism.h"
 
-#include "tier0/icommandline.h"
+//#include "tier0/icommandline.h"
 #include "glmtexinlines.h"
 
 // memdbgon -must- be the last include file in a .cpp file.
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 #if defined(OSX)
 #include "appframework/ilaunchermgr.h"
@@ -688,7 +688,7 @@ void CGLMTexLayoutTable::DelLayoutRef( GLMTexLayout *layout )
 
 void CGLMTexLayoutTable::DumpStats( )
 {
-	for (uint i=0; i<m_layoutMap.Count(); i++ )
+	for (unsigned int i=0; i<m_layoutMap.Count(); i++ )
 	{
 		GLMTexLayout *layout = m_layoutMap[ i ];
 		
@@ -697,7 +697,7 @@ void CGLMTexLayoutTable::DumpStats( )
 	}
 }
 
-
+/*
 ConVar gl_texclientstorage( "gl_texclientstorage", "1" );		// default 1 for L4D2
 
 ConVar gl_texmsaalog ( "gl_texmsaalog", "0");
@@ -707,6 +707,7 @@ ConVar gl_rt_forcergba ( "gl_rt_forcergba", "1" );	// on teximage of a renderabl
 ConVar gl_minimize_rt_tex ( "gl_minimize_rt_tex", "0" );	// if 1, set the GL_TEXTURE_MINIMIZE_STORAGE_APPLE texture parameter to cut off mipmaps for RT's
 ConVar gl_minimize_all_tex ( "gl_minimize_all_tex", "1" );	// if 1, set the GL_TEXTURE_MINIMIZE_STORAGE_APPLE texture parameter to cut off mipmaps for textures which are unmipped
 ConVar gl_minimize_tex_log ( "gl_minimize_tex_log", "0" );	// if 1, printf the names of the tex that got minimized
+*/
 
 CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, const char *debugLabel )
 {
@@ -761,7 +762,7 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, const char *debugLabel 
 	m_pBlitDstFBO = NULL;
 
 	//sense whether to try and apply client storage upon teximage/subimage
-	m_texClientStorage = gl_texclientstorage.GetInt() != 0;
+	m_texClientStorage = true; //gl_texclientstorage.GetInt() != 0;
 	
 	// flag that we have not yet been explicitly kicked into VRAM..
 	m_texPreloaded = false;
@@ -793,10 +794,10 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, const char *debugLabel 
 												layout->m_key.m_xSize,
 												layout->m_key.m_ySize );	
 
-		if (gl_texmsaalog.GetInt())
+		/*if (gl_texmsaalog.GetInt())
 		{
 			printf( "\n == MSAA Tex %p %s : MSAA RBO is intformat %s (%x)", this, m_debugLabel?m_debugLabel:"", GLMDecode( eGL_ENUM, msaaFormat ), msaaFormat );
-		}
+		}*/
 
 		gGL->glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, 0 );
 	}
@@ -860,8 +861,8 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, const char *debugLabel 
 	// texture minimize parameter keeps driver from allocing mips when it should not, by being explicit about the ones that have no mips.
 	
 	bool setMinimizeParameter = false;
-	bool minimize_rt = (gl_minimize_rt_tex.GetInt()!=0);
-	bool minimize_all = (gl_minimize_all_tex.GetInt()!=0);
+	bool minimize_rt = false; //(gl_minimize_rt_tex.GetInt()!=0);
+	bool minimize_all = true; //(gl_minimize_all_tex.GetInt()!=0);
 	
 	if (layout->m_key.m_texFlags & kGLMTexRenderable)
 	{
@@ -882,11 +883,13 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, const char *debugLabel 
 
 	if (setMinimizeParameter)
 	{
+		/*
 		if (gl_minimize_tex_log.GetInt())
 		{
 			printf("\n minimizing storage for tex '%s' [%s] ", m_debugLabel?m_debugLabel:"-", m_layout->m_layoutSummary );
 		}
-		
+		*/
+
 		if (gGL->m_bHave_GL_APPLE_texture_range)
 			gGL->glTexParameteri( m_layout->m_key.m_texGLTarget, GL_TEXTURE_MINIMIZE_STORAGE_APPLE, 1 );
 	}
@@ -1177,7 +1180,7 @@ void CGLMTex::ReadTexels( GLMTexLockDesc *desc, bool readWholeSlice )
 }
 
 // TexSubImage should work properly on every driver stack and GPU--enabling by default.
-ConVar	gl_enabletexsubimage( "gl_enabletexsubimage", "1" );
+//ConVar	gl_enabletexsubimage( "gl_enabletexsubimage", "1" );
 
 void CGLMTex::WriteTexels( GLMTexLockDesc *desc, bool writeWholeSlice, bool noDataWrite )
 {
@@ -1235,7 +1238,7 @@ void CGLMTex::WriteTexels( GLMTexLockDesc *desc, bool writeWholeSlice, bool noDa
 	bool mayUseSubImage = false;
 	if ( (target==GL_TEXTURE_2D) && (m_sliceFlags[ desc->m_sliceIndex ] & kSliceValid) )
 	{
-		mayUseSubImage = gl_enabletexsubimage.GetInt() != 0;
+		mayUseSubImage = true; //gl_enabletexsubimage.GetInt() != 0;
 	}
 			
 	// check flavor, 2D, 3D, or cube map
@@ -1246,11 +1249,11 @@ void CGLMTex::WriteTexels( GLMTexLockDesc *desc, bool writeWholeSlice, bool noDa
 	// (mechanism not policy)
 	
 	GLenum intformat = (m_layout->m_key.m_texFlags & kGLMTexSRGB) ? format->m_glIntFormatSRGB : format->m_glIntFormat;
-	if (CommandLine()->FindParm("-disable_srgbtex"))
+	/*if (CommandLine()->FindParm("-disable_srgbtex"))
 	{
 		// force non srgb flavor - experiment to make ATI r600 happy on 10.5.8 (maybe x1600 too!)
 		intformat = format->m_glIntFormat;
-	}
+	}*/
 	
 	Assert( intformat != 0 );
 	
@@ -1394,7 +1397,7 @@ void CGLMTex::WriteTexels( GLMTexLockDesc *desc, bool writeWholeSlice, bool noDa
 				{
 					if (m_layout->m_key.m_texFlags & kGLMTexRenderable)
 					{
-						if (gl_rt_forcergba.GetInt())
+						if (1 /*gl_rt_forcergba.GetInt()*/)
 						{
 							if (glDataFormat == GL_BGRA)
 							{
@@ -1418,11 +1421,11 @@ void CGLMTex::WriteTexels( GLMTexLockDesc *desc, bool writeWholeSlice, bool noDa
 
 					if (m_layout->m_key.m_texFlags & kGLMTexMultisampled)
 					{
-						if (gl_texmsaalog.GetInt())
+						/*if (gl_texmsaalog.GetInt())
 						{
 							printf( "\n == MSAA Tex %p %s : glTexImage2D for flat tex using intformat %s (%x)", this, m_debugLabel?m_debugLabel:"", GLMDecode( eGL_ENUM, intformat ), intformat );
 							printf( "\n" );			
-						}
+						}*/
 					}
 
 					m_sliceFlags[ desc->m_sliceIndex ] |= kSliceValid; // for next time, we can subimage..
