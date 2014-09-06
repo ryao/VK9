@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLVertexBuffer9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLVertexBuffer9::COpenGLVertexBuffer9()
 {

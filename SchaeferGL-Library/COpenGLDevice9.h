@@ -83,6 +83,134 @@ void	UnpackD3DRSITable( void );
 		}
 	};
 
+D3D_RSINFO	g_D3DRS_INFO_packed[] = 
+{
+	// these do not have to be in any particular order.  they get unpacked into the empty array above for direct indexing.
+
+	D3D_RSI(	3,	D3DRS_ZENABLE,						DONT_KNOW_YET			),	// enable Z test (or W buffering)
+	D3D_RSI(	3,	D3DRS_ZWRITEENABLE,					DONT_KNOW_YET			),	// enable Z write
+	D3D_RSI(	3,	D3DRS_ZFUNC,						DONT_KNOW_YET			),	// select Z func
+
+	D3D_RSI(	3,	D3DRS_COLORWRITEENABLE,				TRUE					),	// see transitiontable.cpp "APPLY_RENDER_STATE_FUNC( D3DRS_COLORWRITEENABLE, ColorWriteEnable )"
+
+	D3D_RSI(	3,	D3DRS_CULLMODE,						D3DCULL_CCW				),	// backface cull control
+
+	D3D_RSI(	3,	D3DRS_ALPHABLENDENABLE,				DONT_KNOW_YET			),	// ->CTransitionTable::ApplySeparateAlphaBlend and ApplyAlphaBlend
+	D3D_RSI(	3,	D3DRS_BLENDOP,						D3DBLENDOP_ADD			),
+	D3D_RSI(	3,	D3DRS_SRCBLEND,						DONT_KNOW_YET			),
+	D3D_RSI(	3,	D3DRS_DESTBLEND,					DONT_KNOW_YET			),
+
+	D3D_RSI(	1,	D3DRS_SEPARATEALPHABLENDENABLE,		FALSE					),	// hit in CTransitionTable::ApplySeparateAlphaBlend
+	D3D_RSI(	1,	D3DRS_SRCBLENDALPHA,				D3DBLEND_ONE			),	// going to demote these to class 1 until I figure out if they are implementable
+	D3D_RSI(	1,	D3DRS_DESTBLENDALPHA,				D3DBLEND_ZERO			),
+	D3D_RSI(	1,	D3DRS_BLENDOPALPHA,					D3DBLENDOP_ADD			),
+
+	// what is the deal with alpha test... looks like it is inited to off.
+	D3D_RSI(	3,	D3DRS_ALPHATESTENABLE,				0						),
+	D3D_RSI(	3,	D3DRS_ALPHAREF,						0						),
+	D3D_RSI(	3,	D3DRS_ALPHAFUNC,					D3DCMP_GREATEREQUAL		),
+
+	D3D_RSI(	3,	D3DRS_STENCILENABLE,				FALSE					),
+	D3D_RSI(	3,	D3DRS_STENCILFAIL,					D3DSTENCILOP_KEEP		),
+	D3D_RSI(	3,	D3DRS_STENCILZFAIL,					D3DSTENCILOP_KEEP		),
+	D3D_RSI(	3,	D3DRS_STENCILPASS,					D3DSTENCILOP_KEEP		),
+	D3D_RSI(	3,	D3DRS_STENCILFUNC,					D3DCMP_ALWAYS			),
+	D3D_RSI(	3,	D3DRS_STENCILREF,					0						),
+	D3D_RSI(	3,	D3DRS_STENCILMASK,					0xFFFFFFFF				),
+	D3D_RSI(	3,	D3DRS_STENCILWRITEMASK,				0xFFFFFFFF				),
+
+	D3D_RSI(	3,	D3DRS_TWOSIDEDSTENCILMODE,			FALSE					),
+	D3D_RSI(	3,	D3DRS_CCW_STENCILFAIL,				D3DSTENCILOP_KEEP		),
+	D3D_RSI(	3,	D3DRS_CCW_STENCILZFAIL,				D3DSTENCILOP_KEEP		),
+	D3D_RSI(	3,	D3DRS_CCW_STENCILPASS,				D3DSTENCILOP_KEEP		),
+	D3D_RSI(	3,	D3DRS_CCW_STENCILFUNC,				D3DCMP_ALWAYS 			),
+
+	D3D_RSI(	3,	D3DRS_FOGENABLE,					FALSE					),	// see CShaderAPIDx8::FogMode and friends - be ready to do the ARB fog linear option madness
+	D3D_RSI(	3,	D3DRS_FOGCOLOR,						0						),
+	D3D_RSI(	3,	D3DRS_FOGTABLEMODE,					D3DFOG_NONE				),
+	D3D_RSI(	3,	D3DRS_FOGSTART,						CONST_DZERO				),
+	D3D_RSI(	3,	D3DRS_FOGEND,						CONST_DONE				),
+	D3D_RSI(	3,	D3DRS_FOGDENSITY,					CONST_DZERO				),
+	D3D_RSI(	3,	D3DRS_RANGEFOGENABLE,				FALSE					),
+	D3D_RSI(	3,	D3DRS_FOGVERTEXMODE,				D3DFOG_NONE				),	// watch out for CShaderAPIDx8::CommitPerPassFogMode....
+
+	D3D_RSI(	3,	D3DRS_MULTISAMPLEANTIALIAS,			TRUE					),
+	D3D_RSI(	3,	D3DRS_MULTISAMPLEMASK,				0xFFFFFFFF				),
+
+	D3D_RSI(	3,	D3DRS_SCISSORTESTENABLE,			FALSE					),	// heed IDirect3DDevice9::SetScissorRect
+
+	D3D_RSI(	3,	D3DRS_DEPTHBIAS,					CONST_DZERO				),
+	D3D_RSI(	3,	D3DRS_SLOPESCALEDEPTHBIAS,			CONST_DZERO				),
+
+	D3D_RSI(	3,	D3DRS_COLORWRITEENABLE1,			0x0000000f				),
+	D3D_RSI(	3,	D3DRS_COLORWRITEENABLE2,			0x0000000f				),
+	D3D_RSI(	3,	D3DRS_COLORWRITEENABLE3,			0x0000000f				),
+
+	D3D_RSI(	3,	D3DRS_SRGBWRITEENABLE,				0						),	// heeded but ignored..
+
+	D3D_RSI(	2,	D3DRS_CLIPPING,						TRUE					),	// um, yeah, clipping is enabled (?)
+	D3D_RSI(	3,	D3DRS_CLIPPLANEENABLE,				0						),	// mask 1<<n of active user clip planes.
+
+	D3D_RSI(	0,	D3DRS_LIGHTING,						0						),	// strange, someone turns it on then off again. move to class 0 and just ignore it (lie)?
+
+	D3D_RSI(	3,	D3DRS_FILLMODE,						D3DFILL_SOLID			),
+
+	D3D_RSI(	1,	D3DRS_SHADEMODE,					D3DSHADE_GOURAUD		),
+	D3D_RSI(	1,	D3DRS_LASTPIXEL,					TRUE					),
+	D3D_RSI(	1,	D3DRS_DITHERENABLE,					0						),	//set to false by game, no one sets it to true
+	D3D_RSI(	1,	D3DRS_SPECULARENABLE,				FALSE					),
+	D3D_RSI(	1,	D3DRS_TEXTUREFACTOR,				0xFFFFFFFF				),	// watch out for CShaderAPIDx8::Color3f et al.
+	D3D_RSI(	1,	D3DRS_WRAP0,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP1,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP2,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP3,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP4,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP5,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP6,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP7,						0						),
+	D3D_RSI(	1,	D3DRS_AMBIENT,						0						),	// FF lighting, no
+	D3D_RSI(	1,	D3DRS_COLORVERTEX,					TRUE					),	// FF lighing again
+	D3D_RSI(	1,	D3DRS_LOCALVIEWER,					TRUE					),	// FF lighting
+	D3D_RSI(	1,	D3DRS_NORMALIZENORMALS,				FALSE					),	// FF mode I think.  CShaderAPIDx8::SetVertexBlendState says it might switch this on when skinning is in play
+	D3D_RSI(	1,	D3DRS_DIFFUSEMATERIALSOURCE,		D3DMCS_MATERIAL			),	// hit only in CShaderAPIDx8::ResetRenderState
+	D3D_RSI(	1,	D3DRS_SPECULARMATERIALSOURCE,		D3DMCS_COLOR2			),
+	D3D_RSI(	1,	D3DRS_AMBIENTMATERIALSOURCE,		D3DMCS_MATERIAL			),
+	D3D_RSI(	1,	D3DRS_EMISSIVEMATERIALSOURCE,		D3DMCS_MATERIAL			),
+	D3D_RSI(	1,	D3DRS_VERTEXBLEND,					D3DVBF_DISABLE			),	// also being set by CShaderAPIDx8::SetVertexBlendState, so might be FF
+	D3D_RSI(	1,	D3DRS_POINTSIZE,					CONST_DONE				),
+	D3D_RSI(	1,	D3DRS_POINTSIZE_MIN,				CONST_DONE				),
+	D3D_RSI(	1,	D3DRS_POINTSPRITEENABLE,			FALSE					),
+	D3D_RSI(	1,	D3DRS_POINTSCALEENABLE,				FALSE					),
+	D3D_RSI(	1,	D3DRS_POINTSCALE_A,					CONST_DONE				),
+	D3D_RSI(	1,	D3DRS_POINTSCALE_B,					CONST_DZERO				),
+	D3D_RSI(	1,	D3DRS_POINTSCALE_C,					CONST_DZERO				),
+	D3D_RSI(	1,	D3DRS_PATCHEDGESTYLE,				D3DPATCHEDGE_DISCRETE	),
+	D3D_RSI(	1,	D3DRS_DEBUGMONITORTOKEN,			D3DDMT_ENABLE			),
+	D3D_RSI(	1,	D3DRS_POINTSIZE_MAX,				CONST_D64				),
+	D3D_RSI(	1,	D3DRS_INDEXEDVERTEXBLENDENABLE,		FALSE					),
+	D3D_RSI(	1,	D3DRS_TWEENFACTOR,					CONST_DZERO				),
+	D3D_RSI(	1,	D3DRS_POSITIONDEGREE,				D3DDEGREE_CUBIC			),
+	D3D_RSI(	1,	D3DRS_NORMALDEGREE,					D3DDEGREE_LINEAR		),
+	D3D_RSI(	1,	D3DRS_ANTIALIASEDLINEENABLE,		FALSE					),	// just ignore it
+	D3D_RSI(	1,	D3DRS_MINTESSELLATIONLEVEL,			CONST_DONE				),
+	D3D_RSI(	1,	D3DRS_MAXTESSELLATIONLEVEL,			CONST_DONE				),
+	D3D_RSI(	1,	D3DRS_ADAPTIVETESS_X,				CONST_DZERO				),
+	D3D_RSI(	1,	D3DRS_ADAPTIVETESS_Y,				CONST_DZERO				), // Overridden as Alpha-to-coverage contrl
+	D3D_RSI(	1,	D3DRS_ADAPTIVETESS_Z,				CONST_DONE				),
+	D3D_RSI(	1,	D3DRS_ADAPTIVETESS_W,				CONST_DZERO				),
+	D3D_RSI(	1,	D3DRS_ENABLEADAPTIVETESSELLATION,	FALSE					),
+	D3D_RSI(	1,	D3DRS_BLENDFACTOR,					0xffffffff				),
+	D3D_RSI(	1,	D3DRS_WRAP8,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP9,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP10,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP11,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP12,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP13,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP14,						0						),
+	D3D_RSI(	1,	D3DRS_WRAP15,						0						),
+	D3D_RSI(	-1,	(D3DRENDERSTATETYPE)0,				0						)	// terminator
+};
+
 class COpenGLDevice9 : public IDirect3DDevice9,public COpenGLUnknown
 {
 public:

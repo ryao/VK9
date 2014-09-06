@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLTexture9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLTexture9::COpenGLTexture9()
 {
@@ -90,7 +91,7 @@ HRESULT COpenGLTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfa
 
 	m_device->m_ObjectStats.m_nTotalSurfaces++;
 
-	IDirect3DSurface9 *surf = new IDirect3DSurface9;
+	COpenGLSurface9 *surf = new COpenGLSurface9();
 	surf->m_restype = (D3DRESOURCETYPE)0;	// 0 is special and means this 'surface' does not own its m_tex
 
 	// Dicey...higher level code seems to want this and not want this.  Are we missing some AddRef/Release behavior elsewhere?

@@ -48,6 +48,7 @@ class COpenGLIndexBuffer9;
 
 #include <windows.h>
 #include <intrin.h>
+#include <stdio.h>
 #include <assert.h>
 #include <map>
 #include <functional>
@@ -114,14 +115,42 @@ enum
 #define D3DXINLINE inline
 #define MD5_DIGEST_LENGTH    16
 #define GL_BATCH_PERF_CALL_TIMER
+#define D3DLOCK_READONLY           0x00000010L
+#define D3DLOCK_DISCARD            0x00002000L
+#define D3DLOCK_NOOVERWRITE        0x00001000L
+#define D3DLOCK_NOSYSLOCK          0x00000800L
+#define D3DLOCK_NO_DIRTY_UPDATE     0x00008000L
+#define D3DISSUE_END (1 << 0)  
+#define D3DISSUE_BEGIN (1 << 1)  
+
+// FP conversions to hex courtesy of http://babbage.cs.qc.cuny.edu/IEEE-754/Decimal.html
+#define	CONST_DZERO		0x00000000
+#define	CONST_DONE		0x3F800000
+#define	CONST_D64		0x42800000
+#define	DONT_KNOW_YET	0x31415926
+
+#ifdef D3D_RSI
+	#error macro collision... rename this
+#else
+	#define D3D_RSI(nclass,nstate,ndefval)	{ nclass, nstate, ndefval }
+#endif
+
 typedef void* VD3DHWND;
 typedef void* VD3DHANDLE;
 #define CUtlMap std::map
 //#define CUtlHash std::hash
 #define CBitVec std::bitset
+#define Q_memset memset
+#define V_memset memset
+#define V_strncpy strncpy
+#define Q_strncpy strncpy
+#define V_snprintf printf
+#define Q_snprintf printf
 
 //TODO: intp - not sure about this one.
 typedef int intp;
+
+#define COMPILE_TIME_ASSERT(expr) char constraint[expr]
 
 #define D3D_DEVICE_VALID_MARKER 0x12EBC845
 #define GL_PUBLIC_ENTRYPOINT_CHECKS( dev ) Assert( dev->GetCurrentOwnerThreadId() == ThreadGetCurrentId() ); Assert( dev->m_nValidMarker == D3D_DEVICE_VALID_MARKER );
@@ -130,10 +159,6 @@ typedef int intp;
 #define SAMPLER_TYPE_CUBE	1
 #define SAMPLER_TYPE_3D		2
 #define SAMPLER_TYPE_UNUSED	3
-
-//#define V_snprintf vsnprintf
-#define V_strncpy strncpy
-#define Q_strncpy strncpy
 
 //Not sure what they are doing with these, something like __declspec( align( 16 ) ) maybe?
 #define ALIGN16
@@ -332,6 +357,163 @@ typedef enum _D3DBLENDOP
     D3DBLENDOP_MAX              = 5,
     D3DBLENDOP_FORCE_DWORD      = 0x7fffffff,  
 } D3DBLENDOP;
+
+typedef enum _D3DDECLUSAGE
+{
+    D3DDECLUSAGE_POSITION		= 0,
+    D3DDECLUSAGE_BLENDWEIGHT	= 1,
+    D3DDECLUSAGE_BLENDINDICES	= 2,
+    D3DDECLUSAGE_NORMAL			= 3,
+    D3DDECLUSAGE_PSIZE			= 4,
+    D3DDECLUSAGE_TEXCOORD		= 5,
+    D3DDECLUSAGE_TANGENT		= 6,
+    D3DDECLUSAGE_BINORMAL		= 7,
+    D3DDECLUSAGE_TESSFACTOR		= 8,
+    D3DDECLUSAGE_PLUGH			= 9,	 
+    D3DDECLUSAGE_COLOR			= 10,
+    D3DDECLUSAGE_FOG			= 11,
+    D3DDECLUSAGE_DEPTH			= 12,
+    D3DDECLUSAGE_SAMPLE			= 13,
+} D3DDECLUSAGE;
+
+typedef enum _D3DSHADER_INSTRUCTION_OPCODE_TYPE
+{
+    D3DSIO_NOP          = 0,
+    D3DSIO_MOV          ,
+    D3DSIO_ADD          ,
+    D3DSIO_SUB          ,
+    D3DSIO_MAD          ,
+    D3DSIO_MUL          ,
+    D3DSIO_RCP          ,
+    D3DSIO_RSQ          ,
+    D3DSIO_DP3          ,
+    D3DSIO_DP4          ,
+    D3DSIO_MIN          ,	 
+    D3DSIO_MAX          ,
+    D3DSIO_SLT          ,
+    D3DSIO_SGE          ,
+    D3DSIO_EXP          ,
+    D3DSIO_LOG          ,
+    D3DSIO_LIT          ,
+    D3DSIO_DST          ,
+    D3DSIO_LRP          ,
+    D3DSIO_FRC          ,
+    D3DSIO_M4x4         ,	 
+    D3DSIO_M4x3         ,
+    D3DSIO_M3x4         ,
+    D3DSIO_M3x3         ,
+    D3DSIO_M3x2         ,
+    D3DSIO_CALL         ,
+    D3DSIO_CALLNZ       ,
+    D3DSIO_LOOP         ,
+    D3DSIO_RET          ,
+    D3DSIO_ENDLOOP      ,
+    D3DSIO_LABEL        ,	 
+    D3DSIO_DCL          ,
+    D3DSIO_POW          ,
+    D3DSIO_CRS          ,
+    D3DSIO_SGN          ,
+    D3DSIO_ABS          ,
+    D3DSIO_NRM          ,
+    D3DSIO_SINCOS       ,
+    D3DSIO_REP          ,
+    D3DSIO_ENDREP       ,
+    D3DSIO_IF           ,	 
+    D3DSIO_IFC          ,
+    D3DSIO_ELSE         ,
+    D3DSIO_ENDIF        ,
+    D3DSIO_BREAK        ,
+    D3DSIO_BREAKC       ,
+    D3DSIO_MOVA         ,
+    D3DSIO_DEFB         ,
+    D3DSIO_DEFI         ,
+
+    D3DSIO_TEXCOORD     = 64,
+    D3DSIO_TEXKILL      ,
+    D3DSIO_TEX          ,
+    D3DSIO_TEXBEM       ,
+    D3DSIO_TEXBEML      ,
+    D3DSIO_TEXREG2AR    ,
+    D3DSIO_TEXREG2GB    ,
+    D3DSIO_TEXM3x2PAD   ,
+    D3DSIO_TEXM3x2TEX   ,
+    D3DSIO_TEXM3x3PAD   ,
+    D3DSIO_TEXM3x3TEX   ,
+    D3DSIO_RESERVED0    ,
+    D3DSIO_TEXM3x3SPEC  ,
+    D3DSIO_TEXM3x3VSPEC ,
+    D3DSIO_EXPP         ,
+    D3DSIO_LOGP         ,
+    D3DSIO_CND          ,
+    D3DSIO_DEF          ,
+    D3DSIO_TEXREG2RGB   ,
+    D3DSIO_TEXDP3TEX    ,
+    D3DSIO_TEXM3x2DEPTH ,
+    D3DSIO_TEXDP3       ,
+    D3DSIO_TEXM3x3      ,
+    D3DSIO_TEXDEPTH     ,
+    D3DSIO_CMP          ,
+    D3DSIO_BEM          ,
+    D3DSIO_DP2ADD       ,
+    D3DSIO_DSX          ,
+    D3DSIO_DSY          ,
+    D3DSIO_TEXLDD       ,
+    D3DSIO_SETP         ,
+    D3DSIO_TEXLDL       ,
+    D3DSIO_BREAKP       ,
+
+    D3DSIO_PHASE        = 0xFFFD,
+    D3DSIO_COMMENT      = 0xFFFE,
+    D3DSIO_END          = 0xFFFF,
+
+    D3DSIO_FORCE_DWORD  = 0x7fffffff,    
+} D3DSHADER_INSTRUCTION_OPCODE_TYPE;
+
+typedef enum _D3DMATERIALCOLORSOURCE
+{
+    D3DMCS_MATERIAL         = 0,             
+    D3DMCS_COLOR1           = 1,             
+    D3DMCS_COLOR2           = 2,             
+    D3DMCS_FORCE_DWORD      = 0x7fffffff,    
+} D3DMATERIALCOLORSOURCE;
+
+typedef enum _D3DVERTEXBLENDFLAGS
+{
+    D3DVBF_DISABLE  = 0,      
+    D3DVBF_1WEIGHTS = 1,      
+    D3DVBF_2WEIGHTS = 2,      
+    D3DVBF_3WEIGHTS = 3,      
+    D3DVBF_TWEENING = 255,    
+    D3DVBF_0WEIGHTS = 256,    
+    D3DVBF_FORCE_DWORD = 0x7fffffff,  
+} D3DVERTEXBLENDFLAGS;
+
+typedef enum _D3DPATCHEDGESTYLE
+{
+   D3DPATCHEDGE_DISCRETE    = 0,
+   D3DPATCHEDGE_CONTINUOUS  = 1,
+   D3DPATCHEDGE_FORCE_DWORD = 0x7fffffff,
+} D3DPATCHEDGESTYLE;
+
+typedef enum _D3DFOGMODE 
+{
+    D3DFOG_NONE                 = 0,
+    D3DFOG_LINEAR               = 3,
+    D3DFOG_FORCE_DWORD          = 0x7fffffff,  
+} D3DFOGMODE;
+
+typedef enum _D3DSHADEMODE 
+{
+    D3DSHADE_FLAT               = 1,
+    D3DSHADE_GOURAUD            = 2,
+    D3DSHADE_PHONG              = 3,
+    D3DSHADE_FORCE_DWORD        = 0x7fffffff,  
+} D3DSHADEMODE;
+
+typedef enum _D3DDEBUGMONITORTOKENS 
+{
+    D3DDMT_ENABLE            = 0,     
+} D3DDEBUGMONITORTOKENS;
 
 struct RenderTargetState_t
 {

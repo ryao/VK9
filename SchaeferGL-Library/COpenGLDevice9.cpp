@@ -32,6 +32,7 @@
  
 #include "COpenGLDevice9.h"
 #include "togl/rendermechanism.h"
+#include "togl/linuxwin/dx9asmtogl2.h"
 
 static D3DToGL		g_D3DToOpenGLTranslatorGLSL;
 static COpenGLDevice9 *g_pD3D_Device;

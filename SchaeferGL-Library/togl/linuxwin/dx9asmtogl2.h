@@ -187,11 +187,11 @@ private:
 private:
 	// Utilities to aid in decoding token stream
 	unsigned __int32 GetNextToken( void );
-	void SkipTokens( unsigned int32 numToSkip );
-	unsigned __int32 Opcode( unsigned int32 dwToken );
-	unsigned __int32 OpcodeSpecificData( unsigned int32 dwToken );
-	unsigned __int32 TextureType ( unsigned int32 dwToken );
-	unsigned __int32 GetRegType( unsigned int32 dwRegToken );
+	void SkipTokens( unsigned __int32 numToSkip );
+	unsigned __int32 Opcode( unsigned __int32 dwToken );
+	unsigned __int32 OpcodeSpecificData( unsigned __int32 dwToken );
+	unsigned __int32 TextureType ( unsigned __int32 dwToken );
+	unsigned __int32 GetRegType( unsigned __int32 dwRegToken );
 
 	// Write to the different buffers.
 	void StrcatToHeaderCode( const char *pBuf );
@@ -206,25 +206,25 @@ private:
 	void AddTokenHexCode();
 
 	// Utilities for decoding tokens in to strings according to ASM syntax
-	void PrintOpcode( unsigned int32 inst, char* buff, int nBufLen );
+	void PrintOpcode( unsigned __int32 inst, char* buff, int nBufLen );
 
 	// fSemanticFlags is SEMANTIC_INPUT or SEMANTIC_OUTPUT.
-	void PrintUsageAndIndexToString( unsigned int32 dwToken, char* strUsageUsageIndexName, int nBufLen, int fSemanticFlags );
-	CUtlString GetUsageAndIndexString( unsigned int32 dwToken, int fSemanticFlags );
-	CUtlString GetParameterString( unsigned int32 dwToken, unsigned int32 dwSourceOrDest, bool bForceScalarSource, int *pARLDestReg );
-	const char* GetGLSLOperatorString( unsigned int32 inst );
+	void PrintUsageAndIndexToString( unsigned __int32 dwToken, char* strUsageUsageIndexName, int nBufLen, int fSemanticFlags );
+	CUtlString GetUsageAndIndexString( unsigned __int32 dwToken, int fSemanticFlags );
+	CUtlString GetParameterString( unsigned __int32 dwToken, unsigned __int32 dwSourceOrDest, bool bForceScalarSource, int *pARLDestReg );
+	const char* GetGLSLOperatorString( unsigned __int32 inst );
 
-	void PrintParameterToString ( unsigned int32 dwToken, unsigned int32 dwSourceOrDest, char *pRegisterName, int nBufLen, bool bForceScalarSource, int *pARLDestReg );
+	void PrintParameterToString ( unsigned __int32 dwToken, unsigned __int32 dwSourceOrDest, char *pRegisterName, int nBufLen, bool bForceScalarSource, int *pARLDestReg );
 
 	void InsertMoveFromAddressRegister( CUtlBuffer *pCode, int nARLComp0, int nARLComp1, int nARLComp2 = ARL_DEST_NONE );
 	void InsertMoveInstruction( CUtlBuffer *pCode, int nARLComponent );
-	void FlagIndirectRegister( unsigned int32 dwToken, int *pARLDestReg );
+	void FlagIndirectRegister( unsigned __int32 dwToken, int *pARLDestReg );
 
 	// Utilities for decoding tokens in to strings according to GLSL syntax
-	bool OpenIntrinsic( unsigned int32 inst, char* buff, int nBufLen, unsigned int32 destDimension, unsigned int32 nArgumentDimension );
+	bool OpenIntrinsic( unsigned __int32 inst, char* buff, int nBufLen, unsigned __int32 destDimension, unsigned __int32 nArgumentDimension );
 	void PrintIndentation( char *pBuf, int nBufLen );
 
-	unsigned __int32 MaintainAttributeMap( unsigned int32 dwToken, unsigned int32 dwRegToken );
+	unsigned __int32 MaintainAttributeMap( unsigned __int32 dwToken, unsigned __int32 dwRegToken );
 
 	CUtlString FixGLSLSwizzle( const char *pDestRegisterName, const char *pSrcRegisterName );
 	void WriteGLSLCmp( const char *pDestReg, const char *pSrc0Reg, const char *pSrc1Reg, const char *pSrc2Reg );
@@ -235,21 +235,21 @@ private:
 
 	void Handle_DCL();
 	void Handle_DEF();
-	void Handle_DEFIB( unsigned int32 nInstruction );
-	void Handle_MAD( unsigned int32 nInstruction );
+	void Handle_DEFIB( unsigned __int32 nInstruction );
+	void Handle_MAD( unsigned __int32 nInstruction );
 	void Handle_DP2ADD();
 	void Handle_SINCOS();
-	void Handle_LRP( unsigned int32 nInstruction );
-	void Handle_TEX( unsigned int32 dwToken, bool bIsTexLDL );
-	void Handle_TexLDD( unsigned int32 nInstruction );
+	void Handle_LRP( unsigned __int32 nInstruction );
+	void Handle_TEX( unsigned __int32 dwToken, bool bIsTexLDL );
+	void Handle_TexLDD( unsigned __int32 nInstruction );
 	void Handle_TexCoord();
-	void Handle_UnaryOp( unsigned int32 nInstruction );
-	void Handle_BREAKC( unsigned int32 dwToken );
-	void HandleBinaryOp_GLSL( unsigned int32 nInstruction );
-	void HandleBinaryOp_ASM( unsigned int32 nInstruction );
+	void Handle_UnaryOp( unsigned __int32 nInstruction );
+	void Handle_BREAKC( unsigned __int32 dwToken );
+	void HandleBinaryOp_GLSL( unsigned __int32 nInstruction );
+	void HandleBinaryOp_ASM( unsigned __int32 nInstruction );
 	void Handle_CMP();
 	void Handle_NRM();
-	void Handle_DeclarativeNonDclOp( unsigned int32 nInstruction );
+	void Handle_DeclarativeNonDclOp( unsigned __int32 nInstruction );
 
 public:
 	D3DToGL();
