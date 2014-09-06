@@ -34,12 +34,12 @@
 //#include "tier0/dbg.h"
 //#include "tier0/icommandline.h"
 //#include "tier0/platform.h"
-#include "interface.h"
-#include "filesystem.h"
-#include "filesystem_init.h"
+//#include "interface.h"
+//#include "filesystem.h"
+//#include "filesystem_init.h"
 //#include "tier1/convar.h"
-#include "vstdlib/cvar.h"
-#include "inputsystem/buttoncode.h"
+//#include "vstdlib/cvar.h"
+/#include "inputsystem/buttoncode.h"
 //#include "tier1.h"
 //#include "tier2/tier2.h"
 
@@ -48,7 +48,7 @@
 #endif
 
 // NOTE: This has to be the last file included!
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 #if !defined(DX_TO_GL_ABSTRACTION)
 #error

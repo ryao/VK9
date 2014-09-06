@@ -49,6 +49,9 @@ class COpenGLIndexBuffer9;
 #include <windows.h>
 #include <intrin.h>
 #include <assert.h>
+#include <map>
+#include <functional>
+#include <bitset>
 #include <GL/gl.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/glext.h>
@@ -113,6 +116,12 @@ enum
 #define GL_BATCH_PERF_CALL_TIMER
 typedef void* VD3DHWND;
 typedef void* VD3DHANDLE;
+#define CUtlMap std::map
+//#define CUtlHash std::hash
+#define CBitVec std::bitset
+
+//TODO: intp - not sure about this one.
+typedef int intp;
 
 #define D3D_DEVICE_VALID_MARKER 0x12EBC845
 #define GL_PUBLIC_ENTRYPOINT_CHECKS( dev ) Assert( dev->GetCurrentOwnerThreadId() == ThreadGetCurrentId() ); Assert( dev->m_nValidMarker == D3D_DEVICE_VALID_MARKER );
@@ -323,6 +332,70 @@ typedef enum _D3DBLENDOP
     D3DBLENDOP_MAX              = 5,
     D3DBLENDOP_FORCE_DWORD      = 0x7fffffff,  
 } D3DBLENDOP;
+
+struct RenderTargetState_t
+{
+	void clear() { V_memset( this, 0, sizeof( *this ) ); }
+
+	CGLMTex *m_pRenderTargets[4];
+	CGLMTex *m_pDepthStencil;
+
+	inline bool RefersTo( CGLMTex * pSurf ) const
+	{
+		for ( unsigned int i = 0; i < 4; i++ )
+			if ( m_pRenderTargets[i] == pSurf )
+				return true;
+
+		if ( m_pDepthStencil == pSurf )
+			return true;
+
+		return false;
+	}
+
+	static inline bool LessFunc( const RenderTargetState_t &lhs, const RenderTargetState_t &rhs ) 
+	{
+		COMPILE_TIME_ASSERT( sizeof( lhs.m_pRenderTargets[0] ) == sizeof( unsigned __int32 ) );
+		unsigned __int64 lhs0 = reinterpret_cast<const unsigned __int64 *>(lhs.m_pRenderTargets)[0];
+		unsigned __int64 rhs0 = reinterpret_cast<const unsigned __int64 *>(rhs.m_pRenderTargets)[0];
+		if ( lhs0 < rhs0 )
+			return true;
+		else if ( lhs0 == rhs0 )
+		{
+			unsigned __int64 lhs1 = reinterpret_cast<const unsigned __int64 *>(lhs.m_pRenderTargets)[1];
+			unsigned __int64 rhs1 = reinterpret_cast<const unsigned __int64 *>(rhs.m_pRenderTargets)[1];
+			if ( lhs1 < rhs1 )
+				return true;
+			else if ( lhs1 == rhs1 )
+			{
+				return lhs.m_pDepthStencil < rhs.m_pDepthStencil;
+			}
+		}
+		return false;
+	}
+
+	inline bool operator < ( const RenderTargetState_t &rhs ) const
+	{
+		return LessFunc( *this, rhs );
+	}
+};
+
+typedef CUtlMap< RenderTargetState_t, CGLMFBO *> CGLMFBOMap;
+
+#define	D3DRS_VALUE_LIMIT 210
+
+struct	D3D_RSINFO
+{
+	int					m_class;
+	D3DRENDERSTATETYPE	m_state;
+	DWORD				m_defval;
+	// m_class runs 0-3.
+	// 3 = must implement - fully general - "obey"
+	// 2 = implement setup to the default value (it has a GL effect but does not change later) "obey once"
+	// 1 = "fake implement" setup to the default value no GL effect, debug break if anything but default value comes through - "ignore"
+	// 0 = game never ever sets this one, break if someone even tries. "complain"
+};
+
+D3D_RSINFO g_D3DRS_INFO_unpacked[ D3DRS_VALUE_LIMIT+1 ];
 
 inline int MIN(int a,int b)
 {

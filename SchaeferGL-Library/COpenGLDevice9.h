@@ -50,6 +50,8 @@
 
 void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst );
 
+void	UnpackD3DRSITable( void );
+
 	struct ObjectStats_t
 	{
 		int						m_nTotalFBOs;
@@ -80,6 +82,10 @@ void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst );
 			return *this;
 		}
 	};
+
+class COpenGLDevice9 : public IDirect3DDevice9,public COpenGLUnknown
+{
+public:
 
 	// GL state 
 	struct 
@@ -130,10 +136,6 @@ void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst );
 		GLMTexSamplingParams		m_samplers[GLM_SAMPLER_COUNT];
 	} gl;
 
-class COpenGLDevice9 : public IDirect3DDevice9,public COpenGLUnknown
-{
-public:
-
 	// D3D flavor stuff
 	COpenGLSurface9			*m_pRenderTargets[4];
 	COpenGLSurface9			*m_pDepthStencil;
@@ -156,6 +158,7 @@ public:
 	GLMContext					*m_ctx;
 	CGLMFBOMap					*m_pFBOs;
 	bool						m_bFBODirty;
+	DWORD						m_nValidMarker;
 
 	ObjectStats_t					m_ObjectStats;
 	ObjectStats_t					m_PrevObjectStats;
@@ -186,7 +189,6 @@ public:
 	double m_flOverallSwapWindowTimeSquared;
 	uint m_nOverallPresents;
 #endif
-
 public:
 	friend class GLMContext;
 

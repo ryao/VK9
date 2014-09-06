@@ -31,7 +31,25 @@
  */
  
 #include "COpenGL9.h"
-#include "rendermechanism.h"
+#include "COpenGLDevice9.h"
+#include "togl/rendermechanism.h"
+
+bool g_bNullD3DDevice;
+
+inline GLMDisplayDB *GetDisplayDB( void )
+{
+	return g_pLauncherMgr->GetDisplayDB();
+}
+
+inline void RenderedSize( unsigned int &width, unsigned int &height, bool set )
+{
+	g_pLauncherMgr->RenderedSize( width, height, set );
+}
+
+inline void GetStackCrawl( CStackCrawlParams *params )
+{
+	g_pLauncherMgr->GetStackCrawl(params);
+}
 
 static void FillD3DCaps9( const GLMRendererInfoFields &glmRendererInfo, D3DCAPS9* pCaps )
 {
@@ -359,7 +377,7 @@ HRESULT COpenGL9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT
 				break;				
 				
 				case	D3DRTYPE_SURFACE:
-					switch( static_cast<uint>(CheckFormat) )
+					switch( static_cast<unsigned int>(CheckFormat) )
 					{
 						case	0x434f5441:
 						case	0x41415353:
@@ -418,7 +436,7 @@ HRESULT COpenGL9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE DeviceType,
 		return D3DERR_INVALIDCALL;
 
 	
-	if ( !CommandLine()->FindParm("-glmenabletrustmsaa") )
+	/*if ( !CommandLine()->FindParm("-glmenabletrustmsaa") )
 	{
 		// These ghetto drivers don't get MSAA
 		if ( ( glmRendererInfo.m_nvG7x || glmRendererInfo.m_atiR5xx ) && ( MultiSampleType > D3DMULTISAMPLE_NONE ) )
@@ -429,7 +447,7 @@ HRESULT COpenGL9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE DeviceType,
 			}
 			return D3DERR_NOTAVAILABLE;
 		}
-	}
+	}*/
 
 	switch ( MultiSampleType )
 	{
@@ -549,7 +567,7 @@ HRESULT COpenGL9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWin
 		devparams.m_behaviorFlags			= BehaviorFlags;
 		devparams.m_presentationParameters	= *pPresentationParameters;
 
-		IDirect3DDevice9 *dev = new IDirect3DDevice9;
+		COpenGLDevice9 *dev = new COpenGLDevice9();
 		
 		result = dev->Create( &devparams );
 		
@@ -693,7 +711,7 @@ HRESULT COpenGL9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENT
 	pIdentifier->DeviceId				= glmRendererInfo.m_pciDeviceID;	// 401;
 	pIdentifier->SubSysId				= 0;								// 3358668866;
 	pIdentifier->Revision				= 0;								// 162;
-	pIdentifier->VideoMemory			= glmRendererInfo.m_vidMemory;		// amount of video memory in bytes
+	//pIdentifier->VideoMemory			= glmRendererInfo.m_vidMemory;		// amount of video memory in bytes
 
 	#if 0
 		// this came from the shaderapigl effort	
@@ -713,7 +731,7 @@ UINT COpenGL9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMPRINTF(( "-X- IDirect3D9::GetAdapterModeCount: Adapter=%d || Format=%8x:%s", Adapter, Format, GLMDecode(eD3D_FORMAT, Format) ));
 
-	uint modeCount=0;
+	unsigned int modeCount=0;
 	
 	GLMDisplayDB *db = GetDisplayDB();
 	int glmRendererIndex = -1;

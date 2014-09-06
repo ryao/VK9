@@ -28,21 +28,21 @@
 
 #include "togl/rendermechanism.h"
 
-#include "tier0/icommandline.h"
-#include "tier1/utlhash.h"
-#include "tier1/utlmap.h"
-#include "tier0/vprof.h"
+//#include "tier0/icommandline.h"
+//#include "tier1/utlhash.h"
+//#include "tier1/utlmap.h"
+//#include "tier0/vprof.h"
 
 #ifdef OSX
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLProfilerFunctionEnum.h>
 #endif
 
-#include "tier0/valve_minmax_off.h"
+//#include "tier0/valve_minmax_off.h"
 #include <algorithm>
 
 // memdbgon -must- be the last include file in a .cpp file.
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 //===============================================================================
 // decoding tables for debug

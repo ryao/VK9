@@ -103,7 +103,7 @@ DWORD COpenGLBaseTexture9::SetLOD(DWORD LODNew)
 }
 */
 
-virtual D3DRESOURCETYPE COpenGLBaseTexture9::GetType()
+D3DRESOURCETYPE COpenGLBaseTexture9::GetType()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

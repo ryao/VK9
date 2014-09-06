@@ -32,6 +32,7 @@
  
 #include "COpenGLCubeTexture9.h"
 #include "COpenGLDevice9.h"
+#include "COpenGLSurface9.h"
 
 COpenGLCubeTexture9::COpenGLCubeTexture9()
 {

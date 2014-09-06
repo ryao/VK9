@@ -35,7 +35,7 @@
 //#include "materialsystem/ishader.h"
 //#include "appframework/ilaunchermgr.h"
 
-#include "convar.h"
+//#include "convar.h"
 
 #include "glmgr_flush.inl"
 

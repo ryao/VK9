@@ -37,13 +37,7 @@
 //#endif
 //#include "tier1/utlhash.h"
 //#include "tier1/utlmap.h"
-#include <map>
-#include <functional>
-#include <bitset>
-
-#define CUtlMap std::map
-//#define CUtlHash std::hash
-#define CBitVec std::bitset
+#include "COpenGLTypes.h"
 //===============================================================================
 
 // forward declarations
@@ -471,7 +465,14 @@ protected:
 	friend struct IDirect3DSurface9;
 	friend struct IDirect3DCubeTexture9;
 	friend struct IDirect3DVolumeTexture9;
-	
+
+	friend class COpenGLDevice9;
+	friend class COpenGLBaseTexture9;
+	friend class COpenGLTexture9;
+	friend class COpenGLSurface9;
+	friend class COpenGLCubeTexture9;
+	friend class COpenGLVolumeTexture9;
+
 			CGLMTex( GLMContext *ctx, GLMTexLayout *layout, const char *debugLabel = NULL );
 			~CGLMTex( );
 	

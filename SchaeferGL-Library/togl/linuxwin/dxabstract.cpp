@@ -26,15 +26,15 @@
 //
 //==================================================================================================
 #include "togl/rendermechanism.h"
-#include "tier0/vprof_telemetry.h"
-#include "tier0/dbg.h"
-#include "tier0/threadtools.h"
-#include "tier0/vprof.h"
-#include "tier1/strtools.h"
-#include "tier1/utlbuffer.h"
+//#include "tier0/vprof_telemetry.h"
+//#include "tier0/dbg.h"
+//#include "tier0/threadtools.h"
+//#include "tier0/vprof.h"
+//#include "tier1/strtools.h"
+//#include "tier1/utlbuffer.h"
 #include "dx9asmtogl2.h"
-#include "mathlib/vmatrix.h"
-#include "materialsystem/ishader.h"
+//#include "mathlib/vmatrix.h"
+//#include "materialsystem/ishader.h"
 
 #if defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION ))
 	#include "appframework/ilaunchermgr.h"

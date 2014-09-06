@@ -73,7 +73,7 @@ HRESULT COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 	Assert( m_ctx->m_nCurOwnerThreadId == nCurThreadId );
 	if ( pData )
 	{
-		*(uint*)pData = 0;
+		*(unsigned int*)pData = 0;
 	}
 
 	if ( !m_query->IsStarted() || !m_query->IsStopped() ) 
@@ -152,7 +152,7 @@ HRESULT COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 						}
 				if (pData)
 				{
-					*(uint*)pData = oqValue;
+					*(unsigned int*)pData = oqValue;
 					}
 				result = S_OK;
 				}
@@ -161,11 +161,11 @@ HRESULT COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 				done = m_query->IsDone();
 				if (done)
 				{
-					uint oqValue = 0;				// or we could just pass pData directly to Complete...
+					unsigned int oqValue = 0;				// or we could just pass pData directly to Complete...
 					m_query->Complete(&oqValue);
 					if (pData)
 					{
-						*(uint*)pData = oqValue;
+						*(unsigned int*)pData = oqValue;
 					}					
 					result = S_OK;
 				}

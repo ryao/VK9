@@ -27,7 +27,7 @@
 
 #ifndef DX9_ASM_TO_GL_2_H
 #define DX9_ASM_TO_GL_2_H
-#include "tier1/utlstring.h"
+//#include "tier1/utlstring.h"
 
 #define DISASM_OK      0
 #define DISASM_ERROR   1
@@ -65,13 +65,13 @@ class D3DToGL
 {
 private:
 	// Pointers for dwToken stream management
-	uint32* m_pdwBaseToken;
-	uint32* m_pdwNextToken;
+	unsigned __int32* m_pdwBaseToken;
+	unsigned __int32* m_pdwNextToken;
 
 	// Vertex shader or pixel shader, and version (necessary because some opcodes alias)
 	bool m_bVertexShader;
-	uint32 m_dwMinorVersion;
-	uint32 m_dwMajorVersion;
+	unsigned __int32 m_dwMinorVersion;
+	unsigned __int32 m_dwMajorVersion;
 
 	// Option flags
 	bool	m_bUseEnvParams;			// set D3DToGL_OptionUseEnvParams in 'options' to use
@@ -109,25 +109,25 @@ private:
 	// Keep track of which vs outputs are used so we can declare them
 	bool m_bDeclareVSOPos;
 	bool m_bDeclareVSOFog;
-	uint32 m_dwTexCoordOutMask;
+	unsigned __int32 m_dwTexCoordOutMask;
 
-	int32 m_nVSPositionOutput;
+	__int32 m_nVSPositionOutput;
 	
 	// Mask of varyings which need centroid decoration
-	uint32 m_nCentroidMask;
+	unsigned __int32 m_nCentroidMask;
 
 	// Keep track of which temps are used so they can be declared
-	uint32 m_dwTempUsageMask;
-	uint32 m_dwTempBoolUsageMask;
+	unsigned __int32 m_dwTempUsageMask;
+	unsigned __int32 m_dwTempBoolUsageMask;
 	bool m_bOutputColorRegister[4];
 	bool m_bOutputDepthRegister;
 	
 	// Declaration of integer and bool constants
-	uint32 m_dwConstIntUsageMask;
-	uint32 m_dwConstBoolUsageMask;
+	unsigned __int32 m_dwConstIntUsageMask;
+	unsigned __int32 m_dwConstBoolUsageMask;
 
-	uint32 m_dwDefConstIntUsageMask;
-	uint32 m_dwDefConstIntIterCount[32];
+	unsigned __int32 m_dwDefConstIntUsageMask;
+	unsigned __int32 m_dwDefConstIntIterCount[32];
 	
 	// Did we use atomic_temp_var?
 	bool m_bUsedAtomicTempVar;
@@ -136,10 +136,10 @@ private:
 	bool m_bConstantRegisterDefined[MAX_SHADER_CONSTANTS];
 
 	// Track sampler types when declared so we can properly decorate TEX instructions
-	uint32 m_dwSamplerTypes[32];
+	unsigned __int32 m_dwSamplerTypes[32];
 	
 	// Track sampler usage
-	uint32 m_dwSamplerUsageMask;
+	unsigned __int32 m_dwSamplerUsageMask;
 
 	// Track shadow sampler usage
 	int m_nShadowDepthSamplerMask;
@@ -149,11 +149,11 @@ private:
 	// init to 0xFFFFFFFF (unhit)
 	// index by (dwRegToken & D3DSP_REGNUM_MASK) in VS DCL insns
 	// fill with (usage<<4) | (usage index).
-	uint32 m_dwAttribMap[16];	
+	unsigned __int32 m_dwAttribMap[16];	
 
 	// Register high water mark
-	uint32 m_nHighestRegister;
-	int32 m_nHighestBoneRegister;
+	unsigned __int32 m_nHighestRegister;
+	__int32 m_nHighestBoneRegister;
 	
 	// GLSL does indentation for readability
 	int m_NumIndentTabs;
@@ -168,16 +168,16 @@ private:
 	int m_nFinalAssignmentsBufSize;
 
 	// Recorded positions for debugging.
-	uint32* m_pRecordedInputTokenStart;
+	unsigned __int32* m_pRecordedInputTokenStart;
 	int m_nRecordedParamCodeStrlen;
 	int m_nRecordedALUCodeStrlen;
 	int m_nRecordedAttribCodeStrlen;
 
 	// In GLSL mode, these store the semantic attached to each oN register.
 	// They are the values that you pass to GetUsageIndexAndString.
-	uint32 m_DeclaredOutputs[MAX_DECLARED_OUTPUTS];
+	unsigned __int32 m_DeclaredOutputs[MAX_DECLARED_OUTPUTS];
 	
-	uint32 m_DeclaredInputs[MAX_DECLARED_INPUTS];
+	unsigned __int32 m_DeclaredInputs[MAX_DECLARED_INPUTS];
 
 	// Have they used the tangent input semantic (i.e. is g_pTangentAttributeName declared)?
 	bool m_bTangentInputUsed;
@@ -186,12 +186,12 @@ private:
 
 private:
 	// Utilities to aid in decoding token stream
-	uint32 GetNextToken( void );
+	unsigned __int32 GetNextToken( void );
 	void SkipTokens( unsigned int32 numToSkip );
-	uint32 Opcode( unsigned int32 dwToken );
-	uint32 OpcodeSpecificData( unsigned int32 dwToken );
-	uint32 TextureType ( unsigned int32 dwToken );
-	uint32 GetRegType( unsigned int32 dwRegToken );
+	unsigned __int32 Opcode( unsigned int32 dwToken );
+	unsigned __int32 OpcodeSpecificData( unsigned int32 dwToken );
+	unsigned __int32 TextureType ( unsigned int32 dwToken );
+	unsigned __int32 GetRegType( unsigned int32 dwRegToken );
 
 	// Write to the different buffers.
 	void StrcatToHeaderCode( const char *pBuf );
@@ -224,7 +224,7 @@ private:
 	bool OpenIntrinsic( unsigned int32 inst, char* buff, int nBufLen, unsigned int32 destDimension, unsigned int32 nArgumentDimension );
 	void PrintIndentation( char *pBuf, int nBufLen );
 
-	uint32 MaintainAttributeMap( unsigned int32 dwToken, unsigned int32 dwRegToken );
+	unsigned __int32 MaintainAttributeMap( unsigned int32 dwToken, unsigned int32 dwRegToken );
 
 	CUtlString FixGLSLSwizzle( const char *pDestRegisterName, const char *pSrcRegisterName );
 	void WriteGLSLCmp( const char *pDestReg, const char *pSrc0Reg, const char *pSrc1Reg, const char *pSrc2Reg );
@@ -254,7 +254,7 @@ private:
 public:
 	D3DToGL();
 
-	int TranslateShader( unsigned int32* code, CUtlBuffer *pBufDisassembledCode, bool *bVertexShader, unsigned int32 options, int32 nShadowDepthSamplerMask, unsigned int32 nCentroidMask, char *debugLabel );
+	int TranslateShader( unsigned __int32* code, CUtlBuffer *pBufDisassembledCode, bool *bVertexShader, unsigned __int32 options, __int32 nShadowDepthSamplerMask, unsigned __int32 nCentroidMask, char *debugLabel );
 };
 
 

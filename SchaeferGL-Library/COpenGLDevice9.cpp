@@ -31,6 +31,10 @@
  */
  
 #include "COpenGLDevice9.h"
+#include "togl/rendermechanism.h"
+
+static D3DToGL		g_D3DToOpenGLTranslatorGLSL;
+static COpenGLDevice9 *g_pD3D_Device;
 
 void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst )
 {
@@ -42,6 +46,26 @@ void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst )
 
 	dst->height	= src->y2 - src->y1;
 	dst->y		= src->y1;				// bottom edge - take large Y from d3d and subtract from surf height.
+}
+
+
+void	UnpackD3DRSITable( void )
+{
+	memset (g_D3DRS_INFO_unpacked, 0, sizeof(g_D3DRS_INFO_unpacked) );
+	
+	for( D3D_RSINFO *packed = g_D3DRS_INFO_packed; packed->m_class >= 0; packed++ )
+	{
+		if ( (packed->m_state <0) || (packed->m_state >= D3DRS_VALUE_LIMIT) )
+		{
+			// bad
+			DXABSTRACT_BREAK_ON_ERROR();
+		}
+		else
+		{
+			// dispatch it to the unpacked array
+			g_D3DRS_INFO_unpacked[ packed->m_state ] = *packed;
+		}
+	}
 }
 
 COpenGLDevice9::COpenGLDevice9() :
@@ -236,7 +260,7 @@ HRESULT	COpenGLDevice9::Create( IDirect3DDevice9Params *params )
 		m_params.m_presentationParameters.MultiSampleType,			// MSAA depth
 		m_params.m_presentationParameters.MultiSampleQuality,		// MSAA quality
 		TRUE,														// enable z-buffer discard ????
-		&m_pDefaultDepthStencilSurface,								// ppSurface
+		(IDirect3DSurface9*)&m_pDefaultDepthStencilSurface,								// ppSurface
 		NULL														// shared handle
 		);
 	if (result != S_OK)
@@ -341,7 +365,7 @@ void COpenGLDevice9::UpdateBoundFBO()
 
 		m_pFBOs->Insert( renderTargetState, newFBO );
 		
-		uint nNumBound = 0;
+		unsigned int nNumBound = 0;
 
 		for ( unsigned int i = 0; i < 4; i++ )
 		{
@@ -1819,7 +1843,7 @@ HRESULT COpenGLDevice9::CreateVertexShader(const DWORD *pFunction,IDirect3DVerte
 		// note the GLSL translator wants its own buffer
 		tempbuf.EnsureCapacity( maxTranslationSize );
 			
-		uint glslVertexShaderOptions = D3DToGL_OptionUseEnvParams | D3DToGL_OptionDoFixupZ | D3DToGL_OptionDoFixupY;
+		unsigned int glslVertexShaderOptions = D3DToGL_OptionUseEnvParams | D3DToGL_OptionDoFixupZ | D3DToGL_OptionDoFixupY;
 
 		if ( m_ctx->Caps().m_hasNativeClipVertexMode )
 		{

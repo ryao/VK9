@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLSurface9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLSurface9::COpenGLSurface9()
 {

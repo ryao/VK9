@@ -79,6 +79,9 @@ class CGLMFBO
 	friend struct IDirect3D9;
 	friend struct IDirect3DDevice9;
 
+	friend class COpenGL9;
+	friend class COpenGLDevice9;
+
 public:
 	CGLMFBO( GLMContext *ctx );
 	~CGLMFBO( );	

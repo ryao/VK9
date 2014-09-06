@@ -30,9 +30,9 @@
 #include <GL/glext.h>
 
 #include "togl/rendermechanism.h"
-#include "tier0/dbg.h"
-#include "tier1/strtools.h"
-#include "tier1/utlbuffer.h"
+//#include "tier0/dbg.h"
+//#include "tier1/strtools.h"
+//#include "tier1/utlbuffer.h"
 #include "dx9asmtogl2.h"
 
 #include "materialsystem/ishader.h"
