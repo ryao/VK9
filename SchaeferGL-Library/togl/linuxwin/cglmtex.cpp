@@ -460,7 +460,8 @@ bool LessFunc_GLMTexLayoutKey( const GLMTexLayoutKey &a, const GLMTexLayoutKey &
 
 CGLMTexLayoutTable::CGLMTexLayoutTable()
 {
-	m_layoutMap.SetLessFunc( LessFunc_GLMTexLayoutKey );
+	//Now set with compare template argument.
+	//m_layoutMap.SetLessFunc( LessFunc_GLMTexLayoutKey );
 }
 
 GLMTexLayout *CGLMTexLayoutTable::NewLayoutRef( GLMTexLayoutKey *pDesiredKey )
@@ -491,13 +492,16 @@ GLMTexLayout *CGLMTexLayoutTable::NewLayoutRef( GLMTexLayoutKey *pDesiredKey )
 		}
 	}
 
-	unsigned short index = m_layoutMap.Find( *key );
-	if (index != m_layoutMap.InvalidIndex())
+	//unsigned short index = m_layoutMap.Find( *key );
+	std::map< GLMTexLayoutKey, GLMTexLayout*, GLMTexLayoutKeyCompare >::iterator it = m_layoutMap.find( *key );
+	//if (index != m_layoutMap.InvalidIndex())
+	if (it != m_layoutMap.end())
 	{
 		// found it
 		//printf(" -hit- ");
-		GLMTexLayout *layout = m_layoutMap[ index ];
-		
+		//GLMTexLayout *layout = m_layoutMap[ index ];
+		GLMTexLayout *layout = m_layoutMap[ *key ];
+
 		// bump ref count
 		layout->m_refCount ++;
 		
@@ -657,8 +661,9 @@ GLMTexLayout *CGLMTexLayoutTable::NewLayoutRef( GLMTexLayoutKey *pDesiredKey )
 		//GLMPRINTF(("-D- new tex layout [ %s ]", scratch ));
 		
 		// then insert into map. disregard returned index.
-		m_layoutMap.Insert( layout->m_key, layout );
-		
+		//m_layoutMap.Insert( layout->m_key, layout );
+		m_layoutMap.insert( std::pair< GLMTexLayoutKey, GLMTexLayout*>(layout->m_key, layout) );
+
 		return layout;
 	}
 }
@@ -668,12 +673,15 @@ void CGLMTexLayoutTable::DelLayoutRef( GLMTexLayout *layout )
 	// locate layout in hash, drop refcount
 	// (some GC step later on will harvest expired layouts - not like it's any big challenge to re-generate them)
 	
-	unsigned short index = m_layoutMap.Find( layout->m_key );
-	if (index != m_layoutMap.InvalidIndex())
+	//unsigned short index = m_layoutMap.Find( layout->m_key );
+	std::map< GLMTexLayoutKey, GLMTexLayout*, GLMTexLayoutKeyCompare >::iterator it = m_layoutMap.find( layout->m_key );
+	//if (index != m_layoutMap.InvalidIndex())
+	if (it != m_layoutMap.end())
 	{
 		// found it
-		GLMTexLayout *layout = m_layoutMap[ index ];
-		
+		//GLMTexLayout *layout = m_layoutMap[ index ];
+		GLMTexLayout *layout = m_layoutMap[ layout->m_key ];
+
 		// drop ref count
 		layout->m_refCount --;
 		
@@ -688,13 +696,20 @@ void CGLMTexLayoutTable::DelLayoutRef( GLMTexLayout *layout )
 
 void CGLMTexLayoutTable::DumpStats( )
 {
-	for (unsigned int i=0; i<m_layoutMap.Count(); i++ )
+	for (std::map<GLMTexLayoutKey, GLMTexLayout*, GLMTexLayoutKeyCompare>::iterator it=m_layoutMap.begin(); it!=m_layoutMap.end(); ++it)
 	{
-		GLMTexLayout *layout = m_layoutMap[ i ];
-		
-		// print it out
+		GLMTexLayout *layout = it->second;
+
 		printf("\n%05d instances %08d bytes  %08d totbytes  %s", layout->m_refCount, layout->m_storageTotalSize, (layout->m_refCount*layout->m_storageTotalSize), layout->m_layoutSummary );
 	}
+
+	//for (unsigned int i=0; i<m_layoutMap.Count(); i++ )
+	//{
+	//	GLMTexLayout *layout = m_layoutMap[ i ];
+	//	
+	//	// print it out
+	//	printf("\n%05d instances %08d bytes  %08d totbytes  %s", layout->m_refCount, layout->m_storageTotalSize, (layout->m_refCount*layout->m_storageTotalSize), layout->m_layoutSummary );
+	//}
 }
 
 /*
@@ -848,15 +863,17 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, const char *debugLabel 
 	// lock reqs are tracked by the owning context
 	m_lockCount = 0;
 
-	m_sliceFlags.SetCount( m_layout->m_sliceCount );
-	for( int i=0; i< m_layout->m_sliceCount; i++)
-	{
-		m_sliceFlags[i] = 0;
-			// kSliceValid			=	false	(we have not teximaged each slice yet)
-			// kSliceStorageValid	=	false	(the storage allocated does not reflect what is in the tex)
-			// kSliceLocked			=	false	(the slices are not locked)
-			// kSliceFullyDirty		=	false	(this does not come true til first lock)
-	}
+	m_sliceFlags.clear();
+	m_sliceFlags.resize(m_layout->m_sliceCount,0);
+	//m_sliceFlags.SetCount( m_layout->m_sliceCount );
+	//for( int i=0; i< m_layout->m_sliceCount; i++)
+	//{
+	//	m_sliceFlags[i] = 0;
+	//		// kSliceValid			=	false	(we have not teximaged each slice yet)
+	//		// kSliceStorageValid	=	false	(the storage allocated does not reflect what is in the tex)
+	//		// kSliceLocked			=	false	(the slices are not locked)
+	//		// kSliceFullyDirty		=	false	(this does not come true til first lock)
+	//}
 	
 	// texture minimize parameter keeps driver from allocing mips when it should not, by being explicit about the ones that have no mips.
 	
@@ -1300,7 +1317,7 @@ void CGLMTex::WriteTexels( GLMTexLockDesc *desc, bool writeWholeSlice, bool noDa
 				{
 					*dst = *src++;	// move first byte
 					*dst = *src++;	// move second byte
-					*reinterpret_cast<uint8*>(dst) = 0xBB;	// pad third byte
+					*reinterpret_cast<unsigned __int8*>(dst) = 0xBB;	// pad third byte
 					
 					expandSize -= 3;
 				}
@@ -1596,14 +1613,15 @@ void CGLMTex::Lock( GLMTexLockParams *params, char** addressOut, int* yStrideOut
 	// (or zeroes if it's the first lock)
 
 	// log the lock request in the context.
-	int newdesc = m_ctx->m_texLocks.AddToTail();
+	//int newdesc = m_ctx->m_texLocks.AddToTail();
 	
-	GLMTexLockDesc *desc = &m_ctx->m_texLocks[newdesc];
-	
-	desc->m_req = *params;
-	desc->m_active = true;
-	desc->m_sliceIndex = sliceIndex;
-	desc->m_sliceBaseOffset = m_layout->m_slices[sliceIndex].m_storageOffset;
+	//GLMTexLockDesc *desc = &m_ctx->m_texLocks[newdesc];
+	GLMTexLockDesc desc;
+
+	desc.m_req = *params;
+	desc.m_active = true;
+	desc.m_sliceIndex = sliceIndex;
+	desc.m_sliceBaseOffset = m_layout->m_slices[sliceIndex].m_storageOffset;
 
 	// to calculate the additional offset we need to look at the rect's min corner
 	// combined with the per-texel size and Y/Z stride
@@ -1620,20 +1638,22 @@ void CGLMTex::Lock( GLMTexLockParams *params, char** addressOut, int* yStrideOut
 	// we will probably need to inflate the dirty rect in the recorded lock req so that the entire span is
 	// pushed across at unlock time.
 
-	desc->m_sliceRegionOffset = offsetInSlice + desc->m_sliceBaseOffset;
+	desc.m_sliceRegionOffset = offsetInSlice + desc.m_sliceBaseOffset;
 
 	if (copyout)
 	{
 		// read the whole slice
 		// (odds are we'll never request anything but a whole slice to be read..)
-		ReadTexels( desc, true );
+		ReadTexels( &desc, true );
 	}	// this would be a good place to fill with scrub value if in debug...
 	
-	*addressOut = m_backing + desc->m_sliceRegionOffset;
+	*addressOut = m_backing + desc.m_sliceRegionOffset;
 	*yStrideOut = yStride;
 	*zStrideOut = zStride;
 
 	m_lockCount++;
+
+	m_ctx->m_texLocks.push_back(desc);
 }
 
 void CGLMTex::Unlock( GLMTexLockParams *params )
@@ -1649,7 +1669,8 @@ void CGLMTex::Unlock( GLMTexLockParams *params )
 
 	int i=0;
 	bool found = false;
-	while( !found && (i<m_ctx->m_texLocks.Count()) )
+	//while( !found && (i<m_ctx->m_texLocks.Count()) )
+	while( !found && (i<m_ctx->m_texLocks.size()) )
 	{
 		GLMTexLockDesc *desc = &m_ctx->m_texLocks[i];
 		
@@ -1690,7 +1711,8 @@ void CGLMTex::Unlock( GLMTexLockParams *params )
 		// after each one is dispatched, remove it from the pile.
 		
 		int j=0;
-		while( j<m_ctx->m_texLocks.Count() )
+		//while( j<m_ctx->m_texLocks.Count() )
+		while( j<m_ctx->m_texLocks.size() )
 		{
 			GLMTexLockDesc *desc = &m_ctx->m_texLocks[j];
 			
@@ -1729,7 +1751,8 @@ void CGLMTex::Unlock( GLMTexLockParams *params )
 					}
 				}
 
-				m_ctx->m_texLocks.FastRemove( j );	// remove from the pile, don't advance index
+				//m_ctx->m_texLocks.FastRemove( j );	// remove from the pile, don't advance index
+				m_ctx->m_texLocks.erase( m_ctx->m_texLocks.begin()+j ); //CS - This will cause an alloc may need to revisit.
 			}
 			else
 			{

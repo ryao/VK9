@@ -62,7 +62,7 @@ COpenGLIndexBuffer9::~COpenGLIndexBuffer9()
 	GLMPRINTF(( "<-A- ~IDirect3DIndexBuffer9" ));	
 }
 
-void COpenGLIndexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
+void STDMETHODCALLTYPE COpenGLIndexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -71,7 +71,7 @@ void COpenGLIndexBuffer9::UnlockActualSize( unsigned int nActualSize, const void
 	m_idxBuffer->Unlock( nActualSize, pActualData );	
 }
 
-HRESULT COpenGLIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC* pDesc)
+HRESULT STDMETHODCALLTYPE COpenGLIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC* pDesc)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -79,7 +79,7 @@ HRESULT COpenGLIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC* pDesc)
 	return S_OK;	
 }
 
-HRESULT COpenGLIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
+HRESULT STDMETHODCALLTYPE COpenGLIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -98,7 +98,7 @@ HRESULT COpenGLIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppb
 	return S_OK;	
 }
 
-HRESULT COpenGLIndexBuffer9::Unlock()
+HRESULT STDMETHODCALLTYPE COpenGLIndexBuffer9::Unlock()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

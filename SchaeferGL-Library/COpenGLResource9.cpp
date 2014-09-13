@@ -41,23 +41,38 @@ COpenGLResource9::~COpenGLResource9()
 {
 }
 
-/*
-HRESULT COpenGLResource9::GetDevice(IDirect3DDevice9** ppDevice)
+HRESULT STDMETHODCALLTYPE COpenGLResource9::FreePrivateData(REFGUID refguid)
 {
+	return E_NOTIMPL;
 }
 
-void COpenGLResource9::PreLoad()
+DWORD STDMETHODCALLTYPE COpenGLResource9::GetPriority()
 {
-}
-*/
-
-DWORD COpenGLResource9::SetPriority(DWORD PriorityNew)
-{
-	return 0;
+	return 1;
 }
 
-/*
-HRESULT COpenGLResource9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
+HRESULT STDMETHODCALLTYPE COpenGLResource9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	return E_NOTIMPL;
 }
-*/
+
+D3DRESOURCETYPE STDMETHODCALLTYPE COpenGLResource9::GetType()
+{
+	return D3DRTYPE_SURFACE;
+}
+
+void STDMETHODCALLTYPE COpenGLResource9::PreLoad()
+{
+	return; 
+}
+
+DWORD STDMETHODCALLTYPE COpenGLResource9::SetPriority(DWORD PriorityNew)
+{
+	return 1;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLResource9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
+{
+	return E_NOTIMPL;
+}
+

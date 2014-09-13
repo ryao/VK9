@@ -33,10 +33,10 @@
 #ifndef COPENGLQUERY9_H
 #define COPENGLQUERY9_H
 
-#include "IDirect3DQuery9.h" // Base class: IDirect3DQuery9
+#include "d3d9.h" // Base class: IDirect3DQuery9
 #include "COpenGLResource9.h"
 
-class COpenGLQuery9 : public IDirect3DQuery9,public COpenGLResource9
+class COpenGLQuery9 : public IDirect3DQuery9,public COpenGLUnknown
 {
 public:
 	COpenGLQuery9();
@@ -52,11 +52,11 @@ public:
 	unsigned int					m_nIssueStartQueryCreationCounter, m_nIssueEndQueryCreationCounter;
 
 public:
-	virtual HRESULT GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags);
-	//virtual DWORD GetDataSize();
-	//virtual HRESULT GetDevice(IDirect3DDevice9** pDevice);
-	//virtual D3DQUERYTYPE GetType();
-	virtual HRESULT Issue(DWORD dwIssueFlags);
+	virtual HRESULT STDMETHODCALLTYPE GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags);
+	virtual DWORD STDMETHODCALLTYPE GetDataSize();
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** pDevice);
+	virtual D3DQUERYTYPE STDMETHODCALLTYPE GetType();
+	virtual HRESULT STDMETHODCALLTYPE Issue(DWORD dwIssueFlags);
 };
 
 #endif // COPENGLQUERY9_H

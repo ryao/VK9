@@ -146,6 +146,9 @@ typedef void* VD3DHANDLE;
 #define Q_strncpy strncpy
 #define V_snprintf printf
 #define Q_snprintf printf
+#define Warning printf
+#define Error printf
+#define ConMsg printf
 
 //TODO: intp - not sure about this one.
 typedef int intp;
@@ -166,13 +169,13 @@ typedef int intp;
 
 #define Assert assert
 
-typedef enum _D3DTEXTUREADDRESS 
-{
-    D3DTADDRESS_WRAP            = 0,
-    D3DTADDRESS_CLAMP           = 1,
-    D3DTADDRESS_BORDER          = 2,
-    D3DTADDRESS_FORCE_DWORD     = 0x7fffffff,  
-} D3DTEXTUREADDRESS;
+//typedef enum _D3DTEXTUREADDRESS 
+//{
+//    D3DTADDRESS_WRAP            = 0,
+//    D3DTADDRESS_CLAMP           = 1,
+//    D3DTADDRESS_BORDER          = 2,
+//    D3DTADDRESS_FORCE_DWORD     = 0x7fffffff,  
+//} D3DTEXTUREADDRESS;
 
 struct D3DStreamDesc
 {
@@ -262,71 +265,71 @@ struct IDirect3DDevice9Params
 	D3DPRESENT_PARAMETERS	m_presentationParameters;
 };
 
-typedef enum _D3DCMPFUNC 
-{
-    D3DCMP_NEVER                = 1,
-    D3DCMP_LESS                 = 2,
-    D3DCMP_EQUAL                = 3,
-    D3DCMP_LESSEQUAL            = 4,
-    D3DCMP_GREATER              = 5,
-    D3DCMP_NOTEQUAL             = 6,
-    D3DCMP_GREATEREQUAL         = 7,
-    D3DCMP_ALWAYS               = 8,
-    D3DCMP_FORCE_DWORD          = 0x7fffffff,  
-} D3DCMPFUNC;
+//typedef enum _D3DCMPFUNC 
+//{
+//    D3DCMP_NEVER                = 1,
+//    D3DCMP_LESS                 = 2,
+//    D3DCMP_EQUAL                = 3,
+//    D3DCMP_LESSEQUAL            = 4,
+//    D3DCMP_GREATER              = 5,
+//    D3DCMP_NOTEQUAL             = 6,
+//    D3DCMP_GREATEREQUAL         = 7,
+//    D3DCMP_ALWAYS               = 8,
+//    D3DCMP_FORCE_DWORD          = 0x7fffffff,  
+//} D3DCMPFUNC;
 
 #define D3DCOLORWRITEENABLE_RED     (1L<<0)
 #define D3DCOLORWRITEENABLE_GREEN   (1L<<1)
 #define D3DCOLORWRITEENABLE_BLUE    (1L<<2)
 #define D3DCOLORWRITEENABLE_ALPHA   (1L<<3)
 
-typedef enum _D3DCULL 
-{
-    D3DCULL_NONE                = 1,
-    D3DCULL_CW                  = 2,
-    D3DCULL_CCW                 = 3,
-    /*D3DCULL_FORCE_DWORD         = 0x7fffffff,  */
-} D3DCULL;
+//typedef enum _D3DCULL 
+//{
+//    D3DCULL_NONE                = 1,
+//    D3DCULL_CW                  = 2,
+//    D3DCULL_CCW                 = 3,
+//    /*D3DCULL_FORCE_DWORD         = 0x7fffffff,  */
+//} D3DCULL;
 
-typedef enum _D3DFILLMODE 
-{
-    D3DFILL_POINT               = 1,
-    D3DFILL_WIREFRAME           = 2,
-    D3DFILL_SOLID               = 3,
-    D3DFILL_FORCE_DWORD         = 0x7fffffff,  
-} D3DFILLMODE;
+//typedef enum _D3DFILLMODE 
+//{
+//    D3DFILL_POINT               = 1,
+//    D3DFILL_WIREFRAME           = 2,
+//    D3DFILL_SOLID               = 3,
+//    D3DFILL_FORCE_DWORD         = 0x7fffffff,  
+//} D3DFILLMODE;
 
-typedef enum _D3DBLEND 
-{
-    D3DBLEND_ZERO               = 1,
-    D3DBLEND_ONE                = 2,
-    D3DBLEND_SRCCOLOR           = 3,
-    D3DBLEND_INVSRCCOLOR        = 4,
-    D3DBLEND_SRCALPHA           = 5,
-    D3DBLEND_INVSRCALPHA        = 6,
-    D3DBLEND_DESTALPHA          = 7,
-    D3DBLEND_INVDESTALPHA       = 8,
-    D3DBLEND_DESTCOLOR          = 9,
-    D3DBLEND_INVDESTCOLOR       = 10,
-    D3DBLEND_SRCALPHASAT        = 11,
-    D3DBLEND_BOTHSRCALPHA       = 12,
-    D3DBLEND_BOTHINVSRCALPHA    = 13,
-    D3DBLEND_BLENDFACTOR        = 14,  
-    D3DBLEND_FORCE_DWORD        = 0x7fffffff,  
-} D3DBLEND;
+//typedef enum _D3DBLEND 
+//{
+//    D3DBLEND_ZERO               = 1,
+//    D3DBLEND_ONE                = 2,
+//    D3DBLEND_SRCCOLOR           = 3,
+//    D3DBLEND_INVSRCCOLOR        = 4,
+//    D3DBLEND_SRCALPHA           = 5,
+//    D3DBLEND_INVSRCALPHA        = 6,
+//    D3DBLEND_DESTALPHA          = 7,
+//    D3DBLEND_INVDESTALPHA       = 8,
+//    D3DBLEND_DESTCOLOR          = 9,
+//    D3DBLEND_INVDESTCOLOR       = 10,
+//    D3DBLEND_SRCALPHASAT        = 11,
+//    D3DBLEND_BOTHSRCALPHA       = 12,
+//    D3DBLEND_BOTHINVSRCALPHA    = 13,
+//    D3DBLEND_BLENDFACTOR        = 14,  
+//    D3DBLEND_FORCE_DWORD        = 0x7fffffff,  
+//} D3DBLEND;
 
-typedef enum _D3DSTENCILOP 
-{
-    D3DSTENCILOP_KEEP           = 1,
-    D3DSTENCILOP_ZERO           = 2,
-	D3DSTENCILOP_REPLACE		= 3,
-    D3DSTENCILOP_INCRSAT        = 4,
-    D3DSTENCILOP_DECRSAT        = 5,
-    D3DSTENCILOP_INVERT         = 6,
-    D3DSTENCILOP_INCR           = 7,
-    D3DSTENCILOP_DECR           = 8,
-    D3DSTENCILOP_FORCE_DWORD    = 0x7fffffff,  
-} D3DSTENCILOP;
+//typedef enum _D3DSTENCILOP 
+//{
+//    D3DSTENCILOP_KEEP           = 1,
+//    D3DSTENCILOP_ZERO           = 2,
+//	D3DSTENCILOP_REPLACE		= 3,
+//    D3DSTENCILOP_INCRSAT        = 4,
+//    D3DSTENCILOP_DECRSAT        = 5,
+//    D3DSTENCILOP_INVERT         = 6,
+//    D3DSTENCILOP_INCR           = 7,
+//    D3DSTENCILOP_DECR           = 8,
+//    D3DSTENCILOP_FORCE_DWORD    = 0x7fffffff,  
+//} D3DSTENCILOP;
 
 struct D3DVERTEXELEMENT9_GL
 {
@@ -348,172 +351,172 @@ struct D3DVERTEXELEMENT9_GL
 	// GLuint					m_normalized;	// net offset to attribute 'zero' within the stream data.  Add the stream offset before passing to GL. 
 };
 
-typedef enum _D3DBLENDOP 
-{
-    D3DBLENDOP_ADD              = 1,
-    D3DBLENDOP_SUBTRACT         = 2,
-    D3DBLENDOP_REVSUBTRACT      = 3,
-    D3DBLENDOP_MIN              = 4,
-    D3DBLENDOP_MAX              = 5,
-    D3DBLENDOP_FORCE_DWORD      = 0x7fffffff,  
-} D3DBLENDOP;
+//typedef enum _D3DBLENDOP 
+//{
+//    D3DBLENDOP_ADD              = 1,
+//    D3DBLENDOP_SUBTRACT         = 2,
+//    D3DBLENDOP_REVSUBTRACT      = 3,
+//    D3DBLENDOP_MIN              = 4,
+//    D3DBLENDOP_MAX              = 5,
+//    D3DBLENDOP_FORCE_DWORD      = 0x7fffffff,  
+//} D3DBLENDOP;
 
-typedef enum _D3DDECLUSAGE
-{
-    D3DDECLUSAGE_POSITION		= 0,
-    D3DDECLUSAGE_BLENDWEIGHT	= 1,
-    D3DDECLUSAGE_BLENDINDICES	= 2,
-    D3DDECLUSAGE_NORMAL			= 3,
-    D3DDECLUSAGE_PSIZE			= 4,
-    D3DDECLUSAGE_TEXCOORD		= 5,
-    D3DDECLUSAGE_TANGENT		= 6,
-    D3DDECLUSAGE_BINORMAL		= 7,
-    D3DDECLUSAGE_TESSFACTOR		= 8,
-    D3DDECLUSAGE_PLUGH			= 9,	 
-    D3DDECLUSAGE_COLOR			= 10,
-    D3DDECLUSAGE_FOG			= 11,
-    D3DDECLUSAGE_DEPTH			= 12,
-    D3DDECLUSAGE_SAMPLE			= 13,
-} D3DDECLUSAGE;
+//typedef enum _D3DDECLUSAGE
+//{
+//    D3DDECLUSAGE_POSITION		= 0,
+//    D3DDECLUSAGE_BLENDWEIGHT	= 1,
+//    D3DDECLUSAGE_BLENDINDICES	= 2,
+//    D3DDECLUSAGE_NORMAL			= 3,
+//    D3DDECLUSAGE_PSIZE			= 4,
+//    D3DDECLUSAGE_TEXCOORD		= 5,
+//    D3DDECLUSAGE_TANGENT		= 6,
+//    D3DDECLUSAGE_BINORMAL		= 7,
+//    D3DDECLUSAGE_TESSFACTOR		= 8,
+//    D3DDECLUSAGE_PLUGH			= 9,	 
+//    D3DDECLUSAGE_COLOR			= 10,
+//    D3DDECLUSAGE_FOG			= 11,
+//    D3DDECLUSAGE_DEPTH			= 12,
+//    D3DDECLUSAGE_SAMPLE			= 13,
+//} D3DDECLUSAGE;
 
-typedef enum _D3DSHADER_INSTRUCTION_OPCODE_TYPE
-{
-    D3DSIO_NOP          = 0,
-    D3DSIO_MOV          ,
-    D3DSIO_ADD          ,
-    D3DSIO_SUB          ,
-    D3DSIO_MAD          ,
-    D3DSIO_MUL          ,
-    D3DSIO_RCP          ,
-    D3DSIO_RSQ          ,
-    D3DSIO_DP3          ,
-    D3DSIO_DP4          ,
-    D3DSIO_MIN          ,	 
-    D3DSIO_MAX          ,
-    D3DSIO_SLT          ,
-    D3DSIO_SGE          ,
-    D3DSIO_EXP          ,
-    D3DSIO_LOG          ,
-    D3DSIO_LIT          ,
-    D3DSIO_DST          ,
-    D3DSIO_LRP          ,
-    D3DSIO_FRC          ,
-    D3DSIO_M4x4         ,	 
-    D3DSIO_M4x3         ,
-    D3DSIO_M3x4         ,
-    D3DSIO_M3x3         ,
-    D3DSIO_M3x2         ,
-    D3DSIO_CALL         ,
-    D3DSIO_CALLNZ       ,
-    D3DSIO_LOOP         ,
-    D3DSIO_RET          ,
-    D3DSIO_ENDLOOP      ,
-    D3DSIO_LABEL        ,	 
-    D3DSIO_DCL          ,
-    D3DSIO_POW          ,
-    D3DSIO_CRS          ,
-    D3DSIO_SGN          ,
-    D3DSIO_ABS          ,
-    D3DSIO_NRM          ,
-    D3DSIO_SINCOS       ,
-    D3DSIO_REP          ,
-    D3DSIO_ENDREP       ,
-    D3DSIO_IF           ,	 
-    D3DSIO_IFC          ,
-    D3DSIO_ELSE         ,
-    D3DSIO_ENDIF        ,
-    D3DSIO_BREAK        ,
-    D3DSIO_BREAKC       ,
-    D3DSIO_MOVA         ,
-    D3DSIO_DEFB         ,
-    D3DSIO_DEFI         ,
+//typedef enum _D3DSHADER_INSTRUCTION_OPCODE_TYPE
+//{
+//    D3DSIO_NOP          = 0,
+//    D3DSIO_MOV          ,
+//    D3DSIO_ADD          ,
+//    D3DSIO_SUB          ,
+//    D3DSIO_MAD          ,
+//    D3DSIO_MUL          ,
+//    D3DSIO_RCP          ,
+//    D3DSIO_RSQ          ,
+//    D3DSIO_DP3          ,
+//    D3DSIO_DP4          ,
+//    D3DSIO_MIN          ,	 
+//    D3DSIO_MAX          ,
+//    D3DSIO_SLT          ,
+//    D3DSIO_SGE          ,
+//    D3DSIO_EXP          ,
+//    D3DSIO_LOG          ,
+//    D3DSIO_LIT          ,
+//    D3DSIO_DST          ,
+//    D3DSIO_LRP          ,
+//    D3DSIO_FRC          ,
+//    D3DSIO_M4x4         ,	 
+//    D3DSIO_M4x3         ,
+//    D3DSIO_M3x4         ,
+//    D3DSIO_M3x3         ,
+//    D3DSIO_M3x2         ,
+//    D3DSIO_CALL         ,
+//    D3DSIO_CALLNZ       ,
+//    D3DSIO_LOOP         ,
+//    D3DSIO_RET          ,
+//    D3DSIO_ENDLOOP      ,
+//    D3DSIO_LABEL        ,	 
+//    D3DSIO_DCL          ,
+//    D3DSIO_POW          ,
+//    D3DSIO_CRS          ,
+//    D3DSIO_SGN          ,
+//    D3DSIO_ABS          ,
+//    D3DSIO_NRM          ,
+//    D3DSIO_SINCOS       ,
+//    D3DSIO_REP          ,
+//    D3DSIO_ENDREP       ,
+//    D3DSIO_IF           ,	 
+//    D3DSIO_IFC          ,
+//    D3DSIO_ELSE         ,
+//    D3DSIO_ENDIF        ,
+//    D3DSIO_BREAK        ,
+//    D3DSIO_BREAKC       ,
+//    D3DSIO_MOVA         ,
+//    D3DSIO_DEFB         ,
+//    D3DSIO_DEFI         ,
+//
+//    D3DSIO_TEXCOORD     = 64,
+//    D3DSIO_TEXKILL      ,
+//    D3DSIO_TEX          ,
+//    D3DSIO_TEXBEM       ,
+//    D3DSIO_TEXBEML      ,
+//    D3DSIO_TEXREG2AR    ,
+//    D3DSIO_TEXREG2GB    ,
+//    D3DSIO_TEXM3x2PAD   ,
+//    D3DSIO_TEXM3x2TEX   ,
+//    D3DSIO_TEXM3x3PAD   ,
+//    D3DSIO_TEXM3x3TEX   ,
+//    D3DSIO_RESERVED0    ,
+//    D3DSIO_TEXM3x3SPEC  ,
+//    D3DSIO_TEXM3x3VSPEC ,
+//    D3DSIO_EXPP         ,
+//    D3DSIO_LOGP         ,
+//    D3DSIO_CND          ,
+//    D3DSIO_DEF          ,
+//    D3DSIO_TEXREG2RGB   ,
+//    D3DSIO_TEXDP3TEX    ,
+//    D3DSIO_TEXM3x2DEPTH ,
+//    D3DSIO_TEXDP3       ,
+//    D3DSIO_TEXM3x3      ,
+//    D3DSIO_TEXDEPTH     ,
+//    D3DSIO_CMP          ,
+//    D3DSIO_BEM          ,
+//    D3DSIO_DP2ADD       ,
+//    D3DSIO_DSX          ,
+//    D3DSIO_DSY          ,
+//    D3DSIO_TEXLDD       ,
+//    D3DSIO_SETP         ,
+//    D3DSIO_TEXLDL       ,
+//    D3DSIO_BREAKP       ,
+//
+//    D3DSIO_PHASE        = 0xFFFD,
+//    D3DSIO_COMMENT      = 0xFFFE,
+//    D3DSIO_END          = 0xFFFF,
+//
+//    D3DSIO_FORCE_DWORD  = 0x7fffffff,    
+//} D3DSHADER_INSTRUCTION_OPCODE_TYPE;
 
-    D3DSIO_TEXCOORD     = 64,
-    D3DSIO_TEXKILL      ,
-    D3DSIO_TEX          ,
-    D3DSIO_TEXBEM       ,
-    D3DSIO_TEXBEML      ,
-    D3DSIO_TEXREG2AR    ,
-    D3DSIO_TEXREG2GB    ,
-    D3DSIO_TEXM3x2PAD   ,
-    D3DSIO_TEXM3x2TEX   ,
-    D3DSIO_TEXM3x3PAD   ,
-    D3DSIO_TEXM3x3TEX   ,
-    D3DSIO_RESERVED0    ,
-    D3DSIO_TEXM3x3SPEC  ,
-    D3DSIO_TEXM3x3VSPEC ,
-    D3DSIO_EXPP         ,
-    D3DSIO_LOGP         ,
-    D3DSIO_CND          ,
-    D3DSIO_DEF          ,
-    D3DSIO_TEXREG2RGB   ,
-    D3DSIO_TEXDP3TEX    ,
-    D3DSIO_TEXM3x2DEPTH ,
-    D3DSIO_TEXDP3       ,
-    D3DSIO_TEXM3x3      ,
-    D3DSIO_TEXDEPTH     ,
-    D3DSIO_CMP          ,
-    D3DSIO_BEM          ,
-    D3DSIO_DP2ADD       ,
-    D3DSIO_DSX          ,
-    D3DSIO_DSY          ,
-    D3DSIO_TEXLDD       ,
-    D3DSIO_SETP         ,
-    D3DSIO_TEXLDL       ,
-    D3DSIO_BREAKP       ,
+//typedef enum _D3DMATERIALCOLORSOURCE
+//{
+//    D3DMCS_MATERIAL         = 0,             
+//    D3DMCS_COLOR1           = 1,             
+//    D3DMCS_COLOR2           = 2,             
+//    D3DMCS_FORCE_DWORD      = 0x7fffffff,    
+//} D3DMATERIALCOLORSOURCE;
 
-    D3DSIO_PHASE        = 0xFFFD,
-    D3DSIO_COMMENT      = 0xFFFE,
-    D3DSIO_END          = 0xFFFF,
+//typedef enum _D3DVERTEXBLENDFLAGS
+//{
+//    D3DVBF_DISABLE  = 0,      
+//    D3DVBF_1WEIGHTS = 1,      
+//    D3DVBF_2WEIGHTS = 2,      
+//    D3DVBF_3WEIGHTS = 3,      
+//    D3DVBF_TWEENING = 255,    
+//    D3DVBF_0WEIGHTS = 256,    
+//    D3DVBF_FORCE_DWORD = 0x7fffffff,  
+//} D3DVERTEXBLENDFLAGS;
 
-    D3DSIO_FORCE_DWORD  = 0x7fffffff,    
-} D3DSHADER_INSTRUCTION_OPCODE_TYPE;
+//typedef enum _D3DPATCHEDGESTYLE
+//{
+//   D3DPATCHEDGE_DISCRETE    = 0,
+//   D3DPATCHEDGE_CONTINUOUS  = 1,
+//   D3DPATCHEDGE_FORCE_DWORD = 0x7fffffff,
+//} D3DPATCHEDGESTYLE;
 
-typedef enum _D3DMATERIALCOLORSOURCE
-{
-    D3DMCS_MATERIAL         = 0,             
-    D3DMCS_COLOR1           = 1,             
-    D3DMCS_COLOR2           = 2,             
-    D3DMCS_FORCE_DWORD      = 0x7fffffff,    
-} D3DMATERIALCOLORSOURCE;
+//typedef enum _D3DFOGMODE 
+//{
+//    D3DFOG_NONE                 = 0,
+//    D3DFOG_LINEAR               = 3,
+//    D3DFOG_FORCE_DWORD          = 0x7fffffff,  
+//} D3DFOGMODE;
 
-typedef enum _D3DVERTEXBLENDFLAGS
-{
-    D3DVBF_DISABLE  = 0,      
-    D3DVBF_1WEIGHTS = 1,      
-    D3DVBF_2WEIGHTS = 2,      
-    D3DVBF_3WEIGHTS = 3,      
-    D3DVBF_TWEENING = 255,    
-    D3DVBF_0WEIGHTS = 256,    
-    D3DVBF_FORCE_DWORD = 0x7fffffff,  
-} D3DVERTEXBLENDFLAGS;
+//typedef enum _D3DSHADEMODE 
+//{
+//    D3DSHADE_FLAT               = 1,
+//    D3DSHADE_GOURAUD            = 2,
+//    D3DSHADE_PHONG              = 3,
+//    D3DSHADE_FORCE_DWORD        = 0x7fffffff,  
+//} D3DSHADEMODE;
 
-typedef enum _D3DPATCHEDGESTYLE
-{
-   D3DPATCHEDGE_DISCRETE    = 0,
-   D3DPATCHEDGE_CONTINUOUS  = 1,
-   D3DPATCHEDGE_FORCE_DWORD = 0x7fffffff,
-} D3DPATCHEDGESTYLE;
-
-typedef enum _D3DFOGMODE 
-{
-    D3DFOG_NONE                 = 0,
-    D3DFOG_LINEAR               = 3,
-    D3DFOG_FORCE_DWORD          = 0x7fffffff,  
-} D3DFOGMODE;
-
-typedef enum _D3DSHADEMODE 
-{
-    D3DSHADE_FLAT               = 1,
-    D3DSHADE_GOURAUD            = 2,
-    D3DSHADE_PHONG              = 3,
-    D3DSHADE_FORCE_DWORD        = 0x7fffffff,  
-} D3DSHADEMODE;
-
-typedef enum _D3DDEBUGMONITORTOKENS 
-{
-    D3DDMT_ENABLE            = 0,     
-} D3DDEBUGMONITORTOKENS;
+//typedef enum _D3DDEBUGMONITORTOKENS 
+//{
+//    D3DDMT_ENABLE            = 0,     
+//} D3DDEBUGMONITORTOKENS;
 
 struct RenderTargetState_t
 {
@@ -561,7 +564,15 @@ struct RenderTargetState_t
 	}
 };
 
-typedef CUtlMap< RenderTargetState_t, CGLMFBO *> CGLMFBOMap;
+struct RenderTargetStateCompare
+{
+  bool operator()(const RenderTargetState_t &lhs, const RenderTargetState_t &rhs) const
+  {
+	  return RenderTargetState_t::LessFunc(lhs, rhs);
+  }
+};
+
+typedef CUtlMap< RenderTargetState_t, CGLMFBO *, RenderTargetStateCompare> CGLMFBOMap;
 
 #define	D3DRS_VALUE_LIMIT 210
 
@@ -588,5 +599,12 @@ inline int MAX(int a,int b)
 {
 	return b<a?a:b;
 }
+
+class ILauncherMgr
+{
+
+} _g_pLauncherMgr;
+
+ILauncherMgr* g_pLauncherMgr = &_g_pLauncherMgr;
 
 #endif // COPENGLTYPES_H

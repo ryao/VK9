@@ -33,7 +33,7 @@
 #ifndef COPENGLPIXELSHADER9_H
 #define COPENGLPIXELSHADER9_H
 
-#include "IDirect3DPixelShader9.h" // Base class: IDirect3DPixelShader9
+#include "d3d9.h" // Base class: IDirect3DPixelShader9
 #include "COpenGLResource9.h"
 
 class COpenGLPixelShader9 : public IDirect3DPixelShader9,public COpenGLResource9
@@ -50,8 +50,8 @@ public:
 	unsigned int					m_pixFragDataMask;  // (1<<n) mask of gl_FragData[n] referenced by this pixel shader
 
 public:
-	//virtual HRESULT GetDevice(IDirect3DDevice9** ppDevice);
-	//virtual HRESULT GetFunction(void* pData, UINT* pSizeOfData);
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
+	virtual HRESULT STDMETHODCALLTYPE GetFunction(void* pData, UINT* pSizeOfData);
 };
 
 #endif // COPENGLPIXELSHADER9_H

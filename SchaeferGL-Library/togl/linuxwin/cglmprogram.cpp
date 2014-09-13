@@ -1208,43 +1208,43 @@ CGLMShaderPairCache::~CGLMShaderPairCache( )
 
 static void WriteToProgramCache( CGLMShaderPair *pair )
 {
-	KeyValues *pProgramCache = new KeyValues( "programcache" );
-	pProgramCache->LoadFromFile( g_pFullFileSystem, PROGRAM_CACHE_FILE, "MOD" );
+	//KeyValues *pProgramCache = new KeyValues( "programcache" );
+	//pProgramCache->LoadFromFile( g_pFullFileSystem, PROGRAM_CACHE_FILE, "MOD" );
 
-	if ( !pProgramCache )
-	{
-		Warning( "Could not write to program cache file!\n" );
-		return;
-	}
+	//if ( !pProgramCache )
+	//{
+	//	Warning( "Could not write to program cache file!\n" );
+	//	return;
+	//}
 
-	// extract values of interest which represent a pair of shaders
-	
-	char	vprogramName[128];
-	int		vprogramStaticIndex = -1;
-	int		vprogramDynamicIndex = -1;
-	pair->m_vertexProg->GetLabelIndexCombo( vprogramName, sizeof(vprogramName), &vprogramStaticIndex, &vprogramDynamicIndex );
+	//// extract values of interest which represent a pair of shaders
+	//
+	//char	vprogramName[128];
+	//int		vprogramStaticIndex = -1;
+	//int		vprogramDynamicIndex = -1;
+	//pair->m_vertexProg->GetLabelIndexCombo( vprogramName, sizeof(vprogramName), &vprogramStaticIndex, &vprogramDynamicIndex );
 
-	
-	char	pprogramName[128];
-	int		pprogramStaticIndex = -1;
-	int		pprogramDynamicIndex = -1;
-	pair->m_fragmentProg->GetLabelIndexCombo( pprogramName, sizeof(pprogramName), &pprogramStaticIndex, &pprogramDynamicIndex );
+	//
+	//char	pprogramName[128];
+	//int		pprogramStaticIndex = -1;
+	//int		pprogramDynamicIndex = -1;
+	//pair->m_fragmentProg->GetLabelIndexCombo( pprogramName, sizeof(pprogramName), &pprogramStaticIndex, &pprogramDynamicIndex );
 
-	// make up a key - this thing is really a list of tuples, so need not be keyed by anything particular
-	KeyValues *pProgramKey = pProgramCache->CreateNewKey();
-	Assert( pProgramKey );
+	//// make up a key - this thing is really a list of tuples, so need not be keyed by anything particular
+	//KeyValues *pProgramKey = pProgramCache->CreateNewKey();
+	//Assert( pProgramKey );
 
-	pProgramKey->SetString	( "vs", vprogramName );
-	pProgramKey->SetString	( "ps", pprogramName );
+	//pProgramKey->SetString	( "vs", vprogramName );
+	//pProgramKey->SetString	( "ps", pprogramName );
 
-	pProgramKey->SetInt		( "vs_static", vprogramStaticIndex );
-	pProgramKey->SetInt		( "ps_static", pprogramStaticIndex );
+	//pProgramKey->SetInt		( "vs_static", vprogramStaticIndex );
+	//pProgramKey->SetInt		( "ps_static", pprogramStaticIndex );
 
-	pProgramKey->SetInt		( "vs_dynamic", vprogramDynamicIndex );
-	pProgramKey->SetInt		( "ps_dynamic", pprogramDynamicIndex );
+	//pProgramKey->SetInt		( "vs_dynamic", vprogramDynamicIndex );
+	//pProgramKey->SetInt		( "ps_dynamic", pprogramDynamicIndex );
 
-	pProgramCache->SaveToFile( g_pFullFileSystem, PROGRAM_CACHE_FILE, "MOD" );
-	pProgramCache->deleteThis();
+	//pProgramCache->SaveToFile( g_pFullFileSystem, PROGRAM_CACHE_FILE, "MOD" );
+	//pProgramCache->deleteThis();
 }
 
 // Calls glUseProgram() as a side effect

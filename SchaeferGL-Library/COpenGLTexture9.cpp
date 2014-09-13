@@ -63,7 +63,7 @@ COpenGLTexture9::~COpenGLTexture9()
 	GLMPRINTF(( "<-A- IDirect3DTexture9" ));	
 }
 
-HRESULT COpenGLTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
+HRESULT STDMETHODCALLTYPE COpenGLTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -83,7 +83,7 @@ HRESULT COpenGLTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 	return S_OK;	
 }
 
-HRESULT COpenGLTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel)
+HRESULT STDMETHODCALLTYPE COpenGLTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -114,7 +114,7 @@ HRESULT COpenGLTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfa
 	return S_OK;	
 }
 
-HRESULT COpenGLTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
+HRESULT STDMETHODCALLTYPE COpenGLTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -122,7 +122,7 @@ HRESULT COpenGLTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const
 	return S_OK;	
 }
 
-HRESULT COpenGLTexture9::UnlockRect(UINT Level)
+HRESULT STDMETHODCALLTYPE COpenGLTexture9::UnlockRect(UINT Level)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

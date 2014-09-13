@@ -32,7 +32,7 @@
 
 #include "COpenGLUnknown.h"
 
-COpenGLUnknown::COpenGLUnknown()
+COpenGLUnknown::COpenGLUnknown(void)
 {
 	m_refcount[0] = 1;
 	m_refcount[1] = 0;
@@ -46,7 +46,7 @@ COpenGLUnknown::COpenGLUnknown()
 	#endif
 }
 
-COpenGLUnknown::~COpenGLUnknown()
+COpenGLUnknown::~COpenGLUnknown(void)
 {
 	#if IUNKNOWN_ALLOC_SPEW
 		if (m_mark)
@@ -56,7 +56,7 @@ COpenGLUnknown::~COpenGLUnknown()
 	#endif	
 }
 
-/*ULONG COpenGLUnknown::AddRef()
+ULONG STDMETHODCALLTYPE COpenGLUnknown::AddRef(void)
 {
 	Assert( which >= 0 );
 	Assert( which < 2 );
@@ -72,14 +72,14 @@ COpenGLUnknown::~COpenGLUnknown()
 			}
 		}
 	#endif	
-}*/
+}
 
-/*HRESULT COpenGLUnknown::QueryInterface(REFIID riid, void** ppvObject)
+HRESULT STDMETHODCALLTYPE COpenGLUnknown::QueryInterface(REFIID riid,void  **ppv)
 {
 	
-}*/
+}
 
-/*ULONG COpenGLUnknown::Release()
+ULONG STDMETHODCALLTYPE COpenGLUnknown::Release(void)
 {
 	Assert( which >= 0 );
 	Assert( which < 2 );
@@ -117,4 +117,4 @@ COpenGLUnknown::~COpenGLUnknown()
 	{
 		return m_refcount[0];
 	}	
-}*/
+}

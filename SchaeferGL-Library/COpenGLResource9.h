@@ -33,7 +33,7 @@
 #ifndef COPENGLRESOURCE9_H
 #define COPENGLRESOURCE9_H
 
-#include "IDirect3DResource9.h" // Base class: IDirect3DResource9
+#include "d3d9.h" // Base class: IDirect3DResource9
 #include "COpenGLUnknown.h"
 
 class COpenGLDevice9;
@@ -48,13 +48,13 @@ public:
 	D3DRESOURCETYPE		m_restype;
 
 public:
-	//virtual HRESULT FreePrivateData(REFGUID refguid);
-	//virtual DWORD GetPriority();
-	//virtual HRESULT GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
-	//virtual D3DRESOURCETYPE GetType();
-	//virtual void PreLoad();
-	virtual DWORD SetPriority(DWORD PriorityNew);
-	//virtual HRESULT SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
+	virtual DWORD STDMETHODCALLTYPE GetPriority();
+	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+	virtual void STDMETHODCALLTYPE PreLoad();
+	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
+	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
 };
 
 #endif // COPENGLRESOURCE9_H

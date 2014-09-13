@@ -33,7 +33,7 @@
 #ifndef COPENGLBASETEXTURE9_H
 #define COPENGLBASETEXTURE9_H
 
-#include "IDirect3DBaseTexture9.h" // Base class: IDirect3DBaseTexture9
+#include "d3d9.h" // Base class: IDirect3DBaseTexture9
 #include "COpenGLResource9.h"
 
 class COpenGLBaseTexture9 : public IDirect3DBaseTexture9,public COpenGLResource9
@@ -46,15 +46,15 @@ public:
 	CGLMTex					*m_tex;				// a CGLMTex can represent all forms of tex
 
 public:
-	//virtual VOID GenerateMipSubLevels();
-	//virtual D3DTEXTUREFILTERTYPE GetAutoGenFilterType();
-	//virtual DWORD GetLOD();
-	virtual DWORD GetLevelCount();
-	//virtual HRESULT SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType);
-	//virtual DWORD SetLOD(DWORD LODNew);
+	virtual VOID STDMETHODCALLTYPE GenerateMipSubLevels();
+	virtual D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE GetAutoGenFilterType();
+	virtual DWORD STDMETHODCALLTYPE GetLOD();
+	virtual DWORD STDMETHODCALLTYPE GetLevelCount();
+	virtual HRESULT STDMETHODCALLTYPE SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType);
+	virtual DWORD STDMETHODCALLTYPE SetLOD(DWORD LODNew);
 	
 	
-	virtual D3DRESOURCETYPE GetType();
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
 };
 
 #endif // COPENGLBASETEXTURE9_H

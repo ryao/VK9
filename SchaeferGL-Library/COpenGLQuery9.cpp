@@ -62,7 +62,7 @@ COpenGLQuery9::~COpenGLQuery9()
 	GLMPRINTF(("<-A- ~IDirect3DQuery9"));	
 }
 
-HRESULT COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
+HRESULT STDMETHODCALLTYPE COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert( m_device->m_nValidMarker == D3D_DEVICE_VALID_MARKER );
@@ -199,24 +199,24 @@ HRESULT COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 	return result;	
 }
 
-/*
-DWORD COpenGLQuery9::GetDataSize()
+
+DWORD STDMETHODCALLTYPE COpenGLQuery9::GetDataSize()
 {
-	
+	return 0; //TODO: implement GetDataSize()
 }
 
-HRESULT COpenGLQuery9::GetDevice(IDirect3DDevice9** pDevice)
+HRESULT STDMETHODCALLTYPE COpenGLQuery9::GetDevice(IDirect3DDevice9** pDevice)
 {
-	
+	return E_NOTIMPL;
 }
 
-D3DQUERYTYPE COpenGLQuery9::GetType()
+D3DQUERYTYPE STDMETHODCALLTYPE COpenGLQuery9::GetType()
 {
-	
+	return D3DQUERYTYPE_EVENT; //TODO: implement GetType()
 }
-*/
 
-HRESULT COpenGLQuery9::Issue(DWORD dwIssueFlags)
+
+HRESULT STDMETHODCALLTYPE COpenGLQuery9::Issue(DWORD dwIssueFlags)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert( m_device->m_nValidMarker == D3D_DEVICE_VALID_MARKER );

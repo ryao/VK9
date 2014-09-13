@@ -46,11 +46,13 @@ COpenGLVertexDeclaration9::~COpenGLVertexDeclaration9()
 	m_device->ReleasedVertexDeclaration( this );	
 }
 
-/*
-HRESULT COpenGLVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements)
+
+HRESULT STDMETHODCALLTYPE COpenGLVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements)
 {
+	return E_NOTIMPL;
 }
-HRESULT COpenGLVertexDeclaration9::GetDevice(IDirect3DDevice9** ppDevice)
+
+HRESULT STDMETHODCALLTYPE COpenGLVertexDeclaration9::GetDevice(IDirect3DDevice9** ppDevice)
 {
+	return E_NOTIMPL;
 }
-*/

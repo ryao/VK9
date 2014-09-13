@@ -33,7 +33,7 @@
 #ifndef COPENGLVERTEXBUFFER9_H
 #define COPENGLVERTEXBUFFER9_H
 
-#include "IDirect3DVertexBuffer9.h" // Base class: IDirect3DVertexBuffer9
+#include "d3d9.h" // Base class: IDirect3DVertexBuffer9
 #include "COpenGLResource9.h"
 
 class COpenGLVertexBuffer9 : public IDirect3DVertexBuffer9,public COpenGLResource9
@@ -51,9 +51,9 @@ public:
 	void UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
 	
 public:
-	//virtual HRESULT GetDesc(D3DVERTEXBUFFER_DESC* pDesc);
-	virtual HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
-	virtual HRESULT Unlock();
+	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DVERTEXBUFFER_DESC* pDesc);
+	virtual HRESULT STDMETHODCALLTYPE Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE Unlock();
 };
 
 #endif // COPENGLVERTEXBUFFER9_H

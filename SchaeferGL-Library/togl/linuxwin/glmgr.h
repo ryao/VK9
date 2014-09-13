@@ -49,9 +49,8 @@
 //#include "materialsystem/ishader.h"
 //#include "dxabstract_types.h"
 //#include "tier0/icommandline.h"
-#include "types.h"
+#include "d3d9.h"
 #include "COpenGLTypes.h"
-#include "D3D9.h"
 
 #undef FORCEINLINE
 #define FORCEINLINE inline

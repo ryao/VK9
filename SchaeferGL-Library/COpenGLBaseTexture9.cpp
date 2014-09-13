@@ -74,19 +74,24 @@ COpenGLBaseTexture9::~COpenGLBaseTexture9()
 	GLMPRINTF(( "<-A- ~IDirect3DBaseTexture9" ));	
 }
 
-/*
-VOID COpenGLBaseTexture9::GenerateMipSubLevels()
-{
-}
-D3DTEXTUREFILTERTYPE COpenGLBaseTexture9::GetAutoGenFilterType()
-{
-}
-DWORD COpenGLBaseTexture9::GetLOD()
-{
-}
-*/
 
-DWORD COpenGLBaseTexture9::GetLevelCount()
+VOID STDMETHODCALLTYPE COpenGLBaseTexture9::GenerateMipSubLevels()
+{
+	return; //TODO: implement GenerateMipSubLevels
+}
+
+D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE COpenGLBaseTexture9::GetAutoGenFilterType()
+{
+	return D3DTEXF_NONE; //TODO: implement GetAutoGenFilterType
+}
+
+DWORD STDMETHODCALLTYPE COpenGLBaseTexture9::GetLOD()
+{
+	return 0; //TODO: implement GetLOD
+}
+
+
+DWORD STDMETHODCALLTYPE COpenGLBaseTexture9::GetLevelCount()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -94,16 +99,18 @@ DWORD COpenGLBaseTexture9::GetLevelCount()
 	return m_tex->m_layout->m_mipCount;	
 }
 
-/*
-HRESULT COpenGLBaseTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
-{
-}
-DWORD COpenGLBaseTexture9::SetLOD(DWORD LODNew)
-{
-}
-*/
 
-D3DRESOURCETYPE COpenGLBaseTexture9::GetType()
+HRESULT STDMETHODCALLTYPE COpenGLBaseTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
+{
+	return E_NOTIMPL;
+}
+
+DWORD STDMETHODCALLTYPE COpenGLBaseTexture9::SetLOD(DWORD LODNew)
+{
+	return 0; //TODO: implement SetLOD
+}
+
+D3DRESOURCETYPE STDMETHODCALLTYPE COpenGLBaseTexture9::GetType()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

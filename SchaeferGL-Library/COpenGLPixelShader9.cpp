@@ -58,11 +58,13 @@ COpenGLPixelShader9::~COpenGLPixelShader9()
 	GLMPRINTF(( "<-A- ~IDirect3DPixelShader9" ));	
 }
 
-/*
-HRESULT COpenGLPixelShader9::GetDevice(IDirect3DDevice9** ppDevice)
+
+HRESULT STDMETHODCALLTYPE COpenGLPixelShader9::GetDevice(IDirect3DDevice9** ppDevice)
 {
+	return E_NOTIMPL;
 }
-HRESULT COpenGLPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
+
+HRESULT STDMETHODCALLTYPE COpenGLPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
+	return E_NOTIMPL;
 }
-*/

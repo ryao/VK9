@@ -35,7 +35,7 @@
 
 #include "COpenGLTypes.h"
 
-#include "IDirect3DDevice9.h" // Base class: IDirect3DDevice9
+#include "d3d9.h" // Base class: IDirect3DDevice9
 #include "COpenGLUnknown.h"
 
 #include "COpenGLVertexDeclaration9.h"
@@ -211,9 +211,136 @@ D3D_RSINFO	g_D3DRS_INFO_packed[] =
 	D3D_RSI(	-1,	(D3DRENDERSTATETYPE)0,				0						)	// terminator
 };
 
-class COpenGLDevice9 : public IDirect3DDevice9,public COpenGLUnknown
-{
+class COpenGLDevice9 : public IDirect3DDevice9
+{	
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//Device
+	virtual HRESULT STDMETHODCALLTYPE BeginScene();
+	virtual HRESULT STDMETHODCALLTYPE BeginStateBlock();
+	virtual HRESULT STDMETHODCALLTYPE Clear(DWORD Count,const D3DRECT *pRects,DWORD Flags,D3DCOLOR Color,float Z,DWORD Stencil);
+	virtual HRESULT STDMETHODCALLTYPE ColorFill(IDirect3DSurface9 *pSurface,const RECT *pRect,D3DCOLOR color);
+	virtual HRESULT STDMETHODCALLTYPE CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DSwapChain9 **ppSwapChain);
+	virtual HRESULT STDMETHODCALLTYPE CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DCubeTexture9 **ppCubeTexture,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE CreateDepthStencilSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Discard,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE CreateIndexBuffer(UINT Length,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DIndexBuffer9 **ppIndexBuffer,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE CreateOffscreenPlainSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DPOOL Pool,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE CreatePixelShader(const DWORD *pFunction,IDirect3DPixelShader9 **ppShader);
+	virtual HRESULT STDMETHODCALLTYPE CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery);
+	virtual HRESULT STDMETHODCALLTYPE CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDirect3DStateBlock9 **ppSB);
+	virtual HRESULT STDMETHODCALLTYPE CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DTexture9 **ppTexture,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE CreateVertexBuffer(UINT Length,DWORD Usage,DWORD FVF,D3DPOOL Pool,IDirect3DVertexBuffer9 **ppVertexBuffer,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements,IDirect3DVertexDeclaration9 **ppDecl);
+	virtual HRESULT STDMETHODCALLTYPE CreateVertexShader(const DWORD *pFunction,IDirect3DVertexShader9 **ppShader);
+	virtual HRESULT STDMETHODCALLTYPE CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DVolumeTexture9 **ppVolumeTexture,HANDLE *pSharedHandle);
+	virtual HRESULT STDMETHODCALLTYPE DeletePatch(UINT Handle);
+	virtual HRESULT STDMETHODCALLTYPE DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount);
+	virtual HRESULT STDMETHODCALLTYPE DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,const void *pIndexData,D3DFORMAT IndexDataFormat,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride);
+	virtual HRESULT STDMETHODCALLTYPE DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount);
+	virtual HRESULT STDMETHODCALLTYPE DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT PrimitiveCount,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride);
+	virtual HRESULT STDMETHODCALLTYPE DrawRectPatch(UINT Handle,const float *pNumSegs,const D3DRECTPATCH_INFO *pRectPatchInfo);
+	virtual HRESULT STDMETHODCALLTYPE DrawTriPatch(UINT Handle,const float *pNumSegs,const D3DTRIPATCH_INFO *pTriPatchInfo);
+	virtual HRESULT STDMETHODCALLTYPE EndScene();
+	virtual HRESULT STDMETHODCALLTYPE EndStateBlock(IDirect3DStateBlock9 **ppSB);
+	virtual HRESULT STDMETHODCALLTYPE EvictManagedResources();
+	virtual UINT STDMETHODCALLTYPE GetAvailableTextureMem();
+	virtual HRESULT STDMETHODCALLTYPE GetBackBuffer(UINT  iSwapChain,UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer);
+	virtual HRESULT STDMETHODCALLTYPE GetClipPlane(DWORD Index,float *pPlane);
+	virtual HRESULT STDMETHODCALLTYPE GetClipStatus(D3DCLIPSTATUS9 *pClipStatus);
+	virtual HRESULT STDMETHODCALLTYPE GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS *pParameters);
+	virtual HRESULT STDMETHODCALLTYPE GetCurrentTexturePalette(UINT *pPaletteNumber);
+	virtual HRESULT STDMETHODCALLTYPE GetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface);
+	virtual HRESULT STDMETHODCALLTYPE GetDeviceCaps(D3DCAPS9 *pCaps);
+	virtual HRESULT STDMETHODCALLTYPE GetDirect3D(IDirect3D9 **ppD3D9);
+	virtual HRESULT STDMETHODCALLTYPE GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMODE *pMode);
+	virtual HRESULT STDMETHODCALLTYPE GetFrontBufferData(UINT  iSwapChain,IDirect3DSurface9 *pDestSurface);
+	virtual HRESULT STDMETHODCALLTYPE GetFVF(DWORD *pFVF);
+	virtual void STDMETHODCALLTYPE GetGammaRamp(UINT  iSwapChain,D3DGAMMARAMP *pRamp);
+	virtual HRESULT STDMETHODCALLTYPE GetIndices(IDirect3DIndexBuffer9 **ppIndexData); //,UINT *pBaseVertexIndex  ?
+	virtual HRESULT STDMETHODCALLTYPE GetLight(DWORD Index,D3DLIGHT9 *pLight); /*?documentation lists D3DLight9*/
+	virtual HRESULT STDMETHODCALLTYPE GetLightEnable(DWORD Index,BOOL *pEnable);
+	virtual HRESULT STDMETHODCALLTYPE GetMaterial(D3DMATERIAL9 *pMaterial);
+	virtual FLOAT STDMETHODCALLTYPE GetNPatchMode();
+	virtual UINT STDMETHODCALLTYPE GetNumberOfSwapChains();
+	virtual HRESULT STDMETHODCALLTYPE GetPaletteEntries(UINT PaletteNumber,PALETTEENTRY *pEntries);
+	virtual HRESULT STDMETHODCALLTYPE GetPixelShader(IDirect3DPixelShader9 **ppShader);
+	virtual HRESULT STDMETHODCALLTYPE GetPixelShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount);
+	virtual HRESULT STDMETHODCALLTYPE GetPixelShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount);
+	virtual HRESULT STDMETHODCALLTYPE GetPixelShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount);
+	virtual HRESULT STDMETHODCALLTYPE GetRasterStatus(UINT  iSwapChain,D3DRASTER_STATUS *pRasterStatus);
+	virtual HRESULT STDMETHODCALLTYPE GetRenderState(D3DRENDERSTATETYPE State,DWORD *pValue);
+	virtual HRESULT STDMETHODCALLTYPE GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 **ppRenderTarget);
+	virtual HRESULT STDMETHODCALLTYPE GetRenderTargetData(IDirect3DSurface9 *pRenderTarget,IDirect3DSurface9 *pDestSurface);
+	virtual HRESULT STDMETHODCALLTYPE GetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD *pValue);
+	virtual HRESULT STDMETHODCALLTYPE GetScissorRect(RECT *pRect);
+	virtual BOOL STDMETHODCALLTYPE GetSoftwareVertexProcessing();
+	virtual HRESULT STDMETHODCALLTYPE GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride);
+	virtual HRESULT STDMETHODCALLTYPE GetStreamSourceFreq(UINT StreamNumber,UINT *pDivider);
+	virtual HRESULT STDMETHODCALLTYPE GetSwapChain(UINT  iSwapChain,IDirect3DSwapChain9 **ppSwapChain);
+	virtual HRESULT STDMETHODCALLTYPE GetTexture(DWORD Stage,IDirect3DBaseTexture9 **ppTexture);
+	virtual HRESULT STDMETHODCALLTYPE GetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD *pValue);
+	virtual HRESULT STDMETHODCALLTYPE GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX *pMatrix);
+	virtual HRESULT STDMETHODCALLTYPE GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl);
+	virtual HRESULT STDMETHODCALLTYPE GetVertexShader(IDirect3DVertexShader9 **ppShader);
+	virtual HRESULT STDMETHODCALLTYPE GetVertexShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount);
+	virtual HRESULT STDMETHODCALLTYPE GetVertexShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount);
+	virtual HRESULT STDMETHODCALLTYPE GetVertexShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount);
+	virtual HRESULT STDMETHODCALLTYPE GetViewport(D3DVIEWPORT9 *pViewport);
+	virtual HRESULT STDMETHODCALLTYPE LightEnable(DWORD LightIndex,BOOL bEnable);
+	virtual HRESULT STDMETHODCALLTYPE MultiplyTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix);
+	virtual HRESULT STDMETHODCALLTYPE Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion);
+	virtual HRESULT STDMETHODCALLTYPE ProcessVertices(UINT SrcStartIndex,UINT DestIndex,UINT VertexCount,IDirect3DVertexBuffer9 *pDestBuffer,IDirect3DVertexDeclaration9 *pVertexDecl,DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE Reset(D3DPRESENT_PARAMETERS *pPresentationParameters);
+	virtual HRESULT STDMETHODCALLTYPE SetClipPlane(DWORD Index,const float *pPlane);
+	virtual HRESULT STDMETHODCALLTYPE SetClipStatus(const D3DCLIPSTATUS9 *pClipStatus);
+	virtual HRESULT STDMETHODCALLTYPE SetCurrentTexturePalette(UINT PaletteNumber);
+	virtual void STDMETHODCALLTYPE SetCursorPosition(INT X,INT Y,DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE SetCursorProperties(UINT XHotSpot,UINT YHotSpot,IDirect3DSurface9 *pCursorBitmap);
+	virtual HRESULT STDMETHODCALLTYPE SetDepthStencilSurface(IDirect3DSurface9 *pNewZStencil);
+	virtual HRESULT STDMETHODCALLTYPE SetDialogBoxMode(BOOL bEnableDialogs);
+	virtual HRESULT STDMETHODCALLTYPE SetFVF(DWORD FVF);
+	virtual void STDMETHODCALLTYPE SetGammaRamp(UINT  iSwapChain,DWORD Flags,const D3DGAMMARAMP *pRamp);
+	virtual HRESULT STDMETHODCALLTYPE SetIndices(IDirect3DIndexBuffer9 *pIndexData);
+	virtual HRESULT STDMETHODCALLTYPE SetLight(DWORD Index,const D3DLIGHT9 *pLight);
+	virtual HRESULT STDMETHODCALLTYPE SetMaterial(const D3DMATERIAL9 *pMaterial);
+	virtual HRESULT STDMETHODCALLTYPE SetNPatchMode(float nSegments);
+	virtual HRESULT STDMETHODCALLTYPE SetPaletteEntries(UINT PaletteNumber,const PALETTEENTRY *pEntries);
+	virtual HRESULT STDMETHODCALLTYPE SetPixelShader(IDirect3DPixelShader9 *pShader);
+	virtual HRESULT STDMETHODCALLTYPE SetPixelShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount);
+	virtual HRESULT STDMETHODCALLTYPE SetPixelShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount);
+	virtual HRESULT STDMETHODCALLTYPE SetPixelShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount);
+	virtual HRESULT STDMETHODCALLTYPE SetRenderState(D3DRENDERSTATETYPE State,DWORD Value);
+	virtual HRESULT STDMETHODCALLTYPE SetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 *pRenderTarget);
+	virtual HRESULT STDMETHODCALLTYPE SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value);
+	virtual HRESULT STDMETHODCALLTYPE SetScissorRect(const RECT *pRect);
+	virtual HRESULT STDMETHODCALLTYPE SetSoftwareVertexProcessing(BOOL bSoftware);
+	virtual HRESULT STDMETHODCALLTYPE SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride);
+	virtual HRESULT STDMETHODCALLTYPE SetStreamSourceFreq(UINT StreamNumber,UINT FrequencyParameter);
+	virtual HRESULT STDMETHODCALLTYPE SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture);
+	virtual HRESULT STDMETHODCALLTYPE SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value);
+	virtual HRESULT STDMETHODCALLTYPE SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix);
+	virtual HRESULT STDMETHODCALLTYPE SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl);
+	virtual HRESULT STDMETHODCALLTYPE SetVertexShader(IDirect3DVertexShader9 *pShader);
+	virtual HRESULT STDMETHODCALLTYPE SetVertexShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount);
+	virtual HRESULT STDMETHODCALLTYPE SetVertexShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount);
+	virtual HRESULT STDMETHODCALLTYPE SetVertexShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount);
+	virtual HRESULT STDMETHODCALLTYPE SetViewport(const D3DVIEWPORT9 *pViewport);
+	virtual BOOL STDMETHODCALLTYPE ShowCursor(BOOL bShow);
+	virtual HRESULT STDMETHODCALLTYPE StretchRect(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestSurface,const RECT *pDestRect,D3DTEXTUREFILTERTYPE Filter);
+	virtual HRESULT STDMETHODCALLTYPE TestCooperativeLevel();
+	virtual HRESULT STDMETHODCALLTYPE UpdateSurface(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestinationSurface,const POINT *pDestinationPoint);
+	virtual HRESULT STDMETHODCALLTYPE UpdateTexture(IDirect3DBaseTexture9* pSourceTexture,IDirect3DBaseTexture9* pDestinationTexture);
+	virtual HRESULT STDMETHODCALLTYPE ValidateDevice(DWORD *pNumPasses);
+	
+public:
+
+	int	m_refcount[2];
+	bool m_mark;
 
 	// GL state 
 	struct 
@@ -349,124 +476,7 @@ public:
 	void SetSamplerStatesNonInline(
 	DWORD Sampler, DWORD AddressU, DWORD AddressV, DWORD AddressW,
 	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter );
-	
-public:
-	virtual HRESULT BeginScene();
-	virtual HRESULT BeginStateBlock();
-	virtual HRESULT Clear(DWORD Count,const D3DRECT *pRects,DWORD Flags,D3DCOLOR Color,float Z,DWORD Stencil);
-	virtual HRESULT ColorFill(IDirect3DSurface9 *pSurface,const RECT *pRect,D3DCOLOR color);
-	virtual HRESULT CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DSwapChain9 **ppSwapChain);
-	virtual HRESULT CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DCubeTexture9 **ppCubeTexture,HANDLE *pSharedHandle);
-	virtual HRESULT CreateDepthStencilSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Discard,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle);
-	virtual HRESULT CreateIndexBuffer(UINT Length,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DIndexBuffer9 **ppIndexBuffer,HANDLE *pSharedHandle);
-	virtual HRESULT CreateOffscreenPlainSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DPOOL Pool,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle);
-	virtual HRESULT CreatePixelShader(const DWORD *pFunction,IDirect3DPixelShader9 **ppShader);
-	virtual HRESULT CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery);
-	virtual HRESULT CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle);
-	virtual HRESULT CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDirect3DStateBlock9 **ppSB);
-	virtual HRESULT CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DTexture9 **ppTexture,HANDLE *pSharedHandle);
-	virtual HRESULT CreateVertexBuffer(UINT Length,DWORD Usage,DWORD FVF,D3DPOOL Pool,IDirect3DVertexBuffer9 **ppVertexBuffer,HANDLE *pSharedHandle);
-	virtual HRESULT CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements,IDirect3DVertexDeclaration9 **ppDecl);
-	virtual HRESULT CreateVertexShader(const DWORD *pFunction,IDirect3DVertexShader9 **ppShader);
-	virtual HRESULT CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DVolumeTexture9 **ppVolumeTexture,HANDLE *pSharedHandle);
-	virtual HRESULT DeletePatch(UINT Handle);
-	virtual HRESULT DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount);
-	virtual HRESULT DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,const void *pIndexData,D3DFORMAT IndexDataFormat,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride);
-	virtual HRESULT DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount);
-	virtual HRESULT DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT PrimitiveCount,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride);
-	virtual HRESULT DrawRectPatch(UINT Handle,const float *pNumSegs,const D3DRECTPATCH_INFO *pRectPatchInfo);
-	virtual HRESULT DrawTriPatch(UINT Handle,const float *pNumSegs,const D3DTRIPATCH_INFO *pTriPatchInfo);
-	virtual HRESULT EndScene();
-	virtual HRESULT EndStateBlock(IDirect3DStateBlock9 **ppSB);
-	virtual HRESULT EvictManagedResources();
-	virtual UINT GetAvailableTextureMem();
-	virtual HRESULT GetBackBuffer(UINT  iSwapChain,UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer);
-	virtual HRESULT GetClipPlane(DWORD Index,float *pPlane);
-	virtual HRESULT GetClipStatus(D3DCLIPSTATUS9 *pClipStatus);
-	virtual HRESULT GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS *pParameters);
-	virtual HRESULT GetCurrentTexturePalette(UINT *pPaletteNumber);
-	virtual HRESULT GetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface);
-	virtual HRESULT GetDeviceCaps(D3DCAPS9 *pCaps);
-	virtual HRESULT GetDirect3D(IDirect3D9 **ppD3D9);
-	virtual HRESULT GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMODE *pMode);
-	virtual HRESULT GetFrontBufferData(UINT  iSwapChain,IDirect3DSurface9 *pDestSurface);
-	virtual HRESULT GetFVF(DWORD *pFVF);
-	virtual void GetGammaRamp(UINT  iSwapChain,D3DGAMMARAMP *pRamp);
-	virtual HRESULT GetIndices(IDirect3DIndexBuffer9 **ppIndexData,UINT *pBaseVertexIndex);
-	virtual HRESULT GetLight(DWORD Index,D3DLIGHT9 *pLight); /*?documentation lists D3DLight9*/
-	virtual HRESULT GetLightEnable(DWORD Index,BOOL *pEnable);
-	virtual HRESULT GetMaterial(D3DMATERIAL9 *pMaterial);
-	virtual FLOAT GetNPatchMode();
-	virtual UINT GetNumberOfSwapChains();
-	virtual HRESULT GetPaletteEntries(UINT PaletteNumber,PALETTEENTRY *pEntries);
-	virtual HRESULT GetPixelShader(IDirect3DPixelShader9 **ppShader);
-	virtual HRESULT GetPixelShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount);
-	virtual HRESULT GetPixelShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount);
-	virtual HRESULT GetPixelShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount);
-	virtual HRESULT GetRasterStatus(UINT  iSwapChain,D3DRASTER_STATUS *pRasterStatus);
-	virtual HRESULT GetRenderState(D3DRENDERSTATETYPE State,DWORD *pValue);
-	virtual HRESULT GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 **ppRenderTarget);
-	virtual HRESULT GetRenderTargetData(IDirect3DSurface9 *pRenderTarget,IDirect3DSurface9 *pDestSurface);
-	virtual HRESULT GetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD *pValue);
-	virtual HRESULT GetScissorRect(RECT *pRect);
-	virtual BOOL GetSoftwareVertexProcessing();
-	virtual HRESULT GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride);
-	virtual HRESULT GetStreamSourceFreq(UINT StreamNumber,UINT *pDivider);
-	virtual HRESULT GetSwapChain(UINT  iSwapChain,IDirect3DSwapChain9 **ppSwapChain);
-	virtual HRESULT GetTexture(DWORD Stage,IDirect3DBaseTexture9 **ppTexture);
-	virtual HRESULT GetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD *pValue);
-	virtual HRESULT GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX *pMatrix);
-	virtual HRESULT GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl);
-	virtual HRESULT GetVertexShader(IDirect3DVertexShader9 **ppShader);
-	virtual HRESULT GetVertexShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount);
-	virtual HRESULT GetVertexShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount);
-	virtual HRESULT GetVertexShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount);
-	virtual HRESULT GetViewport(D3DVIEWPORT9 *pViewport);
-	virtual HRESULT LightEnable(DWORD LightIndex,BOOL bEnable);
-	virtual HRESULT MultiplyTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix);
-	virtual HRESULT Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion);
-	virtual HRESULT ProcessVertices(UINT SrcStartIndex,UINT DestIndex,UINT VertexCount,IDirect3DVertexBuffer9 *pDestBuffer,IDirect3DVertexDeclaration9 *pVertexDecl,DWORD Flags);
-	virtual HRESULT Reset(D3DPRESENT_PARAMETERS *pPresentationParameters);
-	virtual HRESULT SetClipPlane(DWORD Index,const float *pPlane);
-	virtual HRESULT SetClipStatus(const D3DCLIPSTATUS9 *pClipStatus);
-	virtual HRESULT SetCurrentTexturePalette(UINT PaletteNumber);
-	virtual void SetCursorPosition(INT X,INT Y,DWORD Flags);
-	virtual HRESULT SetCursorProperties(UINT XHotSpot,UINT YHotSpot,IDirect3DSurface9 *pCursorBitmap);
-	virtual HRESULT SetDepthStencilSurface(IDirect3DSurface9 *pNewZStencil);
-	virtual HRESULT SetDialogBoxMode(BOOL bEnableDialogs);
-	virtual HRESULT SetFVF(DWORD FVF);
-	virtual void SetGammaRamp(UINT  iSwapChain,DWORD Flags,const D3DGAMMARAMP *pRamp);
-	virtual HRESULT SetIndices(IDirect3DIndexBuffer9 *pIndexData);
-	virtual HRESULT SetLight(DWORD Index,const D3DLIGHT9 *pLight);
-	virtual HRESULT SetMaterial(const D3DMATERIAL9 *pMaterial);
-	virtual HRESULT SetNPatchMode(float nSegments);
-	virtual HRESULT SetPaletteEntries(UINT PaletteNumber,const PALETTEENTRY *pEntries);
-	virtual HRESULT SetPixelShader(IDirect3DPixelShader9 *pShader);
-	virtual HRESULT SetPixelShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount);
-	virtual HRESULT SetPixelShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount);
-	virtual HRESULT SetPixelShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount);
-	virtual HRESULT SetRenderState(D3DRENDERSTATETYPE State,DWORD Value);
-	virtual HRESULT SetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 *pRenderTarget);
-	virtual HRESULT SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value);
-	virtual HRESULT SetScissorRect(const RECT *pRect);
-	virtual HRESULT SetSoftwareVertexProcessing(BOOL bSoftware);
-	virtual HRESULT SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride);
-	virtual HRESULT SetStreamSourceFreq(UINT StreamNumber,UINT FrequencyParameter);
-	virtual HRESULT SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture);
-	virtual HRESULT SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value);
-	virtual HRESULT SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix);
-	virtual HRESULT SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl);
-	virtual HRESULT SetVertexShader(IDirect3DVertexShader9 *pShader);
-	virtual HRESULT SetVertexShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount);
-	virtual HRESULT SetVertexShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount);
-	virtual HRESULT SetVertexShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount);
-	virtual HRESULT SetViewport(const D3DVIEWPORT9 *pViewport);
-	virtual BOOL ShowCursor(BOOL bShow);
-	virtual HRESULT StretchRect(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestSurface,const RECT *pDestRect,D3DTEXTUREFILTERTYPE Filter);
-	virtual HRESULT TestCooperativeLevel();
-	virtual HRESULT UpdateSurface(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestinationSurface,const POINT *pDestinationPoint);
-	virtual HRESULT ValidateDevice(DWORD *pNumPasses);
-	
+
 	FORCEINLINE void TOGLMETHODCALLTYPE SetSamplerStates(
 	DWORD Sampler, DWORD AddressU, DWORD AddressV, DWORD AddressW,
 	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter )
@@ -848,7 +858,6 @@ public:
 		m_ctx->SetMaxUsedVertexShaderConstantsHint( nMaxReg );
 	#endif
 	}
-
 };
 
 #endif // COPENGLDEVICE9_H

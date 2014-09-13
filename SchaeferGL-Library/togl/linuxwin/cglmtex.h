@@ -142,6 +142,14 @@ struct GLMTexLayoutKey
 
 bool LessFunc_GLMTexLayoutKey( const GLMTexLayoutKey &a, const GLMTexLayoutKey &b );
 
+struct GLMTexLayoutKeyCompare
+{
+  bool operator()(const GLMTexLayoutKey &a, const GLMTexLayoutKey &b) const
+  {
+    return LessFunc_GLMTexLayoutKey(a, b);
+  }
+};
+
 #define	GLM_TEX_MAX_MIPS	14
 #define	GLM_TEX_MAX_FACES	6
 #define	GLM_TEX_MAX_SLICES	(GLM_TEX_MAX_MIPS * GLM_TEX_MAX_FACES)
@@ -182,7 +190,8 @@ public:
 	
 	void			DumpStats( void );
 protected:
-	CUtlMap< GLMTexLayoutKey, GLMTexLayout* >	m_layoutMap;
+	//CUtlMap< GLMTexLayoutKey, GLMTexLayout* >	m_layoutMap;
+	std::map< GLMTexLayoutKey, GLMTexLayout*, GLMTexLayoutKeyCompare >	m_layoutMap;
 };
 
 //===============================================================================

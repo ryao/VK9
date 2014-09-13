@@ -215,7 +215,8 @@ HRESULT	COpenGLDevice9::Create( IDirect3DDevice9Params *params )
 	m_bFBODirty = false;
 
 	m_pFBOs = new CGLMFBOMap();
-	m_pFBOs->SetLessFunc( RenderTargetState_t::LessFunc );
+	//now handled by RenderTargetStateCompare
+	//m_pFBOs->SetLessFunc( RenderTargetState_t::LessFunc );
 
 	// we create two IDirect3DSurface9's.  These will be known as the internal render target 0 and the depthstencil.
 	
@@ -427,7 +428,8 @@ void COpenGLDevice9::ResetFBOMap()
 		m_ctx->DelFBO( pFBO );
 	}
 
-	m_pFBOs->Purge();
+	//m_pFBOs->Purge();
+	m_pFBOs->clear();
 
 	m_bFBODirty = true;
 }
@@ -840,7 +842,74 @@ void COpenGLDevice9::SetSamplerStatesNonInline(
 	m_ctx->SetSamplerStates( Sampler, AddressU, AddressV, AddressW, MinFilter, MagFilter, MipFilter );
 }
 
-HRESULT COpenGLDevice9::BeginScene()
+//IUknown
+
+ULONG STDMETHODCALLTYPE COpenGLDevice9::AddRef(void)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+	m_refcount[which]++;
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IUAddRef  (%08x,%d) refc -> (%d,%d) [%s]",this,which,m_refcount[0],m_refcount[1],comment?comment:"..."))	;
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif	
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::QueryInterface(REFIID riid,void  **ppv)
+{
+	
+}
+
+ULONG STDMETHODCALLTYPE COpenGLDevice9::Release(void)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+		
+	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
+	bool deleting = false;
+		
+	m_refcount[which]--;
+	if ( (!m_refcount[0]) && (!m_refcount[1]) )
+	{
+		deleting = true;
+	}
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif
+
+	if (deleting)
+	{
+		if (m_mark)
+		{
+			GLMPRINTF((""))	;		// place to hang a breakpoint
+		}
+		delete this;
+		return 0;
+	}
+	else
+	{
+		return m_refcount[0];
+	}	
+}
+
+//Device
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::BeginScene()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -849,9 +918,12 @@ HRESULT COpenGLDevice9::BeginScene()
 	return S_OK;		
 }
 	
-HRESULT COpenGLDevice9::BeginStateBlock(){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::BeginStateBlock()
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::Clear(DWORD Count,const D3DRECT *pRects,DWORD Flags,D3DCOLOR Color,float Z,DWORD Stencil)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::Clear(DWORD Count,const D3DRECT *pRects,DWORD Flags,D3DCOLOR Color,float Z,DWORD Stencil)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 
@@ -896,10 +968,17 @@ HRESULT COpenGLDevice9::Clear(DWORD Count,const D3DRECT *pRects,DWORD Flags,D3DC
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::ColorFill(IDirect3DSurface9 *pSurface,const RECT *pRect,D3DCOLOR color){}
-HRESULT COpenGLDevice9::CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DSwapChain9 **ppSwapChain){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::ColorFill(IDirect3DSurface9 *pSurface,const RECT *pRect,D3DCOLOR color)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DCubeTexture9 **ppCubeTexture,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DSwapChain9 **ppSwapChain)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DCubeTexture9 **ppCubeTexture,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert( m_ctx->m_nCurOwnerThreadId == ThreadGetCurrentId() );
@@ -1003,7 +1082,7 @@ HRESULT COpenGLDevice9::CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Usag
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::CreateDepthStencilSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Discard,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateDepthStencilSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Discard,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1061,7 +1140,7 @@ HRESULT COpenGLDevice9::CreateDepthStencilSurface(UINT Width,UINT Height,D3DFORM
 	return result;	
 }
 
-HRESULT COpenGLDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DIndexBuffer9 **ppIndexBuffer,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DIndexBuffer9 **ppIndexBuffer,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1102,7 +1181,7 @@ HRESULT COpenGLDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D3DFORMAT Form
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::CreateOffscreenPlainSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DPOOL Pool,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateOffscreenPlainSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DPOOL Pool,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1150,7 +1229,7 @@ HRESULT COpenGLDevice9::CreateOffscreenPlainSurface(UINT Width,UINT Height,D3DFO
 	return result;	
 }
 
-HRESULT COpenGLDevice9::CreatePixelShader(const DWORD *pFunction,IDirect3DPixelShader9 **ppShader)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreatePixelShader(const DWORD *pFunction,IDirect3DPixelShader9 **ppShader)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1367,7 +1446,7 @@ HRESULT COpenGLDevice9::CreatePixelShader(const DWORD *pFunction,IDirect3DPixelS
 	return result;	
 }
 
-HRESULT COpenGLDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1426,7 +1505,7 @@ HRESULT COpenGLDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery)
 	}	
 }
 
-HRESULT COpenGLDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1491,9 +1570,12 @@ HRESULT COpenGLDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Form
 	return result;	
 }
 
-HRESULT COpenGLDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDirect3DStateBlock9 **ppSB){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDirect3DStateBlock9 **ppSB)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DTexture9 **ppTexture,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DTexture9 **ppTexture,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1616,7 +1698,7 @@ HRESULT COpenGLDevice9::CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD U
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::CreateVertexBuffer(UINT Length,DWORD Usage,DWORD FVF,D3DPOOL Pool,IDirect3DVertexBuffer9 **ppVertexBuffer,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVertexBuffer(UINT Length,DWORD Usage,DWORD FVF,D3DPOOL Pool,IDirect3DVertexBuffer9 **ppVertexBuffer,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMPRINTF(( ">-A- IDirect3DDevice9::CreateVertexBuffer" ));
@@ -1652,7 +1734,7 @@ HRESULT COpenGLDevice9::CreateVertexBuffer(UINT Length,DWORD Usage,DWORD FVF,D3D
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements,IDirect3DVertexDeclaration9 **ppDecl)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements,IDirect3DVertexDeclaration9 **ppDecl)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1817,7 +1899,7 @@ HRESULT COpenGLDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertex
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::CreateVertexShader(const DWORD *pFunction,IDirect3DVertexShader9 **ppShader)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVertexShader(const DWORD *pFunction,IDirect3DVertexShader9 **ppShader)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -1986,7 +2068,7 @@ HRESULT COpenGLDevice9::CreateVertexShader(const DWORD *pFunction,IDirect3DVerte
 	return result;	
 }
 
-HRESULT COpenGLDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DVolumeTexture9 **ppVolumeTexture,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DVolumeTexture9 **ppVolumeTexture,HANDLE *pSharedHandle)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMPRINTF((">-A-  IDirect3DDevice9::CreateVolumeTexture"));
@@ -2097,9 +2179,12 @@ HRESULT COpenGLDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UI
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::DeletePatch(UINT Handle){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::DeletePatch(UINT Handle)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
 {
 	tmZone( TELEMETRY_LEVEL2, TMZF_NONE, "%s", __FUNCTION__ );
 	Assert( m_ctx->m_nCurOwnerThreadId == ThreadGetCurrentId() );
@@ -2254,7 +2339,7 @@ draw_failed:
 	return E_FAIL;	
 }
 
-HRESULT COpenGLDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,const void *pIndexData,D3DFORMAT IndexDataFormat,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,const void *pIndexData,D3DFORMAT IndexDataFormat,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2263,7 +2348,7 @@ HRESULT COpenGLDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UI
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2271,7 +2356,7 @@ HRESULT COpenGLDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartV
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT PrimitiveCount,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT PrimitiveCount,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2279,10 +2364,17 @@ HRESULT COpenGLDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT Prim
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::DrawRectPatch(UINT Handle,const float *pNumSegs,const D3DRECTPATCH_INFO *pRectPatchInfo){}
-HRESULT COpenGLDevice9::DrawTriPatch(UINT Handle,const float *pNumSegs,const D3DTRIPATCH_INFO *pTriPatchInfo){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::DrawRectPatch(UINT Handle,const float *pNumSegs,const D3DRECTPATCH_INFO *pRectPatchInfo)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::EndScene()
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::DrawTriPatch(UINT Handle,const float *pNumSegs,const D3DTRIPATCH_INFO *pTriPatchInfo)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::EndScene()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2290,9 +2382,12 @@ HRESULT COpenGLDevice9::EndScene()
 	return S_OK;		
 }
 	
-HRESULT COpenGLDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::EvictManagedResources()
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::EvictManagedResources()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2300,14 +2395,37 @@ HRESULT COpenGLDevice9::EvictManagedResources()
 	return S_OK;	
 }
 
-UINT COpenGLDevice9::GetAvailableTextureMem(){}
-HRESULT COpenGLDevice9::GetBackBuffer(UINT  iSwapChain,UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer){}
-HRESULT COpenGLDevice9::GetClipPlane(DWORD Index,float *pPlane){}
-HRESULT COpenGLDevice9::GetClipStatus(D3DCLIPSTATUS9 *pClipStatus){}
-HRESULT COpenGLDevice9::GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS *pParameters){}
-HRESULT COpenGLDevice9::GetCurrentTexturePalette(UINT *pPaletteNumber){}
+UINT STDMETHODCALLTYPE COpenGLDevice9::GetAvailableTextureMem()
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::GetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetBackBuffer(UINT  iSwapChain,UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetClipPlane(DWORD Index,float *pPlane)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetClipStatus(D3DCLIPSTATUS9 *pClipStatus)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS *pParameters)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetCurrentTexturePalette(UINT *pPaletteNumber)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2329,7 +2447,7 @@ HRESULT COpenGLDevice9::GetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSur
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2351,10 +2469,17 @@ HRESULT COpenGLDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::GetDirect3D(IDirect3D9 **ppD3D9){}
-HRESULT COpenGLDevice9::GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMODE *pMode){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetDirect3D(IDirect3D9 **ppD3D9)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::GetFrontBufferData(UINT  iSwapChain,IDirect3DSurface9 *pDestSurface)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMODE *pMode)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetFrontBufferData(UINT  iSwapChain,IDirect3DSurface9 *pDestSurface)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2362,7 +2487,7 @@ HRESULT COpenGLDevice9::GetFrontBufferData(UINT  iSwapChain,IDirect3DSurface9 *p
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::GetFVF(DWORD *pFVF)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetFVF(DWORD *pFVF)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2370,12 +2495,22 @@ HRESULT COpenGLDevice9::GetFVF(DWORD *pFVF)
 	return S_OK;	
 }
 
-void COpenGLDevice9::GetGammaRamp(UINT  iSwapChain,D3DGAMMARAMP *pRamp){}
-HRESULT COpenGLDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexData,UINT *pBaseVertexIndex){}
+void STDMETHODCALLTYPE COpenGLDevice9::GetGammaRamp(UINT  iSwapChain,D3DGAMMARAMP *pRamp)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::GetLight(DWORD Index,D3DLIGHT9 *pLight){} 
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexData) //,UINT *pBaseVertexIndex ?
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::GetLightEnable(DWORD Index,BOOL *pEnable)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetLight(DWORD Index,D3DLIGHT9 *pLight)
+{
+	return E_NOTIMPL;
+} 
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetLightEnable(DWORD Index,BOOL *pEnable)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2383,18 +2518,57 @@ HRESULT COpenGLDevice9::GetLightEnable(DWORD Index,BOOL *pEnable)
 	return S_OK;		
 }
 
-HRESULT COpenGLDevice9::GetMaterial(D3DMATERIAL9 *pMaterial){}
-FLOAT COpenGLDevice9::GetNPatchMode(){}
-UINT COpenGLDevice9::GetNumberOfSwapChains(){}
-HRESULT COpenGLDevice9::GetPaletteEntries(UINT PaletteNumber,PALETTEENTRY *pEntries){}
-HRESULT COpenGLDevice9::GetPixelShader(IDirect3DPixelShader9 **ppShader){}
-HRESULT COpenGLDevice9::GetPixelShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount){}
-HRESULT COpenGLDevice9::GetPixelShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount){}
-HRESULT COpenGLDevice9::GetPixelShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount){}
-HRESULT COpenGLDevice9::GetRasterStatus(UINT  iSwapChain,D3DRASTER_STATUS *pRasterStatus){}
-HRESULT COpenGLDevice9::GetRenderState(D3DRENDERSTATETYPE State,DWORD *pValue){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetMaterial(D3DMATERIAL9 *pMaterial)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 **ppRenderTarget)
+FLOAT STDMETHODCALLTYPE COpenGLDevice9::GetNPatchMode()
+{
+	return 0; //TODO: implement GetNPatchMode
+}
+
+UINT STDMETHODCALLTYPE COpenGLDevice9::GetNumberOfSwapChains()
+{
+	return 0; //TODO: implement GetNumberOfSwapChains
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetPaletteEntries(UINT PaletteNumber,PALETTEENTRY *pEntries)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetPixelShader(IDirect3DPixelShader9 **ppShader)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetPixelShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetPixelShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetPixelShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetRasterStatus(UINT  iSwapChain,D3DRASTER_STATUS *pRasterStatus)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetRenderState(D3DRENDERSTATETYPE State,DWORD *pValue)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 **ppRenderTarget)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2412,7 +2586,7 @@ HRESULT COpenGLDevice9::GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::GetRenderTargetData(IDirect3DSurface9 *pRenderTarget,IDirect3DSurface9 *pDestSurface)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetRenderTargetData(IDirect3DSurface9 *pRenderTarget,IDirect3DSurface9 *pDestSurface)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2423,14 +2597,37 @@ HRESULT COpenGLDevice9::GetRenderTargetData(IDirect3DSurface9 *pRenderTarget,IDi
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::GetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD *pValue){}
-HRESULT COpenGLDevice9::GetScissorRect(RECT *pRect){}
-BOOL COpenGLDevice9::GetSoftwareVertexProcessing(){}
-HRESULT COpenGLDevice9::GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride){}
-HRESULT COpenGLDevice9::GetStreamSourceFreq(UINT StreamNumber,UINT *pDivider){}
-HRESULT COpenGLDevice9::GetSwapChain(UINT  iSwapChain,IDirect3DSwapChain9 **ppSwapChain){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD *pValue)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::GetTexture(DWORD Stage,IDirect3DBaseTexture9 **ppTexture)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetScissorRect(RECT *pRect)
+{
+	return E_NOTIMPL;
+}
+
+BOOL STDMETHODCALLTYPE COpenGLDevice9::GetSoftwareVertexProcessing()
+{
+	return true; //TODO implement GetSoftwareVertexProcessing()
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetStreamSourceFreq(UINT StreamNumber,UINT *pDivider)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetSwapChain(UINT  iSwapChain,IDirect3DSwapChain9 **ppSwapChain)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetTexture(DWORD Stage,IDirect3DBaseTexture9 **ppTexture)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2439,15 +2636,42 @@ HRESULT COpenGLDevice9::GetTexture(DWORD Stage,IDirect3DBaseTexture9 **ppTexture
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::GetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD *pValue){}
-HRESULT COpenGLDevice9::GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX *pMatrix){}
-HRESULT COpenGLDevice9::GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl){}
-HRESULT COpenGLDevice9::GetVertexShader(IDirect3DVertexShader9 **ppShader){}
-HRESULT COpenGLDevice9::GetVertexShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount){}
-HRESULT COpenGLDevice9::GetVertexShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount){}
-HRESULT COpenGLDevice9::GetVertexShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD *pValue)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX *pMatrix)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetVertexShader(IDirect3DVertexShader9 **ppShader)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetVertexShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetVertexShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetVertexShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
 {
 	// 7LS - unfinished, used in scaleformuirenderimpl.cpp (only width and height required)
 	GL_BATCH_PERF_CALL_TIMER;
@@ -2466,10 +2690,17 @@ HRESULT COpenGLDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
 	return S_OK;		
 }
 	
-HRESULT COpenGLDevice9::LightEnable(DWORD LightIndex,BOOL bEnable){}
-HRESULT COpenGLDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::LightEnable(DWORD LightIndex,BOOL bEnable)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion)
 {
 	GL_BATCH_PERF( g_nTotalD3DCalls++; )
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2625,9 +2856,13 @@ HRESULT COpenGLDevice9::Present(const RECT *pSourceRect,const RECT *pDestRect,HW
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::ProcessVertices(UINT SrcStartIndex,UINT DestIndex,UINT VertexCount,IDirect3DVertexBuffer9 *pDestBuffer,IDirect3DVertexDeclaration9 *pVertexDecl,DWORD Flags){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::ProcessVertices(
+	UINT SrcStartIndex,UINT DestIndex,UINT VertexCount,IDirect3DVertexBuffer9 *pDestBuffer,IDirect3DVertexDeclaration9 *pVertexDecl,DWORD Flags)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2820,12 +3055,27 @@ HRESULT COpenGLDevice9::SetClipPlane(DWORD Index,const float *pPlane)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetClipStatus(const D3DCLIPSTATUS9 *pClipStatus){}
-HRESULT COpenGLDevice9::SetCurrentTexturePalette(UINT PaletteNumber){}
-void COpenGLDevice9::SetCursorPosition(INT X,INT Y,DWORD Flags){}
-HRESULT COpenGLDevice9::SetCursorProperties(UINT XHotSpot,UINT YHotSpot,IDirect3DSurface9 *pCursorBitmap){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetClipStatus(const D3DCLIPSTATUS9 *pClipStatus)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::SetDepthStencilSurface(IDirect3DSurface9 *pNewZStencil)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetCurrentTexturePalette(UINT PaletteNumber)
+{
+	return E_NOTIMPL;
+}
+
+void STDMETHODCALLTYPE COpenGLDevice9::SetCursorPosition(INT X,INT Y,DWORD Flags)
+{
+	return; //TODO: implement SetCursorPosition
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetCursorProperties(UINT XHotSpot,UINT YHotSpot,IDirect3DSurface9 *pCursorBitmap)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetDepthStencilSurface(IDirect3DSurface9 *pNewZStencil)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2861,9 +3111,12 @@ HRESULT COpenGLDevice9::SetDepthStencilSurface(IDirect3DSurface9 *pNewZStencil)
 	return result;	
 }
 
-HRESULT COpenGLDevice9::SetDialogBoxMode(BOOL bEnableDialogs){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::SetFVF(DWORD FVF)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetFVF(DWORD FVF)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2871,7 +3124,7 @@ HRESULT COpenGLDevice9::SetFVF(DWORD FVF)
 	return S_OK;	
 }
 
-void COpenGLDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const D3DGAMMARAMP *pRamp)
+void STDMETHODCALLTYPE COpenGLDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const D3DGAMMARAMP *pRamp)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert( GetCurrentOwnerThreadId() == ThreadGetCurrentId() );
@@ -2883,7 +3136,7 @@ void COpenGLDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const D3DGAMMARAM
 	}	
 }
 
-HRESULT COpenGLDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2893,7 +3146,7 @@ HRESULT COpenGLDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 	return S_OK;
 }
 
-HRESULT COpenGLDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2901,7 +3154,7 @@ HRESULT COpenGLDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2910,10 +3163,17 @@ HRESULT COpenGLDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetNPatchMode(float nSegments){}
-HRESULT COpenGLDevice9::SetPaletteEntries(UINT PaletteNumber,const PALETTEENTRY *pEntries){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetNPatchMode(float nSegments)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::SetPixelShader(IDirect3DPixelShader9 *pShader)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetPaletteEntries(UINT PaletteNumber,const PALETTEENTRY *pEntries)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetPixelShader(IDirect3DPixelShader9 *pShader)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2924,7 +3184,7 @@ HRESULT COpenGLDevice9::SetPixelShader(IDirect3DPixelShader9 *pShader)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetPixelShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetPixelShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2933,7 +3193,7 @@ HRESULT COpenGLDevice9::SetPixelShaderConstantB(UINT StartRegister,const BOOL *p
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetPixelShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetPixelShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2951,7 +3211,7 @@ HRESULT COpenGLDevice9::SetPixelShaderConstantF(UINT StartRegister,const float *
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetPixelShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetPixelShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -2961,7 +3221,7 @@ HRESULT COpenGLDevice9::SetPixelShaderConstantI(UINT StartRegister,const int *pC
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3350,7 +3610,7 @@ HRESULT COpenGLDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 *pRenderTarget)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 *pRenderTarget)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3442,7 +3702,7 @@ HRESULT COpenGLDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface
 	return result;	
 }
 
-HRESULT COpenGLDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3497,7 +3757,7 @@ HRESULT COpenGLDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,D
 	return S_OK;
 }
 
-HRESULT COpenGLDevice9::SetScissorRect(const RECT *pRect)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetScissorRect(const RECT *pRect)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3509,9 +3769,12 @@ HRESULT COpenGLDevice9::SetScissorRect(const RECT *pRect)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetSoftwareVertexProcessing(BOOL bSoftware){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3545,9 +3808,12 @@ HRESULT COpenGLDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9
 	return S_OK;
 }
 
-HRESULT COpenGLDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT FrequencyParameter){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT FrequencyParameter)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3557,7 +3823,7 @@ HRESULT COpenGLDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3565,7 +3831,7 @@ HRESULT COpenGLDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYP
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3573,7 +3839,7 @@ HRESULT COpenGLDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3581,7 +3847,7 @@ HRESULT COpenGLDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetVertexShader(IDirect3DVertexShader9 *pShader)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetVertexShader(IDirect3DVertexShader9 *pShader)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3590,7 +3856,7 @@ HRESULT COpenGLDevice9::SetVertexShader(IDirect3DVertexShader9 *pShader)
 	return S_OK;
 }
 
-HRESULT COpenGLDevice9::SetVertexShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetVertexShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3599,7 +3865,7 @@ HRESULT COpenGLDevice9::SetVertexShaderConstantB(UINT StartRegister,const BOOL *
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetVertexShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetVertexShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3608,7 +3874,7 @@ HRESULT COpenGLDevice9::SetVertexShaderConstantF(UINT StartRegister,const float 
 	return S_OK;
 }
 
-HRESULT COpenGLDevice9::SetVertexShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetVertexShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3617,7 +3883,7 @@ HRESULT COpenGLDevice9::SetVertexShaderConstantI(UINT StartRegister,const int *p
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3640,12 +3906,12 @@ HRESULT COpenGLDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 	return S_OK;	
 }
 
-BOOL COpenGLDevice9::ShowCursor(BOOL bShow)
+BOOL STDMETHODCALLTYPE COpenGLDevice9::ShowCursor(BOOL bShow)
 {
 	return TRUE;	
 }
 
-HRESULT COpenGLDevice9::StretchRect(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestSurface,const RECT *pDestRect,D3DTEXTUREFILTERTYPE Filter)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::StretchRect(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestSurface,const RECT *pDestRect,D3DTEXTUREFILTERTYPE Filter)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3728,7 +3994,7 @@ HRESULT COpenGLDevice9::StretchRect(IDirect3DSurface9 *pSourceSurface,const RECT
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::TestCooperativeLevel()
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::TestCooperativeLevel()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -3739,9 +4005,17 @@ HRESULT COpenGLDevice9::TestCooperativeLevel()
 	return S_OK;	
 }
 
-HRESULT COpenGLDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestinationSurface,const POINT *pDestinationPoint){}
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestinationSurface,const POINT *pDestinationPoint)
+{
+	return E_NOTIMPL;
+}
 
-HRESULT COpenGLDevice9::ValidateDevice(DWORD *pNumPasses)
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture,IDirect3DBaseTexture9* pDestinationTexture)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::ValidateDevice(DWORD *pNumPasses)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );

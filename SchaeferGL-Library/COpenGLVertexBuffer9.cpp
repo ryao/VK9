@@ -60,7 +60,7 @@ COpenGLVertexBuffer9::~COpenGLVertexBuffer9()
 	GLMPRINTF(( "<-A- ~IDirect3DVertexBuffer9" ));	
 }
 
-void COpenGLVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
+void STDMETHODCALLTYPE COpenGLVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -69,14 +69,14 @@ void COpenGLVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const voi
 	m_vtxBuffer->Unlock( nActualSize, pActualData );	
 }
 
-/*
-HRESULT COpenGLVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
-{
-	
-}
-*/
 
-HRESULT COpenGLVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
+HRESULT STDMETHODCALLTYPE COpenGLVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
+{
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGLVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -99,7 +99,7 @@ HRESULT COpenGLVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** pp
 	return S_OK;	
 }
 
-HRESULT COpenGLVertexBuffer9::Unlock()
+HRESULT STDMETHODCALLTYPE COpenGLVertexBuffer9::Unlock()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

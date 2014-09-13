@@ -53,7 +53,7 @@
 //#include "tier1/convar.h"
 
 #include <sys/stat.h>
-#include "types.h"
+#include "d3d9.h"
 #include "COpenGLTypes.h"
 //#include "dxabstract_types.h"
 

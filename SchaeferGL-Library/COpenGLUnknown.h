@@ -33,23 +33,25 @@
 #ifndef COPENGLUNKNOWN_H
 #define COPENGLUNKNOWN_H
 
-#include "IUnknown.h" // Base class: IUnknown
+#include "d3d9.h" // Base class: IUnknown
 #include "togl/rendermechanism.h"
 #include "COpenGLTypes.h"
 
 class COpenGLUnknown : public IUnknown
 {
 public:
-	COpenGLUnknown();
-	~COpenGLUnknown();
+	COpenGLUnknown(void);
+	~COpenGLUnknown(void);
+
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+public:
 
 	int	m_refcount[2];
 	bool m_mark;
 
-public:
-	//virtual ULONG AddRef();
-	//virtual HRESULT QueryInterface(REFIID riid, void** ppvObject);
-	//virtual ULONG Release();
 };
 
 #endif // COPENGLUNKNOWN_H

@@ -33,7 +33,7 @@
 #ifndef COPENGLCUBETEXTURE9_H
 #define COPENGLCUBETEXTURE9_H
 
-#include "IDirect3DCubeTexture9.h" // Base class: IDirect3DCubeTexture9
+#include "d3d9.h" // Base class: IDirect3DCubeTexture9
 #include "COpenGLBaseTexture9.h"
 #include "COpenGLSurface9.h"
 
@@ -46,11 +46,11 @@ public:
 	COpenGLSurface9		*m_surfZero[6];			// surfs of top level.
 
 public:
-	//virtual HRESULT AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT* pDirtyRect);
-	virtual HRESULT GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface9** ppCubeMapSurface);
-	virtual HRESULT GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc);
-	//virtual HRESULT LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
-	//virtual HRESULT UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level);
+	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT* pDirtyRect);
+	virtual HRESULT STDMETHODCALLTYPE GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface9** ppCubeMapSurface);
+	virtual HRESULT STDMETHODCALLTYPE GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc);
+	virtual HRESULT STDMETHODCALLTYPE LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level);
 };
 
 #endif // COPENGLCUBETEXTURE9_H

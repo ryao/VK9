@@ -75,14 +75,14 @@ COpenGLCubeTexture9::~COpenGLCubeTexture9()
 	GLMPRINTF(( "<-A- ~IDirect3DCubeTexture9" ));	
 }
 
-/*
-HRESULT COpenGLCubeTexture9::AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT* pDirtyRect)
-{
-	
-}
-*/
 
-HRESULT COpenGLCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface9** ppCubeMapSurface)
+HRESULT STDMETHODCALLTYPE COpenGLCubeTexture9::AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT* pDirtyRect)
+{
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGLCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface9** ppCubeMapSurface)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -110,7 +110,7 @@ HRESULT COpenGLCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT L
 	return S_OK;	
 }
 
-HRESULT COpenGLCubeTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
+HRESULT STDMETHODCALLTYPE COpenGLCubeTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert (Level < static_cast<uint>(m_tex->m_layout->m_mipCount));
@@ -128,14 +128,13 @@ HRESULT COpenGLCubeTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 	return S_OK;	
 }
 
-/*
+
 HRESULT COpenGLCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	
+	return E_NOTIMPL;
 }
 
 HRESULT COpenGLCubeTexture9::UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level)
 {
-	
+	return E_NOTIMPL;
 }
-*/

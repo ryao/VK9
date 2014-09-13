@@ -33,7 +33,7 @@
 #ifndef COPENGLVERTEXDECLARATION9_H
 #define COPENGLVERTEXDECLARATION9_H
 
-#include "IDirect3DVertexDeclaration9.h" // Base class: IDirect3DVertexDeclaration9
+#include "d3d9.h" // Base class: IDirect3DVertexDeclaration9
 #include "COpenGLUnknown.h"
 
 class COpenGLDevice9;
@@ -51,8 +51,8 @@ public:
 	unsigned __int8					m_VertexAttribDescToStreamIndex[256];
 
 public:
-	//virtual HRESULT GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements);
-	//virtual HRESULT GetDevice(IDirect3DDevice9** ppDevice);
+	virtual HRESULT STDMETHODCALLTYPE GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements);
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
 };
 
 #endif // COPENGLVERTEXDECLARATION9_H

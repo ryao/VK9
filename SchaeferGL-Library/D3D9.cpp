@@ -32,6 +32,6 @@ IDirect3D9* Direct3DCreate9(UINT SDKVersion)
 {
 	GLMPRINTF(( "-X- Direct3DCreate9: %d", SDKVersion ));
 
-	return new IDirect3D9;
+	return new COpenGL9();
 }
 

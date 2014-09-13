@@ -33,7 +33,7 @@
 #ifndef COPENGLINDEXBUFFER9_H
 #define COPENGLINDEXBUFFER9_H
 
-#include "IDirect3DIndexBuffer9.h" // Base class: IDirect3DIndexBuffer9
+#include "d3d9.h" // Base class: IDirect3DIndexBuffer9
 #include "COpenGLResource9.h"
 
 class COpenGLIndexBuffer9 : public IDirect3DIndexBuffer9,public COpenGLResource9
@@ -49,9 +49,9 @@ public:
 	void UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
 	
 public:
-	virtual HRESULT GetDesc(D3DINDEXBUFFER_DESC* pDesc);
-	virtual HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
-	virtual HRESULT Unlock();
+	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DINDEXBUFFER_DESC* pDesc);
+	virtual HRESULT STDMETHODCALLTYPE Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE Unlock();
 };
 
 #endif // COPENGLINDEXBUFFER9_H

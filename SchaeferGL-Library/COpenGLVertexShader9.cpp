@@ -61,11 +61,12 @@ COpenGLVertexShader9::~COpenGLVertexShader9()
 	GLMPRINTF(( "<-A- ~IDirect3DVertexShader9" ));	
 }
 
-/*
-HRESULT COpenGLVertexShader9::GetDevice(IDirect3DDevice9** ppDevice)
+
+HRESULT STDMETHODCALLTYPE COpenGLVertexShader9::GetDevice(IDirect3DDevice9** ppDevice)
 {
+	return E_NOTIMPL;
 }
-HRESULT COpenGLVertexShader9::GetFunction(void* pData, UINT* pSizeOfData)
+HRESULT STDMETHODCALLTYPE COpenGLVertexShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
+	return E_NOTIMPL;
 }
-*/

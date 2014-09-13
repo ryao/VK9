@@ -61,14 +61,14 @@ COpenGLVolumeTexture9::~COpenGLVolumeTexture9()
 	GLMPRINTF(("<-A-  ~IDirect3DVolumeTexture9"));	
 }
 
-/*
-virtual HRESULT COpenGLVolumeTexture9::AddDirtyBox(const D3DBOX* pDirtyBox)
-{
-	
-}
-*/
 
-HRESULT COpenGLVolumeTexture9::GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc)
+virtual HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::AddDirtyBox(const D3DBOX* pDirtyBox)
+{
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -92,14 +92,14 @@ HRESULT COpenGLVolumeTexture9::GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc)
 	return S_OK;	
 }
 
-/*
-HRESULT COpenGLVolumeTexture9::GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel)
-{
-	
-}
-*/
 
-HRESULT COpenGLVolumeTexture9::LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags)
+HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel)
+{
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -131,7 +131,7 @@ HRESULT COpenGLVolumeTexture9::LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume,
 	return S_OK;	
 }
 
-HRESULT COpenGLVolumeTexture9::UnlockBox(UINT Level)
+HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::UnlockBox(UINT Level)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

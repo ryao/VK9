@@ -33,7 +33,7 @@
 #ifndef COPENGLSURFACE9_H
 #define COPENGLSURFACE9_H
 
-#include "IDirect3DSurface9.h" // Base class: IDirect3DSurface9
+#include "d3d9.h" // Base class: IDirect3DSurface9
 #include "COpenGLResource9.h"
 
 class COpenGLSurface9 : public IDirect3DSurface9,public COpenGLResource9
@@ -48,12 +48,12 @@ public:
 	int						m_mip;
 
 public:
-	//virtual HRESULT GetContainer(REFIID riid, void** ppContainer);
-	//virtual HRESULT GetDC(HDC* phdc);
-	virtual HRESULT GetDesc(D3DSURFACE_DESC* pDesc);
-	virtual HRESULT LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
-	//virtual HRESULT ReleaseDC(HDC hdc);
-	virtual HRESULT UnlockRect();
+	virtual HRESULT STDMETHODCALLTYPE GetContainer(REFIID riid, void** ppContainer);
+	virtual HRESULT STDMETHODCALLTYPE GetDC(HDC* phdc);
+	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DSURFACE_DESC* pDesc);
+	virtual HRESULT STDMETHODCALLTYPE LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE ReleaseDC(HDC hdc);
+	virtual HRESULT STDMETHODCALLTYPE UnlockRect();
 };
 
 #endif // COPENGLSURFACE9_H

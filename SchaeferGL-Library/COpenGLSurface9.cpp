@@ -83,16 +83,19 @@ COpenGLSurface9::~COpenGLSurface9()
 	}	
 }
 
-/*
-HRESULT COpenGLSurface9::GetContainer(REFIID riid, void** ppContainer)
-{
-}
-HRESULT COpenGLSurface9::GetDC(HDC* phdc)
-{
-}
-*/
 
-HRESULT COpenGLSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
+HRESULT STDMETHODCALLTYPE COpenGLSurface9::GetContainer(REFIID riid, void** ppContainer)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLSurface9::GetDC(HDC* phdc)
+{
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGLSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -100,7 +103,7 @@ HRESULT COpenGLSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 	return S_OK;	
 }
 
-HRESULT COpenGLSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
+HRESULT STDMETHODCALLTYPE COpenGLSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
@@ -136,13 +139,14 @@ HRESULT COpenGLSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect
 	return S_OK;	
 }
 
-/*
-HRESULT COpenGLSurface9::ReleaseDC(HDC hdc)
-{
-}
-*/
 
-HRESULT COpenGLSurface9::UnlockRect()
+HRESULT STDMETHODCALLTYPE COpenGLSurface9::ReleaseDC(HDC hdc)
+{
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGLSurface9::UnlockRect()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

@@ -33,7 +33,7 @@
 #ifndef COPENGLTEXTURE9_H
 #define COPENGLTEXTURE9_H
 
-#include "IDirect3DTexture9.h" // Base class: IDirect3DTexture9
+#include "d3d9.h" // Base class: IDirect3DTexture9
 #include "COpenGLBaseTexture9.h"
 #include "COpenGLSurface9.h"
 
@@ -46,11 +46,11 @@ public:
 	COpenGLSurface9 *m_surfZero;				// surf of top level.
 
 public:
-	virtual HRESULT AddDirtyRect(const RECT* pDirtyRect);
-	virtual HRESULT GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc);
-	virtual HRESULT GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel);
-	virtual HRESULT LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
-	virtual HRESULT UnlockRect(UINT Level);
+	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(const RECT* pDirtyRect);
+	virtual HRESULT STDMETHODCALLTYPE GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc);
+	virtual HRESULT STDMETHODCALLTYPE GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel);
+	virtual HRESULT STDMETHODCALLTYPE LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE UnlockRect(UINT Level);
 };
 
 #endif // COPENGLTEXTURE9_H

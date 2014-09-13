@@ -49,6 +49,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				CallingConvention="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -310,74 +311,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IDirect3DBaseTexture9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DCubeTexture9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DDevice9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DIndexBuffer9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DPixelShader9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DQuery9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DResource9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DStateBlock9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DSurface9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DSwapChain9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DTexture9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVertexBuffer9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVertexDeclaration9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVertexShader9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVolume9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVolumeTexture9.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IUnknown.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\SchaeferGL-Library.cpp"
 				>
 			</File>
@@ -492,10 +425,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9.h"
-				>
-			</File>
-			<File
 				RelativePath=".\togl\linuxwin\dx9asmtogl.h"
 				>
 			</File>
@@ -560,78 +489,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IDirect3D9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DBaseTexture9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DCubeTexture9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DDevice9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DIndexBuffer9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DPixelShader9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DQuery9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DResource9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DStateBlock9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DSurface9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DSwapChain9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DTexture9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVertexBuffer9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVertexDeclaration9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVertexShader9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVolume9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3DVolumeTexture9.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IUnknown.h"
-				>
-			</File>
-			<File
 				RelativePath=".\togl\rendermechanism.h"
 				>
 			</File>
@@ -645,10 +502,6 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
-				>
-			</File>
-			<File
-				RelativePath=".\types.h"
 				>
 			</File>
 		</Filter>

@@ -33,7 +33,7 @@
 #ifndef COPENGLVERTEXSHADER9_H
 #define COPENGLVERTEXSHADER9_H
 
-#include "IDirect3DVertexShader9.h" // Base class: IDirect3DVertexShader9
+#include "d3d9.h" // Base class: IDirect3DVertexShader9
 #include "COpenGLResource9.h"
 
 class COpenGLVertexShader9 : public IDirect3DVertexShader9,public COpenGLResource9
@@ -49,8 +49,8 @@ public:
 	unsigned int					m_maxVertexAttrs;
 
 public:
-	//virtual HRESULT GetDevice(IDirect3DDevice9** ppDevice);
-	//virtual HRESULT GetFunction(void* pData, UINT* pSizeOfData);
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
+	virtual HRESULT STDMETHODCALLTYPE GetFunction(void* pData, UINT* pSizeOfData);
 };
 
 #endif // COPENGLVERTEXSHADER9_H

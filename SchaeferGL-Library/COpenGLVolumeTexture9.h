@@ -33,7 +33,7 @@
 #ifndef COPENGLVOLUMETEXTURE9_H
 #define COPENGLVOLUMETEXTURE9_H
 
-#include "IDirect3DVolumeTexture9.h" // Base class: IDirect3DVolumeTexture9
+#include "d3d9.h" // Base class: IDirect3DVolumeTexture9
 #include "COpenGLBaseTexture9.h"
 
 class COpenGLVolumeTexture9 : public IDirect3DVolumeTexture9,public COpenGLBaseTexture9
@@ -46,11 +46,11 @@ public:
 	D3DVOLUME_DESC			m_volDescZero;			// volume desc top level
 
 public:
-	//virtual HRESULT AddDirtyBox(const D3DBOX* pDirtyBox);
-	virtual HRESULT GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc);
-	//virtual HRESULT GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel);
-	virtual HRESULT LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags);
-	virtual HRESULT UnlockBox(UINT Level);
+	virtual HRESULT STDMETHODCALLTYPE AddDirtyBox(const D3DBOX* pDirtyBox);
+	virtual HRESULT STDMETHODCALLTYPE GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc);
+	virtual HRESULT STDMETHODCALLTYPE GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel);
+	virtual HRESULT STDMETHODCALLTYPE LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags);
+	virtual HRESULT STDMETHODCALLTYPE UnlockBox(UINT Level);
 };
 
 #endif // COPENGLVOLUMETEXTURE9_H

@@ -164,7 +164,7 @@ COpenGL9::~COpenGL9()
 	GLMPRINTF(("-A-  ~IDirect3D9 - signpost"));	
 }
 
-HRESULT COpenGL9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,D3DFORMAT RenderTargetFormat,D3DFORMAT DepthStencilFormat)
+HRESULT STDMETHODCALLTYPE COpenGL9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,D3DFORMAT RenderTargetFormat,D3DFORMAT DepthStencilFormat)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMPRINTF(("-X- IDirect3D9::CheckDepthStencilMatch:    Adapter=%d || DevType=%d:%s || AdapterFormat=%d:%s || RenderTargetFormat=%d:%s || DepthStencilFormat=%d:%s",
@@ -197,7 +197,7 @@ HRESULT COpenGL9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE DeviceType,D3DF
 	return result;	
 }
 
-HRESULT COpenGL9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,DWORD Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat)
+HRESULT STDMETHODCALLTYPE COpenGL9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,DWORD Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	if (0)	// hush for now, less spew
@@ -345,7 +345,7 @@ HRESULT COpenGL9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT
 						break;
 
 							// vendor formats... try marking these all invalid for now
-						case	D3DFMT_NV_INTZ:
+						/*case	D3DFMT_NV_INTZ:
 						case	D3DFMT_NV_RAWZ:
 						case	D3DFMT_NV_NULL:
 						case	D3DFMT_ATI_D16:
@@ -353,7 +353,7 @@ HRESULT COpenGL9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT
 						case	D3DFMT_ATI_2N:
 						case	D3DFMT_ATI_1N:
 							legalUsage = 0;
-						break;
+						break;*/
 
 						//-----------------------------------------------------------
 												
@@ -410,14 +410,14 @@ HRESULT COpenGL9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT
 	return result;	
 }
 
-/*
-HRESULT COpenGL9::CheckDeviceFormatConversion(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SourceFormat,D3DFORMAT TargetFormat)
-{
-	
-}
-*/
 
-HRESULT COpenGL9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SurfaceFormat,BOOL Windowed,D3DMULTISAMPLE_TYPE MultiSampleType,DWORD *pQualityLevels)
+HRESULT STDMETHODCALLTYPE COpenGL9::CheckDeviceFormatConversion(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SourceFormat,D3DFORMAT TargetFormat)
+{
+	return E_NOTIMPL;
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGL9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SurfaceFormat,BOOL Windowed,D3DMULTISAMPLE_TYPE MultiSampleType,DWORD *pQualityLevels)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMDisplayDB *db = GetDisplayDB();
@@ -489,7 +489,7 @@ HRESULT COpenGL9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE DeviceType,
 	return D3DERR_NOTAVAILABLE;	
 }
 
-HRESULT COpenGL9::CheckDeviceType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL Windowed)
+HRESULT STDMETHODCALLTYPE COpenGL9::CheckDeviceType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL Windowed)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	//FIXME: we just say "OK" on any query
@@ -504,7 +504,7 @@ HRESULT COpenGL9::CheckDeviceType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT D
 	return S_OK;	
 }
 
-HRESULT COpenGL9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DDevice9 **ppReturnedDeviceInterface)
+HRESULT STDMETHODCALLTYPE COpenGL9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWindow,DWORD BehaviorFlags,D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DDevice9 **ppReturnedDeviceInterface)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 
@@ -581,7 +581,7 @@ HRESULT COpenGL9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HWND hFocusWin
 	return result;	
 }
 
-HRESULT COpenGL9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDISPLAYMODE *pMode)
+HRESULT STDMETHODCALLTYPE COpenGL9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDISPLAYMODE *pMode)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMPRINTF(( "-X- IDirect3D9::EnumAdapterModes:    Adapter=%d || Format=%8x:%s || Mode=%d", Adapter, Format, GLMDecode(eD3D_FORMAT, Format), Mode ));
@@ -615,7 +615,7 @@ HRESULT COpenGL9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDI
 	return S_OK;		
 }
 
-UINT COpenGL9::GetAdapterCount()
+UINT STDMETHODCALLTYPE COpenGL9::GetAdapterCount()
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMgr::NewGLMgr();				// init GL manager
@@ -626,7 +626,7 @@ UINT COpenGL9::GetAdapterCount()
 	return dxAdapterCount;	
 }
 
-HRESULT COpenGL9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
+HRESULT STDMETHODCALLTYPE COpenGL9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	// asking what the current mode is
@@ -660,7 +660,7 @@ HRESULT COpenGL9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
 	return S_OK;	
 }
 
-HRESULT COpenGL9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
+HRESULT STDMETHODCALLTYPE COpenGL9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	// Generally called from "CShaderDeviceMgrDx8::ComputeCapsFromD3D" in ShaderDeviceDX8.cpp
@@ -726,7 +726,7 @@ HRESULT COpenGL9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENT
 	return S_OK;	
 }
 
-UINT COpenGL9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
+UINT STDMETHODCALLTYPE COpenGL9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMPRINTF(( "-X- IDirect3D9::GetAdapterModeCount: Adapter=%d || Format=%8x:%s", Adapter, Format, GLMDecode(eD3D_FORMAT, Format) ));
@@ -750,14 +750,14 @@ UINT COpenGL9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 	return modeCount;	
 }
 
-/*
-HMONITOR COpenGL9::GetAdapterMonitor(UINT Adapter)
-{
-	
-}
-*/
 
-HRESULT COpenGL9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
+HMONITOR STDMETHODCALLTYPE COpenGL9::GetAdapterMonitor(UINT Adapter)
+{
+	return 0; //TODO: implement GetAdapterMonitor
+}
+
+
+HRESULT STDMETHODCALLTYPE COpenGL9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	// Generally called from "CShaderDeviceMgrDx8::ComputeCapsFromD3D" in ShaderDeviceDX8.cpp
@@ -779,9 +779,8 @@ HRESULT COpenGL9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCa
 	return S_OK;	
 }
 
-/*
-HRESULT COpenGL9::RegisterSoftwareDevice(void *pInitializeFunction)
+
+HRESULT STDMETHODCALLTYPE COpenGL9::RegisterSoftwareDevice(void *pInitializeFunction)
 {
-	
+	return E_NOTIMPL;
 }
-*/
