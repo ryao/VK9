@@ -41,7 +41,8 @@ class COpenGLQuery9 : public IDirect3DQuery9,public COpenGLUnknown
 public:
 	COpenGLQuery9();
 	~COpenGLQuery9();
-
+	
+	COpenGLDevice9			*m_device;	// parent device
 	D3DQUERYTYPE			m_type;		// D3DQUERYTYPE_OCCLUSION or D3DQUERYTYPE_EVENT
 	GLMContext				*m_ctx;
 	CGLMQuery				*m_query;

@@ -291,10 +291,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\togl\linuxwin\dxabstract.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\togl\linuxwin\glentrypoints.cpp"
 				>
 			</File>
@@ -304,10 +300,6 @@
 			</File>
 			<File
 				RelativePath=".\togl\linuxwin\glmgrbasics.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IDirect3D9.cpp"
 				>
 			</File>
 			<File
@@ -333,6 +325,10 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\utlbuffer.cpp"
+				>
 			</File>
 		</Filter>
 		<Filter
@@ -433,14 +429,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\togl\linuxwin\dxabstract.h"
-				>
-			</File>
-			<File
-				RelativePath=".\togl\linuxwin\dxabstract_types.h"
-				>
-			</File>
-			<File
 				RelativePath=".\togl\linuxwin\glbase.h"
 				>
 			</File>
@@ -502,6 +490,10 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\togl\linuxwin\utlbuffer.h"
 				>
 			</File>
 		</Filter>

@@ -41,8 +41,8 @@
 	extern ILauncherMgr *g_pLauncherMgr;
 #endif
 
-#include "tier0/icommandline.h"
-#include "tier0/memdbgon.h"
+//#include "tier0/icommandline.h"
+//#include "tier0/memdbgon.h"
 
 #ifdef USE_ACTUAL_DX
 
@@ -5307,6 +5307,7 @@ HRESULT IDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT Pr
 //	PrimitiveCount
 //	[in] Number of primitives to render. The number of vertices used is a function of the primitive count and the primitive type. The maximum number of primitives allowed is determined by checking the MaxPrimitiveCount member of the D3DCAPS9 structure.
 
+#include "COpenGLCubeDevice9.h"
 #include "glmgr_flush.inl"
 
 // BE VERY CAREFUL what you do in this function. It's extremely hot, and calling the wrong GL API's in here will crush perf. on NVidia threaded drivers.
@@ -5360,8 +5361,8 @@ HRESULT IDirect3DDevice9::DrawIndexedPrimitive( D3DPRIMITIVETYPE Type, INT BaseV
 			static const struct prim_t
 			{
 				GLenum m_nType;
-				uint m_nPrimMul;
-				uint m_nPrimAdd;
+				unsigned int m_nPrimMul;
+				unsigned int m_nPrimAdd;
 			} s_primTypes[6] = 
 			{ 
 				{ 0, 0, 0 },				// 0

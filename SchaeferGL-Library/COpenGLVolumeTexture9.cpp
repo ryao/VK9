@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLVolumeTexture9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLVolumeTexture9::COpenGLVolumeTexture9()
 {
@@ -62,7 +63,7 @@ COpenGLVolumeTexture9::~COpenGLVolumeTexture9()
 }
 
 
-virtual HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::AddDirtyBox(const D3DBOX* pDirtyBox)
+HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::AddDirtyBox(const D3DBOX* pDirtyBox)
 {
 	return E_NOTIMPL;
 }
@@ -73,7 +74,7 @@ HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::GetLevelDesc(UINT Level, D3DVOL
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
 
-	if (Level > static_cast<uint>(m_tex->m_layout->m_mipCount))
+	if (Level > static_cast<unsigned int>(m_tex->m_layout->m_mipCount))
 	{
 		DXABSTRACT_BREAK_ON_ERROR();
 	}

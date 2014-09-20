@@ -47,6 +47,8 @@ public:
 	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
 	virtual ULONG STDMETHODCALLTYPE Release(void);
 
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 public:
 
 	int	m_refcount[2];

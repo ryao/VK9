@@ -51,6 +51,7 @@
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
+#include "d3d9.h"
 
 //#include "tier0/basetypes.h"
 //#include "tier0/platform.h"
@@ -70,5 +71,7 @@
 #include "togl/linuxwin/glmgr.h"
 //#include "togl/linuxwin/dxabstract_types.h"
 //#include "togl/linuxwin/dxabstract.h"
+#include "COpenGLTypes.h"
+#include "COpenGL9.h"
 
 #endif // RENDERMECHANISM_H

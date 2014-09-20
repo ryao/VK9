@@ -54,6 +54,8 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
 	virtual HRESULT STDMETHODCALLTYPE ReleaseDC(HDC hdc);
 	virtual HRESULT STDMETHODCALLTYPE UnlockRect();
+
+	virtual ULONG STDMETHODCALLTYPE	Release( int which=0, char *comment = NULL );
 };
 
 #endif // COPENGLSURFACE9_H

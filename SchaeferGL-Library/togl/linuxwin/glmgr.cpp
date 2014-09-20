@@ -37,23 +37,25 @@
 
 //#include "convar.h"
 
+#include "COpenGLCubeTexture9.h"
+#include "COpenGLDevice9.h"
 #include "glmgr_flush.inl"
 
 
 // memdbgon -must- be the last include file in a .cpp file.
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 
 // Whether the code should use gl_arb_debug_output. This causes error messages to be streamed, via callback, to the application. 
 // It is much friendlier to the MTGL driver. 
 // NOTE: This can be turned off after launch, but it cannot be turned on after launch--it implies a context-creation-time 
 // behavior.
-ConVar gl_debug_output( "gl_debug_output", "1" );
+//ConVar gl_debug_output( "gl_debug_output", "1" );
 
 //===============================================================================
 
 // g_nTotalDrawsOrClears is reset to 0 in Present()
-uint g_nTotalDrawsOrClears, g_nTotalVBLockBytes, g_nTotalIBLockBytes;
+unsigned int g_nTotalDrawsOrClears, g_nTotalVBLockBytes, g_nTotalIBLockBytes;
 
 #if GL_TELEMETRY_GPU_ZONES
 TelemetryGPUStats_t g_TelemetryGPUStats;
@@ -202,10 +204,10 @@ void APIENTRY GL_Debug_Output_Callback(GLenum source, GLenum type, GLuint id, GL
 		return;
 	}
 	
-	if ( gl_debug_output.GetBool() || type == GL_DEBUG_TYPE_ERROR_ARB )
-	{
+	//if ( gl_debug_output.GetBool() || type == GL_DEBUG_TYPE_ERROR_ARB )
+	//{
 		Msg("GL: [%s][%s][%s][%d]: %s\n", sSource, sType, sSeverity, id, message);
-	}
+	//}
 
 #ifdef WIN32
 	OutputDebugStringA( message );
@@ -479,7 +481,7 @@ GLMContext *GLMgr::GetCurrentContext( void )
 // GLMContext public methods
 void GLMContext::MakeCurrent( bool bRenderThread )
 {
-	TM_ZONE( TELEMETRY_LEVEL0, 0, "GLMContext::MakeCurrent" );
+	//TM_ZONE( TELEMETRY_LEVEL0, 0, "GLMContext::MakeCurrent" );
 	Assert( m_nCurOwnerThreadId == 0 || m_nCurOwnerThreadId == ThreadGetCurrentId() );
 		
 #if defined( USE_SDL )
@@ -524,7 +526,7 @@ void GLMContext::MakeCurrent( bool bRenderThread )
 
 void GLMContext::ReleaseCurrent( bool bRenderThread )
 {
-	TM_ZONE( TELEMETRY_LEVEL0, 0, "GLMContext::ReleaseCurrent" );
+	//TM_ZONE( TELEMETRY_LEVEL0, 0, "GLMContext::ReleaseCurrent" );
 	Assert( m_nCurOwnerThreadId == ThreadGetCurrentId() );
 		
 #if defined( USE_SDL )
@@ -653,7 +655,7 @@ void GLMContext::DumpCaps( void )
 	#define	dumpfield_hex( fff )	printf( "\n  %-30s : 0x%08x", #fff, (int) m_caps.fff )
 	#define	dumpfield_str( fff )	printf( "\n  %-30s : %s", #fff, m_caps.fff )
 
-	printf("\n-------------------------------- context caps for context %08x", (uint)this);
+	printf("\n-------------------------------- context caps for context %08x", (unsigned int)this);
 
 	dumpfield( m_fullscreen );
 	dumpfield( m_accelerated );
@@ -795,7 +797,7 @@ enum eBlitFormatClass
 	eDepthStencil
 };
 
-uint	glAttachFromClass[ 3 ] = 		{ GL_COLOR_ATTACHMENT0_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_STENCIL_ATTACHMENT_EXT };
+unsigned int	glAttachFromClass[ 3 ] = 		{ GL_COLOR_ATTACHMENT0_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_DEPTH_STENCIL_ATTACHMENT_EXT };
 
 void glScrubFBO			( GLenum target )
 {
@@ -888,7 +890,7 @@ void GLMContext::Blit2( CGLMTex *srcTex, GLMRect *srcRect, int srcFace, int srcM
 	//----------------------------------------------------------------- format assessment
 
 	eBlitFormatClass	formatClass = eColor;
-	uint				blitMask= 0;
+	unsigned int				blitMask= 0;
 
 	switch( srcTex->m_layout->m_format->m_glDataFormat )
 	{
@@ -1233,7 +1235,7 @@ void GLMContext::BlitTex( CGLMTex *srcTex, GLMRect *srcRect, int srcFace, int sr
 	}
 
 	int pushed = 0;
-	uint pushmask = gl_radar7954721_workaround_maskval.GetInt();
+	unsigned int pushmask = gl_radar7954721_workaround_maskval.GetInt();
 		//GL_COLOR_BUFFER_BIT
 		//| GL_CURRENT_BIT
 		//| GL_ENABLE_BIT
@@ -1772,8 +1774,9 @@ CGLMFBO	*GLMContext::NewFBO( void )
 
 	CGLMFBO *fbo = new CGLMFBO( this );
 
-	m_fboTable.AddToTail( fbo );
-	
+	//m_fboTable.AddToTail( fbo );
+	m_fboTable.push_back( fbo );
+
 	return fbo;
 }
 
@@ -1949,7 +1952,7 @@ void GLMContext::Clear( bool color, unsigned long colorValue, bool depth, float 
 	do
 	{
 #endif
-		uint mask = 0;
+		unsigned int mask = 0;
 
 		GLClearColor_t clearcol;
 		GLClearDepth_t cleardep = { depthValue };
@@ -2288,7 +2291,7 @@ void GLMContext::Present( CGLMTex *tex )
 
 				GLMRect	srcRect, dstRect;
 			
-				uint dstWidth,dstHeight;
+				unsigned int dstWidth,dstHeight;
 				DisplayedSize( dstWidth,dstHeight );
 
 				srcRect.xmin	=	0;
@@ -2459,11 +2462,11 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	m_ctx	= NULL;
 	
 	int *selAttribs	=	NULL;
-	uint					selWords	=	0;
+	unsigned int					selWords	=	0;
 
 	memset( &m_caps, 0, sizeof( m_caps ) );
-	GetDesiredPixelFormatAttribsAndRendererInfo( (uint**)&selAttribs, &selWords, &m_caps );
-	uint selBytes = selWords * sizeof( unsigned int ); selBytes;
+	GetDesiredPixelFormatAttribsAndRendererInfo( (unsigned int**)&selAttribs, &selWords, &m_caps );
+	unsigned int selBytes = selWords * sizeof( unsigned int ); selBytes;
 
 #if defined( USE_SDL )
 	m_ctx = (SDL_GLContext)GetGLContextForWindow( params ? (void*)params->m_focusWindow : NULL );
@@ -2553,7 +2556,7 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	memset( m_programParamsB , 0, sizeof( m_programParamsB ) );
 	memset( m_programParamsI , 0, sizeof( m_programParamsI ) );
 
-	for (uint i = 0; i < ARRAYSIZE(m_programParamsF); i++)
+	for (unsigned int i = 0; i < ARRAYSIZE(m_programParamsF); i++)
 	{
 		m_programParamsF[i].m_firstDirtySlotNonBone = 256;
 		m_programParamsF[i].m_dirtySlotHighWaterNonBone = 0;
@@ -2911,10 +2914,10 @@ ConVar	gl_cannot_mix_shader_gammas( "gl_cannot_mix_shader_gammas", 0 );
 void GLMContext::MarkAllSamplersDirty()
 {
 	m_nNumDirtySamplers = GLM_SAMPLER_COUNT;
-	for (uint i = 0; i < GLM_SAMPLER_COUNT; i++)
+	for (unsigned int i = 0; i < GLM_SAMPLER_COUNT; i++)
 	{
 		m_nDirtySamplerFlags[i] = 0;
-		m_nDirtySamplers[i] = (uint8)i;
+		m_nDirtySamplers[i] = (unsigned __int8)i;
 	}
 }
 
@@ -4404,7 +4407,7 @@ void GLMContext::GenDebugFontTex( void )
 		
 		// also make the index and vertex buffers for use - up to 1K indices and 1K verts
 		
-		uint indexBufferSize = 1024*2;
+		unsigned int indexBufferSize = 1024*2;
 		
 		m_debugFontIndices = NewBuffer(kGLMIndexBuffer, indexBufferSize, 0);	// two byte indices
 		

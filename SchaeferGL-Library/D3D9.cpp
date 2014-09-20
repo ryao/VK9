@@ -26,12 +26,20 @@
 //==================================================================================================
  
 #include "D3D9.h"
-#include "COpenGL9.h"
+#include "togl/rendermechanism.h"
 
-IDirect3D9* Direct3DCreate9(UINT SDKVersion)
+IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion)
 {
 	GLMPRINTF(( "-X- Direct3DCreate9: %d", SDKVersion ));
 
 	return new COpenGL9();
 }
 
+HRESULT WINAPI Direct3DCreate9Ex(UINT SDKVersion, IDirect3D9Ex** out)
+{
+	GLMPRINTF(( "-X- Direct3DCreate9Ex: %d", SDKVersion ));
+
+	out = NULL;
+
+	return E_NOTIMPL;
+}

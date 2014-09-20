@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLQuery9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLQuery9::COpenGLQuery9()
 {
@@ -130,8 +131,8 @@ HRESULT STDMETHODCALLTYPE COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWOR
 			if ( flush )
 				{
 				unsigned int oqValue = 0;
-					CFastTimer tm;
-					tm.Start();
+					//CFastTimer tm;
+					//tm.Start();
 										
 
 						// Is this flush actually necessary? According to the extension it's not.
@@ -141,15 +142,15 @@ HRESULT STDMETHODCALLTYPE COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWOR
 				m_query->Complete(&oqValue);
 
 											
-				double flTotalTime = tm.GetDurationInProgress().GetSeconds() * 1000.0f;
-				if ( flTotalTime > .5f )
-						{
-							// Give up - something silly has obviously gone wrong in the driver, lying is better than stalling potentially forever.
-							// This occurs on AMD (single threaded driver) during shutdown, not sure why yet. It has nothing to do with threading. It may have to do with releasing queries or other objects.
-							// We must return a result otherwise the app itself could hang, waiting infinitely.
-							//Assert( 0 );
-					Warning( "IDirect3DQuery9::GetData(): Occlusion query flush took %3.3fms!\n", flTotalTime );
-						}
+				//double flTotalTime = tm.GetDurationInProgress().GetSeconds() * 1000.0f;
+				//if ( flTotalTime > .5f )
+				//		{
+				//			// Give up - something silly has obviously gone wrong in the driver, lying is better than stalling potentially forever.
+				//			// This occurs on AMD (single threaded driver) during shutdown, not sure why yet. It has nothing to do with threading. It may have to do with releasing queries or other objects.
+				//			// We must return a result otherwise the app itself could hang, waiting infinitely.
+				//			//Assert( 0 );
+				//	Warning( "IDirect3DQuery9::GetData(): Occlusion query flush took %3.3fms!\n", flTotalTime );
+				//		}
 				if (pData)
 				{
 					*(unsigned int*)pData = oqValue;

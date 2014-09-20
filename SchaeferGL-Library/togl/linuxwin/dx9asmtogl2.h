@@ -29,6 +29,9 @@
 #define DX9_ASM_TO_GL_2_H
 //#include "tier1/utlstring.h"
 
+#include "COpenGLTypes.h"
+#include "utlbuffer.h"
+
 #define DISASM_OK      0
 #define DISASM_ERROR   1
 

@@ -33,6 +33,7 @@
 #include "COpenGLDevice9.h"
 #include "togl/rendermechanism.h"
 #include "togl/linuxwin/dx9asmtogl2.h"
+#include "COpenGLCubeTexture9.h"
 
 static D3DToGL		g_D3DToOpenGLTranslatorGLSL;
 static COpenGLDevice9 *g_pD3D_Device;
@@ -67,6 +68,47 @@ void	UnpackD3DRSITable( void )
 			g_D3DRS_INFO_unpacked[ packed->m_state ] = *packed;
 		}
 	}
+}
+
+void	ConvertPresentationParamsToGLMDisplayParams( D3DPRESENT_PARAMETERS *d3dp, GLMDisplayParams *gldp )
+{
+	memset( gldp, 0, sizeof(*gldp) );
+
+	gldp->m_fsEnable					=	!d3dp->Windowed;
+
+	// see http://msdn.microsoft.com/en-us/library/ee416515(VS.85).aspx
+	// note that the values below are the only ones mentioned by Source engine; there are many others
+	switch(d3dp->PresentationInterval)
+	{
+		case D3DPRESENT_INTERVAL_ONE:
+			gldp->m_vsyncEnable					=	true;	// "The driver will wait for the vertical retrace period (the runtime will beam-follow to prevent tearing)."
+		break;
+
+		case D3DPRESENT_INTERVAL_IMMEDIATE:
+			gldp->m_vsyncEnable					=	false;	// "The runtime updates the window client area immediately and might do so more than once during the adapter refresh period."
+		break;
+		
+		default:
+			gldp->m_vsyncEnable					=	true;	// if I don't know it, you're getting vsync enabled.
+		break;
+	}
+	
+	gldp->m_backBufferWidth				=	d3dp->BackBufferWidth;
+	gldp->m_backBufferHeight			=	d3dp->BackBufferHeight;
+	gldp->m_backBufferFormat			=	d3dp->BackBufferFormat;
+	gldp->m_multiSampleCount			=	d3dp->MultiSampleType;	// it's a count really
+
+	gldp->m_enableAutoDepthStencil		=	d3dp->EnableAutoDepthStencil != 0;
+	gldp->m_autoDepthStencilFormat		=	d3dp->AutoDepthStencilFormat;
+
+	gldp->m_fsRefreshHz					=	d3dp->FullScreen_RefreshRateInHz;
+	
+	// some fields in d3d PB we're not acting on yet...
+	//	UINT                BackBufferCount;
+	//	DWORD               MultiSampleQuality;
+	//	D3DSWAPEFFECT       SwapEffect;
+	//	VD3DHWND            hDeviceWindow;
+	//	DWORD               Flags;
 }
 
 COpenGLDevice9::COpenGLDevice9() :
@@ -441,8 +483,9 @@ void COpenGLDevice9::ScrubFBOMap( CGLMTex *pTex )
 	if ( !m_pFBOs )
 		return;
 				
-	CUtlVectorFixed< RenderTargetState_t, 128 > fbosToRemove;
-	
+	//CUtlVectorFixed< RenderTargetState_t, 128 > fbosToRemove;
+	std::vector<RenderTargetState_t> fbosToRemove(128);
+
 	FOR_EACH_MAP_FAST( (*m_pFBOs), i )
 	{
 		const RenderTargetState_t &rtState = m_pFBOs->Key( i );
@@ -450,11 +493,13 @@ void COpenGLDevice9::ScrubFBOMap( CGLMTex *pTex )
 
 		if ( rtState.RefersTo( pTex ) )
 		{
-			fbosToRemove.AddToTail( rtState );
+			//fbosToRemove.AddToTail( rtState );
+			fbosToRemove.push_back( rtState );
 		}
 	}
 
-	for ( int i = 0; i < fbosToRemove.Count(); ++i )
+	//for ( int i = 0; i < fbosToRemove.Count(); ++i )
+	for ( int i = 0; i < fbosToRemove.size(); ++i )
 	{
 		const RenderTargetState_t &rtState = fbosToRemove[i];
 
@@ -846,20 +891,7 @@ void COpenGLDevice9::SetSamplerStatesNonInline(
 
 ULONG STDMETHODCALLTYPE COpenGLDevice9::AddRef(void)
 {
-	Assert( which >= 0 );
-	Assert( which < 2 );
-	m_refcount[which]++;
-		
-	#if IUNKNOWN_ALLOC_SPEW
-		if (m_mark)
-		{
-			GLMPRINTF(("-A- IUAddRef  (%08x,%d) refc -> (%d,%d) [%s]",this,which,m_refcount[0],m_refcount[1],comment?comment:"..."))	;
-			if (!comment)
-			{
-				GLMPRINTF((""))	;	// place to hang a breakpoint
-			}
-		}
-	#endif	
+	this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLDevice9::QueryInterface(REFIID riid,void  **ppv)
@@ -869,42 +901,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::QueryInterface(REFIID riid,void  **ppv
 
 ULONG STDMETHODCALLTYPE COpenGLDevice9::Release(void)
 {
-	Assert( which >= 0 );
-	Assert( which < 2 );
-		
-	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
-	bool deleting = false;
-		
-	m_refcount[which]--;
-	if ( (!m_refcount[0]) && (!m_refcount[1]) )
-	{
-		deleting = true;
-	}
-		
-	#if IUNKNOWN_ALLOC_SPEW
-		if (m_mark)
-		{
-			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
-			if (!comment)
-			{
-				GLMPRINTF((""))	;	// place to hang a breakpoint
-			}
-		}
-	#endif
-
-	if (deleting)
-	{
-		if (m_mark)
-		{
-			GLMPRINTF((""))	;		// place to hang a breakpoint
-		}
-		delete this;
-		return 0;
-	}
-	else
-	{
-		return m_refcount[0];
-	}	
+	this->Release(0);
 }
 
 //Device
@@ -988,7 +985,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateCubeTexture(UINT EdgeLength,UINT
 
 	m_ObjectStats.m_nTotalTextures++;
 
-	IDirect3DCubeTexture9	*dxtex = new IDirect3DCubeTexture9;
+	COpenGLCubeTexture9	*dxtex = new COpenGLCubeTexture9;
 	dxtex->m_restype = D3DRTYPE_CUBETEXTURE;
 	
 	dxtex->m_device			= this;
@@ -1016,7 +1013,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateCubeTexture(UINT EdgeLength,UINT
 
 	// http://msdn.microsoft.com/en-us/library/bb172625(VS.85).aspx	
 	// complain if any usage bits come down that I don't know.
-	uint knownUsageBits = (D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_TEXTURE_SRGB);
+	unsigned int knownUsageBits = (D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_TEXTURE_SRGB);
 	if ( (Usage & knownUsageBits) != Usage )
 	{
 		DXABSTRACT_BREAK_ON_ERROR();
@@ -1061,7 +1058,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateCubeTexture(UINT EdgeLength,UINT
 	{
 		m_ObjectStats.m_nTotalSurfaces++;
 
-		dxtex->m_surfZero[face] = new IDirect3DSurface9;
+		dxtex->m_surfZero[face] = new COpenGLSurface9;
 		dxtex->m_surfZero[face]->m_restype = (D3DRESOURCETYPE)0;	// 0 is special and means this 'surface' does not own its m_tex
 		// do not do an AddRef here.	
 		
@@ -1159,7 +1156,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateIndexBuffer(UINT Length,DWORD Us
 	newbuff->m_ctx = m_ctx;
 	
 		// FIXME need to find home or use for the Usage, Format, Pool values passed in
-	uint options = 0;
+	unsigned int options = 0;
 	
 	if (Usage&D3DUSAGE_DYNAMIC)
 	{
@@ -1237,7 +1234,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreatePixelShader(const DWORD *pFuncti
 	*ppShader = NULL;
 	
 	int nShadowDepthSamplerMask = ShadowDepthSamplerMaskFromName( pShaderName );
-	uint nCentroidMask = CentroidMaskFromName( true, pShaderName );
+	unsigned int nCentroidMask = CentroidMaskFromName( true, pShaderName );
 
 	if ( pCentroidMask )
 	{
@@ -1269,7 +1266,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreatePixelShader(const DWORD *pFuncti
 		// note the GLSL translator wants its own buffer
 		tempbuf.EnsureCapacity( maxTranslationSize );
 			
-		uint glslPixelShaderOptions = D3DToGL_OptionUseEnvParams;// | D3DToGL_OptionAllowStaticControlFlow;
+		unsigned int glslPixelShaderOptions = D3DToGL_OptionUseEnvParams;// | D3DToGL_OptionAllowStaticControlFlow;
 			
 
 		// Fake SRGB mode - needed on R500, probably indefinitely.
@@ -1287,7 +1284,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreatePixelShader(const DWORD *pFuncti
 			}
 		}
 
-		g_D3DToOpenGLTranslatorGLSL.TranslateShader( (uint32 *) pFunction, &tempbuf, &bVertexShader, glslPixelShaderOptions, nShadowDepthSamplerMask, nCentroidMask, pDebugLabel );
+		g_D3DToOpenGLTranslatorGLSL.TranslateShader( (unsigned __int32 *) pFunction, &tempbuf, &bVertexShader, glslPixelShaderOptions, nShadowDepthSamplerMask, nCentroidMask, pDebugLabel );
 			
 		transbuf.PutString( (char*)tempbuf.Base() );
 		transbuf.PutString( "\n\n" );	// whitespace
@@ -1612,7 +1609,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateTexture(UINT Width,UINT Height,U
 	// http://msdn.microsoft.com/en-us/library/bb172625(VS.85).aspx
 	
 	// complain if any usage bits come down that I don't know.
-	uint knownUsageBits = (D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_TEXTURE_SRGB | D3DUSAGE_DEPTHSTENCIL);
+	unsigned int knownUsageBits = (D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_TEXTURE_SRGB | D3DUSAGE_DEPTHSTENCIL);
 	if ( (Usage & knownUsageBits) != Usage )
 	{
 		DXABSTRACT_BREAK_ON_ERROR();
@@ -1713,7 +1710,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVertexBuffer(UINT Length,DWORD U
 	newbuff->m_ctx = m_ctx;
 
 		// FIXME need to find home or use for the Usage, FVF, Pool values passed in
-	uint options = 0;
+	unsigned int options = 0;
 	
 	if (Usage&D3DUSAGE_DYNAMIC)
 	{
@@ -1906,7 +1903,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVertexShader(const DWORD *pFunct
 	HRESULT	result = D3DERR_INVALIDCALL;
 	*ppShader = NULL;
 
-	uint32 nCentroidMask = CentroidMaskFromName( false, pShaderName );
+	unsigned __int32 nCentroidMask = CentroidMaskFromName( false, pShaderName );
 			
 	{
 		int numTranslations = 1;
@@ -1948,7 +1945,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVertexShader(const DWORD *pFunct
 			glslVertexShaderOptions |= D3DToGL_OptionGenerateBoneUniformBuffer;
 		}*/
 
-		g_D3DToOpenGLTranslatorGLSL.TranslateShader( (uint32 *) pFunction, &tempbuf, &bVertexShader, glslVertexShaderOptions, -1, nCentroidMask, pDebugLabel );
+		g_D3DToOpenGLTranslatorGLSL.TranslateShader( (unsigned __int32 *) pFunction, &tempbuf, &bVertexShader, glslVertexShaderOptions, -1, nCentroidMask, pDebugLabel );
 			
 		transbuf.PutString( (char*)tempbuf.Base() );
 		transbuf.PutString( "\n\n" );	// whitespace
@@ -2018,7 +2015,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVertexShader(const DWORD *pFunct
 			if (attribMapStr)
 			{
 				char *attribMapActualData = attribMapStr + strlen( attribMapPrefix );
-				uint nMaxVertexAttribs = 0;
+				unsigned int nMaxVertexAttribs = 0;
 				for( int i=0; i<16; i++)
 				{
 					int value = -1;
@@ -2116,7 +2113,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVolumeTexture(UINT Width,UINT He
 
 	// http://msdn.microsoft.com/en-us/library/bb172625(VS.85).aspx	
 	// complain if any usage bits come down that I don't know.
-	uint knownUsageBits = (D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_TEXTURE_SRGB);
+	unsigned int knownUsageBits = (D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET | D3DUSAGE_DYNAMIC | D3DUSAGE_TEXTURE_SRGB);
 	if ( (Usage & knownUsageBits) != Usage )
 	{
 		DXABSTRACT_BREAK_ON_ERROR();
@@ -2234,8 +2231,8 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE 
 			static const struct prim_t
 			{
 				GLenum m_nType;
-				uint m_nPrimMul;
-				uint m_nPrimAdd;
+				unsigned int m_nPrimMul;
+				unsigned int m_nPrimAdd;
 			} s_primTypes[6] = 
 			{ 
 				{ 0, 0, 0 },				// 0
@@ -4021,4 +4018,62 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::ValidateDevice(DWORD *pNumPasses)
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	DXABSTRACT_BREAK_ON_ERROR();
 	return S_OK;	
+}
+
+ULONG STDMETHODCALLTYPE COpenGLDevice9:::AddRef( int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+	m_refcount[which]++;
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IUAddRef  (%08x,%d) refc -> (%d,%d) [%s]",this,which,m_refcount[0],m_refcount[1],comment?comment:"..."))	;
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif	
+}
+
+ULONG STDMETHODCALLTYPE	COpenGLDevice9::Release( int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+		
+	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
+	bool deleting = false;
+		
+	m_refcount[which]--;
+	if ( (!m_refcount[0]) && (!m_refcount[1]) )
+	{
+		deleting = true;
+	}
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif
+
+	if (deleting)
+	{
+		if (m_mark)
+		{
+			GLMPRINTF((""))	;		// place to hang a breakpoint
+		}
+		delete this;
+		return 0;
+	}
+	else
+	{
+		return m_refcount[0];
+	}
 }

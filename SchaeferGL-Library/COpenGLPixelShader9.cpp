@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLPixelShader9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLPixelShader9::COpenGLPixelShader9()
 {

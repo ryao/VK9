@@ -60,11 +60,11 @@ COpenGLVertexBuffer9::~COpenGLVertexBuffer9()
 	GLMPRINTF(( "<-A- ~IDirect3DVertexBuffer9" ));	
 }
 
-void STDMETHODCALLTYPE COpenGLVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
+void STDMETHODCALLTYPE COpenGLVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
-	tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "VB UnlockActualSize" );
+	//tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "VB UnlockActualSize" );
 
 	m_vtxBuffer->Unlock( nActualSize, pActualData );	
 }
@@ -80,7 +80,7 @@ HRESULT STDMETHODCALLTYPE COpenGLVertexBuffer9::Lock(UINT OffsetToLock, UINT Siz
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
-	tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "VB Lock" );
+	//tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "VB Lock" );
 
 	// FIXME would be good to have "can't lock twice" logic
 
@@ -104,7 +104,7 @@ HRESULT STDMETHODCALLTYPE COpenGLVertexBuffer9::Unlock()
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
 	
-	tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "VB Unlock" );
+	//tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "VB Unlock" );
 
 	m_vtxBuffer->Unlock();
 	return S_OK;	

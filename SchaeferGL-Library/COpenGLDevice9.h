@@ -52,6 +52,8 @@ void	d3drect_to_glmbox( D3DRECT *src, GLScissorBox_t *dst );
 
 void	UnpackD3DRSITable( void );
 
+void	ConvertPresentationParamsToGLMDisplayParams( D3DPRESENT_PARAMETERS *d3dp, GLMDisplayParams *gldp );
+
 	struct ObjectStats_t
 	{
 		int						m_nTotalFBOs;
@@ -337,6 +339,9 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UpdateTexture(IDirect3DBaseTexture9* pSourceTexture,IDirect3DBaseTexture9* pDestinationTexture);
 	virtual HRESULT STDMETHODCALLTYPE ValidateDevice(DWORD *pNumPasses);
 	
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
+
 public:
 
 	int	m_refcount[2];

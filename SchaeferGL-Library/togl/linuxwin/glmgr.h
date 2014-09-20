@@ -1635,7 +1635,7 @@ class GLMContext
 
 		bool							m_bUseSamplerObjects;
 
-		IDirect3DDevice9				*m_pDevice;
+		COpenGLDevice9				*m_pDevice;
 		GLMRendererInfoFields			m_caps;
 	
 		bool							m_displayParamsValid;		// is there a param block copied in yet

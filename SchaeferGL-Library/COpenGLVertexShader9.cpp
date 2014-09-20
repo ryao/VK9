@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLVertexShader9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLVertexShader9::COpenGLVertexShader9()
 {

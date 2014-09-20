@@ -53,6 +53,7 @@ class COpenGLIndexBuffer9;
 #include <map>
 #include <functional>
 #include <bitset>
+#include <string.h>
 #include <GL/gl.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/glext.h>
@@ -122,6 +123,9 @@ enum
 #define D3DLOCK_NO_DIRTY_UPDATE     0x00008000L
 #define D3DISSUE_END (1 << 0)  
 #define D3DISSUE_BEGIN (1 << 1)  
+#define D3DUSAGE_TEXTURE_SRGB (0x80000000L)
+#define	IUNKNOWN_ALLOC_SPEW 0
+#define	IUNKNOWN_ALLOC_SPEW_MARK_ALL 0	
 
 // FP conversions to hex courtesy of http://babbage.cs.qc.cuny.edu/IEEE-754/Decimal.html
 #define	CONST_DZERO		0x00000000
@@ -146,10 +150,14 @@ typedef void* VD3DHANDLE;
 #define Q_strncpy strncpy
 #define V_snprintf printf
 #define Q_snprintf printf
+#define V_stristr strstr
+#define Plat_DebugString printf
 #define Warning printf
 #define Error printf
 #define ConMsg printf
-
+#define Msg printf
+#define CUtlString std::string
+#define TmU64 unsigned __int64
 //TODO: intp - not sure about this one.
 typedef int intp;
 

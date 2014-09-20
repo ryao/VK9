@@ -39,7 +39,7 @@
 //#include "filesystem_init.h"
 //#include "tier1/convar.h"
 //#include "vstdlib/cvar.h"
-/#include "inputsystem/buttoncode.h"
+//#include "inputsystem/buttoncode.h"
 //#include "tier1.h"
 //#include "tier2/tier2.h"
 
@@ -49,10 +49,6 @@
 
 // NOTE: This has to be the last file included!
 //#include "tier0/memdbgon.h"
-
-#if !defined(DX_TO_GL_ABSTRACTION)
-#error
-#endif
 
 #if defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION ))
 	#include "appframework/ilaunchermgr.h"
@@ -173,32 +169,33 @@ void ClearOpenGLEntryPoints()
 		gGL->ClearEntryPoints();
 	}
 }
-COpenGLEntryPoints *ToGLConnectLibraries( CreateInterfaceFn factory )
-{
-	ConnectTier1Libraries( &factory, 1 );
-	ConVar_Register();
-	ConnectTier2Libraries( &factory, 1 );
 
-	if ( !g_pFullFileSystem )
-	{
-		Warning( "ToGL was unable to access the required interfaces!\n" );
-	}
-
-	// NOTE! : Overbright is 1.0 so that Hammer will work properly with the white bumped and unbumped lightmaps.
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f );
-
-	#if defined( USE_SDL )
-		g_pLauncherMgr = (ILauncherMgr *)factory( SDLMGR_INTERFACE_VERSION, NULL );
-	#endif
-
-	return gGL;
-}
+//COpenGLEntryPoints *ToGLConnectLibraries( CreateInterfaceFn factory )
+//{
+//	ConnectTier1Libraries( &factory, 1 );
+//	ConVar_Register();
+//	ConnectTier2Libraries( &factory, 1 );
+//
+//	if ( !g_pFullFileSystem )
+//	{
+//		Warning( "ToGL was unable to access the required interfaces!\n" );
+//	}
+//
+//	// NOTE! : Overbright is 1.0 so that Hammer will work properly with the white bumped and unbumped lightmaps.
+//	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f );
+//
+//	#if defined( USE_SDL )
+//		g_pLauncherMgr = (ILauncherMgr *)factory( SDLMGR_INTERFACE_VERSION, NULL );
+//	#endif
+//
+//	return gGL;
+//}
 
 void ToGLDisconnectLibraries()
 {
-	DisconnectTier2Libraries();
-	ConVar_Unregister();
-	DisconnectTier1Libraries();
+	//DisconnectTier2Libraries();
+	//ConVar_Unregister();
+	//DisconnectTier1Libraries();
 }
 
 #define GLVERNUM(Major, Minor, Patch) (((Major) * 100000) + ((Minor) * 1000) + (Patch))
@@ -436,10 +433,10 @@ COpenGLEntryPoints::COpenGLEntryPoints()
 		glIsTextureHandleResidentNV.Force( NULL );
 	}
 
-	if ( ( m_bHave_GL_AMD_pinned_memory ) && ( !CommandLine()->CheckParm( "-gl_amd_pinned_memory" ) ) )
-	{
-		m_bHave_GL_AMD_pinned_memory = false;
-	}
+	//if ( ( m_bHave_GL_AMD_pinned_memory ) && ( !CommandLine()->CheckParm( "-gl_amd_pinned_memory" ) ) )
+	//{
+	//	m_bHave_GL_AMD_pinned_memory = false;
+	//}
 
 	char buf[256];
 	V_snprintf(buf, sizeof( buf ), "GL_NV_bindless_texture: %s\n", m_bHave_GL_NV_bindless_texture ? "ENABLED" : "DISABLED" );
@@ -483,7 +480,7 @@ void COpenGLEntryPoints::ClearEntryPoints()
 	#undef GL_EXT
 }
 // Turn off memdbg macros (turned on up top) since this is included like a header
-#include "tier0/memdbgoff.h"
+//#include "tier0/memdbgoff.h"
 
 
 

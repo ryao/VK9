@@ -44,13 +44,13 @@ class D3DToGL_ASM
 {
 private:
 	// Pointers for dwToken stream management
-	uint32* m_pdwBaseToken;
-	uint32* m_pdwNextToken;
+	unsigned __int32* m_pdwBaseToken;
+	unsigned __int32* m_pdwNextToken;
 
 	// Vertex shader or pixel shader, and version (necessary because some opcodes alias)
 	bool m_bVertexShader;
-	uint32 m_dwMinorVersion;
-	uint32 m_dwMajorVersion;
+	unsigned __int32 m_dwMinorVersion;
+	unsigned __int32 m_dwMajorVersion;
 	
 	// Option flags
 	bool	m_bUseEnvParams;		// set D3DToGL_OptionUseEnvParams in 'options' to use
@@ -69,10 +69,10 @@ private:
 	// Keep track of which vs outputs are used so we can declare them
 	bool m_bDeclareVSOPos;
 	bool m_bDeclareVSOFog;
-	uint32 m_dwTexCoordOutMask;
+	unsigned __int32 m_dwTexCoordOutMask;
 
 	// Keep track of which temps are used so they can be declared
-	uint32 m_dwTempUsageMask;
+	unsigned __int32 m_dwTempUsageMask;
 	bool m_bOutputColorRegister[2];
 	bool m_bOutputDepthRegister;
 
@@ -81,7 +81,7 @@ private:
 	bool m_bConstantRegisterDefined[MAX_SHADER_CONSTANTS];
 
 	// Track sampler types when declared so we can properly decorate TEX instructions
-	uint32 m_dwSamplerTypes[32];
+	unsigned __int32 m_dwSamplerTypes[32];
 
 	// Track shadow sampler usage
 	int m_nShadowDepthSampler;
@@ -91,33 +91,33 @@ private:
 	// init to 0xFFFFFFFF (unhit)
 	// index by (dwRegToken & D3DSP_REGNUM_MASK) in VS DCL insns
 	// fill with (usage<<4) | (usage index).
-	uint32 m_dwAttribMap[16];	
+	unsigned __int32 m_dwAttribMap[16];	
 
 	// GLSL does indentation for readability
 	int m_NumIndentTabs;
 
 	// Utilities to aid in decoding token stream
-	uint32 GetNextToken( void );
-	void SkipTokens( unsigned int32 numToSkip );
-	uint32 Opcode( unsigned int32 dwToken );
-	uint32 OpcodeSpecificData( unsigned int32 dwToken );
-	uint32 TextureType ( unsigned int32 dwToken );
-	uint32 GetRegType( unsigned int32 dwRegToken );
+	unsigned __int32 GetNextToken( void );
+	void SkipTokens( unsigned __int32 numToSkip );
+	unsigned __int32 Opcode( unsigned __int32 dwToken );
+	unsigned __int32 OpcodeSpecificData( unsigned __int32 dwToken );
+	unsigned __int32 TextureType ( unsigned __int32 dwToken );
+	unsigned __int32 GetRegType( unsigned __int32 dwRegToken );
 
 	// Utilities for decoding tokens in to strings according to ASM syntax
-	void PrintOpcode( unsigned int32 inst, char* buff, int nBufLen );
-	void PrintUsageAndIndexToString( unsigned int32 dwToken, char* strUsageUsageIndexName, int nBufLen, bool bGLSL );
-	void PrintParameterToString ( unsigned int32 dwToken, unsigned int32 dwSourceOrDest, char *pRegisterName, int nBufLen, bool bGLSL, int *pARLDestReg );
+	void PrintOpcode( unsigned __int32 inst, char* buff, int nBufLen );
+	void PrintUsageAndIndexToString( unsigned __int32 dwToken, char* strUsageUsageIndexName, int nBufLen, bool bGLSL );
+	void PrintParameterToString ( unsigned __int32 dwToken, unsigned int32 dwSourceOrDest, char *pRegisterName, int nBufLen, bool bGLSL, int *pARLDestReg );
 	void InsertMoveFromAddressRegister( char *pCode, int nCodeSize, int nARLComp0, int nARLComp1, int nARLComp2 );
 	void InsertMoveInstruction( char *pCode, int nCodeSize, int nARLComponent );
-	void FlagIndirectRegister( unsigned int32 dwToken, int *pARLDestReg );
+	void FlagIndirectRegister( unsigned __int32 dwToken, int *pARLDestReg );
 
 	// Utilities for decoding tokens in to strings according to GLSL syntax
-	void OpenIntrinsic( unsigned int32 inst, char* buff, int nBufLen );
+	void OpenIntrinsic( unsigned __int32 inst, char* buff, int nBufLen );
 	void PrintIndentation( char *pBuf, int nBufLen );
 
 public:
-	int TranslateShader( unsigned int32* code, char *pDisassembledCode, int nBufLen, bool *bVertexShader, unsigned int32 options, int32 nShadowDepthSampler, char *debugLabel );
+	int TranslateShader( unsigned __int32* code, char *pDisassembledCode, int nBufLen, bool *bVertexShader, unsigned __int32 options, __int32 nShadowDepthSampler, char *debugLabel );
 };
 
 

@@ -1,6 +1,8 @@
 // BE VERY VERY CAREFUL what you do in these function. They are extremely hot, and calling the wrong GL API's in here will crush perf. (especially on NVidia threaded drivers).
 
-FORCEINLINE unsigned int32 bitmix32(uint32 a)
+//#include "COpenGLCubeDevice9.h"
+
+FORCEINLINE unsigned __int32 bitmix32(unsigned __int32 a)
 {
 	a -= (a<<6);
 	//a ^= (a>>17);
@@ -375,7 +377,7 @@ FORCEINLINE void GLMContext::FlushDrawStates( unsigned int nStartIndex, unsigned
 				int dirtySlotHighWaterBone = MIN( shaderSlotsBone, m_programParamsF[kGLMVertexProgram].m_dirtySlotHighWaterBone );
 				if ( dirtySlotHighWaterBone )
 				{
-					uint nNumBoneRegs = dirtySlotHighWaterBone;
+					unsigned int nNumBoneRegs = dirtySlotHighWaterBone;
 
 #if GL_BATCH_TELEMETRY_ZONES								
 					tmZone( TELEMETRY_LEVEL2, TMZF_NONE, "VSBoneUniformUpdate %u", nNumBoneRegs );
@@ -472,15 +474,15 @@ FORCEINLINE void GLMContext::FlushDrawStates( unsigned int nStartIndex, unsigned
 	Assert( ( m_pDevice->m_streams[2].m_vtxBuffer && ( m_pDevice->m_streams[2].m_vtxBuffer->m_vtxBuffer == m_pDevice->m_vtx_buffers[2] ) ) || ( ( !m_pDevice->m_streams[2].m_vtxBuffer ) && ( m_pDevice->m_vtx_buffers[2] == m_pDevice->m_pDummy_vtx_buffer ) ) );
 	Assert( ( m_pDevice->m_streams[3].m_vtxBuffer && ( m_pDevice->m_streams[3].m_vtxBuffer->m_vtxBuffer == m_pDevice->m_vtx_buffers[3] ) ) || ( ( !m_pDevice->m_streams[3].m_vtxBuffer ) && ( m_pDevice->m_vtx_buffers[3] == m_pDevice->m_pDummy_vtx_buffer ) ) );
 
-	uint nCurTotalBufferRevision;
+	unsigned int nCurTotalBufferRevision;
 	nCurTotalBufferRevision = m_pDevice->m_vtx_buffers[0]->m_nRevision + m_pDevice->m_vtx_buffers[1]->m_nRevision + m_pDevice->m_vtx_buffers[2]->m_nRevision + m_pDevice->m_vtx_buffers[3]->m_nRevision;
 
 	// If any of these inputs have changed, we need to enumerate through all of the expected GL vertex attribs and modify anything in the GL layer that have changed.
 	// This is not always a win, but it is a net win on NVidia (by 1-4.8% depending on whether driver threading is enabled).
 	if ( ( nCurTotalBufferRevision != m_CurAttribs.m_nTotalBufferRevision ) ||
 		( m_CurAttribs.m_pVertDecl != m_pDevice->m_pVertDecl ) ||
-		( m_CurAttribs.m_vtxAttribMap[0] != reinterpret_cast<const unsigned int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[0] ) ||
-		( m_CurAttribs.m_vtxAttribMap[1] != reinterpret_cast<const unsigned int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[1] ) ||
+		( m_CurAttribs.m_vtxAttribMap[0] != reinterpret_cast<const unsigned __int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[0] ) ||
+		( m_CurAttribs.m_vtxAttribMap[1] != reinterpret_cast<const unsigned __int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[1] ) ||
 		( memcmp( m_CurAttribs.m_streams, m_pDevice->m_streams, sizeof( m_pDevice->m_streams ) ) != 0 ) )
 	{
 		// This branch is taken 52.2% of the time in the L4D2 test1 (long) timedemo.
@@ -491,21 +493,21 @@ FORCEINLINE void GLMContext::FlushDrawStates( unsigned int nStartIndex, unsigned
 
 		m_CurAttribs.m_nTotalBufferRevision = nCurTotalBufferRevision;
 		m_CurAttribs.m_pVertDecl = m_pDevice->m_pVertDecl;
-		m_CurAttribs.m_vtxAttribMap[0] = reinterpret_cast<const unsigned int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[0];
-		m_CurAttribs.m_vtxAttribMap[1] = reinterpret_cast<const unsigned int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[1];
+		m_CurAttribs.m_vtxAttribMap[0] = reinterpret_cast<const unsigned __int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[0];
+		m_CurAttribs.m_vtxAttribMap[1] = reinterpret_cast<const unsigned __int64 *>(m_pDevice->m_vertexShader->m_vtxAttribMap)[1];
 		memcpy( m_CurAttribs.m_streams, m_pDevice->m_streams, sizeof( m_pDevice->m_streams ) );
 
 		unsigned char *pVertexShaderAttribMap = m_pDevice->m_vertexShader->m_vtxAttribMap;
 		const int nMaxVertexAttributesToCheck = m_drawingProgram[ kGLMVertexProgram ]->m_maxVertexAttrs;
 
-		IDirect3DVertexDeclaration9	*pVertDecl = m_pDevice->m_pVertDecl;
-		const unsigned int8	*pVertexAttribDescToStreamIndex = pVertDecl->m_VertexAttribDescToStreamIndex;
+		COpenGLVertexDeclaration9	*pVertDecl = m_pDevice->m_pVertDecl;
+		const unsigned __int8	*pVertexAttribDescToStreamIndex = pVertDecl->m_VertexAttribDescToStreamIndex;
 
 		for( int nMask = 1, nIndex = 0; nIndex < nMaxVertexAttributesToCheck; ++nIndex, nMask <<= 1 )
 		{
-			uint8 vertexShaderAttrib = pVertexShaderAttribMap[ nIndex ];
+			unsigned __int8 vertexShaderAttrib = pVertexShaderAttribMap[ nIndex ];
 
-			uint nDeclIndex = pVertexAttribDescToStreamIndex[vertexShaderAttrib];
+			unsigned int nDeclIndex = pVertexAttribDescToStreamIndex[vertexShaderAttrib];
 			if ( nDeclIndex == 0xFF )
 			{
 				// Not good - the vertex shader has an attribute which can't be located in the decl! 

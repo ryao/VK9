@@ -58,6 +58,21 @@ COpenGLUnknown::~COpenGLUnknown(void)
 
 ULONG STDMETHODCALLTYPE COpenGLUnknown::AddRef(void)
 {
+	this->AddRef(0);
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLUnknown::QueryInterface(REFIID riid,void  **ppv)
+{
+	
+}
+
+ULONG STDMETHODCALLTYPE COpenGLUnknown::Release(void)
+{
+	this->Release(0);
+}
+
+ULONG STDMETHODCALLTYPE COpenGLUnknown::AddRef(int which, char *comment)
+{
 	Assert( which >= 0 );
 	Assert( which < 2 );
 	m_refcount[which]++;
@@ -72,14 +87,11 @@ ULONG STDMETHODCALLTYPE COpenGLUnknown::AddRef(void)
 			}
 		}
 	#endif	
+
+	return m_refcount[0];
 }
 
-HRESULT STDMETHODCALLTYPE COpenGLUnknown::QueryInterface(REFIID riid,void  **ppv)
-{
-	
-}
-
-ULONG STDMETHODCALLTYPE COpenGLUnknown::Release(void)
+ULONG STDMETHODCALLTYPE	COpenGLUnknown::Release(int which, char *comment)
 {
 	Assert( which >= 0 );
 	Assert( which < 2 );
@@ -116,5 +128,5 @@ ULONG STDMETHODCALLTYPE COpenGLUnknown::Release(void)
 	else
 	{
 		return m_refcount[0];
-	}	
+	}
 }

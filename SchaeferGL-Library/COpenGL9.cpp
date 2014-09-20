@@ -33,6 +33,7 @@
 #include "COpenGL9.h"
 #include "COpenGLDevice9.h"
 #include "togl/rendermechanism.h"
+#include "togl/linuxwin/glmdisplay.h"
 
 bool g_bNullD3DDevice;
 
@@ -163,6 +164,25 @@ COpenGL9::~COpenGL9()
 	GL_BATCH_PERF_CALL_TIMER;
 	GLMPRINTF(("-A-  ~IDirect3D9 - signpost"));	
 }
+
+//IUnknown
+
+ULONG STDMETHODCALLTYPE COpenGL9::AddRef(void)
+{
+	this->AddRef(0);
+}
+
+HRESULT STDMETHODCALLTYPE COpenGL9::QueryInterface(REFIID riid,void  **ppv)
+{
+	
+}
+
+ULONG STDMETHODCALLTYPE COpenGL9::Release(void)
+{
+	this->Release(0);
+}
+
+//IDirect3D9
 
 HRESULT STDMETHODCALLTYPE COpenGL9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,D3DFORMAT RenderTargetFormat,D3DFORMAT DepthStencilFormat)
 {
@@ -783,4 +803,62 @@ HRESULT STDMETHODCALLTYPE COpenGL9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE Device
 HRESULT STDMETHODCALLTYPE COpenGL9::RegisterSoftwareDevice(void *pInitializeFunction)
 {
 	return E_NOTIMPL;
+}
+
+ULONG STDMETHODCALLTYPE COpenGL9::AddRef( int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+	m_refcount[which]++;
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IUAddRef  (%08x,%d) refc -> (%d,%d) [%s]",this,which,m_refcount[0],m_refcount[1],comment?comment:"..."))	;
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif	
+}
+
+ULONG STDMETHODCALLTYPE	COpenGL9::Release( int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+		
+	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
+	bool deleting = false;
+		
+	m_refcount[which]--;
+	if ( (!m_refcount[0]) && (!m_refcount[1]) )
+	{
+		deleting = true;
+	}
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif
+
+	if (deleting)
+	{
+		if (m_mark)
+		{
+			GLMPRINTF((""))	;		// place to hang a breakpoint
+		}
+		delete this;
+		return 0;
+	}
+	else
+	{
+		return m_refcount[0];
+	}
 }

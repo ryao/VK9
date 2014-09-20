@@ -42,7 +42,7 @@ public:
 	COpenGLVolumeTexture9();
 	~COpenGLVolumeTexture9();
 
-	IDirect3DSurface9		*m_surfZero;			// surf of top level.
+	COpenGLSurface9		*m_surfZero;			// surf of top level.
 	D3DVOLUME_DESC			m_volDescZero;			// volume desc top level
 
 public:

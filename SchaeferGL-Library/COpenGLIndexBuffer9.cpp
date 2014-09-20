@@ -31,6 +31,7 @@
  */
  
 #include "COpenGLIndexBuffer9.h"
+#include "COpenGLDevice9.h"
 
 COpenGLIndexBuffer9::COpenGLIndexBuffer9()
 {
@@ -66,7 +67,7 @@ void STDMETHODCALLTYPE COpenGLIndexBuffer9::UnlockActualSize( unsigned int nActu
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
-	tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "IB UnlockActualSize" );
+	//tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "IB UnlockActualSize" );
 
 	m_idxBuffer->Unlock( nActualSize, pActualData );	
 }
@@ -85,7 +86,7 @@ HRESULT STDMETHODCALLTYPE COpenGLIndexBuffer9::Lock(UINT OffsetToLock, UINT Size
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
 	// FIXME would be good to have "can't lock twice" logic
 
-	tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "IB Lock" );
+	//tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "IB Lock" );
 	
 	GLMBuffLockParams lockreq;
 	lockreq.m_nOffset		= OffsetToLock;
@@ -103,7 +104,7 @@ HRESULT STDMETHODCALLTYPE COpenGLIndexBuffer9::Unlock()
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );
 
-	tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "IB Unlock" );
+	//tmZoneFiltered( TELEMETRY_LEVEL2, 25, TMZF_NONE, "IB Unlock" );
 
 	m_idxBuffer->Unlock();
 

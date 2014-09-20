@@ -40,6 +40,7 @@
 
 //#include "tier0/valve_minmax_off.h"
 #include <algorithm>
+#include <openssl/md5.h>
 
 // memdbgon -must- be the last include file in a .cpp file.
 //#include "tier0/memdbgon.h"
@@ -2680,9 +2681,9 @@ bool	GLMDetectGDB( void )			// aka AmIBeingDebugged()
 static unsigned int		g_glmDebugChannelMask = 0;		// which output channels are available (can be more than one)
 static unsigned int		g_glmDebugFlavorMask = 0;		// which message flavors are enabled for output (can be more than one)
 
-uint	GLMDetectAvailableChannels( void )
+unsigned int	GLMDetectAvailableChannels( void )
 {
-	uint result = 0;
+	unsigned int result = 0;
 	
 	// printf is always available (except maybe in release... ?)
 	result |= (1 << ePrintf);
@@ -3107,7 +3108,7 @@ void	GLMSetIndent( int indent )
 #endif
 
 
-inline unsigned int64 Plat_Rdtsc()
+inline unsigned __int64 Plat_Rdtsc()
 {
 #if defined( _X360 )
 	return ( unsigned int64 )__mftb32();
@@ -3115,7 +3116,7 @@ inline unsigned int64 Plat_Rdtsc()
 	return ( unsigned int64 )__rdtsc();
 #elif defined( _WIN32 )
   #if defined( _MSC_VER ) && ( _MSC_VER >= 1400 )
-	return ( unsigned int64 )__rdtsc();
+	return ( unsigned __int64 )__rdtsc();
   #else
     __asm rdtsc;
 	__asm ret;
@@ -3224,18 +3225,18 @@ public:
 			double flClockOffsetsInS[R];
 			for ( unsigned int q = 0; q < R; q++)
 			{
-				uint64 nBestTotalCPUTimestamp = (uint64)-1;
-				uint64 nBestCPUTimestamp = 0;
+				unsigned __int64 nBestTotalCPUTimestamp = (unsigned __int64)-1;
+				unsigned __int64 nBestCPUTimestamp = 0;
 				GLuint64 nBestGPUTimestamp = 0;
 						
 				for ( unsigned int i = 0; i < 10; i++)
 				{
-					const unsigned int64 nStartCPUTimestamp = Plat_Rdtsc();
+					const unsigned __int64 nStartCPUTimestamp = Plat_Rdtsc();
 				
 					gGL->glQueryCounter( m_FreeQueryPool[0], GL_TIMESTAMP);				
 					PipelineFlush();
 								
-					const unsigned int64 nEndCPUTimestamp = Plat_Rdtsc();
+					const unsigned __int64 nEndCPUTimestamp = Plat_Rdtsc();
 				
 					GLint nAvailable;
 					do 
@@ -3246,7 +3247,7 @@ public:
 					GLuint64 nGPUTimestamp;
 					gGL->glGetQueryObjectui64v( m_FreeQueryPool[0], GL_QUERY_RESULT, &nGPUTimestamp );
 
-					const unsigned int64 nTotalCPUTimestamp = nEndCPUTimestamp - nStartCPUTimestamp;
+					const unsigned __int64 nTotalCPUTimestamp = nEndCPUTimestamp - nStartCPUTimestamp;
 					if ( nTotalCPUTimestamp < nBestTotalCPUTimestamp )
 					{
 						nBestTotalCPUTimestamp = nTotalCPUTimestamp;
@@ -3421,12 +3422,12 @@ public:
 
 		m_nQueryZoneStackSize--;
 
-		uint nCurGPUWorkCount = g_nTotalDrawsOrClears;
+		unsigned int nCurGPUWorkCount = g_nTotalDrawsOrClears;
 #if GL_TELEMETRY_GPU_ZONES
 		nCurGPUWorkCount += g_TelemetryGPUStats.GetTotal();
 #endif
 
-		uint nTotalDraws = nCurGPUWorkCount - m_QueryZoneStack[m_nQueryZoneStackSize].m_nTotalGPUWorkCount;
+		unsigned int nTotalDraws = nCurGPUWorkCount - m_QueryZoneStack[m_nQueryZoneStackSize].m_nTotalGPUWorkCount;
 
 		m_QueryZoneStack[m_nQueryZoneStackSize].m_nEndQuery = AllocQueryHandle();
 		gGL->glQueryCounter( m_QueryZoneStack[m_nQueryZoneStackSize].m_nEndQuery, GL_TIMESTAMP );
@@ -3439,7 +3440,7 @@ public:
 		COMPILE_TIME_ASSERT( ( int )cMaxQueryZones > ( int )cMaxQueryZoneStackSize );
 		if ( m_nNumOutstandingQueryZones >= ( cMaxQueryZones - cMaxQueryZoneStackSize ) )
 		{
-			TM_MESSAGE( TELEMETRY_LEVEL2, TMMF_ICON_NOTE | TMMF_SEVERITY_WARNING, "CGPUTimestampManager::EndZone: Too many outstanding query zones - forcing a pipeline flush! This is probably expensive." );
+			//TM_MESSAGE( TELEMETRY_LEVEL2, TMMF_ICON_NOTE | TMMF_SEVERITY_WARNING, "CGPUTimestampManager::EndZone: Too many outstanding query zones - forcing a pipeline flush! This is probably expensive." );
 
 			FlushOutstandingQueries( true );
 		}
@@ -3535,7 +3536,7 @@ public:
 
 private:
 	bool m_bInitialized;
-	uint m_nCurFrame;
+	unsigned int m_nCurFrame;
 
 	double m_flGPUToCPUOffsetInS;
 	double m_flGPUToS;
@@ -3544,7 +3545,7 @@ private:
 
 	enum { cMaxQueryZones = 4096, cFreeQueryPoolSize = cMaxQueryZones * 2 };
 	GLuint m_FreeQueryPool[cFreeQueryPoolSize ];
-	uint m_nFreeQueryPoolSize;
+	unsigned int m_nFreeQueryPoolSize;
 
 	GLuint AllocQueryHandle() 
 	{
@@ -3569,26 +3570,26 @@ private:
 		const char *m_pName;
 		GLuint m_nBeginQuery;
 		GLuint m_nEndQuery;
-		uint m_nStackLevel;
-		uint m_nTotalGPUWorkCount;
+		unsigned int m_nStackLevel;
+		unsigned int m_nTotalGPUWorkCount;
 	};
 
 	QueryZone_t m_OutstandingQueryZones[cMaxQueryZones];
-	uint m_nOutstandingQueriesHead; // index of first outstanding query (oldest)
-	uint m_nOutstandingQueriesTail;	// index where next query goes (newest)
-	uint m_nNumOutstandingQueryZones;
+	unsigned int m_nOutstandingQueriesHead; // index of first outstanding query (oldest)
+	unsigned int m_nOutstandingQueriesTail;	// index where next query goes (newest)
+	unsigned int m_nNumOutstandingQueryZones;
 
 	enum { cMaxQueryZoneStackSize = 256 };
 	QueryZone_t m_QueryZoneStack[cMaxQueryZoneStackSize];
-	uint m_nQueryZoneStackSize;
+	unsigned int m_nQueryZoneStackSize;
 
 	struct FinishedQueryZone_t
 	{
 		const char *m_pName;
 		GLuint64 m_nBeginGPUTime;
 		GLuint64 m_nEndGPUTime;
-		uint m_nStackLevel;
-		uint m_nTotalGPUWorkCount;
+		unsigned int m_nStackLevel;
+		unsigned int m_nTotalGPUWorkCount;
 
 		inline bool operator< ( const FinishedQueryZone_t &rhs ) const 
 		{ 
@@ -3600,9 +3601,9 @@ private:
 	};
 
 	FinishedQueryZone_t m_FinishedZones[cMaxQueryZones];
-	uint m_nNumFinishedZones;
+	unsigned int m_nNumFinishedZones;
 
-	uint m_nTotalSpanWorkCount;
+	unsigned int m_nTotalSpanWorkCount;
 			
 	void InitRdtsc()
 	{
@@ -3669,8 +3670,8 @@ private:
 
 			if ( bEmit )
 			{
-				uint64 nStartGPUTime = ( ( zone.m_nBeginGPUTime * m_flGPUToS ) + m_flGPUToCPUOffsetInS ) * m_flSToRdtsc;
-				uint64 nEndGPUTime = ( ( zone.m_nEndGPUTime * m_flGPUToS ) + m_flGPUToCPUOffsetInS ) * m_flSToRdtsc;
+				unsigned __int64 nStartGPUTime = ( ( zone.m_nBeginGPUTime * m_flGPUToS ) + m_flGPUToCPUOffsetInS ) * m_flSToRdtsc;
+				unsigned __int64 nEndGPUTime = ( ( zone.m_nEndGPUTime * m_flGPUToS ) + m_flGPUToCPUOffsetInS ) * m_flSToRdtsc;
 
 				NewTimeSpan( nStartGPUTime, nEndGPUTime, zone.m_pName, zone.m_nTotalGPUWorkCount );
 
@@ -3745,7 +3746,7 @@ void GLMBeginPIXEvent( const char *str )
 	char szName[1024];
 	V_snprintf( szName, sizeof( szName ), "[ID:%u FR:%u] %s", g_nPIXEventIndex, g_GPUTimestampManager.GetCurFrame(), str );
 	const char *p = tmDynamicString( TELEMETRY_LEVEL2, szName ); //p can be null if tm is getting shut down
-	TM_ENTER( TELEMETRY_LEVEL2, TMZF_NONE, "PIX %s", p ? p : ""  );
+	//TM_ENTER( TELEMETRY_LEVEL2, TMZF_NONE, "PIX %s", p ? p : ""  );
 
 	g_nPIXEventIndex++;
 			
@@ -4207,7 +4208,7 @@ CGLMEditableTextItem::CGLMEditableTextItem( char *text, unsigned int size, bool 
 	bool	replaceDiskCopy = true;
 	
 	char	*mirrorData = NULL;
-	uint	mirrorSize = 0;
+	unsigned int	mirrorSize = 0;
 
 	if (!forceOverwrite)
 	{
@@ -4327,7 +4328,7 @@ void	CGLMEditableTextItem::GenMungedText( bool fromMirror )
 		// just import the text as is from the mirror file.
 		
 		char	*mirrorData = NULL;
-		uint	mirrorSize = 0;
+		unsigned int	mirrorSize = 0;
 
 		if (m_mirror->HasData())
 		{
