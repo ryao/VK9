@@ -36,11 +36,17 @@
 #include "d3d9.h" // Base class: IDirect3DSurface9
 #include "COpenGLResource9.h"
 
-class COpenGLSurface9 : public IDirect3DSurface9,public COpenGLResource9
+class COpenGLSurface9 : public IDirect3DSurface9
 {
 public:
 	COpenGLSurface9();
 	~COpenGLSurface9();
+
+	int	m_refcount[2];
+	bool m_mark;
+
+	COpenGLDevice9	*m_device;		// parent device
+	D3DRESOURCETYPE		m_restype;
 
 	D3DSURFACE_DESC			m_desc;
 	CGLMTex					*m_tex;
@@ -48,6 +54,21 @@ public:
 	int						m_mip;
 
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
+	virtual DWORD STDMETHODCALLTYPE GetPriority();
+	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+	virtual void STDMETHODCALLTYPE PreLoad();
+	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
+	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
+
+	//IDirect3DSurface9
 	virtual HRESULT STDMETHODCALLTYPE GetContainer(REFIID riid, void** ppContainer);
 	virtual HRESULT STDMETHODCALLTYPE GetDC(HDC* phdc);
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DSURFACE_DESC* pDesc);
@@ -55,7 +76,8 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE ReleaseDC(HDC hdc);
 	virtual HRESULT STDMETHODCALLTYPE UnlockRect();
 
-	virtual ULONG STDMETHODCALLTYPE	Release( int which=0, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLSURFACE9_H

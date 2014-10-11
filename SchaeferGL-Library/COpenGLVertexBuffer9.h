@@ -36,13 +36,19 @@
 #include "d3d9.h" // Base class: IDirect3DVertexBuffer9
 #include "COpenGLResource9.h"
 
-class COpenGLVertexBuffer9 : public IDirect3DVertexBuffer9,public COpenGLResource9
+class COpenGLVertexBuffer9 : public IDirect3DVertexBuffer9
 {
 private:
 	
 public:
 	COpenGLVertexBuffer9();
 	~COpenGLVertexBuffer9();
+
+	int	m_refcount[2];
+	bool m_mark;
+
+	COpenGLDevice9	*m_device;		// parent device
+	D3DRESOURCETYPE		m_restype;
 
 	GLMContext				*m_ctx;
 	CGLMBuffer				*m_vtxBuffer;
@@ -51,9 +57,27 @@ public:
 	void UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
 	
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
+	virtual DWORD STDMETHODCALLTYPE GetPriority();
+	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+	virtual void STDMETHODCALLTYPE PreLoad();
+	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
+	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
+
+	//IDirect3DVertexBuffer9
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DVERTEXBUFFER_DESC* pDesc);
 	virtual HRESULT STDMETHODCALLTYPE Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
 	virtual HRESULT STDMETHODCALLTYPE Unlock();
+
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLVERTEXBUFFER9_H

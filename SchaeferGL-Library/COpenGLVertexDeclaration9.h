@@ -38,11 +38,14 @@
 
 class COpenGLDevice9;
 
-class COpenGLVertexDeclaration9 : public IDirect3DVertexDeclaration9,public COpenGLUnknown
+class COpenGLVertexDeclaration9 : public IDirect3DVertexDeclaration9
 {
 public:
 	COpenGLVertexDeclaration9();
 	~COpenGLVertexDeclaration9();
+
+	int	m_refcount[2];
+	bool m_mark;
 
 	COpenGLDevice9		*m_device;
 	unsigned int					m_elemCount;
@@ -51,8 +54,17 @@ public:
 	unsigned __int8					m_VertexAttribDescToStreamIndex[256];
 
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DVertexDeclaration9
 	virtual HRESULT STDMETHODCALLTYPE GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements);
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
+
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLVERTEXDECLARATION9_H

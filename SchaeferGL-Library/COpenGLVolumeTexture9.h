@@ -36,21 +36,59 @@
 #include "d3d9.h" // Base class: IDirect3DVolumeTexture9
 #include "COpenGLBaseTexture9.h"
 
-class COpenGLVolumeTexture9 : public IDirect3DVolumeTexture9,public COpenGLBaseTexture9
+class COpenGLVolumeTexture9 : public IDirect3DVolumeTexture9
 {
 public:
 	COpenGLVolumeTexture9();
 	~COpenGLVolumeTexture9();
 
+	COpenGLDevice9	*m_device;		// parent device
+	D3DRESOURCETYPE		m_restype;
+
+	int	m_refcount[2];
+	bool m_mark;
+
+	D3DSURFACE_DESC			m_descZero;			// desc of top level.
+	CGLMTex					*m_tex;				// a CGLMTex can represent all forms of tex
+
 	COpenGLSurface9		*m_surfZero;			// surf of top level.
 	D3DVOLUME_DESC			m_volDescZero;			// volume desc top level
 
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
+	virtual DWORD STDMETHODCALLTYPE GetPriority();
+	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+	virtual void STDMETHODCALLTYPE PreLoad();
+	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
+	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
+
+	//IDirect3DBaseTexture9
+	virtual VOID STDMETHODCALLTYPE GenerateMipSubLevels();
+	virtual D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE GetAutoGenFilterType();
+	virtual DWORD STDMETHODCALLTYPE GetLOD();
+	virtual DWORD STDMETHODCALLTYPE GetLevelCount();
+	virtual HRESULT STDMETHODCALLTYPE SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType);
+	virtual DWORD STDMETHODCALLTYPE SetLOD(DWORD LODNew);
+	
+	
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+
+	//IDirect3DVolumeTexture9
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyBox(const D3DBOX* pDirtyBox);
 	virtual HRESULT STDMETHODCALLTYPE GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc);
 	virtual HRESULT STDMETHODCALLTYPE GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel);
 	virtual HRESULT STDMETHODCALLTYPE LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags);
 	virtual HRESULT STDMETHODCALLTYPE UnlockBox(UINT Level);
+
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLVOLUMETEXTURE9_H

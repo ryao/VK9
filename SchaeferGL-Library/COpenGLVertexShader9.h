@@ -36,11 +36,17 @@
 #include "d3d9.h" // Base class: IDirect3DVertexShader9
 #include "COpenGLResource9.h"
 
-class COpenGLVertexShader9 : public IDirect3DVertexShader9,public COpenGLResource9
+class COpenGLVertexShader9 : public IDirect3DVertexShader9
 {
 public:
 	COpenGLVertexShader9();
 	~COpenGLVertexShader9();
+
+	int	m_refcount[2];
+	bool m_mark;
+
+	COpenGLDevice9	*m_device;		// parent device
+	D3DRESOURCETYPE		m_restype;
 
 	CGLMProgram				*m_vtxProgram;
 	unsigned int					m_vtxHighWater;		// count of active constant slots referenced by shader.
@@ -49,8 +55,26 @@ public:
 	unsigned int					m_maxVertexAttrs;
 
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
+	virtual DWORD STDMETHODCALLTYPE GetPriority();
+	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+	virtual void STDMETHODCALLTYPE PreLoad();
+	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
+	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
+
+	//IDirect3DVertexShader9
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
 	virtual HRESULT STDMETHODCALLTYPE GetFunction(void* pData, UINT* pSizeOfData);
+
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLVERTEXSHADER9_H

@@ -36,13 +36,19 @@
 #include "d3d9.h" // Base class: IDirect3DPixelShader9
 #include "COpenGLResource9.h"
 
-class COpenGLPixelShader9 : public IDirect3DPixelShader9,public COpenGLResource9
+class COpenGLPixelShader9 : public IDirect3DPixelShader9
 {
 public:
 	COpenGLPixelShader9();
 	~COpenGLPixelShader9();
 
-	CGLMProgram				*m_pixProgram;
+	int	m_refcount[2];
+	bool m_mark;
+
+	COpenGLDevice9	*m_device;		// parent device
+	D3DRESOURCETYPE		m_restype;
+
+	CGLMProgram						*m_pixProgram;
 	unsigned int					m_pixHighWater;		// count of active constant slots referenced by shader.
 	unsigned int					m_pixSamplerMask;	// (1<<n) mask of samplers referemnced by this pixel shader
 												// this can help FlushSamplers avoid SRGB flipping on textures not being referenced...
@@ -50,8 +56,26 @@ public:
 	unsigned int					m_pixFragDataMask;  // (1<<n) mask of gl_FragData[n] referenced by this pixel shader
 
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
+	virtual DWORD STDMETHODCALLTYPE GetPriority();
+	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
+	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+	virtual void STDMETHODCALLTYPE PreLoad();
+	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
+	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
+
+	//IDirect3DPixelShader9
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
 	virtual HRESULT STDMETHODCALLTYPE GetFunction(void* pData, UINT* pSizeOfData);
+
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLPIXELSHADER9_H

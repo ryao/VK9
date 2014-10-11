@@ -35,6 +35,9 @@
 
 COpenGLBaseTexture9::COpenGLBaseTexture9()
 {
+	m_refcount[0] = 1;
+	m_refcount[1] = 0;
+	m_mark = (IUNKNOWN_ALLOC_SPEW_MARK_ALL != 0);	// either all are marked, or only the ones that have SetMark(true) called on them
 }
 
 COpenGLBaseTexture9::~COpenGLBaseTexture9()
@@ -74,6 +77,115 @@ COpenGLBaseTexture9::~COpenGLBaseTexture9()
 	GLMPRINTF(( "<-A- ~IDirect3DBaseTexture9" ));	
 }
 
+ULONG STDMETHODCALLTYPE COpenGLBaseTexture9::AddRef(void)
+{
+	this->AddRef(0);
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLBaseTexture9::QueryInterface(REFIID riid,void  **ppv)
+{
+	
+}
+
+ULONG STDMETHODCALLTYPE COpenGLBaseTexture9::Release(void)
+{
+	this->Release(0);
+}
+
+ULONG STDMETHODCALLTYPE COpenGLBaseTexture9::AddRef(int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+	m_refcount[which]++;
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IUAddRef  (%08x,%d) refc -> (%d,%d) [%s]",this,which,m_refcount[0],m_refcount[1],comment?comment:"..."))	;
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif	
+
+	return m_refcount[0];
+}
+
+ULONG STDMETHODCALLTYPE	COpenGLBaseTexture9::Release(int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+		
+	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
+	bool deleting = false;
+		
+	m_refcount[which]--;
+	if ( (!m_refcount[0]) && (!m_refcount[1]) )
+	{
+		deleting = true;
+	}
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif
+
+	if (deleting)
+	{
+		if (m_mark)
+		{
+			GLMPRINTF((""))	;		// place to hang a breakpoint
+		}
+		delete this;
+		return 0;
+	}
+	else
+	{
+		return m_refcount[0];
+	}
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLBaseTexture9::FreePrivateData(REFGUID refguid)
+{
+	return E_NOTIMPL;
+}
+
+DWORD STDMETHODCALLTYPE COpenGLBaseTexture9::GetPriority()
+{
+	return 1;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLBaseTexture9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
+{
+	return E_NOTIMPL;
+}
+
+//D3DRESOURCETYPE STDMETHODCALLTYPE COpenGLBaseTexture9::GetType()
+//{
+//	return D3DRTYPE_SURFACE;
+//}
+
+void STDMETHODCALLTYPE COpenGLBaseTexture9::PreLoad()
+{
+	return; 
+}
+
+DWORD STDMETHODCALLTYPE COpenGLBaseTexture9::SetPriority(DWORD PriorityNew)
+{
+	return 1;
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLBaseTexture9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
+{
+	return E_NOTIMPL;
+}
 
 VOID STDMETHODCALLTYPE COpenGLBaseTexture9::GenerateMipSubLevels()
 {

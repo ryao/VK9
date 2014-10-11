@@ -35,7 +35,10 @@
 
 COpenGLQuery9::COpenGLQuery9()
 {
-	
+	//IUnknown
+	m_refcount[0] = 1;
+	m_refcount[1] = 0;
+	m_mark = (IUNKNOWN_ALLOC_SPEW_MARK_ALL != 0);	// either all are marked, or only the ones that have SetMark(true) called on them
 }
 
 COpenGLQuery9::~COpenGLQuery9()
@@ -61,6 +64,81 @@ COpenGLQuery9::~COpenGLQuery9()
 	}
 	
 	GLMPRINTF(("<-A- ~IDirect3DQuery9"));	
+}
+
+ULONG STDMETHODCALLTYPE COpenGLQuery9::AddRef(void)
+{
+	this->AddRef(0);
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLQuery9::QueryInterface(REFIID riid,void  **ppv)
+{
+	
+}
+
+ULONG STDMETHODCALLTYPE COpenGLQuery9::Release(void)
+{
+	this->Release(0);
+}
+
+ULONG STDMETHODCALLTYPE COpenGLQuery9::AddRef(int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+	m_refcount[which]++;
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IUAddRef  (%08x,%d) refc -> (%d,%d) [%s]",this,which,m_refcount[0],m_refcount[1],comment?comment:"..."))	;
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif	
+
+	return m_refcount[0];
+}
+
+ULONG STDMETHODCALLTYPE	COpenGLQuery9::Release(int which, char *comment)
+{
+	Assert( which >= 0 );
+	Assert( which < 2 );
+		
+	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
+	bool deleting = false;
+		
+	m_refcount[which]--;
+	if ( (!m_refcount[0]) && (!m_refcount[1]) )
+	{
+		deleting = true;
+	}
+		
+	#if IUNKNOWN_ALLOC_SPEW
+		if (m_mark)
+		{
+			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
+			if (!comment)
+			{
+				GLMPRINTF((""))	;	// place to hang a breakpoint
+			}
+		}
+	#endif
+
+	if (deleting)
+	{
+		if (m_mark)
+		{
+			GLMPRINTF((""))	;		// place to hang a breakpoint
+		}
+		delete this;
+		return 0;
+	}
+	else
+	{
+		return m_refcount[0];
+	}
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)

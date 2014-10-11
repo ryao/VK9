@@ -38,16 +38,25 @@
 
 class COpenGLDevice9;
 
-class COpenGLResource9 : public IDirect3DResource9,public COpenGLUnknown
+class COpenGLResource9 : public IDirect3DResource9
 {
 public:
 	COpenGLResource9();
 	~COpenGLResource9();
 
+	int	m_refcount[2];
+	bool m_mark;
+
 	COpenGLDevice9	*m_device;		// parent device
 	D3DRESOURCETYPE		m_restype;
 
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DResource9
 	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
 	virtual DWORD STDMETHODCALLTYPE GetPriority();
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
@@ -55,6 +64,9 @@ public:
 	virtual void STDMETHODCALLTYPE PreLoad();
 	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
 	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
+
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLRESOURCE9_H

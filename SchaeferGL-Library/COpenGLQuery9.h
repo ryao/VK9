@@ -36,12 +36,15 @@
 #include "d3d9.h" // Base class: IDirect3DQuery9
 #include "COpenGLResource9.h"
 
-class COpenGLQuery9 : public IDirect3DQuery9,public COpenGLUnknown
+class COpenGLQuery9 : public IDirect3DQuery9
 {
 public:
 	COpenGLQuery9();
 	~COpenGLQuery9();
 	
+	int	m_refcount[2];
+	bool m_mark;
+
 	COpenGLDevice9			*m_device;	// parent device
 	D3DQUERYTYPE			m_type;		// D3DQUERYTYPE_OCCLUSION or D3DQUERYTYPE_EVENT
 	GLMContext				*m_ctx;
@@ -53,11 +56,20 @@ public:
 	unsigned int					m_nIssueStartQueryCreationCounter, m_nIssueEndQueryCreationCounter;
 
 public:
+	//IUnknown
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual ULONG STDMETHODCALLTYPE Release(void);
+
+	//IDirect3DQuery9
 	virtual HRESULT STDMETHODCALLTYPE GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags);
 	virtual DWORD STDMETHODCALLTYPE GetDataSize();
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** pDevice);
 	virtual D3DQUERYTYPE STDMETHODCALLTYPE GetType();
 	virtual HRESULT STDMETHODCALLTYPE Issue(DWORD dwIssueFlags);
+
+	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
+	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // COPENGLQUERY9_H
