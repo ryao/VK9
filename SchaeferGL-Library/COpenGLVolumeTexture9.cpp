@@ -66,17 +66,17 @@ COpenGLVolumeTexture9::~COpenGLVolumeTexture9()
 
 ULONG STDMETHODCALLTYPE COpenGLVolumeTexture9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLVolumeTexture9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLVolumeTexture9::AddRef(int which, char *comment)
@@ -154,10 +154,10 @@ HRESULT STDMETHODCALLTYPE COpenGLVolumeTexture9::GetPrivateData(REFGUID refguid,
 	return E_NOTIMPL;
 }
 
-D3DRESOURCETYPE STDMETHODCALLTYPE COpenGLVolumeTexture9::GetType()
-{
-	return D3DRTYPE_SURFACE;
-}
+//D3DRESOURCETYPE STDMETHODCALLTYPE COpenGLVolumeTexture9::GetType()
+//{
+//	return D3DRTYPE_SURFACE;
+//}
 
 void STDMETHODCALLTYPE COpenGLVolumeTexture9::PreLoad()
 {

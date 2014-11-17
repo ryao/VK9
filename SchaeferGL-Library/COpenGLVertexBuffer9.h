@@ -36,7 +36,7 @@
 #include "d3d9.h" // Base class: IDirect3DVertexBuffer9
 #include "COpenGLResource9.h"
 
-class COpenGLVertexBuffer9 : public IDirect3DVertexBuffer9
+class COpenGLVertexBuffer9 : public IDirect3DVertexBuffer9,COpenGLResource9
 {
 private:
 	
@@ -54,7 +54,7 @@ public:
 	CGLMBuffer				*m_vtxBuffer;
 	D3DVERTEXBUFFER_DESC	m_vtxDesc;		// to satisfy GetDesc
 
-	void UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
+	void STDMETHODCALLTYPE UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
 	
 public:
 	//IUnknown
@@ -63,6 +63,7 @@ public:
 	virtual ULONG STDMETHODCALLTYPE Release(void);
 
 	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice){(*ppDevice)=(IDirect3DDevice9*)m_device; return S_OK;}
 	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
 	virtual DWORD STDMETHODCALLTYPE GetPriority();
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);

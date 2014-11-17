@@ -59,6 +59,8 @@ class COpenGLIndexBuffer9;
 #include <GL/glext.h>
 #include "D3D9.h"
 
+#include <boost/foreach.hpp>
+
 enum
 {
 	// Standard vertex shader constants
@@ -151,6 +153,10 @@ typedef void* VD3DHANDLE;
 #define V_snprintf printf
 #define Q_snprintf printf
 #define V_stristr strstr
+#define V_stricmp strcmp
+#define V_strcmp strcmp
+#define V_strcpy strcpy
+#define V_strlen strlen
 #define Plat_DebugString printf
 #define Warning printf
 #define Error printf
@@ -614,5 +620,15 @@ class ILauncherMgr
 } _g_pLauncherMgr;
 
 ILauncherMgr* g_pLauncherMgr = &_g_pLauncherMgr;
+
+//use boost implementation for iteration. item and container are reversed in BOOST_FOREACH.
+//#define FOR_EACH_MAP BOOST_FOREACH
+//#define FOR_EACH_MAP_FAST BOOST_FOREACH
+
+//This method includes a length to compare. (presumably as an optimization)
+inline int V_strncmp(const char *s1, const char *s2, int count)
+{
+	return memcmp(s1,s2,count); //Using memcmp because the length is known.
+}
 
 #endif // COPENGLTYPES_H

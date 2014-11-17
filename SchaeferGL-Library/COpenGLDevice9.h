@@ -341,7 +341,7 @@ public:
 	
 	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
 	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
-
+	virtual HRESULT STDMETHODCALLTYPE CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,COpenGLSurface9 **ppSurface,HANDLE *pSharedHandle,char *debugLabel);
 public:
 
 	int	m_refcount[2];
@@ -462,7 +462,10 @@ public:
 	void ResetFBOMap();
 	void ScrubFBOMap( CGLMTex *pTex );
 	void ReleasedVertexDeclaration( COpenGLVertexDeclaration9 *pDecl );
+	void ReleasedTexture( COpenGLVolumeTexture9 *baseTex );
 	void ReleasedTexture( COpenGLBaseTexture9 *baseTex );
+	void ReleasedTexture( COpenGLCubeTexture9 *baseTex );
+	void ReleasedTexture( COpenGLTexture9 *baseTex );
 	void ReleasedCGLMTex( CGLMTex *pTex);
 	void ReleasedSurface( COpenGLSurface9 *pSurface );
 	void ReleasedPixelShader( COpenGLPixelShader9 *pixelShader );

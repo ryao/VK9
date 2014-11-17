@@ -57,6 +57,7 @@ public:
 	virtual ULONG STDMETHODCALLTYPE Release(void);
 
 	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice){(*ppDevice)=(IDirect3DDevice9*)m_device; return S_OK;}
 	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
 	virtual DWORD STDMETHODCALLTYPE GetPriority();
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);

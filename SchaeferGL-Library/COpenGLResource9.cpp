@@ -46,17 +46,17 @@ COpenGLResource9::~COpenGLResource9()
 
 ULONG STDMETHODCALLTYPE COpenGLResource9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLResource9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLResource9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLResource9::AddRef(int which, char *comment)

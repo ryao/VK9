@@ -36,7 +36,7 @@
 #include "d3d9.h" // Base class: IDirect3DBaseTexture9
 #include "COpenGLResource9.h"
 
-class COpenGLBaseTexture9 : public IDirect3DBaseTexture9
+class COpenGLBaseTexture9 : public IDirect3DBaseTexture9,COpenGLResource9
 {
 public:
 	COpenGLBaseTexture9();
@@ -58,6 +58,7 @@ public:
 	virtual ULONG STDMETHODCALLTYPE Release(void);
 
 	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice){(*ppDevice)=(IDirect3DDevice9*)m_device; return S_OK;}
 	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
 	virtual DWORD STDMETHODCALLTYPE GetPriority();
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);

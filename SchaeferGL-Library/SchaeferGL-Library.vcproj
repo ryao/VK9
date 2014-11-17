@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;S:\Git\SchaeferGL\SchaeferGL-Library\&quot;"
+				AdditionalIncludeDirectories="C:\local\boost_1_57_0\;&quot;S:\Git\SchaeferGL\SchaeferGL-Library\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"

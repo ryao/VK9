@@ -88,17 +88,17 @@ COpenGLSurface9::~COpenGLSurface9()
 
 ULONG STDMETHODCALLTYPE COpenGLSurface9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLSurface9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLSurface9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLSurface9::AddRef(int which, char *comment)
@@ -121,45 +121,45 @@ ULONG STDMETHODCALLTYPE COpenGLSurface9::AddRef(int which, char *comment)
 	return m_refcount[0];
 }
 
-ULONG STDMETHODCALLTYPE	COpenGLSurface9::Release(int which, char *comment)
-{
-	Assert( which >= 0 );
-	Assert( which < 2 );
-		
-	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
-	bool deleting = false;
-		
-	m_refcount[which]--;
-	if ( (!m_refcount[0]) && (!m_refcount[1]) )
-	{
-		deleting = true;
-	}
-		
-	#if IUNKNOWN_ALLOC_SPEW
-		if (m_mark)
-		{
-			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
-			if (!comment)
-			{
-				GLMPRINTF((""))	;	// place to hang a breakpoint
-			}
-		}
-	#endif
-
-	if (deleting)
-	{
-		if (m_mark)
-		{
-			GLMPRINTF((""))	;		// place to hang a breakpoint
-		}
-		delete this;
-		return 0;
-	}
-	else
-	{
-		return m_refcount[0];
-	}
-}
+//ULONG STDMETHODCALLTYPE	COpenGLSurface9::Release(int which, char *comment)
+//{
+//	Assert( which >= 0 );
+//	Assert( which < 2 );
+//		
+//	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
+//	bool deleting = false;
+//		
+//	m_refcount[which]--;
+//	if ( (!m_refcount[0]) && (!m_refcount[1]) )
+//	{
+//		deleting = true;
+//	}
+//		
+//	#if IUNKNOWN_ALLOC_SPEW
+//		if (m_mark)
+//		{
+//			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
+//			if (!comment)
+//			{
+//				GLMPRINTF((""))	;	// place to hang a breakpoint
+//			}
+//		}
+//	#endif
+//
+//	if (deleting)
+//	{
+//		if (m_mark)
+//		{
+//			GLMPRINTF((""))	;		// place to hang a breakpoint
+//		}
+//		delete this;
+//		return 0;
+//	}
+//	else
+//	{
+//		return m_refcount[0];
+//	}
+//}
 
 HRESULT STDMETHODCALLTYPE COpenGLSurface9::FreePrivateData(REFGUID refguid)
 {

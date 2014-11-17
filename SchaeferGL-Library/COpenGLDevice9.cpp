@@ -34,6 +34,9 @@
 #include "togl/rendermechanism.h"
 #include "togl/linuxwin/dx9asmtogl2.h"
 #include "COpenGLCubeTexture9.h"
+#include "COpenGLTexture9.h"
+#include "COpenGLVolumeTexture9.h"
+#include "COpenGLSurface9.h"
 
 static D3DToGL		g_D3DToOpenGLTranslatorGLSL;
 static COpenGLDevice9 *g_pD3D_Device;
@@ -304,7 +307,7 @@ HRESULT	COpenGLDevice9::Create( IDirect3DDevice9Params *params )
 		m_params.m_presentationParameters.MultiSampleType,			// MSAA depth
 		m_params.m_presentationParameters.MultiSampleQuality,		// MSAA quality
 		TRUE,														// enable z-buffer discard ????
-		(IDirect3DSurface9*)&m_pDefaultDepthStencilSurface,								// ppSurface
+		(IDirect3DSurface9**)&m_pDefaultDepthStencilSurface,								// ppSurface
 		NULL														// shared handle
 		);
 	if (result != S_OK)
@@ -462,11 +465,16 @@ void COpenGLDevice9::ResetFBOMap()
 	if ( !m_pFBOs )
 		return;
 
-	FOR_EACH_MAP_FAST( (*m_pFBOs), i )
+	/*(FOR_EACH_MAP_FAST( (*m_pFBOs), i )
 	{
 		const RenderTargetState_t &rtState = m_pFBOs->Key( i ); (void)rtState;
 		CGLMFBO *pFBO = (*m_pFBOs)[i];
 				
+		m_ctx->DelFBO( pFBO );
+	}*/
+
+	BOOST_FOREACH(CGLMFBOMap::value_type pFBO, (*m_pFBOs))
+	{
 		m_ctx->DelFBO( pFBO );
 	}
 
@@ -486,7 +494,15 @@ void COpenGLDevice9::ScrubFBOMap( CGLMTex *pTex )
 	//CUtlVectorFixed< RenderTargetState_t, 128 > fbosToRemove;
 	std::vector<RenderTargetState_t> fbosToRemove(128);
 
-	FOR_EACH_MAP_FAST( (*m_pFBOs), i )
+	BOOST_FOREACH(CGLMFBOMap::key_type rtState, (*m_pFBOs))
+	{
+		if ( rtState.RefersTo( pTex ) )
+		{
+			fbosToRemove.push_back( rtState );
+		}
+	}
+
+	/*FOR_EACH_MAP_FAST( (*m_pFBOs), i )
 	{
 		const RenderTargetState_t &rtState = m_pFBOs->Key( i );
 		CGLMFBO *pFBO = (*m_pFBOs)[i]; (void)pFBO;
@@ -496,7 +512,7 @@ void COpenGLDevice9::ScrubFBOMap( CGLMTex *pTex )
 			//fbosToRemove.AddToTail( rtState );
 			fbosToRemove.push_back( rtState );
 		}
-	}
+	}*/
 
 	//for ( int i = 0; i < fbosToRemove.Count(); ++i )
 	for ( int i = 0; i < fbosToRemove.size(); ++i )
@@ -529,6 +545,54 @@ void COpenGLDevice9::ReleasedVertexDeclaration( COpenGLVertexDeclaration9 *pDecl
 
 	Assert( m_ObjectStats.m_nTotalVertexDecls >= 1 );
 	m_ObjectStats.m_nTotalVertexDecls--;
+}
+
+void COpenGLDevice9::ReleasedTexture( COpenGLTexture9 *baseTex )
+{
+	GL_BATCH_PERF_CALL_TIMER;
+	TOGL_NULL_DEVICE_CHECK_RET_VOID;
+
+	// see if this texture is referenced in any of the texture units and scrub it if so.
+	for( int i=0; i< GLM_SAMPLER_COUNT; i++)
+	{
+		if ((void*)m_textures[i] == (void*)baseTex)
+		{
+			m_textures[i] = NULL;
+			m_ctx->SetSamplerTex( i, NULL );	// texture sets go straight through to GLM, no dirty bit
+		}
+	}
+}
+
+void COpenGLDevice9::ReleasedTexture( COpenGLVolumeTexture9 *baseTex )
+{
+	GL_BATCH_PERF_CALL_TIMER;
+	TOGL_NULL_DEVICE_CHECK_RET_VOID;
+
+	// see if this texture is referenced in any of the texture units and scrub it if so.
+	for( int i=0; i< GLM_SAMPLER_COUNT; i++)
+	{
+		if ((void*)m_textures[i] == (void*)baseTex)
+		{
+			m_textures[i] = NULL;
+			m_ctx->SetSamplerTex( i, NULL );	// texture sets go straight through to GLM, no dirty bit
+		}
+	}
+}
+
+void COpenGLDevice9::ReleasedTexture( COpenGLCubeTexture9 *baseTex )
+{
+	GL_BATCH_PERF_CALL_TIMER;
+	TOGL_NULL_DEVICE_CHECK_RET_VOID;
+
+	// see if this texture is referenced in any of the texture units and scrub it if so.
+	for( int i=0; i< GLM_SAMPLER_COUNT; i++)
+	{
+		if ((void*)m_textures[i] == (void*)baseTex)
+		{
+			m_textures[i] = NULL;
+			m_ctx->SetSamplerTex( i, NULL );	// texture sets go straight through to GLM, no dirty bit
+		}
+	}
 }
 
 void COpenGLDevice9::ReleasedTexture( COpenGLBaseTexture9 *baseTex )
@@ -1504,6 +1568,11 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3
 
 HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
 {
+	return this->CreateRenderTarget(Width,Height,Format,MultiSample,MultisampleQuality,Lockable,(COpenGLSurface9**)ppSurface,pSharedHandle,NULL)
+}
+
+HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,COpenGLSurface9 **ppSurface,HANDLE *pSharedHandle,char *debugLabel)
+{
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	HRESULT result = S_OK;
@@ -1675,7 +1744,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateTexture(UINT Width,UINT Height,U
 
 	m_ObjectStats.m_nTotalSurfaces++;
 
-	dxtex->m_surfZero = new IDirect3DSurface9;
+	dxtex->m_surfZero = new COpenGLSurface9();
 	dxtex->m_surfZero->m_restype = (D3DRESOURCETYPE)0;	// this is a ref to a tex, not the owner... 
 	
 	// do not do an AddRef here.	
@@ -2156,7 +2225,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::CreateVolumeTexture(UINT Width,UINT He
 
 	m_ObjectStats.m_nTotalSurfaces++;
 
-	dxtex->m_surfZero = new IDirect3DSurface9;
+	dxtex->m_surfZero = new COpenGLSurface9;
 	dxtex->m_surfZero->m_restype = (D3DRESOURCETYPE)0;	// this is a ref to a tex, not the owner... 
 	// do not do an AddRef here.	
 	
@@ -2494,7 +2563,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetFVF(DWORD *pFVF)
 
 void STDMETHODCALLTYPE COpenGLDevice9::GetGammaRamp(UINT  iSwapChain,D3DGAMMARAMP *pRamp)
 {
-	return E_NOTIMPL;
+	return;
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexData) //,UINT *pBaseVertexIndex ?
@@ -2907,8 +2976,8 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::Reset(D3DPRESENT_PARAMETERS *pPresenta
 		m_params.m_presentationParameters.MultiSampleQuality,		// MSAA quality
 		true,														// lockable
 		&m_pDefaultColorSurface,										// ppSurface
-		NULL														// shared handle
-		);
+		NULL,														// shared handle
+		NULL);
 
 	if ( result != S_OK )
 	{
@@ -2951,7 +3020,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::Reset(D3DPRESENT_PARAMETERS *pPresenta
 		m_params.m_presentationParameters.MultiSampleType,			// MSAA depth
 		m_params.m_presentationParameters.MultiSampleQuality,		// MSAA quality
 		TRUE,														// enable z-buffer discard ????
-		&m_pDefaultDepthStencilSurface,								// ppSurface
+		((IDirect3DSurface9**)&m_pDefaultDepthStencilSurface),			// ppSurface
 		NULL														// shared handle
 		);
 	if (result != S_OK)
@@ -3092,16 +3161,16 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetDepthStencilSurface(IDirect3DSurfac
 
 	if ( pNewZStencil )
 	{
-		pNewZStencil->AddRef(1, "+A  SetDepthStencilSurface private addref");
+		((COpenGLSurface9*)pNewZStencil)->AddRef(1, "+A  SetDepthStencilSurface private addref");
 	}
 
 	if ( m_pDepthStencil )
 	{
 		// Note this Release() could cause the surface to be deleted!
-		m_pDepthStencil->Release(1, "-A  SetDepthStencilSurface private release");
+		((COpenGLSurface9*)pNewZStencil)->Release(1, "-A  SetDepthStencilSurface private release");
 	}
 	
-	m_pDepthStencil = pNewZStencil;
+	m_pDepthStencil = ((COpenGLSurface9*)pNewZStencil);
 
 	m_bFBODirty = true;
 		
@@ -3138,7 +3207,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetIndices(IDirect3DIndexBuffer9 *pInd
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	// just latch it.
-	m_indices.m_idxBuffer = pIndexData;
+	m_indices.m_idxBuffer = (COpenGLIndexBuffer9*)pIndexData;
 
 	return S_OK;
 }
@@ -3176,7 +3245,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetPixelShader(IDirect3DPixelShader9 *
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	
 	m_ctx->SetFragmentProgram( pShader ? pShader->m_pixProgram : NULL );
-	m_pixelShader = pShader;
+	m_pixelShader = ((COpenGLPixelShader9*)pShader);
 
 	return S_OK;	
 }
@@ -3661,7 +3730,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetRenderTarget(DWORD RenderTargetInde
 
 	if (pRenderTarget)
 	{
-		pRenderTarget->AddRef( 1, "+A  SetRenderTarget private addref"  );						// again, private refcount being raised
+		((COpenGLSurface9*)pRenderTarget)->AddRef( 1, "+A  SetRenderTarget private addref"  );						// again, private refcount being raised
 	}
 	m_pRenderTargets[RenderTargetIndex] = pRenderTarget;	
 	

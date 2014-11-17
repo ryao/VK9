@@ -63,17 +63,17 @@ COpenGLPixelShader9::~COpenGLPixelShader9()
 
 ULONG STDMETHODCALLTYPE COpenGLPixelShader9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLPixelShader9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLPixelShader9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLPixelShader9::AddRef(int which, char *comment)
@@ -171,10 +171,10 @@ HRESULT STDMETHODCALLTYPE COpenGLPixelShader9::SetPrivateData(REFGUID refguid, c
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE COpenGLPixelShader9::GetDevice(IDirect3DDevice9** ppDevice)
-{
-	return E_NOTIMPL;
-}
+//HRESULT STDMETHODCALLTYPE COpenGLPixelShader9::GetDevice(IDirect3DDevice9** ppDevice)
+//{
+//	return E_NOTIMPL;
+//}
 
 HRESULT STDMETHODCALLTYPE COpenGLPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {

@@ -79,17 +79,17 @@ COpenGLBaseTexture9::~COpenGLBaseTexture9()
 
 ULONG STDMETHODCALLTYPE COpenGLBaseTexture9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLBaseTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLBaseTexture9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLBaseTexture9::AddRef(int which, char *comment)

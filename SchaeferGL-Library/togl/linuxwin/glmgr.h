@@ -1641,11 +1641,10 @@ class GLMContext
 		bool							m_displayParamsValid;		// is there a param block copied in yet
 		GLMDisplayParams				m_displayParams;			// last known display config, either via constructor, or by SetDisplayParams...
 		
-#if defined( USE_SDL )
 		int								m_pixelFormatAttribs[100];	// more than enough
 		PseudoNSGLContextPtr			m_nsctx;
 		void *							m_ctx;
-#endif
+
 		bool							m_bUseBoneUniformBuffers; // if true, we use two uniform buffers for vertex shader constants vs. one
 
 		// texture form table

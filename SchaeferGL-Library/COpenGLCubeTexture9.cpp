@@ -80,17 +80,17 @@ COpenGLCubeTexture9::~COpenGLCubeTexture9()
 
 ULONG STDMETHODCALLTYPE COpenGLCubeTexture9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLCubeTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLCubeTexture9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLCubeTexture9::AddRef(int which, char *comment)

@@ -419,7 +419,8 @@ COpenGLEntryPoints::COpenGLEntryPoints()
 #undef GL_EXT
 #endif
 
-	if ( ( m_bHave_GL_NV_bindless_texture ) && ( !CommandLine()->CheckParm( "-gl_nv_bindless_texturing" ) ) )
+	//if ( ( m_bHave_GL_NV_bindless_texture ) && ( !CommandLine()->CheckParm( "-gl_nv_bindless_texturing" ) ) )
+	if(m_bHave_GL_NV_bindless_texture)
 	{
 		m_bHave_GL_NV_bindless_texture = false;
 		glGetTextureHandleNV.Force( NULL );

@@ -68,17 +68,17 @@ COpenGLTexture9::~COpenGLTexture9()
 
 ULONG STDMETHODCALLTYPE COpenGLTexture9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLTexture9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLTexture9::AddRef(int which, char *comment)
@@ -156,10 +156,10 @@ HRESULT STDMETHODCALLTYPE COpenGLTexture9::GetPrivateData(REFGUID refguid, void*
 	return E_NOTIMPL;
 }
 
-D3DRESOURCETYPE STDMETHODCALLTYPE COpenGLTexture9::GetType()
-{
-	return D3DRTYPE_SURFACE;
-}
+//D3DRESOURCETYPE STDMETHODCALLTYPE COpenGLTexture9::GetType()
+//{
+//	return D3DRTYPE_SURFACE;
+//}
 
 void STDMETHODCALLTYPE COpenGLTexture9::PreLoad()
 {

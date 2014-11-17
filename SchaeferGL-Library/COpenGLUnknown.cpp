@@ -58,17 +58,17 @@ COpenGLUnknown::~COpenGLUnknown(void)
 
 ULONG STDMETHODCALLTYPE COpenGLUnknown::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLUnknown::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLUnknown::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLUnknown::AddRef(int which, char *comment)

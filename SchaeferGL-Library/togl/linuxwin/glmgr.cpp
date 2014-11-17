@@ -782,13 +782,13 @@ void GLMContext::DelTex( CGLMTex * tex )
 }
 
 // push and pop attrib when blit has mixed srgb source and dest?		
-ConVar	gl_radar7954721_workaround_mixed ( "gl_radar7954721_workaround_mixed", "1" );
+//ConVar	gl_radar7954721_workaround_mixed ( "gl_radar7954721_workaround_mixed", "1" );
 
 // push and pop attrib on any blit?
-ConVar	gl_radar7954721_workaround_all ( "gl_radar7954721_workaround_all", "0" );
+//ConVar	gl_radar7954721_workaround_all ( "gl_radar7954721_workaround_all", "0" );
 
 // what attrib mask to use ?
-ConVar	gl_radar7954721_workaround_maskval ( "gl_radar7954721_workaround_maskval", "0" );
+//ConVar	gl_radar7954721_workaround_maskval ( "gl_radar7954721_workaround_maskval", "0" );
 
 enum eBlitFormatClass
 {
@@ -847,13 +847,13 @@ void glAttachTex2DtoFBO	( GLenum target, eBlitFormatClass formatClass, unsigned 
 	}
 }
 
-ConVar gl_can_resolve_flipped("gl_can_resolve_flipped", "0" );
-ConVar gl_cannot_resolve_flipped("gl_cannot_resolve_flipped", "0" );
+//ConVar gl_can_resolve_flipped("gl_can_resolve_flipped", "0" );
+//ConVar gl_cannot_resolve_flipped("gl_cannot_resolve_flipped", "0" );
 
 // these are only consulted if the m_cant_resolve_scaled cap bool is false.
 
-ConVar gl_minify_resolve_mode("gl_minify_resolve_mode", "1" );		// if scaled resolve available, for downscaled resolve blits only (i.e. internal blits)
-ConVar gl_magnify_resolve_mode("gl_magnify_resolve_mode", "2" );	// if scaled resolve available, for upscaled resolve blits only
+//ConVar gl_minify_resolve_mode("gl_minify_resolve_mode", "1" );		// if scaled resolve available, for downscaled resolve blits only (i.e. internal blits)
+//ConVar gl_magnify_resolve_mode("gl_magnify_resolve_mode", "2" );	// if scaled resolve available, for upscaled resolve blits only
 
 	// 0 == old style, two steps
 	// 1 == faster, one step blit aka XGL_SCALED_RESOLVE_FASTEST_EXT - if available.
@@ -929,7 +929,7 @@ void GLMContext::Blit2( CGLMTex *srcTex, GLMRect *srcRect, int srcFace, int srcM
 	bool srcGamma = srcTex && ((srcTex->m_layout->m_key.m_texFlags & kGLMTexSRGB) != 0);
 	bool dstGamma = dstTex && ((dstTex->m_layout->m_key.m_texFlags & kGLMTexSRGB) != 0);
 
-	bool doPushPop = (srcGamma != dstGamma) && gl_radar7954721_workaround_mixed.GetInt() && m_caps.m_nv;		// workaround for cross gamma blit problems on NV
+	bool doPushPop = true; //(srcGamma != dstGamma) && gl_radar7954721_workaround_mixed.GetInt() && m_caps.m_nv;		// workaround for cross gamma blit problems on NV
 		// ^^ need to re-check this on some post-10.6.3 build on NV to see if it was fixed
 
 	if (doPushPop)
@@ -948,14 +948,14 @@ void GLMContext::Blit2( CGLMTex *srcTex, GLMRect *srcRect, int srcFace, int srcM
 	
 	if (blitResolves && (blitFlips||blitToBack))		// flips, blit to back, same thing (for now)
 	{
-		if( gl_cannot_resolve_flipped.GetInt() )
-		{
-			blitTwoStep = true;
-		}
-		else if (!gl_can_resolve_flipped.GetInt())
-		{
-			blitTwoStep = blitTwoStep || m_caps.m_cantResolveFlipped;	// if neither convar renders an opinion, fall back to the caps to decide if we have to two-step.
-		}		
+		//if( gl_cannot_resolve_flipped.GetInt() )
+		//{
+		//	blitTwoStep = true;
+		//}
+		//else if (!gl_can_resolve_flipped.GetInt())
+		//{
+		//	blitTwoStep = blitTwoStep || m_caps.m_cantResolveFlipped;	// if neither convar renders an opinion, fall back to the caps to decide if we have to two-step.
+		//}		
 	}
 
 	// only consider trying to use the scaling resolve filter,
@@ -972,8 +972,8 @@ void GLMContext::Blit2( CGLMTex *srcTex, GLMRect *srcRect, int srcFace, int srcM
 			else
 			{
 				bool	blitScalesDown	= ((srcRect->xmax - srcRect->xmin) > (dstRect->xmax - dstRect->xmin)) || ((srcRect->ymax - srcRect->ymin) > (dstRect->ymax - dstRect->ymin));
-				int		mode			= (blitScalesDown) ? gl_minify_resolve_mode.GetInt() : gl_magnify_resolve_mode.GetInt();
-				
+				//int		mode			= (blitScalesDown) ? gl_minify_resolve_mode.GetInt() : gl_magnify_resolve_mode.GetInt();
+				int		mode			= (blitScalesDown) ? 1 : 2;
 				// roughly speaking, resolve blits that minify represent setup for special effects ("copy framebuffer to me")
 				// resolve blits that magnify are almost always on the final present in the case where remder size < display size
 				
@@ -1235,7 +1235,7 @@ void GLMContext::BlitTex( CGLMTex *srcTex, GLMRect *srcRect, int srcFace, int sr
 	}
 
 	int pushed = 0;
-	unsigned int pushmask = gl_radar7954721_workaround_maskval.GetInt();
+	unsigned int pushmask = 0; //gl_radar7954721_workaround_maskval.GetInt();
 		//GL_COLOR_BUFFER_BIT
 		//| GL_CURRENT_BIT
 		//| GL_ENABLE_BIT
@@ -1247,25 +1247,25 @@ void GLMContext::BlitTex( CGLMTex *srcTex, GLMRect *srcRect, int srcFace, int sr
 		//GL_VIEWPORT_BIT
 		//;
 	
-	if (gl_radar7954721_workaround_all.GetInt()!=0)
-	{
-		gGL->glPushAttrib( pushmask );
-		pushed++;
-	}
-	else
-	{
+	//if (gl_radar7954721_workaround_all.GetInt()!=0)
+	//{
+	//	gGL->glPushAttrib( pushmask );
+	//	pushed++;
+	//}
+	//else
+	//{
 		bool srcGamma = (srcTex->m_layout->m_key.m_texFlags & kGLMTexSRGB) != 0;
 		bool dstGamma = (dstTex->m_layout->m_key.m_texFlags & kGLMTexSRGB) != 0;
 
 		if (srcGamma != dstGamma)
 		{
-			if (gl_radar7954721_workaround_mixed.GetInt())
-			{
-				gGL->glPushAttrib( pushmask );
-				pushed++;
-			}
+			//if (gl_radar7954721_workaround_mixed.GetInt())
+			//{
+			//	gGL->glPushAttrib( pushmask );
+			//	pushed++;
+			//}
 		}
-	}
+	//}
 
 	if (useBlitFB)
 	{
@@ -2096,10 +2096,10 @@ enum ECarbonModKeyMask
   EcontrolKey                    = 1 << EcontrolKeyBit
 };
 
-static	ConVar gl_flushpaircache ("gl_flushpaircache", "0");
-static	ConVar gl_paircachestats ("gl_paircachestats", "0");
-static	ConVar gl_mtglflush_at_tof ("gl_mtglflush_at_tof", "0");
-static	ConVar gl_texlayoutstats ("gl_texlayoutstats", "0" );
+//static	ConVar gl_flushpaircache ("gl_flushpaircache", "0");
+//static	ConVar gl_paircachestats ("gl_paircachestats", "0");
+//static	ConVar gl_mtglflush_at_tof ("gl_mtglflush_at_tof", "0");
+//static	ConVar gl_texlayoutstats ("gl_texlayoutstats", "0" );
 
 void GLMContext::BeginFrame( void )
 {
@@ -2132,34 +2132,34 @@ void GLMContext::BeginFrame( void )
 	BindBufferToCtx( kGLMVertexBuffer, NULL, true );
 	BindBufferToCtx( kGLMIndexBuffer, NULL, true );
 
-	if (gl_flushpaircache.GetInt())
-	{
-		// do the flush and then set back to zero
-		ClearShaderPairCache();
-		
-		printf("\n\n##### shader pair cache cleared\n\n");
-		gl_flushpaircache.SetValue( 0 );
-	}
+	//if (gl_flushpaircache.GetInt())
+	//{
+	//	// do the flush and then set back to zero
+	//	ClearShaderPairCache();
+	//	
+	//	printf("\n\n##### shader pair cache cleared\n\n");
+	//	gl_flushpaircache.SetValue( 0 );
+	//}
 	
-	if (gl_paircachestats.GetInt())
-	{
-		// do the flush and then set back to zero
-		m_pairCache->DumpStats();
-		
-		gl_paircachestats.SetValue( 0 );
-	}
+	//if (gl_paircachestats.GetInt())
+	//{
+	//	// do the flush and then set back to zero
+	//	m_pairCache->DumpStats();
+	//	
+	//	gl_paircachestats.SetValue( 0 );
+	//}
 	
-	if (gl_texlayoutstats.GetInt())
-	{
-		m_texLayoutTable->DumpStats();
-		
-		gl_texlayoutstats.SetValue( 0 );
-	}
+	//if (gl_texlayoutstats.GetInt())
+	//{
+	//	m_texLayoutTable->DumpStats();
+	//	
+	//	gl_texlayoutstats.SetValue( 0 );
+	//}
 	
-	if (gl_mtglflush_at_tof.GetInt())
-	{
-		gGL->glFlush();									// TOF flush - skip this if benchmarking, enable it if human playing (smoothness)
-	}
+	//if (gl_mtglflush_at_tof.GetInt())
+	//{
+	//	gGL->glFlush();									// TOF flush - skip this if benchmarking, enable it if human playing (smoothness)
+	//}
 	
 #if GLMDEBUG
 	// init debug hook information
@@ -2208,14 +2208,14 @@ void GLMContext::DelQuery( CGLMQuery *query )
 	delete query;
 }
 
-static ConVar mat_vsync( "mat_vsync", "0", 0, "Force sync to vertical retrace", true, 0.0, true, 1.0 );
+//static ConVar mat_vsync( "mat_vsync", "0", 0, "Force sync to vertical retrace", true, 0.0, true, 1.0 );
 
 //===============================================================================
 
-ConVar glm_nullrefresh_capslock( "glm_nullrefresh_capslock", "0" );
-ConVar glm_literefresh_capslock( "glm_literefresh_capslock", "0" );
+//ConVar glm_nullrefresh_capslock( "glm_nullrefresh_capslock", "0" );
+//ConVar glm_literefresh_capslock( "glm_literefresh_capslock", "0" );
 
-extern ConVar gl_blitmode;
+//extern ConVar gl_blitmode;
 
 void GLMContext::Present( CGLMTex *tex )
 {
@@ -2244,10 +2244,10 @@ void GLMContext::Present( CGLMTex *tex )
 		// old school, do the resolve, had the tex down to cocoamgr to actually blit.
 		// that way is required if you are not in one-context mode (10.5.8)
 	
-		if ( (gl_blitmode.GetInt() != 0) )
-		{
-			newRefreshMode = true;
-		}
+		//if ( (gl_blitmode.GetInt() != 0) )
+		//{
+		//	newRefreshMode = true;
+		//}
 	
 		// this is the path whether full screen or windowed... we always blit.
 		CShowPixelsParams showparams;
@@ -2256,7 +2256,7 @@ void GLMContext::Present( CGLMTex *tex )
 		showparams.m_srcTexName	= tex->m_texName;
 		showparams.m_width		= tex->m_layout->m_key.m_xSize;
 		showparams.m_height		= tex->m_layout->m_key.m_ySize;
-		showparams.m_vsyncEnable = m_displayParams.m_vsyncEnable = mat_vsync.GetBool();
+		showparams.m_vsyncEnable = false; //m_displayParams.m_vsyncEnable = mat_vsync.GetBool();
 		showparams.m_fsEnable	= m_displayParams.m_fsEnable;
 		showparams.m_useBlit	= m_caps.m_hasFramebufferBlit;
 
@@ -2266,22 +2266,9 @@ void GLMContext::Present( CGLMTex *tex )
 		showparams.m_onlySyncView = false;
 	
 		bool refresh = true;
-	#ifdef OSX
-		if ( (glm_nullrefresh_capslock.GetInt()) && (GetCurrentKeyModifiers() & EalphaLock) )
-		{
-			refresh = false;
-		}
-	#endif	
+
 		static int counter;
 		counter ++;
-
-	#ifdef OSX
-		if ( (glm_literefresh_capslock.GetInt()) && (GetCurrentKeyModifiers() & EalphaLock) && (counter & 127) )
-		{
-			// just show every 128th frame
-			refresh = false;
-		}
-	#endif
 
 		if (refresh)
 		{
@@ -2375,7 +2362,7 @@ bool GLMContext::SetDisplayParams( GLMDisplayParams *params )
 }
 
 
-ConVar gl_can_query_fast("gl_can_query_fast", "0");
+//ConVar gl_can_query_fast("gl_can_query_fast", "0");
 
 GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 {
@@ -2394,10 +2381,10 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	// really use them in this codebase anyhow, except to preload textures.
 	m_bUseSamplerObjects = false;
 
-	if ( CommandLine()->CheckParm( "-gl_enablesamplerobjects" ) )
-	{
-		m_bUseSamplerObjects = true;
-	}
+	//if ( CommandLine()->CheckParm( "-gl_enablesamplerobjects" ) )
+	//{
+	//	m_bUseSamplerObjects = true;
+	//}
 	
 	char buf[256];
 	V_snprintf( buf, sizeof( buf ), "GL sampler object usage: %s\n", m_bUseSamplerObjects ? "ENABLED" : "DISABLED" );
@@ -2406,7 +2393,7 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	m_nCurOwnerThreadId = ThreadGetCurrentId();
 	m_nThreadOwnershipReleaseCounter = 0;
 
-	m_pDevice = pDevice;
+	m_pDevice = (COpenGLDevice9*)pDevice;
 	m_nCurFrame = 0;
 	m_nBatchCounter = 0;
 
@@ -2424,10 +2411,10 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	}
 
 	m_bUseBoneUniformBuffers = true;
-	if (CommandLine()->CheckParm("-disableboneuniformbuffers"))
-	{
-		m_bUseBoneUniformBuffers = false;
-	}
+	//if (CommandLine()->CheckParm("-disableboneuniformbuffers"))
+	//{
+	//	m_bUseBoneUniformBuffers = false;
+	//}
 
 	m_nMaxUsedVertexProgramConstantsHint = 256;
 
@@ -2435,23 +2422,23 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	m_displayParamsValid = false;
 
 	// peek at any CLI options
-	m_slowAssertEnable = CommandLine()->FindParm("-glmassertslow") != 0;
-	m_slowSpewEnable = CommandLine()->FindParm("-glmspewslow") != 0;
-	m_checkglErrorsAfterEveryBatch = CommandLine()->FindParm("-glcheckerrors") != 0;
+	//m_slowAssertEnable = CommandLine()->FindParm("-glmassertslow") != 0;
+	//m_slowSpewEnable = CommandLine()->FindParm("-glmspewslow") != 0;
+	//m_checkglErrorsAfterEveryBatch = CommandLine()->FindParm("-glcheckerrors") != 0;
 	m_slowCheckEnable = m_slowAssertEnable || m_slowSpewEnable || m_checkglErrorsAfterEveryBatch;
 
 	m_drawingLangAtFrameStart = m_drawingLang = kGLMGLSL;		// default to GLSL
 	
 	// this affects FlushDrawStates which will route program bindings, uniform delivery, sampler setup, and enables accordingly.
 
-	if ( CommandLine()->FindParm("-glslmode") )
-	{
-		m_drawingLangAtFrameStart = m_drawingLang = kGLMGLSL;
-	}
-	if ( CommandLine()->FindParm("-arbmode") && !CommandLine()->FindParm("-glslcontrolflow") )
-	{
-		m_drawingLangAtFrameStart = m_drawingLang = kGLMARB;
-	}
+	//if ( CommandLine()->FindParm("-glslmode") )
+	//{
+	//	m_drawingLangAtFrameStart = m_drawingLang = kGLMGLSL;
+	//}
+	//if ( CommandLine()->FindParm("-arbmode") && !CommandLine()->FindParm("-glslcontrolflow") )
+	//{
+	//	m_drawingLangAtFrameStart = m_drawingLang = kGLMARB;
+	//}
 
 	// proceed with rest of init
 	
@@ -2468,16 +2455,11 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	GetDesiredPixelFormatAttribsAndRendererInfo( (unsigned int**)&selAttribs, &selWords, &m_caps );
 	unsigned int selBytes = selWords * sizeof( unsigned int ); selBytes;
 
-#if defined( USE_SDL )
-	m_ctx = (SDL_GLContext)GetGLContextForWindow( params ? (void*)params->m_focusWindow : NULL );
-	MakeCurrent( true );
-#else
-#error
-#endif
 	IncrementWindowRefCount();
 
 	// If we're using GL_ARB_debug_output, go ahead and setup the callback here.
-	if ( gGL->m_bHave_GL_ARB_debug_output && CommandLine()->FindParm( "-gl_debug" ) ) 
+	//if ( gGL->m_bHave_GL_ARB_debug_output && CommandLine()->FindParm( "-gl_debug" ) ) 
+	if (gGL->m_bHave_GL_ARB_debug_output) 
 	{
 #if GLMDEBUG
 		// Turning this on is a perf loss, but it ensures that you can (at least) swap to the other 
@@ -2506,10 +2488,10 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	}
 
 
-	if (CommandLine()->FindParm("-glmspewcaps"))
-	{
-		DumpCaps();
-	}
+	//if (CommandLine()->FindParm("-glmspewcaps"))
+	//{
+	//	DumpCaps();
+	//}
 	
 	SetDisplayParams( params );
 
@@ -2566,15 +2548,15 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 
 	m_paramWriteMode = eParamWriteDirtySlotRange;	// default to fastest mode
 	
-	if (CommandLine()->FindParm("-glmwriteallslots"))				m_paramWriteMode = eParamWriteAllSlots;
-	if (CommandLine()->FindParm("-glmwriteshaderslots"))			m_paramWriteMode = eParamWriteShaderSlots;
-	if (CommandLine()->FindParm("-glmwriteshaderslotsoptional"))	m_paramWriteMode = eParamWriteShaderSlotsOptional;
-	if (CommandLine()->FindParm("-glmwritedirtyslotrange"))			m_paramWriteMode = eParamWriteDirtySlotRange;
+	//if (CommandLine()->FindParm("-glmwriteallslots"))				m_paramWriteMode = eParamWriteAllSlots;
+	//if (CommandLine()->FindParm("-glmwriteshaderslots"))			m_paramWriteMode = eParamWriteShaderSlots;
+	//if (CommandLine()->FindParm("-glmwriteshaderslotsoptional"))	m_paramWriteMode = eParamWriteShaderSlotsOptional;
+	//if (CommandLine()->FindParm("-glmwritedirtyslotrange"))			m_paramWriteMode = eParamWriteDirtySlotRange;
 	
 	m_attribWriteMode = eAttribWriteDirty;
 
-	if (CommandLine()->FindParm("-glmwriteallattribs"))				m_attribWriteMode = eAttribWriteAll;
-	if (CommandLine()->FindParm("-glmwritedirtyattribs"))			m_attribWriteMode = eAttribWriteDirty;	
+	//if (CommandLine()->FindParm("-glmwriteallattribs"))				m_attribWriteMode = eAttribWriteAll;
+	//if (CommandLine()->FindParm("-glmwritedirtyattribs"))			m_attribWriteMode = eAttribWriteDirty;	
 
 	m_pairCache	= new CGLMShaderPairCache( this );
 	m_pBoundPair = NULL;
@@ -2710,7 +2692,7 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 
 #endif
 	// also, set the remote convar "gl_can_query_fast" to 1 if perf package present, else 0.
-	gl_can_query_fast.SetValue( m_caps.m_hasPerfPackage1?1:0 );
+	//gl_can_query_fast.SetValue( m_caps.m_hasPerfPackage1?1:0 );
 
 #if GL_BATCH_PERF_ANALYSIS		
 	m_nTotalVSUniformCalls = 0;
@@ -2762,11 +2744,16 @@ GLMContext::~GLMContext	()
 	}
 	
 	// walk m_fboTable and free them up..
-	FOR_EACH_VEC( m_fboTable, i )
+	//FOR_EACH_VEC( m_fboTable, i )
+	//{
+	//	CGLMFBO *fbo = m_fboTable[i];
+	//	DelFBO( fbo );
+	//}
+	BOOST_FOREACH(CGLMFBO* fbo,m_fboTable)
 	{
-		CGLMFBO *fbo = m_fboTable[i];
 		DelFBO( fbo );
 	}
+
 	m_fboTable.SetSize( 0 );
 
 	if (m_pairCache)

@@ -36,7 +36,7 @@
 #include "d3d9.h" // Base class: IDirect3DVertexShader9
 #include "COpenGLResource9.h"
 
-class COpenGLVertexShader9 : public IDirect3DVertexShader9
+class COpenGLVertexShader9 : public IDirect3DVertexShader9,COpenGLResource9
 {
 public:
 	COpenGLVertexShader9();
@@ -61,6 +61,7 @@ public:
 	virtual ULONG STDMETHODCALLTYPE Release(void);
 
 	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice){(*ppDevice)=(IDirect3DDevice9*)m_device; return S_OK;}
 	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
 	virtual DWORD STDMETHODCALLTYPE GetPriority();
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
@@ -70,7 +71,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
 
 	//IDirect3DVertexShader9
-	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
+	//virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice);
 	virtual HRESULT STDMETHODCALLTYPE GetFunction(void* pData, UINT* pSizeOfData);
 
 	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );

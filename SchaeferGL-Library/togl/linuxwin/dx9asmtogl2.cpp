@@ -35,10 +35,10 @@
 //#include "tier1/utlbuffer.h"
 #include "dx9asmtogl2.h"
 
-#include "materialsystem/ishader.h"
+//#include "materialsystem/ishader.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
-#include "tier0/memdbgon.h"
+//#include "tier0/memdbgon.h"
 
 #ifdef POSIX
 #define strcat_s( a, b, c) V_strcat( a, c, b )
@@ -268,7 +268,8 @@ bool DoParamNamesMatch( const char *pParam1, const char *pParam2 )
 	char szTemp[2][256];
 	GetParamNameWithoutSwizzle( pParam1, szTemp[0], sizeof( szTemp[0] ) );
 	GetParamNameWithoutSwizzle( pParam2, szTemp[1], sizeof( szTemp[1] ) );
-	return ( V_stricmp( szTemp[0], szTemp[1] ) == 0 );
+	//return ( V_stricmp( szTemp[0], szTemp[1] ) == 0 );
+	return (strcmp( szTemp[0], szTemp[1] ) == 0 );
 }
 
 
@@ -392,29 +393,29 @@ D3DToGL::D3DToGL()
 {
 }
 
-uint32 D3DToGL::GetNextToken( void )
+unsigned __int32 D3DToGL::GetNextToken( void )
 {
-	uint32 dwToken = *m_pdwNextToken;
+	unsigned __int32 dwToken = *m_pdwNextToken;
 	m_pdwNextToken++;
 	return dwToken;
 }
 
-void D3DToGL::SkipTokens( unsigned int32 numToSkip )
+void D3DToGL::SkipTokens( unsigned __int32 numToSkip )
 {
 	m_pdwNextToken += numToSkip;
 }
 
-uint32 D3DToGL::Opcode( unsigned int32 dwToken )
+unsigned __int32 D3DToGL::Opcode( unsigned __int32 dwToken )
 {
 	return ( dwToken & D3DSI_OPCODE_MASK );
 }
 
-uint32 D3DToGL::OpcodeSpecificData (uint32 dwToken)
+unsigned __int32 D3DToGL::OpcodeSpecificData (unsigned __int32 dwToken)
 {
 	return ( ( dwToken & D3DSP_OPCODESPECIFICCONTROL_MASK ) >> D3DSP_OPCODESPECIFICCONTROL_SHIFT );
 }
 
-uint32 D3DToGL::TextureType ( unsigned int32 dwToken )
+unsigned __int32 D3DToGL::TextureType ( unsigned __int32 dwToken )
 {
 	return ( dwToken & D3DSP_TEXTURETYPE_MASK ); // Note this one doesn't shift due to weird D3DSAMPLER_TEXTURE_TYPE enum
 }
@@ -422,7 +423,7 @@ uint32 D3DToGL::TextureType ( unsigned int32 dwToken )
 
 
 // Print GLSL intrinsic corresponding to particular instruction
-bool D3DToGL::OpenIntrinsic( unsigned int32 inst, char* buff, int nBufLen, unsigned int32 destDimension, unsigned int32 nArgumentDimension )
+bool D3DToGL::OpenIntrinsic( unsigned __int32 inst, char* buff, int nBufLen, unsigned __int32 destDimension, unsigned __int32 nArgumentDimension )
 {
 	// Some GLSL intrinsics need type conversion, which we do in this routine
 	// As a result, the caller must sometimes close both parentheses, not just one
@@ -633,7 +634,7 @@ bool D3DToGL::OpenIntrinsic( unsigned int32 inst, char* buff, int nBufLen, unsig
 }
 
 
-const char* D3DToGL::GetGLSLOperatorString( unsigned int32 inst )
+const char* D3DToGL::GetGLSLOperatorString( unsigned __int32 inst )
 {
 	if ( inst == D3DSIO_ADD )
 		return "+";
@@ -648,7 +649,7 @@ const char* D3DToGL::GetGLSLOperatorString( unsigned int32 inst )
 
 
 // Print ASM opcode
-void D3DToGL::PrintOpcode( unsigned int32 inst, char* buff, int nBufLen )
+void D3DToGL::PrintOpcode( unsigned __int32 inst, char* buff, int nBufLen )
 {
 	switch ( inst )
 	{
@@ -844,7 +845,7 @@ void D3DToGL::PrintOpcode( unsigned int32 inst, char* buff, int nBufLen )
 	}
 }
 
-CUtlString D3DToGL::GetUsageAndIndexString( unsigned int32 dwToken, int fSemanticFlags )
+CUtlString D3DToGL::GetUsageAndIndexString( unsigned __int32 dwToken, int fSemanticFlags )
 {
 	char szTemp[1024];
 	PrintUsageAndIndexToString( dwToken, szTemp, sizeof( szTemp ), fSemanticFlags );
@@ -857,10 +858,10 @@ CUtlString D3DToGL::GetUsageAndIndexString( unsigned int32 dwToken, int fSemanti
 // Strictly used by vertex shaders
 // not used any more now that we have attribmap metadata
 //------------------------------------------------------------------------------
-void D3DToGL::PrintUsageAndIndexToString( unsigned int32 dwToken, char* strUsageUsageIndexName, int nBufLen, int fSemanticFlags )
+void D3DToGL::PrintUsageAndIndexToString( unsigned __int32 dwToken, char* strUsageUsageIndexName, int nBufLen, int fSemanticFlags )
 {
-	uint32 dwUsage = ( dwToken & D3DSP_DCL_USAGE_MASK );
-	uint32 dwUsageIndex = ( dwToken & D3DSP_DCL_USAGEINDEX_MASK ) >> D3DSP_DCL_USAGEINDEX_SHIFT;
+	unsigned __int32 dwUsage = ( dwToken & D3DSP_DCL_USAGE_MASK );
+	unsigned __int32 dwUsageIndex = ( dwToken & D3DSP_DCL_USAGEINDEX_MASK ) >> D3DSP_DCL_USAGEINDEX_SHIFT;
 
 	switch ( dwUsage )
 	{
@@ -939,7 +940,7 @@ void D3DToGL::PrintUsageAndIndexToString( unsigned int32 dwToken, char* strUsage
 	}
 }
 
-uint32 D3DToGL::GetRegType( unsigned int32 dwRegToken )
+unsigned __int32 D3DToGL::GetRegType( unsigned __int32 dwRegToken )
 {
 	return ( ( dwRegToken & D3DSP_REGTYPE_MASK2 ) >> D3DSP_REGTYPE_SHIFT2 ) | ( ( dwRegToken & D3DSP_REGTYPE_MASK ) >> D3DSP_REGTYPE_SHIFT );
 }
@@ -952,7 +953,7 @@ void D3DToGL::PrintIndentation( char *pBuf, int nBufLen )
 	}
 }
 
-CUtlString D3DToGL::GetParameterString( unsigned int32 dwToken, unsigned int32 dwSourceOrDest, bool bForceScalarSource, int *pARLDestReg )
+CUtlString D3DToGL::GetParameterString( unsigned __int32 dwToken, unsigned __int32 dwSourceOrDest, bool bForceScalarSource, int *pARLDestReg )
 {
 	char szTemp[1024];
 	PrintParameterToString( dwToken, dwSourceOrDest, szTemp, sizeof( szTemp ), bForceScalarSource, pARLDestReg );
@@ -1061,12 +1062,12 @@ CUtlString D3DToGL::FixGLSLSwizzle( const char *pDestRegisterName, const char *p
 }
 
 // Weird encoding...bits are split apart in the dwToken
-inline unsigned int32 GetRegTypeFromToken( unsigned int32 dwToken )
+inline unsigned __int32 GetRegTypeFromToken( unsigned int32 dwToken )
 {
 	return ( ( dwToken & D3DSP_REGTYPE_MASK2 ) >> D3DSP_REGTYPE_SHIFT2 ) | ( ( dwToken & D3DSP_REGTYPE_MASK ) >> D3DSP_REGTYPE_SHIFT );
 }
 
-void D3DToGL::FlagIndirectRegister( unsigned int32 dwToken, int *pARLDestReg )
+void D3DToGL::FlagIndirectRegister( unsigned __int32 dwToken, int *pARLDestReg )
 {
 	if ( !pARLDestReg )
 		return;
@@ -1096,16 +1097,16 @@ void D3DToGL::FlagIndirectRegister( unsigned int32 dwToken, int *pARLDestReg )
 // to string. Token defines parameter details. The dwSourceOrDest parameter says 
 // whether or not this is a source or destination register
 //------------------------------------------------------------------------------
-void D3DToGL::PrintParameterToString ( unsigned int32 dwToken, unsigned int32 dwSourceOrDest, char *pRegisterName, int nBufLen, bool bForceScalarSource, int *pARLDestReg )
+void D3DToGL::PrintParameterToString ( unsigned __int32 dwToken, unsigned __int32 dwSourceOrDest, char *pRegisterName, int nBufLen, bool bForceScalarSource, int *pARLDestReg )
 {
 	char buff[32];
 	bool bAllowWriteMask = true;
 	bool bAllowSwizzle = true;
 
-	uint32 dwRegNum = dwToken & D3DSP_REGNUM_MASK;
+	unsigned __int32 dwRegNum = dwToken & D3DSP_REGNUM_MASK;
 
-	uint32 dwRegType, dwSwizzle;
-	uint32 dwSrcModifier = D3DSPSM_NONE;
+	unsigned __int32 dwRegType, dwSwizzle;
+	unsigned __int32 dwSrcModifier = D3DSPSM_NONE;
 
 	// Clear string to zero length
 	V_snprintf( pRegisterName, nBufLen, "" );
@@ -1377,7 +1378,7 @@ void D3DToGL::PrintParameterToString ( unsigned int32 dwToken, unsigned int32 dw
 		case D3DSPR_TEXCRDOUT: // aliases to D3DSPR_OUTPUT
 			if ( m_bVertexShader )
 			{
-				if ( m_nVSPositionOutput == (int32) dwRegNum )
+				if ( m_nVSPositionOutput == (__int32) dwRegNum )
 				{
 					V_snprintf( buff, sizeof( buff ), "vTempPos" ); // This output varying is the position
 				}
@@ -1505,7 +1506,7 @@ void D3DToGL::PrintParameterToString ( unsigned int32 dwToken, unsigned int32 dw
 	{
 		if ( bAllowSwizzle ) // relative addressing hard-codes the swizzle on a0.x
 		{
-			uint32 dwXSwizzle, dwYSwizzle, dwZSwizzle, dwWSwizzle;
+			unsigned __int32 dwXSwizzle, dwYSwizzle, dwZSwizzle, dwWSwizzle;
 
 			// Mask out the swizzle modifier
 			dwSwizzle = dwToken & D3DVS_SWIZZLE_MASK;
@@ -1708,18 +1709,18 @@ void D3DToGL::AddTokenHexCode()
 	}
 }
 
-uint32 D3DToGL::MaintainAttributeMap( unsigned int32 dwToken, unsigned int32 dwRegToken )
+unsigned __int32 D3DToGL::MaintainAttributeMap( unsigned __int32 dwToken, unsigned __int32 dwRegToken )
 {
 	// Check that this reg index has not been used before - if it has, let Houston know
-	uint dwRegIndex = dwRegToken & D3DSP_REGNUM_MASK;
+	unsigned __int32 dwRegIndex = dwRegToken & D3DSP_REGNUM_MASK;
 	if ( m_dwAttribMap[ dwRegIndex ] == 0xFFFFFFFF )
 	{
 		// log it
 		// semantic/usage in the higher nibble
 		// usage index in the low nibble
 
-		uint usage		= dwToken & D3DSP_DCL_USAGE_MASK;
-		uint usageindex	= ( dwToken & D3DSP_DCL_USAGEINDEX_MASK ) >> D3DSP_DCL_USAGEINDEX_SHIFT;
+		unsigned __int32 usage		= dwToken & D3DSP_DCL_USAGE_MASK;
+		unsigned __int32 usageindex	= ( dwToken & D3DSP_DCL_USAGEINDEX_MASK ) >> D3DSP_DCL_USAGEINDEX_SHIFT;
 
 		m_dwAttribMap[ dwRegIndex ] = ( usage << 4 ) | usageindex;
 
@@ -1740,14 +1741,14 @@ uint32 D3DToGL::MaintainAttributeMap( unsigned int32 dwToken, unsigned int32 dwR
 
 void D3DToGL::Handle_DCL()
 {
-	uint32 dwToken = GetNextToken();		// What kind of dcl is this...
-	uint32 dwRegToken = GetNextToken();		// Look ahead to register token
+	unsigned __int32 dwToken = GetNextToken();		// What kind of dcl is this...
+	unsigned __int32 dwRegToken = GetNextToken();		// Look ahead to register token
 
-	uint32 dwUsage = ( dwToken & D3DSP_DCL_USAGE_MASK );
-	uint32 dwUsageIndex = ( dwToken & D3DSP_DCL_USAGEINDEX_MASK ) >> D3DSP_DCL_USAGEINDEX_SHIFT;
+	unsigned __int32 dwUsage = ( dwToken & D3DSP_DCL_USAGE_MASK );
+	unsigned __int32 dwUsageIndex = ( dwToken & D3DSP_DCL_USAGEINDEX_MASK ) >> D3DSP_DCL_USAGEINDEX_SHIFT;
 		
-	uint32 dwRegNum = dwRegToken & D3DSP_REGNUM_MASK;
-	uint32 nRegType = GetRegTypeFromToken( dwRegToken );
+	unsigned __int32 dwRegNum = dwRegToken & D3DSP_REGNUM_MASK;
+	unsigned __int32 nRegType = GetRegTypeFromToken( dwRegToken );
 
 	if ( m_bVertexShader )
 	{
@@ -1894,7 +1895,7 @@ void D3DToGL::Handle_DCL()
 
 static bool IsFloatNaN( float f )
 {
-	const unsigned int nBits = *reinterpret_cast<uint*>(&f);
+	const unsigned int nBits = *reinterpret_cast<unsigned int*>(&f);
 	const unsigned int nExponent = ( nBits >> 23 ) & 0xFF;
 
 	return ( nExponent == 255 );
@@ -2059,7 +2060,7 @@ static unsigned int PrintDoubleInt( char *pBuf, unsigned int nBufSize, double f,
 	// Adjust for the exponent bias.
 	int exponentValue = int(num.RawExponent() - 1023);
 	// Add the implied one to the mantissa.
-	uint64_t mantissaValue = (1ll << 52) + num.RawMantissa();
+	unsigned __int64 mantissaValue = (1ll << 52) + num.RawMantissa();
 	// Special-case for denormals - no special exponent value and
 	// no implied one.
 	if (num.RawExponent() == 0)
@@ -2067,8 +2068,8 @@ static unsigned int PrintDoubleInt( char *pBuf, unsigned int nBufSize, double f,
 		exponentValue = -1022;
 		mantissaValue = num.RawMantissa();
 	}
-	uint32_t mantissaHigh = mantissaValue >> 32;
-	uint32_t mantissaLow = mantissaValue & 0xFFFFFFFF;
+	unsigned __int32 mantissaHigh = mantissaValue >> 32;
+	unsigned __int32 mantissaLow = mantissaValue & 0xFFFFFFFF;
 
 	// The first bit of the mantissa has an implied value of one and this can
 	// be shifted 1023 positions to the left, so that's 1024 bits to the left
@@ -2085,30 +2086,30 @@ static unsigned int PrintDoubleInt( char *pBuf, unsigned int nBufSize, double f,
 	bool bAnyDigitsLeft;
 	do
 	{
-		uint remainder = intPart.DivReturnRemainder( 1000000 ); // 10^6
-		uint origRemainer = remainder; (void)origRemainer;
+		unsigned int remainder = intPart.DivReturnRemainder( 1000000 ); // 10^6
+		unsigned int origRemainer = remainder; (void)origRemainer;
 
 		bAnyDigitsLeft = !intPart.IsZero();
 
 		if ( bAnyDigitsLeft )
 		{
-			uint n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const unsigned int16*>(pDigits)[n]; 
-			n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1 - 2) = reinterpret_cast<const unsigned int16*>(pDigits)[n]; 
+			unsigned int n = remainder % 100U; remainder /= 100U; *reinterpret_cast<unsigned __int16*>(pDst - 1) = reinterpret_cast<const unsigned __int16*>(pDigits)[n]; 
+			n = remainder % 100U; remainder /= 100U; *reinterpret_cast<unsigned __int16*>(pDst - 1 - 2) = reinterpret_cast<const unsigned __int16*>(pDigits)[n]; 
 			Assert( remainder < 100U );
-			*reinterpret_cast<uint16*>(pDst - 1 - 4) = reinterpret_cast<const unsigned int16*>(pDigits)[remainder]; 
+			*reinterpret_cast<unsigned __int16*>(pDst - 1 - 4) = reinterpret_cast<const unsigned __int16*>(pDigits)[remainder]; 
 			pDst -= 6;
 		}
 		else
 		{
-			uint n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const unsigned int16*>(pDigits)[n]; --pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
+			unsigned int n = remainder % 100U; remainder /= 100U; *reinterpret_cast<unsigned __int16*>(pDst - 1) = reinterpret_cast<const unsigned __int16*>(pDigits)[n]; --pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
 			if ( remainder )
 			{
-				n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const unsigned int16*>(pDigits)[n]; --pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
+				n = remainder % 100U; remainder /= 100U; *reinterpret_cast<unsigned __int16*>(pDst - 1) = reinterpret_cast<const unsigned __int16*>(pDigits)[n]; --pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
 
 				if ( remainder )
 				{
 					Assert( remainder < 100U );
-					*reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const unsigned int16*>(pDigits)[remainder]; --pDst; if ( remainder >= 10 ) --pDst;
+					*reinterpret_cast<unsigned __int16*>(pDst - 1) = reinterpret_cast<const unsigned __int16*>(pDigits)[remainder]; --pDst; if ( remainder >= 10 ) --pDst;
 				}
 			}
 		}

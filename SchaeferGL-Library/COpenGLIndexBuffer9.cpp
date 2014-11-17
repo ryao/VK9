@@ -67,17 +67,17 @@ COpenGLIndexBuffer9::~COpenGLIndexBuffer9()
 
 ULONG STDMETHODCALLTYPE COpenGLIndexBuffer9::AddRef(void)
 {
-	this->AddRef(0);
+	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE COpenGLIndexBuffer9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE COpenGLIndexBuffer9::Release(void)
 {
-	this->Release(0);
+	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE COpenGLIndexBuffer9::AddRef(int which, char *comment)
@@ -176,7 +176,7 @@ HRESULT STDMETHODCALLTYPE COpenGLIndexBuffer9::SetPrivateData(REFGUID refguid, c
 }
 
 
-void STDMETHODCALLTYPE COpenGLIndexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL )
+void STDMETHODCALLTYPE COpenGLIndexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData)
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( m_device );

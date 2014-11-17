@@ -37,7 +37,7 @@
 #include "COpenGLBaseTexture9.h"
 #include "COpenGLSurface9.h"
 
-class COpenGLTexture9 : public IDirect3DTexture9
+class COpenGLTexture9 : public IDirect3DTexture9,COpenGLBaseTexture9
 {
 public:
 	COpenGLTexture9();
@@ -61,6 +61,7 @@ public:
 	virtual ULONG STDMETHODCALLTYPE Release(void);
 
 	//IDirect3DResource9
+	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice){(*ppDevice)=(IDirect3DDevice9*)m_device; return S_OK;}
 	virtual HRESULT STDMETHODCALLTYPE FreePrivateData(REFGUID refguid);
 	virtual DWORD STDMETHODCALLTYPE GetPriority();
 	virtual HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData);
@@ -76,9 +77,8 @@ public:
 	virtual DWORD STDMETHODCALLTYPE GetLevelCount();
 	virtual HRESULT STDMETHODCALLTYPE SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType);
 	virtual DWORD STDMETHODCALLTYPE SetLOD(DWORD LODNew);
-	
-	
-	virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType();
+		
+	//virtual D3DRESOURCETYPE STDMETHODCALLTYPE GetType(); in IDirect3DResource9
 
 	//IDirect3DTexture9
 	virtual HRESULT STDMETHODCALLTYPE AddDirtyRect(const RECT* pDirtyRect);
