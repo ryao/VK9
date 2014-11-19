@@ -305,7 +305,7 @@ void WriteParamWithSingleMaskEntry( const char *pParam, int n, char *pOut, int n
 }
 
 
-float unsigned int32ToFloat( unsigned int32 dw )
+float unsigned int32ToFloat( unsigned __int32 dw )
 {
 	return *((float*)&dw);
 }
@@ -1062,7 +1062,7 @@ CUtlString D3DToGL::FixGLSLSwizzle( const char *pDestRegisterName, const char *p
 }
 
 // Weird encoding...bits are split apart in the dwToken
-inline unsigned __int32 GetRegTypeFromToken( unsigned int32 dwToken )
+inline unsigned __int32 GetRegTypeFromToken( unsigned __int32 dwToken )
 {
 	return ( ( dwToken & D3DSP_REGTYPE_MASK2 ) >> D3DSP_REGTYPE_SHIFT2 ) | ( ( dwToken & D3DSP_REGTYPE_MASK ) >> D3DSP_REGTYPE_SHIFT );
 }
@@ -1781,7 +1781,7 @@ void D3DToGL::Handle_DCL()
 			if ( m_bAddHexCodeComments )
 			{
 				CUtlString sParam2 = GetUsageAndIndexString( dwToken, SEMANTIC_OUTPUT );
-				PrintToBuf( *m_pBufHeaderCode, "// [GL remembering that oT%d maps to %s]\n", dwRegNum, sParam2.String() );
+				PrintToBuf( *m_pBufHeaderCode, "// [GL remembering that oT%d maps to %s]\n", dwRegNum, sParam2.c_str() );
 			}
 
 		}
@@ -1816,8 +1816,8 @@ void D3DToGL::Handle_DCL()
 			CUtlString sParam1 = GetParameterString( dwRegToken, DST_REGISTER, false, NULL );
 			CUtlString sParam2 = GetUsageAndIndexString( dwToken, SEMANTIC_INPUT );
 
-			sParam2 = FixGLSLSwizzle( sParam1, sParam2 );
-			PrintToBuf( *m_pBufHeaderCode, "attribute vec4 %s; // ", sParam1.String() );
+			sParam2 = FixGLSLSwizzle( sParam1.c_str(), sParam2.c_str() );
+			PrintToBuf( *m_pBufHeaderCode, "attribute vec4 %s; // ", sParam1.c_str() );
 
 			MaintainAttributeMap( dwToken, dwRegToken );
 
@@ -1830,7 +1830,7 @@ void D3DToGL::Handle_DCL()
 	else // Pixel shader
 	{
 		// If the register is a sampler, the dcl has a dimension decorator that we have to save for subsequent TEX instructions
-		uint32 nRegType = GetRegType( dwRegToken );
+		unsigned __int32 nRegType = GetRegType( dwRegToken );
 		if ( nRegType == D3DSPR_SAMPLER )
 		{
 			int nRegNum = dwRegToken & D3DSP_REGNUM_MASK;
@@ -2022,7 +2022,7 @@ struct HighPrec
 	// make up the number. The most-significant digit is in m_data[0].
 	T m_data[count];
 	
-	uint m_nLowestNonZeroIndex;
+	unsigned int m_nLowestNonZeroIndex;
 };
 
 union Double_t
@@ -2030,8 +2030,8 @@ union Double_t
 	Double_t(double num = 0.0f) : f(num) {}
 	// Portable extraction of components.
 	bool Negative() const { return (i >> 63) != 0; }
-	int64_t RawMantissa() const { return i & ((1LL << 52) - 1); }
-	int64_t RawExponent() const { return (i >> 52) & 0x7FF; }
+	__int64 RawMantissa() const { return i & ((1LL << 52) - 1); }
+	__int64 RawExponent() const { return (i >> 52) & 0x7FF; }
 
 	int64_t i;
 	double f;
@@ -2116,7 +2116,7 @@ static unsigned int PrintDoubleInt( char *pBuf, unsigned int nBufSize, double f,
 
 	} while ( bAnyDigitsLeft );
 
-	uint l = pLastChar - pDst;
+	unsigned int l = pLastChar - pDst;
 	
 	while ( ( l - 1 ) < nMinChars )
 	{
@@ -2163,7 +2163,7 @@ static void FloatToString( char *pBuf, unsigned int nBufSize, double fConst )
 	}
 	else
 	{
-		uint l = PrintDoubleInt( pDst, pEnd - pDst, flInt, 0 );
+		unsigned int l = PrintDoubleInt( pDst, pEnd - pDst, flInt, 0 );
 		pDst += l;
 	}
 
@@ -2175,7 +2175,7 @@ static void FloatToString( char *pBuf, unsigned int nBufSize, double fConst )
 	}
 	else
 	{
-		uint l = PrintDoubleInt( pDst, pEnd - pDst, flFract, 12 );
+		unsigned int l = PrintDoubleInt( pDst, pEnd - pDst, flFract, 12 );
 		pDst += l;
 					
 		StripExtraTrailingZeros( pBuf );	// Turn 1.00000 into 1.0
@@ -2236,26 +2236,26 @@ static void TestFloatConversion()
 }
 #endif
 
-void D3DToGL::Handle_DEFIB( unsigned int32 instruction )
+void D3DToGL::Handle_DEFIB( unsigned __int32 instruction )
 {
 	Assert( ( instruction == D3DSIO_DEFI ) || ( instruction == D3DSIO_DEFB ) );
 
 	// which register is being defined
-	uint32 dwToken = GetNextToken();
+	unsigned __int32 dwToken = GetNextToken();
 
-	uint32 nRegNum = dwToken & D3DSP_REGNUM_MASK;
+	unsigned __int32 nRegNum = dwToken & D3DSP_REGNUM_MASK;
 
-	uint32 regType = GetRegTypeFromToken( dwToken );
+	unsigned __int32 regType = GetRegTypeFromToken( dwToken );
 
 
 	if ( regType == D3DSPR_CONSTINT )
 	{
 		m_dwDefConstIntUsageMask |= ( 1 << nRegNum );
 
-		uint x = GetNextToken();
-		uint y = GetNextToken();
-		uint z = GetNextToken();
-		uint w = GetNextToken();
+		unsigned int x = GetNextToken();
+		unsigned int y = GetNextToken();
+		unsigned int z = GetNextToken();
+		unsigned int w = GetNextToken();
 		NOTE_UNUSED(y); NOTE_UNUSED(z);	NOTE_UNUSED(w);
 
 		Assert( nRegNum < 32 );
@@ -2280,14 +2280,14 @@ void D3DToGL::Handle_DEF()
 	//
 
 	// Which register is being defined
-	uint32 dwToken = GetNextToken();
+	unsigned __int32 dwToken = GetNextToken();
 
 	// Note that this constant was explicitly defined
 	m_bConstantRegisterDefined[dwToken & D3DSP_REGNUM_MASK] = true;
 	CUtlString sParamName = GetParameterString( dwToken, DST_REGISTER, false, NULL );
 
 	PrintIndentation( (char*)m_pBufParamCode->Base(), m_pBufParamCode->Size() );
-	PrintToBuf( *m_pBufParamCode, "vec4 %s = vec4( ", sParamName.String() );
+	PrintToBuf( *m_pBufParamCode, "vec4 %s = vec4( ", sParamName.c_str() );
 
 	// Run through the 4 floats
 	for ( int i=0; i < 4; i++ )
@@ -2335,7 +2335,7 @@ void D3DToGL::Handle_DEF()
 
 void D3DToGL::Handle_MAD( unsigned int32 nInstruction )
 {
-	uint32 nDestToken = GetNextToken();
+	unsigned __int32 nDestToken = GetNextToken();
 	CUtlString sParam1 = GetParameterString( nDestToken, DST_REGISTER, false, NULL );
 	int nARLComp0 = ARL_DEST_NONE;
 	CUtlString sParam2 = GetParameterString( GetNextToken(), SRC_REGISTER, false, &nARLComp0 );
@@ -2347,19 +2347,19 @@ void D3DToGL::Handle_MAD( unsigned int32 nInstruction )
 	// This optionally inserts a move from our dummy address register to the .x component of the real one
 	InsertMoveFromAddressRegister( m_pBufALUCode, nARLComp0, nARLComp1, nARLComp2 );
 
-	sParam2 = FixGLSLSwizzle( sParam1, sParam2 );
-	sParam3 = FixGLSLSwizzle( sParam1, sParam3 );
-	sParam4 = FixGLSLSwizzle( sParam1, sParam4 );
-	PrintToBufWithIndents( *m_pBufALUCode, "%s = %s * %s + %s;\n", sParam1.String(), sParam2.String(), sParam3.String(), sParam4.String() );
+	sParam2 = FixGLSLSwizzle( sParam1.c_str(), sParam2.c_str() );
+	sParam3 = FixGLSLSwizzle( sParam1.c_str(), sParam3.c_str() );
+	sParam4 = FixGLSLSwizzle( sParam1.c_str(), sParam4.c_str() );
+	PrintToBufWithIndents( *m_pBufALUCode, "%s = %s * %s + %s;\n", sParam1.c_str(), sParam2.c_str(), sParam3.c_str(), sParam4.c_str() );
 		
 	// If the _SAT instruction modifier is used, then do a saturate here.
 	if ( nDestToken & D3DSPDM_SATURATE )
 	{
-		int nComponents = GetNumSwizzleComponents( sParam1.String() );
+		int nComponents = GetNumSwizzleComponents( sParam1.c_str() );
 		if ( nComponents == 0 )
 			nComponents = 4;
 			
-		PrintToBufWithIndents( *m_pBufALUCode, "%s = clamp( %s, %s, %s );\n", sParam1.String(), sParam1.String(), g_szVecZeros[nComponents], g_szVecOnes[nComponents] );
+		PrintToBufWithIndents( *m_pBufALUCode, "%s = clamp( %s, %s, %s );\n", sParam1.c_str(), sParam1.c_str(), g_szVecZeros[nComponents], g_szVecOnes[nComponents] );
 	}
 }
 
@@ -2367,7 +2367,7 @@ void D3DToGL::Handle_MAD( unsigned int32 nInstruction )
 void D3DToGL::Handle_DP2ADD()
 {
 	char pDestReg[64], pSrc0Reg[64], pSrc1Reg[64], pSrc2Reg[64];
-	uint32 nDestToken = GetNextToken();
+	unsigned __int32 nDestToken = GetNextToken();
 	PrintParameterToString( nDestToken, DST_REGISTER, pDestReg, sizeof( pDestReg ), false, NULL );
 	PrintParameterToString( GetNextToken(), SRC_REGISTER, pSrc0Reg, sizeof( pSrc0Reg ), false, NULL );
 	PrintParameterToString( GetNextToken(), SRC_REGISTER, pSrc1Reg, sizeof( pSrc1Reg ), false, NULL );
@@ -2381,7 +2381,7 @@ void D3DToGL::Handle_DP2ADD()
 	CUtlString sArg0 = EnsureNumSwizzleComponents( pSrc0Reg, 2 );
 	CUtlString sArg1 = EnsureNumSwizzleComponents( pSrc1Reg, 2 );
 
-	PrintToBufWithIndents( *m_pBufALUCode, "%s = dot( %s, %s ) + %s;\n", pDestReg, sArg0.String(), sArg1.String(), pSrc2Reg );
+	PrintToBufWithIndents( *m_pBufALUCode, "%s = dot( %s, %s ) + %s;\n", pDestReg, sArg0.c_str(), sArg1.c_str(), pSrc2Reg );
 		
 	// If the _SAT instruction modifier is used, then do a saturate here.
 	if ( nDestToken & D3DSPDM_SATURATE )
@@ -2406,21 +2406,21 @@ void D3DToGL::Handle_SINCOS()
 	CUtlString sDest( pDestReg );
 	CUtlString sArg0 = EnsureNumSwizzleComponents( pSrc0Reg, 1 );// Ensure input is scalar
 	CUtlString sResult( "vSinCosTmp.xy" );			// Always going to populate this
-	sResult = FixGLSLSwizzle( sDest, sResult );		// Make sure we match the desired output reg
+	sResult = FixGLSLSwizzle( sDest.c_str(), sResult.c_str() );		// Make sure we match the desired output reg
 			
-	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.z = %s * %s;\n", sArg0.String(), sArg0.String() );
+	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.z = %s * %s;\n", sArg0.c_str(), sArg0.c_str() );
 		
 	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.xy = vSinCosTmp.zz * scA.xy + scA.wz;\n" );
 	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.xy = vSinCosTmp.xy * vSinCosTmp.zz + scB.xy;\n" );
 	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.xy = vSinCosTmp.xy * vSinCosTmp.zz + scB.wz;\n" );
 
-	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.x = vSinCosTmp.x * %s;\n", sArg0.String() );
+	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.x = vSinCosTmp.x * %s;\n", sArg0.c_str() );
 		
 	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.xy = vSinCosTmp.xy * vSinCosTmp.xx;\n" );
 	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.xy = vSinCosTmp.xy + vSinCosTmp.xy;\n" );
 	PrintToBufWithIndents( *m_pBufALUCode, "vSinCosTmp.x = -vSinCosTmp.x + scB.z;\n" );
 		
-	PrintToBufWithIndents( *m_pBufALUCode, "%s = %s;\n", sDest.String(), sResult.String() );
+	PrintToBufWithIndents( *m_pBufALUCode, "%s = %s;\n", sDest.c_str(), sResult.c_str() );
 	
 	// Eat two more tokens since D3D defines Taylor series constants that we won't need
 	SkipTokens( 2 );

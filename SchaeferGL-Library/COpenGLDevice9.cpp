@@ -3732,7 +3732,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetRenderTarget(DWORD RenderTargetInde
 	{
 		((COpenGLSurface9*)pRenderTarget)->AddRef( 1, "+A  SetRenderTarget private addref"  );						// again, private refcount being raised
 	}
-	m_pRenderTargets[RenderTargetIndex] = pRenderTarget;	
+	m_pRenderTargets[RenderTargetIndex] = ((COpenGLSurface9*)pRenderTarget);	
 	
 	m_bFBODirty = true;
 
@@ -3813,9 +3813,9 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetSamplerState(DWORD Sampler,D3DSAMPL
 		//m_samplers[ Sampler ].m_srgb = Value;
 		m_ctx->SetSamplerSRGBTexture(Sampler, Value);
 		break;
-	case D3DSAMP_SHADOWFILTER: 
-		m_ctx->SetShadowFilter(Sampler, Value);
-		break;
+	//case D3DSAMP_SHADOWFILTER: 
+	//	m_ctx->SetShadowFilter(Sampler, Value);
+	//	break;
 
 	default: DXABSTRACT_BREAK_ON_ERROR(); break;
 	}
