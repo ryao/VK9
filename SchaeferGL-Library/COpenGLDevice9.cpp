@@ -34,9 +34,12 @@
 #include "togl/rendermechanism.h"
 #include "togl/linuxwin/dx9asmtogl2.h"
 #include "COpenGLCubeTexture9.h"
+#include "COpenGLBaseTexture9.h"
 #include "COpenGLTexture9.h"
 #include "COpenGLVolumeTexture9.h"
 #include "COpenGLSurface9.h"
+#include "COpenGLVertexDeclaration9.h"
+#include "COpenGLVertexShader9.h"
 
 static D3DToGL		g_D3DToOpenGLTranslatorGLSL;
 static COpenGLDevice9 *g_pD3D_Device;
@@ -398,20 +401,27 @@ void COpenGLDevice9::UpdateBoundFBO()
 		renderTargetState.m_pRenderTargets[i] = m_pRenderTargets[i] ? m_pRenderTargets[i]->m_tex : NULL;
 	}
 	renderTargetState.m_pDepthStencil = m_pDepthStencil ? m_pDepthStencil->m_tex : NULL;
-	CUtlMap < RenderTargetState_t, CGLMFBO * >::IndexType_t index = m_pFBOs->Find( renderTargetState );
+	
+	CGLMFBOMap::iterator it;
+	it=m_pFBOs->find(renderTargetState);
+	
+	//CUtlMap < RenderTargetState_t, CGLMFBO * >::IndexType_t index = m_pFBOs->Find( renderTargetState );
 
-	if ( m_pFBOs->IsValidIndex( index ) )
+	//if ( m_pFBOs->IsValidIndex( index ) )
+	if (it != m_pFBOs->end())
 	{
-		Assert( (*m_pFBOs)[index] );
-		
-		m_ctx->m_drawingFBO = (*m_pFBOs)[index];
+		//Assert( (*m_pFBOs)[index] );
+		Assert( *it );
+		//m_ctx->m_drawingFBO = (*m_pFBOs)[index];
+		m_ctx->m_drawingFBO = (*it).second;
 	} 
 	else 
 	{
 		CGLMFBO *newFBO = m_ctx->NewFBO();
 
-		m_pFBOs->Insert( renderTargetState, newFBO );
-		
+		//m_pFBOs->Insert( renderTargetState, newFBO );
+		(*m_pFBOs)[renderTargetState] = newFBO;
+
 		unsigned int nNumBound = 0;
 
 		for ( unsigned int i = 0; i < 4; i++ )
@@ -475,7 +485,7 @@ void COpenGLDevice9::ResetFBOMap()
 
 	BOOST_FOREACH(CGLMFBOMap::value_type pFBO, (*m_pFBOs))
 	{
-		m_ctx->DelFBO( pFBO );
+		m_ctx->DelFBO( pFBO.second );
 	}
 
 	//m_pFBOs->Purge();
@@ -519,19 +529,24 @@ void COpenGLDevice9::ScrubFBOMap( CGLMTex *pTex )
 	{
 		const RenderTargetState_t &rtState = fbosToRemove[i];
 
-		CUtlMap < RenderTargetState_t, CGLMFBO * >::IndexType_t index = m_pFBOs->Find( rtState );
+		//CUtlMap < RenderTargetState_t, CGLMFBO * >::IndexType_t index = m_pFBOs->Find( rtState );
+		CGLMFBOMap::iterator it;
+		it=m_pFBOs->find( rtState );
 
-		if ( !m_pFBOs->IsValidIndex( index ) )
+		//if ( !m_pFBOs->IsValidIndex( index ) )
+		if (it == m_pFBOs->end())
 		{
 			Assert( 0 );
 			continue;
 		}
 		
-		CGLMFBO *pFBO = (*m_pFBOs)[index];
-						
+		//CGLMFBO *pFBO = (*m_pFBOs)[index];
+		CGLMFBO *pFBO = (*it).second;
+
 		m_ctx->DelFBO( pFBO );
 
-		m_pFBOs->RemoveAt( index );
+		//m_pFBOs->RemoveAt( index );
+		m_pFBOs->erase( it );
 
 		m_bFBODirty = true;
 	}
@@ -3244,7 +3259,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetPixelShader(IDirect3DPixelShader9 *
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	
-	m_ctx->SetFragmentProgram( pShader ? pShader->m_pixProgram : NULL );
+	m_ctx->SetFragmentProgram( pShader ? ((COpenGLPixelShader9*)pShader)->m_pixProgram : NULL );
 	m_pixelShader = ((COpenGLPixelShader9*)pShader);
 
 	return S_OK;	
@@ -3885,7 +3900,7 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::SetTexture(DWORD Sampler,IDirect3DBase
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	Assert( Stage < GLM_SAMPLER_COUNT );
 	m_textures[Stage] = pTexture;
-	m_ctx->SetSamplerTex( Stage, pTexture ? pTexture->m_tex : NULL );
+	m_ctx->SetSamplerTex( Stage, pTexture ? ((*COpenGLBaseTexture9)pTexture)->m_tex : NULL );
 	return S_OK;	
 }
 
@@ -3988,12 +4003,12 @@ HRESULT STDMETHODCALLTYPE COpenGLDevice9::StretchRect(IDirect3DSurface9 *pSource
 		UpdateBoundFBO();
 	}
 		
-	CGLMTex	*srcTex = pSourceSurface->m_tex;
-	int srcSliceIndex = srcTex->CalcSliceIndex( pSourceSurface->m_face, pSourceSurface->m_mip );
+	CGLMTex	*srcTex = ((COpenGLSurface9*)pSourceSurface)->m_tex;
+	int srcSliceIndex = srcTex->CalcSliceIndex( ((COpenGLSurface9*)pSourceSurface)->m_face, ((COpenGLSurface9*)pSourceSurface)->m_mip );
 	GLMTexLayoutSlice *srcSlice = &srcTex->m_layout->m_slices[ srcSliceIndex ];
 
-	CGLMTex	*dstTex = pDestSurface->m_tex;
-	int dstSliceIndex = dstTex->CalcSliceIndex( pDestSurface->m_face, pDestSurface->m_mip );
+	CGLMTex	*dstTex = ((COpenGLSurface9*)pDestSurface)->m_tex;
+	int dstSliceIndex = dstTex->CalcSliceIndex( ((COpenGLSurface9*)pDestSurface)->m_face, ((COpenGLSurface9*)pDestSurface)->m_mip );
 	GLMTexLayoutSlice *dstSlice = &dstTex->m_layout->m_slices[ dstSliceIndex ];
 
 	if ( dstTex->m_rboName != 0 )

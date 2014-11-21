@@ -1801,12 +1801,18 @@ void GLMContext::DelFBO( CGLMFBO *fbo )
 		m_boundDrawFBO = NULL;
 	}
 
-	int idx = m_fboTable.Find( fbo );
-	Assert( idx >= 0 );
-	if ( idx >= 0 )
+	std::vector< CGLMFBO* >::iterator it;
+	it = std::find (m_fboTable.begin(), m_fboTable.end(), fbo);
+	if (it != myvector.end())
 	{
-		m_fboTable.FastRemove( idx );
+		m_fboTable.erase( it );
 	}
+	//int idx = m_fboTable.Find( fbo );
+	//Assert( idx >= 0 );
+	//if ( idx >= 0 )
+	//{
+	//	m_fboTable.FastRemove( idx );
+	//}
 	
 	delete fbo;
 }
@@ -2524,8 +2530,8 @@ GLMContext::GLMContext( IDirect3DDevice9 *pDevice, GLMDisplayParams *params )
 	
 	m_activeTexture = -1;
 					
-	m_texLocks.EnsureCapacity( 16 );	// should be sufficient
-
+	//m_texLocks.EnsureCapacity( 16 );	// should be sufficient
+	m_texLocks.reserve( 16 );
 	// FIXME need a texture tracking table so we can reliably delete CGLMTex objects at context teardown
 		
 	m_boundReadFBO = NULL;
@@ -5277,7 +5283,8 @@ void GLMTester::Test0( void )
 								CheckGLError( "tex create test");
 								InternalError( newtex==NULL, "tex create test" );
 								
-								testTextures.AddToTail( newtex );
+								//testTextures.AddToTail( newtex );
+								testTextures.push_back( newtex );
 								printf("\n[%5d] created tex %s",innerindex,newtex->m_layout->m_layoutSummary );
 							}
 							break;

@@ -2446,21 +2446,21 @@ void D3DToGL::Handle_LRP( unsigned int32 nInstruction )
 	sParam2 = FixGLSLSwizzle( sDest, sParam2 );
 
 	// dest = src0 * (src1 - src2) + src2;
-	PrintToBufWithIndents( *m_pBufALUCode, "%s = %s * ( %s - %s ) + %s;\n", sDest.String(), sParam0.String(), sParam1.String(), sParam2.String(), sParam2.String() );
+	PrintToBufWithIndents( *m_pBufALUCode, "%s = %s * ( %s - %s ) + %s;\n", sDest.c_str(), sParam0.c_str(), sParam1.c_str(), sParam2.c_str(), sParam2.c_str());
 
 	// If the _SAT instruction modifier is used, then do a saturate here.
 	if ( nDestToken & D3DSPDM_SATURATE )
 	{
-		int nComponents = GetNumSwizzleComponents( sDest.String() );
+		int nComponents = GetNumSwizzleComponents( sDest.c_str() );
 		if ( nComponents == 0 )
 			nComponents = 4;
 			
-		PrintToBufWithIndents( *m_pBufALUCode, "%s = clamp( %s, %s, %s );\n", sDest.String(), sDest.String(), g_szVecZeros[nComponents], g_szVecOnes[nComponents] );
+		PrintToBufWithIndents( *m_pBufALUCode, "%s = clamp( %s, %s, %s );\n", sDest.c_str(), sDest.c_str(), g_szVecZeros[nComponents], g_szVecOnes[nComponents] );
 	}
 }
 
 
-void D3DToGL::Handle_TEX( unsigned int32 dwToken, bool bIsTexLDL )
+void D3DToGL::Handle_TEX( unsigned __int32 dwToken, bool bIsTexLDL )
 {
 	char pDestReg[64], pSrc0Reg[64], pSrc1Reg[64];
 	PrintParameterToString( GetNextToken(), DST_REGISTER, pDestReg, sizeof( pDestReg ), false, NULL );
@@ -2470,7 +2470,7 @@ void D3DToGL::Handle_TEX( unsigned int32 dwToken, bool bIsTexLDL )
 	PrintParameterToString( dwSrc1Token, SRC_REGISTER, pSrc1Reg, sizeof( pSrc1Reg ), false, NULL );
 	
 	Assert( (dwSrc1Token & D3DSP_REGNUM_MASK) < ARRAYSIZE( m_dwSamplerTypes ) );
-	uint32 nSamplerType = m_dwSamplerTypes[dwSrc1Token & D3DSP_REGNUM_MASK];
+	unsigned __int32 nSamplerType = m_dwSamplerTypes[dwSrc1Token & D3DSP_REGNUM_MASK];
 	if ( nSamplerType == SAMPLER_TYPE_2D )
 	{
 		const bool bIsShadowSampler = ( ( 1 << ( (int) ( dwSrc1Token & D3DSP_REGNUM_MASK ) ) ) & m_nShadowDepthSamplerMask ) != 0;
@@ -2662,7 +2662,7 @@ void D3DToGL::HandleBinaryOp_GLSL( unsigned int32 nInstruction )
 	if ( nInstruction == D3DSIO_ADD || nInstruction == D3DSIO_SUB || nInstruction == D3DSIO_MUL )
 	{
 		// These all look like x = y op z
-		PrintToBufWithIndents( *m_pBufALUCode, "%s = %s %s %s;\n", sParam1.String(), sParam2.String(), GetGLSLOperatorString( nInstruction ), sParam3.String() );
+		PrintToBufWithIndents( *m_pBufALUCode, "%s = %s %s %s;\n", sParam1.c_str(), sParam2.c_str(), GetGLSLOperatorString( nInstruction ), sParam3.c_str() );
 	}
 	else
 	{

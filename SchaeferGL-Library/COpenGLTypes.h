@@ -53,7 +53,10 @@ class COpenGLIndexBuffer9;
 #include <map>
 #include <functional>
 #include <bitset>
+#include <algorithm>    // std::find
+#include <vector>      
 #include <string.h>
+#include <math.h>
 #include <GL/gl.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/glext.h>
