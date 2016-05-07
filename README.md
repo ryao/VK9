@@ -1,4 +1,4 @@
 SchaeferGL
 ==========
 
-Direct3D compatibility layer using OpenGL
+Direct3D 9 compatibility layer using Vulkan.

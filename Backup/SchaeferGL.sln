@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SchaeferGL-Tests", "SchaeferGL-Tests\SchaeferGL-Tests.vcproj", "{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SchaeferGL-Library", "SchaeferGL-Library\SchaeferGL-Library.vcproj", "{687FC2B4-7887-45D0-B455-DD32F9680FE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}.Debug|Win32.Build.0 = Debug|Win32
+		{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}.Release|Win32.ActiveCfg = Release|Win32
+		{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}.Release|Win32.Build.0 = Release|Win32
+		{687FC2B4-7887-45D0-B455-DD32F9680FE2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{687FC2B4-7887-45D0-B455-DD32F9680FE2}.Debug|Win32.Build.0 = Debug|Win32
+		{687FC2B4-7887-45D0-B455-DD32F9680FE2}.Release|Win32.ActiveCfg = Release|Win32
+		{687FC2B4-7887-45D0-B455-DD32F9680FE2}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
