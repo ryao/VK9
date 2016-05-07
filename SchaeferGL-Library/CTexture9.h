@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CTEXTURE9_H
 
 #include "d3d9.h" // Base class: IDirect3DTexture9
+#include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
 #include "CSurface9.h"
 

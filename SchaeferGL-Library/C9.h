@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define C9_H
 
 #include "d3d9.h" // Base class: IDirect3D9
+#include <vulkan/vulkan.h>
 #include "CTypes.h"
 
 class C9 : public IDirect3D9
@@ -29,6 +30,8 @@ class C9 : public IDirect3D9
 public:
 	C9();
 	~C9();
+
+	VkInstance mInstance;
 
 public:
 	//IUnknown

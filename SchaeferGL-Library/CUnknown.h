@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CUNKNOWN_H
 
 #include "d3d9.h" // Base class: IUnknown
+#include <vulkan/vulkan.h>
 #include "CTypes.h"
 
 class CUnknown : public IUnknown

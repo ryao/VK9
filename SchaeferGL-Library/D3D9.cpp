@@ -26,6 +26,7 @@
 //==================================================================================================
  
 #include "D3D9.h"
+#include <vulkan/vulkan.h>
 #include "C9.h"
 
 IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion)

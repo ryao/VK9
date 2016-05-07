@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CPIXELSHADER9_H
 
 #include "d3d9.h" // Base class: IDirect3DPixelShader9
+#include <vulkan/vulkan.h>
 #include "CResource9.h"
 
 class CPixelShader9 : public IDirect3DPixelShader9,CResource9

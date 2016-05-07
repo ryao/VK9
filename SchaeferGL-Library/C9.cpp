@@ -21,13 +21,45 @@ misrepresented as being the original software.
 #include "C9.h"
 #include "CDevice9.h"
 
+#define APP_SHORT_NAME "SchaeferGL"
+
 C9::C9()
 {
+	const char *extensionNames[] = { "VK_KHR_surface", "VK_KHR_win32_surface" };
+
+	// initialize the VkApplicationInfo structure
+	VkApplicationInfo app_info = {};
+	app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	app_info.pNext = NULL;
+	app_info.pApplicationName = APP_SHORT_NAME;
+	app_info.applicationVersion = 1;
+	app_info.pEngineName = APP_SHORT_NAME;
+	app_info.engineVersion = 1;
+	app_info.apiVersion = VK_API_VERSION;
+
+	// initialize the VkInstanceCreateInfo structure
+	VkInstanceCreateInfo inst_info = 
+	{
+		VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, // VkStructureType sType;
+		NULL,                                   // const void* pNext;
+
+		0,                                      // VkInstanceCreateFlags flags;
+
+		&app_info,                              // const VkApplicationInfo* pApplicationInfo;
+
+		0,                                      // uint32_t enabledLayerNameCount;
+		NULL,                                   // const char* const* ppEnabledLayerNames;
+
+		2,                                      // uint32_t enabledExtensionNameCount;
+		extensionNames,                         // const char* const* ppEnabledExtensionNames;
+	};
+
+	vkCreateInstance(&inst_info, NULL, &mInstance);
 }
 
 C9::~C9()
 {
-
+	vkDestroyInstance(mInstance, NULL);
 }
 
 //IUnknown

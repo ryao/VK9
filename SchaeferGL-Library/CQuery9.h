@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CQUERY9_H
 
 #include "d3d9.h" // Base class: IDirect3DQuery9
+#include <vulkan/vulkan.h>
 #include "CResource9.h"
 
 class CQuery9 : public IDirect3DQuery9

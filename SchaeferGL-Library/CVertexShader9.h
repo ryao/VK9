@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CVERTEXSHADER9_H
 
 #include "d3d9.h" // Base class: IDirect3DVertexShader9
+#include <vulkan/vulkan.h>
 #include "CResource9.h"
 
 class CVertexShader9 : public IDirect3DVertexShader9,CResource9

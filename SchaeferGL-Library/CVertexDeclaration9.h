@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CVERTEXDECLARATION9_H
 
 #include "d3d9.h" // Base class: IDirect3DVertexDeclaration9
+#include <vulkan/vulkan.h>
 #include "CUnknown.h"
 
 class CDevice9;

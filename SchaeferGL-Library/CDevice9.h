@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #include "CTypes.h"
 
 #include "d3d9.h" // Base class: IDirect3DDevice9
+#include <vulkan/vulkan.h>
 #include "CUnknown.h"
 
 #include "CVertexDeclaration9.h"

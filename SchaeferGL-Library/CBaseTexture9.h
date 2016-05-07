@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CBaseTexture9_H
 
 #include "d3d9.h" // Base class: IDirect3DBaseTexture9
+#include <vulkan/vulkan.h>
 #include "CResource9.h"
 
 class CBaseTexture9 : public IDirect3DBaseTexture9,CResource9

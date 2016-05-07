@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define CVERTEXBUFFER9_H
 
 #include "d3d9.h" // Base class: IDirect3DVertexBuffer9
+#include <vulkan/vulkan.h>
 #include "CResource9.h"
 
 class CVertexBuffer9 : public IDirect3DVertexBuffer9,CResource9
