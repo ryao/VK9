@@ -37,11 +37,12 @@ misrepresented as being the original software.
 #include "CQuery9.h"
 #include "CBaseTexture9.h"
 
+class C9;
 
 class CDevice9 : public IDirect3DDevice9
 {	
 public:
-	CDevice9();
+	CDevice9(C9* Instance,UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters);
 	~CDevice9();
 
 	//IUnknown
@@ -171,6 +172,14 @@ public:
 	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 	virtual HRESULT STDMETHODCALLTYPE CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,CSurface9 **ppSurface,HANDLE *pSharedHandle,char *debugLabel);
 public:
+	VkPhysicalDevice mPhysicalDevice;
+	VkDevice mDevice;
+	C9* mInstance;
+	UINT mAdapter;
+	D3DDEVTYPE mDeviceType;
+	HWND mFocusWindow;
+	DWORD mBehaviorFlags;
+	D3DPRESENT_PARAMETERS* mPresentationParameters;
 
 };
 

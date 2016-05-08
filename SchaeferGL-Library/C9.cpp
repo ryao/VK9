@@ -121,6 +121,10 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 {
 	HRESULT result = S_OK;
 
+	CDevice9* device = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
+
+	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)device;
+
 	return result;	
 }
 

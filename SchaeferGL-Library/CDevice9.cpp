@@ -17,7 +17,8 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
- 
+
+#include "C9.h"
 #include "CDevice9.h"
 #include "CCubeTexture9.h"
 #include "CBaseTexture9.h"
@@ -28,14 +29,56 @@ misrepresented as being the original software.
 #include "CVertexShader9.h"
 
 
-CDevice9::CDevice9()
+CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
+	: mInstance(Instance),
+	mAdapter(Adapter),
+	mDeviceType(DeviceType),
+	mFocusWindow(hFocusWindow),
+	mBehaviorFlags(BehaviorFlags),
+	mPresentationParameters(pPresentationParameters)
 {
-	
+
+	//TODO: init mPhysicalDevice & pull physical device properties.
+
+	VkDeviceQueueCreateInfo queue_info = {};
+
+	//vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &info.queue_count,NULL);
+
+	//info.queue_props.resize(info.queue_count);
+	//vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &info.queue_count,info.queue_props.data());
+
+	/*bool found = false;
+	for (unsigned int i = 0; i < info.queue_count; i++) {
+		if (info.queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+			queue_info.queueFamilyIndex = i;
+			found = true;
+			break;
+		}
+	}*/
+
+	float queue_priorities[1] = { 0.0 };
+	queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queue_info.pNext = NULL;
+	queue_info.queueCount = 1;
+	queue_info.pQueuePriorities = queue_priorities;
+
+	VkDeviceCreateInfo device_info = {};
+	device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	device_info.pNext = NULL;
+	device_info.queueCreateInfoCount = 1;
+	device_info.pQueueCreateInfos = &queue_info;
+	device_info.enabledExtensionCount = 0;
+	device_info.ppEnabledExtensionNames = NULL;
+	device_info.enabledLayerCount = 0;
+	device_info.ppEnabledLayerNames = NULL;
+	device_info.pEnabledFeatures = NULL;
+
+	vkCreateDevice(mPhysicalDevice, &device_info, NULL, &mDevice);
 }
 
 CDevice9::~CDevice9()
 {
-	
+	vkDestroyDevice(mDevice, NULL);
 }
 
 //IUknown
@@ -76,6 +119,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count,const D3DRECT *pRects,DWOR
 
 HRESULT STDMETHODCALLTYPE CDevice9::ColorFill(IDirect3DSurface9 *pSurface,const RECT *pRect,D3DCOLOR color)
 {
+
+
 	return E_NOTIMPL;
 }
 
@@ -265,7 +310,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDirect3D(IDirect3D9 **ppD3D9)
 {
-	return E_NOTIMPL;
+	(*ppD3D9) = (IDirect3D9*)mInstance;
+
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMODE *pMode)
