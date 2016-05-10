@@ -35,21 +35,21 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDeviceType(DeviceType),
 	mFocusWindow(hFocusWindow),
 	mBehaviorFlags(BehaviorFlags),
-	mPresentationParameters(pPresentationParameters)
+	mPresentationParameters(pPresentationParameters),
+	mQueueCount(0)
 {
+	mPhysicalDevice = mInstance->mPhysicalDevices[mAdapter]; //pull the selected physical device from the instance.
 
-	//TODO: init mPhysicalDevice & pull physical device properties.
-
-	VkDeviceQueueCreateInfo queue_info = {};
-
-	//vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &info.queue_count,NULL);
-
-	//info.queue_props.resize(info.queue_count);
-	//vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &info.queue_count,info.queue_props.data());
+	//Fetch the queue properties.
+	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,NULL);
+	mQueueFamilyProperties = new VkQueueFamilyProperties[mQueueCount];
+	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,mQueueFamilyProperties);
 
 	/*bool found = false;
-	for (unsigned int i = 0; i < info.queue_count; i++) {
-		if (info.queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+	for (unsigned int i = 0; i < mQueueCount; i++) 
+	{
+		if (mQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+		{
 			queue_info.queueFamilyIndex = i;
 			found = true;
 			break;
@@ -57,6 +57,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}*/
 
 	float queue_priorities[1] = { 0.0 };
+	VkDeviceQueueCreateInfo queue_info = {};	
 	queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queue_info.pNext = NULL;
 	queue_info.queueCount = 1;

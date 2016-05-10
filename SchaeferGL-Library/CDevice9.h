@@ -174,13 +174,14 @@ public:
 public:
 	VkPhysicalDevice mPhysicalDevice;
 	VkDevice mDevice;
+	VkQueueFamilyProperties* mQueueFamilyProperties;
 	C9* mInstance;
 	UINT mAdapter;
 	D3DDEVTYPE mDeviceType;
 	HWND mFocusWindow;
 	DWORD mBehaviorFlags;
 	D3DPRESENT_PARAMETERS* mPresentationParameters;
-
+	uint32_t mQueueCount;
 };
 
 #endif // CDEVICE9_H

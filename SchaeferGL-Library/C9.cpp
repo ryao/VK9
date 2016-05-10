@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #define APP_SHORT_NAME "SchaeferGL"
 
 C9::C9()
+	: mGpuCount(0), mPhysicalDevices(NULL)
 {
 	const char *extensionNames[] = { "VK_KHR_surface", "VK_KHR_win32_surface" };
 
@@ -55,10 +56,16 @@ C9::C9()
 	};
 
 	vkCreateInstance(&inst_info, NULL, &mInstance);
+
+	//Fetch an array of available physical devices.
+	vkEnumeratePhysicalDevices(mInstance, &mGpuCount, NULL);
+	mPhysicalDevices = new VkPhysicalDevice[mGpuCount]();
+	vkEnumeratePhysicalDevices(mInstance, &mGpuCount, mPhysicalDevices);
 }
 
 C9::~C9()
 {
+	delete[]	 mPhysicalDevices;
 	vkDestroyInstance(mInstance, NULL);
 }
 
@@ -135,7 +142,7 @@ HRESULT STDMETHODCALLTYPE C9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UIN
 
 UINT STDMETHODCALLTYPE C9::GetAdapterCount()
 {
-	return 0;	
+	return mGpuCount;
 }
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
