@@ -33,61 +33,85 @@ CPixelShader9::~CPixelShader9()
 
 ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CPixelShader9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CPixelShader9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::FreePrivateData(REFGUID refguid)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CPixelShader9::GetPriority()
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CPixelShader9::GetType()
 {
+	//TODO: Implement.
+
 	return D3DRTYPE_SURFACE;
 }
 
 void STDMETHODCALLTYPE CPixelShader9::PreLoad()
 {
+	//TODO: Implement.
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CPixelShader9::SetPriority(DWORD PriorityNew)
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
@@ -98,5 +122,7 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::SetPrivateData(REFGUID refguid, const v
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }

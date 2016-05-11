@@ -32,25 +32,35 @@ CUnknown::~CUnknown(void)
 
 ULONG STDMETHODCALLTYPE CUnknown::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CUnknown::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CUnknown::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CUnknown::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CUnknown::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }

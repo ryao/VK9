@@ -33,97 +33,128 @@ CBaseTexture9::~CBaseTexture9()
 
 ULONG STDMETHODCALLTYPE CBaseTexture9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CBaseTexture9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CBaseTexture9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CBaseTexture9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::FreePrivateData(REFGUID refguid)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CBaseTexture9::GetPriority()
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
-//D3DRESOURCETYPE STDMETHODCALLTYPE CBaseTexture9::GetType()
-//{
-//	return D3DRTYPE_SURFACE;
-//}
-
 void STDMETHODCALLTYPE CBaseTexture9::PreLoad()
 {
+	//TODO: Implement.
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CBaseTexture9::SetPriority(DWORD PriorityNew)
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 VOID STDMETHODCALLTYPE CBaseTexture9::GenerateMipSubLevels()
 {
-	return; //TODO: implement GenerateMipSubLevels
+	//TODO: Implement.
+
+	return;
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CBaseTexture9::GetAutoGenFilterType()
 {
-	return D3DTEXF_NONE; //TODO: implement GetAutoGenFilterType
+	//TODO: Implement.
+
+	return D3DTEXF_NONE;
 }
 
 DWORD STDMETHODCALLTYPE CBaseTexture9::GetLOD()
 {
-	return 0; //TODO: implement GetLOD
+	//TODO: Implement.
+
+	return 0;
 }
 
 
 DWORD STDMETHODCALLTYPE CBaseTexture9::GetLevelCount()
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CBaseTexture9::SetLOD(DWORD LODNew)
 {
-	return 0; //TODO: implement SetLOD
+	//TODO: Implement.
+
+	return 0;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CBaseTexture9::GetType()
 {
+	//TODO: Implement.
+
 	return D3DRTYPE_SURFACE;
 }

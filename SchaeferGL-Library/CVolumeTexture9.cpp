@@ -33,41 +33,57 @@ CVolumeTexture9::~CVolumeTexture9()
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CVolumeTexture9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::FreePrivateData(REFGUID refguid)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CVolumeTexture9::GetPriority()
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
@@ -78,63 +94,86 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetPrivateData(REFGUID refguid, void*
 
 void STDMETHODCALLTYPE CVolumeTexture9::PreLoad()
 {
+	//TODO: Implement.
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CVolumeTexture9::SetPriority(DWORD PriorityNew)
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 VOID STDMETHODCALLTYPE CVolumeTexture9::GenerateMipSubLevels()
 {
+	//TODO: Implement.
+
 	return;
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CVolumeTexture9::GetAutoGenFilterType()
 {
+	//TODO: Implement.
+
 	return D3DTEXF_NONE;
 }
 
 DWORD STDMETHODCALLTYPE CVolumeTexture9::GetLOD()
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 
 DWORD STDMETHODCALLTYPE CVolumeTexture9::GetLevelCount()
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CVolumeTexture9::SetLOD(DWORD LODNew)
 {
-	return 0; //TODO: implement SetLOD
+	//TODO: Implement.
+
+	return 0;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CVolumeTexture9::GetType()
 {
+	//TODO: Implement.
+
 	return D3DRTYPE_SURFACE;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::AddDirtyBox(const D3DBOX* pDirtyBox)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc)
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }
@@ -142,19 +181,22 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetLevelDesc(UINT Level, D3DVOLUME_DE
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags)
 {
-
+	//TODO: Implement.
 	
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::UnlockBox(UINT Level)
 {
-	
+	//TODO: Implement.
+
 	return S_OK;	
 }

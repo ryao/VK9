@@ -33,84 +33,112 @@ CVertexBuffer9::~CVertexBuffer9()
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CVertexBuffer9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::FreePrivateData(REFGUID refguid)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CVertexBuffer9::GetPriority()
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CVertexBuffer9::GetType()
 {
+	//TODO: Implement.
+
 	return D3DRTYPE_SURFACE;
 }
 
 void STDMETHODCALLTYPE CVertexBuffer9::PreLoad()
 {
+	//TODO: Implement.
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CVertexBuffer9::SetPriority(DWORD PriorityNew)
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 void STDMETHODCALLTYPE CVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData)
 {
-	
+	//TODO: Implement.
 }
 
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }

@@ -32,30 +32,42 @@ CVertexDeclaration9::~CVertexDeclaration9()
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CVertexDeclaration9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }

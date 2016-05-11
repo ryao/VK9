@@ -33,49 +33,65 @@ CQuery9::~CQuery9()
 
 ULONG STDMETHODCALLTYPE CQuery9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	//TODO: Implement.
+
 	return S_OK;
 }
 
 ULONG STDMETHODCALLTYPE CQuery9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CQuery9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CQuery9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 {
+	//TODO: Implement.
+
 	return S_OK;
 }
 
 
 DWORD STDMETHODCALLTYPE CQuery9::GetDataSize()
 {
-	return 0; //TODO: implement GetDataSize()
+	//TODO: Implement.
+
+	return 0;
 }
 
 D3DQUERYTYPE STDMETHODCALLTYPE CQuery9::GetType()
 {
-	return D3DQUERYTYPE_EVENT; //TODO: implement GetType()
+	//TODO: Implement.
+
+	return D3DQUERYTYPE_EVENT;
 }
 
 
 HRESULT STDMETHODCALLTYPE CQuery9::Issue(DWORD dwIssueFlags)
 {
-	
+	//TODO: Implement.
+
 	return S_OK;	
 }

@@ -22,9 +22,16 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 #include "CSurface9.h"
 
-CCubeTexture9::CCubeTexture9()
+CCubeTexture9::CCubeTexture9(CDevice9* Device, UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
+	: mDevice(Device),
+	mEdgeLength(EdgeLength),
+	mLevels(Levels),
+	mUsage(Usage),
+	mFormat(Format),
+	mPool(Pool),
+	mSharedHandle(pSharedHandle)
 {
-
+	//TODO: Implement.
 }
 
 CCubeTexture9::~CCubeTexture9()
@@ -34,41 +41,57 @@ CCubeTexture9::~CCubeTexture9()
 
 ULONG STDMETHODCALLTYPE CCubeTexture9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CCubeTexture9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CCubeTexture9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CCubeTexture9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::FreePrivateData(REFGUID refguid)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::GetPriority()
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
@@ -79,82 +102,108 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::GetPrivateData(REFGUID refguid, void* p
 
 void STDMETHODCALLTYPE CCubeTexture9::PreLoad()
 {
+	//TODO: Implement.
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::SetPriority(DWORD PriorityNew)
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 VOID STDMETHODCALLTYPE CCubeTexture9::GenerateMipSubLevels()
 {
-	return; //TODO: implement GenerateMipSubLevels
+	//TODO: Implement.
+
+	return;
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CCubeTexture9::GetAutoGenFilterType()
 {
-	return D3DTEXF_NONE; //TODO: implement GetAutoGenFilterType
+	//TODO: Implement.
+
+	return D3DTEXF_NONE;
 }
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::GetLOD()
 {
-	return 0; //TODO: implement GetLOD
+	//TODO: Implement.
+
+	return 0;
 }
 
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::GetLevelCount()
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::SetLOD(DWORD LODNew)
 {
-	return 0; //TODO: implement SetLOD
+	//TODO: Implement.
+
+	return 0;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CCubeTexture9::GetType()
 {
+	//TODO: Implement.
+
 	return D3DRTYPE_SURFACE;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT* pDirtyRect)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface9** ppCubeMapSurface)
 {
-
+	//TODO: Implement.
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }
 
-
 HRESULT CCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 HRESULT CCubeTexture9::UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }

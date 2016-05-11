@@ -93,7 +93,7 @@ HRESULT STDMETHODCALLTYPE C9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE Dev
 {
 	HRESULT result = D3DERR_NOTAVAILABLE;	// failure
 	
-
+	//TODO: Implement.
 
 	return result;	
 }
@@ -102,7 +102,7 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceTy
 {
 	HRESULT result = D3DERR_NOTAVAILABLE;	// failure
 	
-
+	//TODO: Implement.
 	
 	return result;	
 }
@@ -110,17 +110,23 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceTy
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormatConversion(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SourceFormat,D3DFORMAT TargetFormat)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SurfaceFormat,BOOL Windowed,D3DMULTISAMPLE_TYPE MultiSampleType,DWORD *pQualityLevels)
 {
+	//TODO: Implement.
+
 	return D3DERR_NOTAVAILABLE;	
 }
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL Windowed)
 {		
+	//TODO: Implement.
+
 	return S_OK;	
 }
 
@@ -137,6 +143,8 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 
 HRESULT STDMETHODCALLTYPE C9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDISPLAYMODE *pMode)
 {
+	//TODO: Implement.
+
 	return S_OK;		
 }
 
@@ -147,43 +155,59 @@ UINT STDMETHODCALLTYPE C9::GetAdapterCount()
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
 {
+	//TODO: Implement.
+
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
 {	
+	//TODO: Implement.
+
 	return S_OK;	
 }
 
 UINT STDMETHODCALLTYPE C9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 {	
+	//TODO: Implement.
+
 	return 0;	
 }
 
 
 HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 {
+	//TODO: Implement.
+
 	return 0; //TODO: implement GetAdapterMonitor
 }
 
 
 HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
 {
+	//TODO: Implement.
+
 	return S_OK;	
 }
 
 
 HRESULT STDMETHODCALLTYPE C9::RegisterSoftwareDevice(void *pInitializeFunction)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE C9::AddRef( int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	C9::Release( int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }

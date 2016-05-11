@@ -32,8 +32,15 @@ private:
 	CDevice9* mDevice;
 
 public:
-	CCubeTexture9();
+	CCubeTexture9(CDevice9* Device,UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CCubeTexture9();
+
+	UINT mEdgeLength;
+	UINT mLevels;
+	DWORD mUsage;
+	D3DFORMAT mFormat;
+	D3DPOOL mPool;
+	HANDLE* mSharedHandle;
 
 public:
 	//IUnknown

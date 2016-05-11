@@ -38,5 +38,7 @@ HRESULT WINAPI Direct3DCreate9Ex(UINT SDKVersion, IDirect3D9Ex** out)
 {
 	out = NULL;
 
+	//TODO: Implement, maybe.
+
 	return E_NOTIMPL;
 }

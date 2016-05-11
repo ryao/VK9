@@ -21,9 +21,17 @@ misrepresented as being the original software.
 #include "CSurface9.h"
 #include "CDevice9.h"
 
-CSurface9::CSurface9()
+CSurface9::CSurface9(CDevice9* Device,UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard,HANDLE *pSharedHandle)
+	: mDevice(Device),
+	mWidth(Width),
+	mHeight(Height),
+	mFormat(Format),
+	mMultiSample(MultiSample),
+	mMultisampleQuality(MultisampleQuality),
+	mDiscard(Discard),
+	mSharedHandle(pSharedHandle)
 {
-
+	//TODO: Implement.
 }
 
 CSurface9::~CSurface9()
@@ -33,119 +41,106 @@ CSurface9::~CSurface9()
 
 ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CSurface9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CSurface9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
-//ULONG STDMETHODCALLTYPE	CSurface9::Release(int which, char *comment)
-//{
-//	Assert( which >= 0 );
-//	Assert( which < 2 );
-//		
-//	//int oldrefcs[2] = { m_refcount[0], m_refcount[1] };
-//	bool deleting = false;
-//		
-//	m_refcount[which]--;
-//	if ( (!m_refcount[0]) && (!m_refcount[1]) )
-//	{
-//		deleting = true;
-//	}
-//		
-//	#if IUNKNOWN_ALLOC_SPEW
-//		if (m_mark)
-//		{
-//			GLMPRINTF(("-A- IURelease (%08x,%d) refc -> (%d,%d) [%s] %s",this,which,m_refcount[0],m_refcount[1],comment?comment:"...",deleting?"->DELETING":""));
-//			if (!comment)
-//			{
-//				GLMPRINTF((""))	;	// place to hang a breakpoint
-//			}
-//		}
-//	#endif
-//
-//	if (deleting)
-//	{
-//		if (m_mark)
-//		{
-//			GLMPRINTF((""))	;		// place to hang a breakpoint
-//		}
-//		delete this;
-//		return 0;
-//	}
-//	else
-//	{
-//		return m_refcount[0];
-//	}
-//}
-
 HRESULT STDMETHODCALLTYPE CSurface9::FreePrivateData(REFGUID refguid)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CSurface9::GetPriority()
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CSurface9::GetType()
 {
+	//TODO: Implement.
+
 	return D3DRTYPE_SURFACE;
 }
 
 void STDMETHODCALLTYPE CSurface9::PreLoad()
 {
+	//TODO: Implement.
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CSurface9::SetPriority(DWORD PriorityNew)
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::GetContainer(REFIID riid, void** ppContainer)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::GetDC(HDC* phdc)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 
 HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-
+	//TODO: Implement.
 	
 	return S_OK;	
 }
@@ -153,17 +148,22 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 
 HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }
 
 ULONG STDMETHODCALLTYPE	CSurface9::Release( int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }

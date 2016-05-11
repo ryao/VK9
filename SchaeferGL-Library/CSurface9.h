@@ -28,10 +28,19 @@ misrepresented as being the original software.
 class CSurface9 : public IDirect3DSurface9,CResource9
 {
 private:
-	CDevice9* mDevice;
+	
 public:
-	CSurface9();
+	CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
 	~CSurface9();
+
+	CDevice9* mDevice;
+	UINT mWidth;
+	UINT mHeight;
+	D3DFORMAT mFormat;
+	D3DMULTISAMPLE_TYPE mMultiSample;
+	DWORD mMultisampleQuality;
+	BOOL mDiscard;
+	HANDLE* mSharedHandle;
 
 public:
 	//IUnknown

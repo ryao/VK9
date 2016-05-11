@@ -33,41 +33,57 @@ CTexture9::~CTexture9()
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)
 {
+	//TODO: Implement.
+
 	return this->AddRef(0);
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::Release(void)
 {
+	//TODO: Implement.
+
 	return this->Release(0);
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 ULONG STDMETHODCALLTYPE	CTexture9::Release(int which, char *comment)
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::FreePrivateData(REFGUID refguid)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::GetPriority()
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
@@ -78,81 +94,107 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetPrivateData(REFGUID refguid, void* pData
 
 void STDMETHODCALLTYPE CTexture9::PreLoad()
 {
+	//TODO: Implement.
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::SetPriority(DWORD PriorityNew)
 {
+	//TODO: Implement.
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 {
-	return; //TODO: implement GenerateMipSubLevels
+	//TODO: Implement.
+
+	return;
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 {
-	return D3DTEXF_NONE; //TODO: implement GetAutoGenFilterType
+	//TODO: Implement.
+
+	return D3DTEXF_NONE;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::GetLOD()
 {
-	return 0; //TODO: implement GetLOD
+	//TODO: Implement.
+
+	return 0;
 }
 
 
 DWORD STDMETHODCALLTYPE CTexture9::GetLevelCount()
 {
+	//TODO: Implement.
+
 	return 0;
 }
 
 
 HRESULT STDMETHODCALLTYPE CTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
+	//TODO: Implement.
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::SetLOD(DWORD LODNew)
 {
-	return 0; //TODO: implement SetLOD
+	//TODO: Implement.
+
+	return 0;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CTexture9::GetType()
 {
-	return D3DRTYPE_SURFACE; //TODO: implement type.
+	//TODO: Implement.
+
+	return D3DRTYPE_SURFACE;
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::AddDirtyRect(const RECT* pDirtyRect)
 {
+	//TODO: Implement.
+
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 {
+	//TODO: Implement.
+
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel)
 {
-
+	//TODO: Implement.
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
+	//TODO: Implement.
 
 	return S_OK;	
 }
