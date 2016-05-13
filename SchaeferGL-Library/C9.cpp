@@ -39,7 +39,7 @@ C9::C9()
 	app_info.apiVersion = VK_API_VERSION;
 
 	// initialize the VkInstanceCreateInfo structure
-	VkInstanceCreateInfo inst_info = 
+	VkInstanceCreateInfo inst_info =
 	{
 		VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, // VkStructureType sType;
 		NULL,                                   // const void* pNext;
@@ -55,17 +55,34 @@ C9::C9()
 		extensionNames,                         // const char* const* ppEnabledExtensionNames;
 	};
 
-	vkCreateInstance(&inst_info, NULL, &mInstance);
-
-	//Fetch an array of available physical devices.
-	vkEnumeratePhysicalDevices(mInstance, &mGpuCount, NULL);
-	mPhysicalDevices = new VkPhysicalDevice[mGpuCount]();
-	vkEnumeratePhysicalDevices(mInstance, &mGpuCount, mPhysicalDevices);
+	//Get an instance handle.
+	if (VK_SUCCESS == vkCreateInstance(&inst_info, NULL, &mInstance))
+	{
+		//Fetch an array of available physical devices.
+		vkEnumeratePhysicalDevices(mInstance, &mGpuCount, NULL);
+		if (mGpuCount > 0)
+		{
+			mPhysicalDevices = new VkPhysicalDevice[mGpuCount]();
+			vkEnumeratePhysicalDevices(mInstance, &mGpuCount, mPhysicalDevices);
+		}
+		else
+		{
+			//TODO: no physical device, find a way to fail gracefully.
+		}
+	}
+	else
+	{
+		//TODO: couldn't get instance, find a way to fail gracefully.
+	}
 }
 
 C9::~C9()
 {
-	delete[]	 mPhysicalDevices;
+	if (mPhysicalDevices!=NULL)
+	{
+		delete[]	 mPhysicalDevices;
+	}
+
 	vkDestroyInstance(mInstance, NULL);
 }
 

@@ -42,3 +42,16 @@ HRESULT WINAPI Direct3DCreate9Ex(UINT SDKVersion, IDirect3D9Ex** out)
 
 	return E_NOTIMPL;
 }
+
+/* Other things to possibly implement.
+
+D3DPERF_BeginEvent
+D3DPERF_EndEvent
+D3DPERF_SetMarker
+D3DPERF_SetRegion
+D3DPERF_QueryRepeatFrame
+D3DPERF_SetOptions
+D3DPERF_GetStatus
+DXVA2CreateDirect3DDeviceManager9
+DXVA2CreateVideoService
+*/
