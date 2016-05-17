@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 CVertexDeclaration9::CVertexDeclaration9()
+	: mReferenceCount(0)
 {
 }
 
@@ -32,9 +33,9 @@ CVertexDeclaration9::~CVertexDeclaration9()
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  **ppv)
@@ -46,23 +47,14 @@ HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CVertexDeclaration9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CVertexDeclaration9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements)

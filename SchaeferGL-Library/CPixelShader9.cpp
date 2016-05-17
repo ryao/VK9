@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 CPixelShader9::CPixelShader9()
+	: mReferenceCount(0)
 {
 
 }
@@ -33,9 +34,9 @@ CPixelShader9::~CPixelShader9()
 
 ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::QueryInterface(REFIID riid,void  **ppv)
@@ -47,23 +48,14 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CPixelShader9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CPixelShader9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::FreePrivateData(REFGUID refguid)
@@ -114,11 +106,6 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::SetPrivateData(REFGUID refguid, const v
 
 	return E_NOTIMPL;
 }
-
-//HRESULT STDMETHODCALLTYPE CPixelShader9::GetDevice(IDirect3DDevice9** ppDevice)
-//{
-//	return E_NOTIMPL;
-//}
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {

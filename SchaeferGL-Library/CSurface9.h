@@ -42,6 +42,8 @@ public:
 	BOOL mDiscard;
 	HANDLE* mSharedHandle;
 
+	int mReferenceCount;
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
@@ -65,9 +67,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
 	virtual HRESULT STDMETHODCALLTYPE ReleaseDC(HDC hdc);
 	virtual HRESULT STDMETHODCALLTYPE UnlockRect();
-
-	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
-	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // CSURFACE9_H

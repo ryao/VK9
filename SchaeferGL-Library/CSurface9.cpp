@@ -29,7 +29,8 @@ CSurface9::CSurface9(CDevice9* Device,UINT Width, UINT Height, D3DFORMAT Format,
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
 	mDiscard(Discard),
-	mSharedHandle(pSharedHandle)
+	mSharedHandle(pSharedHandle),
+	mReferenceCount(0)
 {
 	//TODO: Implement.
 }
@@ -41,9 +42,9 @@ CSurface9::~CSurface9()
 
 ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid,void  **ppv)
@@ -55,16 +56,14 @@ HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CSurface9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CSurface9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::FreePrivateData(REFGUID refguid)
@@ -159,11 +158,4 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 	//TODO: Implement.
 
 	return S_OK;	
-}
-
-ULONG STDMETHODCALLTYPE	CSurface9::Release( int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
 }

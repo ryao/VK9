@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 CQuery9::CQuery9()
+	: mReferenceCount(0)
 {
 
 }
@@ -33,9 +34,9 @@ CQuery9::~CQuery9()
 
 ULONG STDMETHODCALLTYPE CQuery9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
@@ -47,23 +48,14 @@ HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CQuery9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CQuery9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CQuery9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)

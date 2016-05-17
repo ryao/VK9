@@ -34,7 +34,7 @@ public:
 	CIndexBuffer9();
 	~CIndexBuffer9();
 
-	void STDMETHODCALLTYPE UnlockActualSize( unsigned int nActualSize, const void *pActualData = NULL );
+	int mReferenceCount;
 	
 public:
 	//IUnknown
@@ -56,9 +56,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDesc(D3DINDEXBUFFER_DESC* pDesc);
 	virtual HRESULT STDMETHODCALLTYPE Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags);
 	virtual HRESULT STDMETHODCALLTYPE Unlock();
-
-	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
-	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // CINDEXBUFFER9_H

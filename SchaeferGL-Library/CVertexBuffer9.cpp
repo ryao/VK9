@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 CVertexBuffer9::CVertexBuffer9()
+	: mReferenceCount(0)
 {
 
 }
@@ -33,9 +34,9 @@ CVertexBuffer9::~CVertexBuffer9()
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::QueryInterface(REFIID riid,void  **ppv)
@@ -47,23 +48,14 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::QueryInterface(REFIID riid,void  **ppv
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CVertexBuffer9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::FreePrivateData(REFGUID refguid)
@@ -115,19 +107,12 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::SetPrivateData(REFGUID refguid, const 
 	return E_NOTIMPL;
 }
 
-void STDMETHODCALLTYPE CVertexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData)
-{
-	//TODO: Implement.
-}
-
-
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
 {
 	//TODO: Implement.
 
 	return E_NOTIMPL;
 }
-
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {

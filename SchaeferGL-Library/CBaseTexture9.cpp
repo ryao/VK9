@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 CBaseTexture9::CBaseTexture9()
+	: mReferenceCount(0)
 {
 
 }
@@ -33,9 +34,9 @@ CBaseTexture9::~CBaseTexture9()
 
 ULONG STDMETHODCALLTYPE CBaseTexture9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::QueryInterface(REFIID riid,void  **ppv)
@@ -47,23 +48,14 @@ HRESULT STDMETHODCALLTYPE CBaseTexture9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CBaseTexture9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CBaseTexture9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CBaseTexture9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::FreePrivateData(REFGUID refguid)

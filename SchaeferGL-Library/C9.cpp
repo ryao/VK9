@@ -24,7 +24,9 @@ misrepresented as being the original software.
 #define APP_SHORT_NAME "SchaeferGL"
 
 C9::C9()
-	: mGpuCount(0), mPhysicalDevices(NULL)
+	: mGpuCount(0), 
+	mPhysicalDevices(NULL),
+	mReferenceCount(0)
 {
 	const char *extensionNames[] = { "VK_KHR_surface", "VK_KHR_win32_surface" };
 
@@ -90,7 +92,9 @@ C9::~C9()
 
 ULONG STDMETHODCALLTYPE C9::AddRef(void)
 {
-	return this->AddRef(0);
+	mReferenceCount++;
+
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
@@ -101,7 +105,14 @@ HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE C9::Release(void)
 {
-	return this->Release(0);
+	mReferenceCount--;
+
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
+
+	return mReferenceCount;
 }
 
 //IDirect3D9
@@ -117,7 +128,7 @@ HRESULT STDMETHODCALLTYPE C9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE Dev
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,DWORD Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat)
 {
-	HRESULT result = D3DERR_NOTAVAILABLE;	// failure
+	HRESULT result = S_OK;	// failure
 	
 	//TODO: Implement.
 	
@@ -172,6 +183,14 @@ UINT STDMETHODCALLTYPE C9::GetAdapterCount()
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
 {
+	//Wanted to use vkGetPhysicalDeviceDisplayPropertiesKHR but it looks like it's an extension that isn't available.
+
+	//Fake it till you make it.
+	pMode->Height = 1080;
+	pMode->Width = 1920;
+	pMode->RefreshRate = 60;
+	pMode->Format = D3DFMT_UNKNOWN;
+
 	//TODO: Implement.
 
 	return S_OK;	
@@ -204,27 +223,81 @@ HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D
 {
 	//TODO: Implement.
 
+	//Fake it till you make it.
+	pCaps->DeviceType = D3DDEVTYPE_FORCE_DWORD;
+	pCaps->AdapterOrdinal=Adapter;
+	pCaps->Caps=0;
+	pCaps->Caps2=0;
+	pCaps->Caps3=0;
+	pCaps->PresentationIntervals=0;
+	pCaps->CursorCaps=0;
+	pCaps->DevCaps=0;
+	pCaps->PrimitiveMiscCaps=0;
+	pCaps->RasterCaps=0;
+	pCaps->ZCmpCaps=0;
+	pCaps->SrcBlendCaps=0;
+	pCaps->DestBlendCaps=0;
+	pCaps->AlphaCmpCaps=0;
+	pCaps->ShadeCaps=0;
+	pCaps->TextureCaps=0;
+	pCaps->TextureFilterCaps=0;
+	pCaps->CubeTextureFilterCaps=0;
+	pCaps->VolumeTextureFilterCaps=0;
+	pCaps->TextureAddressCaps=0;
+	pCaps->VolumeTextureAddressCaps=0;
+	pCaps->LineCaps=0;
+	pCaps->MaxTextureWidth=0;
+	pCaps->MaxTextureHeight=0;
+	pCaps->MaxVolumeExtent=0;
+	pCaps->MaxTextureRepeat=0;
+	pCaps->MaxTextureAspectRatio=0;
+	pCaps->MaxAnisotropy=0;
+	pCaps->MaxVertexW=0;
+	pCaps->GuardBandLeft=0;
+	pCaps->GuardBandTop=0;
+	pCaps->GuardBandRight=0;
+	pCaps->GuardBandBottom=0;
+	pCaps->ExtentsAdjust=0;
+	pCaps->StencilCaps=0;
+	pCaps->FVFCaps=0;
+	pCaps->TextureOpCaps=0;
+	pCaps->MaxTextureBlendStages=0;
+	pCaps->MaxSimultaneousTextures=0;
+	pCaps->VertexProcessingCaps=0;
+	pCaps->MaxActiveLights=0;
+	pCaps->MaxUserClipPlanes=0;
+	pCaps->MaxVertexBlendMatrices=0;
+	pCaps->MaxVertexBlendMatrixIndex=0;
+	pCaps->MaxPointSize=0;
+	pCaps->MaxPrimitiveCount=0;
+	pCaps->MaxVertexIndex=0;
+	pCaps->MaxStreams=0;
+	pCaps->MaxStreamStride=0;
+	pCaps->VertexShaderVersion=0;
+	pCaps->MaxVertexShaderConst=0;
+	pCaps->PixelShaderVersion=0;
+	pCaps->PixelShader1xMaxValue=0;
+	pCaps->DevCaps2=0;
+	pCaps->MasterAdapterOrdinal=0;
+	pCaps->AdapterOrdinalInGroup=0;
+	pCaps->NumberOfAdaptersInGroup=0;
+	pCaps->DeclTypes=0;
+	pCaps->NumSimultaneousRTs=0;
+	pCaps->StretchRectFilterCaps=0;
+	//pCaps->VS20Caps=0;
+	//pCaps->PS20Caps=0;
+	pCaps->VertexTextureFilterCaps=0;
+	pCaps->MaxVShaderInstructionsExecuted=0;
+	pCaps->MaxPShaderInstructionsExecuted=0;
+	pCaps->MaxVertexShader30InstructionSlots=0;
+	pCaps->MaxPixelShader30InstructionSlots=0;
+
 	return S_OK;	
 }
-
 
 HRESULT STDMETHODCALLTYPE C9::RegisterSoftwareDevice(void *pInitializeFunction)
 {
 	//TODO: Implement.
 
 	return E_NOTIMPL;
-}
-
-ULONG STDMETHODCALLTYPE C9::AddRef( int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	C9::Release( int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
 }

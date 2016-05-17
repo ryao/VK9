@@ -168,9 +168,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UpdateTexture(IDirect3DBaseTexture9* pSourceTexture,IDirect3DBaseTexture9* pDestinationTexture);
 	virtual HRESULT STDMETHODCALLTYPE ValidateDevice(DWORD *pNumPasses);
 	
-	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
-	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
-	virtual HRESULT STDMETHODCALLTYPE CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,CSurface9 **ppSurface,HANDLE *pSharedHandle,char *debugLabel);
 public:
 	VkPhysicalDevice mPhysicalDevice;
 	VkDevice mDevice;
@@ -182,6 +179,8 @@ public:
 	DWORD mBehaviorFlags;
 	D3DPRESENT_PARAMETERS* mPresentationParameters;
 	uint32_t mQueueCount;
+
+	int mReferenceCount;
 };
 
 #endif // CDEVICE9_H

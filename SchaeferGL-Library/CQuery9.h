@@ -33,6 +33,8 @@ public:
 	CQuery9();
 	~CQuery9();
 	
+	int mReferenceCount;
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
@@ -45,9 +47,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice) { (*ppDevice) = (IDirect3DDevice9*)mDevice; return S_OK; }
 	virtual D3DQUERYTYPE STDMETHODCALLTYPE GetType();
 	virtual HRESULT STDMETHODCALLTYPE Issue(DWORD dwIssueFlags);
-
-	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
-	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // CQUERY9_H

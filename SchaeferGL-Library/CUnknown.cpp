@@ -21,6 +21,7 @@ misrepresented as being the original software.
 #include "CUnknown.h"
 
 CUnknown::CUnknown(void)
+	: mReferenceCount(0)
 {
 
 }
@@ -32,9 +33,9 @@ CUnknown::~CUnknown(void)
 
 ULONG STDMETHODCALLTYPE CUnknown::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CUnknown::QueryInterface(REFIID riid,void  **ppv)
@@ -46,21 +47,12 @@ HRESULT STDMETHODCALLTYPE CUnknown::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CUnknown::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount<=0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CUnknown::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CUnknown::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }

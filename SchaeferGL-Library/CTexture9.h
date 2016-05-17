@@ -34,6 +34,8 @@ public:
 	CTexture9();
 	~CTexture9();
 
+	int mReferenceCount;
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
@@ -66,9 +68,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel);
 	virtual HRESULT STDMETHODCALLTYPE LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags);
 	virtual HRESULT STDMETHODCALLTYPE UnlockRect(UINT Level);
-
-	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
-	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // CTEXTURE9_H

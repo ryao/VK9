@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 CIndexBuffer9::CIndexBuffer9()
+	: mReferenceCount(0)
 {
 
 }
@@ -33,9 +34,9 @@ CIndexBuffer9::~CIndexBuffer9()
 
 ULONG STDMETHODCALLTYPE CIndexBuffer9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::QueryInterface(REFIID riid,void  **ppv)
@@ -47,23 +48,14 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CIndexBuffer9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CIndexBuffer9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CIndexBuffer9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::FreePrivateData(REFGUID refguid)
@@ -113,13 +105,6 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::SetPrivateData(REFGUID refguid, const v
 	//TODO: Implement.
 
 	return E_NOTIMPL;
-}
-
-
-void STDMETHODCALLTYPE CIndexBuffer9::UnlockActualSize( unsigned int nActualSize, const void *pActualData)
-{
-	//TODO: Implement.
-
 }
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC* pDesc)

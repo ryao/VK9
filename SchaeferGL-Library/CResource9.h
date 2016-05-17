@@ -35,6 +35,8 @@ public:
 	CResource9();
 	~CResource9();
 
+	int mReferenceCount;
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
@@ -50,9 +52,6 @@ public:
 	virtual void STDMETHODCALLTYPE PreLoad();
 	virtual DWORD STDMETHODCALLTYPE SetPriority(DWORD PriorityNew);
 	virtual HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags);
-
-	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
-	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // CResource9_H

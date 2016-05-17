@@ -34,6 +34,8 @@ public:
 	CBaseTexture9();
 	~CBaseTexture9();
 
+	int mReferenceCount;
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
@@ -57,9 +59,6 @@ public:
 	virtual DWORD STDMETHODCALLTYPE GetLevelCount();
 	virtual HRESULT STDMETHODCALLTYPE SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType);
 	virtual DWORD STDMETHODCALLTYPE SetLOD(DWORD LODNew);
-
-	ULONG STDMETHODCALLTYPE AddRef( int which, char *comment = NULL );
-	ULONG STDMETHODCALLTYPE	Release( int which, char *comment = NULL );
 };
 
 #endif // CBaseTexture9_H

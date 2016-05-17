@@ -36,7 +36,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mFocusWindow(hFocusWindow),
 	mBehaviorFlags(BehaviorFlags),
 	mPresentationParameters(pPresentationParameters),
-	mQueueCount(0)
+	mQueueCount(0),
+	mReferenceCount(0)
 {
 	mPhysicalDevice = mInstance->mPhysicalDevices[mAdapter]; //pull the selected physical device from the instance.
 
@@ -86,9 +87,9 @@ CDevice9::~CDevice9()
 
 ULONG STDMETHODCALLTYPE CDevice9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::QueryInterface(REFIID riid,void  **ppv)
@@ -100,9 +101,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CDevice9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
+
+	return mReferenceCount;
 }
 
 //Device
@@ -193,11 +199,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
-{
-	return this->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, (CSurface9**)ppSurface, pSharedHandle, NULL);
-}
-
-HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,CSurface9 **ppSurface,HANDLE *pSharedHandle,char *debugLabel)
 {
 	//TODO: Implement.
 
@@ -928,18 +929,4 @@ HRESULT STDMETHODCALLTYPE CDevice9::ValidateDevice(DWORD *pNumPasses)
 	//TODO: Implement.
 
 	return S_OK;	
-}
-
-ULONG STDMETHODCALLTYPE CDevice9::AddRef( int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CDevice9::Release( int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
 }

@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 CVolumeTexture9::CVolumeTexture9()
+	: mReferenceCount(0)
 {
 
 }
@@ -33,9 +34,9 @@ CVolumeTexture9::~CVolumeTexture9()
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::QueryInterface(REFIID riid,void  **ppv)
@@ -47,23 +48,14 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::QueryInterface(REFIID riid,void  **pp
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CVolumeTexture9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::FreePrivateData(REFGUID refguid)
@@ -86,11 +78,6 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetPrivateData(REFGUID refguid, void*
 
 	return E_NOTIMPL;
 }
-
-//D3DRESOURCETYPE STDMETHODCALLTYPE CVolumeTexture9::GetType()
-//{
-//	return D3DRTYPE_SURFACE;
-//}
 
 void STDMETHODCALLTYPE CVolumeTexture9::PreLoad()
 {
@@ -134,14 +121,12 @@ DWORD STDMETHODCALLTYPE CVolumeTexture9::GetLOD()
 	return 0;
 }
 
-
 DWORD STDMETHODCALLTYPE CVolumeTexture9::GetLevelCount()
 {
 	//TODO: Implement.
 
 	return 0;
 }
-
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
@@ -178,14 +163,12 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetLevelDesc(UINT Level, D3DVOLUME_DE
 	return S_OK;	
 }
 
-
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel)
 {
 	//TODO: Implement.
 
 	return E_NOTIMPL;
 }
-
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags)
 {

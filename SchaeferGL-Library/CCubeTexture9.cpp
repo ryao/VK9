@@ -29,7 +29,8 @@ CCubeTexture9::CCubeTexture9(CDevice9* Device, UINT EdgeLength, UINT Levels, DWO
 	mUsage(Usage),
 	mFormat(Format),
 	mPool(Pool),
-	mSharedHandle(pSharedHandle)
+	mSharedHandle(pSharedHandle),
+	mReferenceCount(0)
 {
 	//TODO: Implement.
 }
@@ -41,9 +42,9 @@ CCubeTexture9::~CCubeTexture9()
 
 ULONG STDMETHODCALLTYPE CCubeTexture9::AddRef(void)
 {
-	//TODO: Implement.
+	mReferenceCount++;
 
-	return this->AddRef(0);
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::QueryInterface(REFIID riid,void  **ppv)
@@ -55,23 +56,14 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CCubeTexture9::Release(void)
 {
-	//TODO: Implement.
+	mReferenceCount--;
 
-	return this->Release(0);
-}
+	if (mReferenceCount <= 0)
+	{
+		delete this;
+	}
 
-ULONG STDMETHODCALLTYPE CCubeTexture9::AddRef(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
-}
-
-ULONG STDMETHODCALLTYPE	CCubeTexture9::Release(int which, char *comment)
-{
-	//TODO: Implement.
-
-	return 0;
+	return mReferenceCount;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::FreePrivateData(REFGUID refguid)
@@ -94,11 +86,6 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::GetPrivateData(REFGUID refguid, void* p
 
 	return E_NOTIMPL;
 }
-
-//D3DRESOURCETYPE STDMETHODCALLTYPE CCubeTexture9::GetType()
-//{
-//	return D3DRTYPE_SURFACE;
-//}
 
 void STDMETHODCALLTYPE CCubeTexture9::PreLoad()
 {
@@ -142,14 +129,12 @@ DWORD STDMETHODCALLTYPE CCubeTexture9::GetLOD()
 	return 0;
 }
 
-
 DWORD STDMETHODCALLTYPE CCubeTexture9::GetLevelCount()
 {
 	//TODO: Implement.
 
 	return 0;
 }
-
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
@@ -178,7 +163,6 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::AddDirtyRect(D3DCUBEMAP_FACES FaceType,
 
 	return E_NOTIMPL;
 }
-
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface9** ppCubeMapSurface)
 {
