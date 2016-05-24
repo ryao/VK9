@@ -221,6 +221,20 @@ HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 
 HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
 {
+	/*
+		https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#VkPhysicalDeviceProperties
+		https://msdn.microsoft.com/en-us/library/windows/desktop/bb172513(v=vs.85).aspx
+		https://msdn.microsoft.com/en-us/library/windows/desktop/bb172635(v=vs.85).aspx
+		https://msdn.microsoft.com/en-us/library/windows/desktop/bb172591(v=vs.85).aspx
+	*/
+
+	//Fetch the properties & features from the physical device.
+	VkPhysicalDeviceProperties properties;
+	VkPhysicalDeviceFeatures features;
+	vkGetPhysicalDeviceProperties(this->mPhysicalDevices[Adapter], &properties);
+	vkGetPhysicalDeviceFeatures(this->mPhysicalDevices[Adapter], &features);
+
+	//Translate the vulkan properties & features into D3D9 capabilities.
 	pCaps->DeviceType = DeviceType;
 	pCaps->AdapterOrdinal=0;
 	pCaps->Caps=0;
@@ -243,12 +257,12 @@ HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D
 	pCaps->TextureAddressCaps = D3DPTADDRESSCAPS_BORDER | D3DPTADDRESSCAPS_INDEPENDENTUV | D3DPTADDRESSCAPS_WRAP | D3DPTADDRESSCAPS_MIRROR | D3DPTADDRESSCAPS_CLAMP | D3DPTADDRESSCAPS_MIRRORONCE;
 	pCaps->VolumeTextureAddressCaps = pCaps->TextureAddressCaps;
 	pCaps->LineCaps = D3DLINECAPS_ALPHACMP | D3DLINECAPS_BLEND | D3DLINECAPS_TEXTURE | D3DLINECAPS_ZTEST | D3DLINECAPS_FOG;
-	pCaps->MaxTextureWidth=0; //TODO: MaxTextureWidth
-	pCaps->MaxTextureHeight=0; //TODO: MaxTextureHeight
-	pCaps->MaxVolumeExtent=0; //TODO: MaxVolumeExtent
+	pCaps->MaxTextureWidth = properties.limits.maxImageDimension2D; //Revisit
+	pCaps->MaxTextureHeight = properties.limits.maxImageDimension2D; //Revisit
+	pCaps->MaxVolumeExtent= properties.limits.maxImageDimensionCube; //Revisit
 	pCaps->MaxTextureRepeat= 32768; //revisit
 	pCaps->MaxTextureAspectRatio = pCaps->MaxTextureWidth;
-	pCaps->MaxAnisotropy=0; //TODO: MaxAnisotropy
+	pCaps->MaxAnisotropy= features.samplerAnisotropy;
 	pCaps->MaxVertexW = 1e10f; //revisit
 	pCaps->GuardBandLeft = -1e9f; //revisit
 	pCaps->GuardBandTop = -1e9f; //revisit
@@ -258,18 +272,18 @@ HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D
 	pCaps->StencilCaps = D3DSTENCILCAPS_KEEP | D3DSTENCILCAPS_ZERO | D3DSTENCILCAPS_REPLACE | D3DSTENCILCAPS_INCRSAT | D3DSTENCILCAPS_DECRSAT | D3DSTENCILCAPS_INVERT | D3DSTENCILCAPS_INCR | D3DSTENCILCAPS_DECR | D3DSTENCILCAPS_TWOSIDED;
 	pCaps->FVFCaps = D3DFVFCAPS_PSIZE;
 	pCaps->TextureOpCaps = D3DTEXOPCAPS_DISABLE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2 | D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_MODULATE2X | D3DTEXOPCAPS_MODULATE4X | D3DTEXOPCAPS_ADD | D3DTEXOPCAPS_ADDSIGNED | D3DTEXOPCAPS_ADDSIGNED2X | D3DTEXOPCAPS_SUBTRACT | D3DTEXOPCAPS_ADDSMOOTH | D3DTEXOPCAPS_BLENDDIFFUSEALPHA | D3DTEXOPCAPS_BLENDTEXTUREALPHA | D3DTEXOPCAPS_BLENDFACTORALPHA | D3DTEXOPCAPS_BLENDTEXTUREALPHAPM | D3DTEXOPCAPS_BLENDCURRENTALPHA | D3DTEXOPCAPS_PREMODULATE | D3DTEXOPCAPS_MODULATEALPHA_ADDCOLOR | D3DTEXOPCAPS_MODULATECOLOR_ADDALPHA | D3DTEXOPCAPS_MODULATEINVALPHA_ADDCOLOR | D3DTEXOPCAPS_MODULATEINVCOLOR_ADDALPHA | D3DTEXOPCAPS_BUMPENVMAP | D3DTEXOPCAPS_BUMPENVMAPLUMINANCE | D3DTEXOPCAPS_DOTPRODUCT3 | D3DTEXOPCAPS_MULTIPLYADD | D3DTEXOPCAPS_LERP;
-	pCaps->MaxTextureBlendStages = 8; //revisit
-	pCaps->MaxSimultaneousTextures=0; //TODO: MaxSimultaneousTextures
+	pCaps->MaxTextureBlendStages = properties.limits.maxDescriptorSetSamplers; //revisit
+	pCaps->MaxSimultaneousTextures= properties.limits.maxDescriptorSetSampledImages; //revisit
 	pCaps->VertexProcessingCaps = D3DVTXPCAPS_TEXGEN | D3DVTXPCAPS_MATERIALSOURCE7 | D3DVTXPCAPS_DIRECTIONALLIGHTS | D3DVTXPCAPS_POSITIONALLIGHTS | D3DVTXPCAPS_LOCALVIEWER | D3DVTXPCAPS_TWEENING;
-	pCaps->MaxActiveLights=0;  //TODO: MaxActiveLights
-	pCaps->MaxUserClipPlanes=0; //TODO: MaxUserClipPlanes
+	pCaps->MaxActiveLights=0;  //Revsit should be infinite but games may not read it that way.
+	pCaps->MaxUserClipPlanes = 8; //revisit
 	pCaps->MaxVertexBlendMatrices = 4; //revisit
 	pCaps->MaxVertexBlendMatrixIndex = 7; //revisit
-	pCaps->MaxPointSize=0; //TODO: MaxPointSize
+	pCaps->MaxPointSize= properties.limits.pointSizeRange[1]; //revisit
 	pCaps->MaxPrimitiveCount = 0xFFFFFFFF; //revisit
 	pCaps->MaxVertexIndex = 0xFFFFFFFF; //revisit
-	pCaps->MaxStreams=0; //TODO: MaxStreams
-	pCaps->MaxStreamStride=0; //TODO: MaxStreamStride
+	pCaps->MaxStreams = properties.limits.maxVertexInputBindings; //revisit
+	pCaps->MaxStreamStride= properties.limits.maxVertexInputBindingStride; //revisit
 	pCaps->VertexShaderVersion= D3DVS_VERSION(3, 0);
 	pCaps->MaxVertexShaderConst=256; //revisit
 	pCaps->PixelShaderVersion = D3DPS_VERSION(3, 0);
@@ -279,19 +293,19 @@ HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D
 	pCaps->AdapterOrdinalInGroup=0;
 	pCaps->NumberOfAdaptersInGroup = 1;
 	pCaps->DeclTypes= D3DDTCAPS_UBYTE4 | D3DDTCAPS_UBYTE4N | D3DDTCAPS_SHORT2N | D3DDTCAPS_SHORT4N | D3DDTCAPS_USHORT2N | D3DDTCAPS_USHORT4N | D3DDTCAPS_UDEC3 | D3DDTCAPS_DEC3N | D3DDTCAPS_FLOAT16_2 | D3DDTCAPS_FLOAT16_4;
-	pCaps->NumSimultaneousRTs=0; //TODO: NumSimultaneousRTs
+	pCaps->NumSimultaneousRTs = 4; //revisit
 	pCaps->StretchRectFilterCaps= D3DPTFILTERCAPS_MINFPOINT | D3DPTFILTERCAPS_MINFLINEAR | D3DPTFILTERCAPS_MAGFPOINT | D3DPTFILTERCAPS_MAGFLINEAR;
 	pCaps->VS20Caps.Caps = D3DVS20CAPS_PREDICATION;
-	//pCaps->VS20Caps.DynamicFlowControlDepth = //TODO: DynamicFlowControlDepth
-	//pCaps->VS20Caps.StaticFlowControlDepth = //TODO: StaticFlowControlDepth
-	//pCaps->VS20Caps.NumTemps = //TODO: NumTemps
+	pCaps->VS20Caps.DynamicFlowControlDepth = 24; //revsit
+	pCaps->VS20Caps.StaticFlowControlDepth = 4; //revsit
+	pCaps->VS20Caps.NumTemps = 32; //revsit
 	pCaps->PS20Caps.Caps = D3DPS20CAPS_ARBITRARYSWIZZLE | D3DPS20CAPS_GRADIENTINSTRUCTIONS | D3DPS20CAPS_PREDICATION;
-	//pCaps->PS20Caps.DynamicFlowControlDepth = //TODO: DynamicFlowControlDepth
-	//pCaps->PS20Caps.StaticFlowControlDepth = //TODO: StaticFlowControlDepth
-	//pCaps->PS20Caps.NumTemps = //TODO: NumTemps
+	pCaps->PS20Caps.DynamicFlowControlDepth = 24; //revsit
+	pCaps->PS20Caps.StaticFlowControlDepth = 4; //revsit
+	pCaps->PS20Caps.NumTemps = 32; //revsit
 	pCaps->VertexTextureFilterCaps = pCaps->TextureFilterCaps; //revisit
-	pCaps->MaxVertexShader30InstructionSlots = 0; //TODO: MaxVertexShader30InstructionSlots
-	pCaps->MaxPixelShader30InstructionSlots = 0; //TODO: MaxPixelShader30InstructionSlots
+	pCaps->MaxVertexShader30InstructionSlots = 32768; //revisit
+	pCaps->MaxPixelShader30InstructionSlots = 32768; //revisit
 	pCaps->MaxVShaderInstructionsExecuted = 65535 < pCaps->MaxVertexShader30InstructionSlots * 32 ? pCaps->MaxVertexShader30InstructionSlots * 32: 65535; //revisit
 	pCaps->MaxPShaderInstructionsExecuted = 65535 < pCaps->MaxPixelShader30InstructionSlots * 32 ? pCaps->MaxPixelShader30InstructionSlots * 32 : 65535; //revisit
 
