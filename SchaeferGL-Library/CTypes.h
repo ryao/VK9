@@ -22,5 +22,4 @@ misrepresented as being the original software.
 #define CTYPES_H
 
 
-
 #endif // CTYPES_H

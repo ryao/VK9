@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "CVertexDeclaration9.h"
 #include "CVertexShader9.h"
 
+#include "Utilities.h"
 
 CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
 	: mInstance(Instance),
@@ -37,7 +38,9 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mBehaviorFlags(BehaviorFlags),
 	mPresentationParameters(pPresentationParameters),
 	mQueueCount(0),
-	mReferenceCount(0)
+	mReferenceCount(0),
+	mDisplays(NULL),
+	mDisplayCount(0)
 {
 	mPhysicalDevice = mInstance->mPhysicalDevices[mAdapter]; //pull the selected physical device from the instance.
 
@@ -76,10 +79,68 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	device_info.pEnabledFeatures = NULL;
 
 	vkCreateDevice(mPhysicalDevice, &device_info, NULL, &mDevice);
+
+	/*
+	Now that the rendering is setup the surface must be created.
+	The surface maybe inside of a window or a whole display. (Think SDL)
+	*/
+	if (!mPresentationParameters->Windowed)
+	{
+		VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
+
+		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		surfaceCreateInfo.pNext = NULL;
+		surfaceCreateInfo.flags = 0;
+		surfaceCreateInfo.hwnd = hFocusWindow;
+		surfaceCreateInfo.hinstance = GetModuleHandle(NULL);
+
+		vkCreateWin32SurfaceKHR(mInstance->mInstance, &surfaceCreateInfo, NULL, &mSurface);
+	}
+	else
+	{
+		//TODO: finish full screen support.
+		/*vkGetDisplayPlaneSupportedDisplaysKHR(mPhysicalDevice, 0, &mDisplayCount, NULL);
+		mDisplays = new VkDisplayKHR[mDisplayCount];
+		vkGetDisplayPlaneSupportedDisplaysKHR(mPhysicalDevice, 0, &mDisplayCount, mDisplays);
+
+		//vkGetDisplayModePropertiesKHR(mPhysicalDevice,mDisplays[0])
+
+		VkDisplaySurfaceCreateInfoKHR surfaceCreateInfo = {};
+
+		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		surfaceCreateInfo.pNext = NULL;
+		surfaceCreateInfo.flags = 0;
+
+
+
+		vkCreateDisplayPlaneSurfaceKHR(mInstance->mInstance,&surfaceCreateInfo,NULL, &mSurface);*/
+	}
+
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mPhysicalDevice, mSurface, &mSurfaceCapabilities);
+
+	VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
+
+	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	swapchainCreateInfo.pNext = NULL;
+	swapchainCreateInfo.flags = 0;
+	swapchainCreateInfo.surface = mSurface;
+	swapchainCreateInfo.imageFormat = ConvertFormat(mPresentationParameters->BackBufferFormat);
+
+	//TODO: finish swapchain create info including format information.
+
+	vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, NULL, &mSwapchain);
+	
+
+	
 }
 
 CDevice9::~CDevice9()
 {
+	if (mDisplays!=NULL)
+	{
+		delete[] mDisplays;
+	}
+	vkDestroySurfaceKHR(mInstance->mInstance, mSurface, NULL);
 	vkDestroyDevice(mDevice, NULL);
 }
 

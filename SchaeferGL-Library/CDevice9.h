@@ -25,6 +25,7 @@ misrepresented as being the original software.
 
 #include "d3d9.h" // Base class: IDirect3DDevice9
 #include <vulkan/vulkan.h>
+#include <vulkan/vk_sdk_platform.h>
 #include "CUnknown.h"
 
 #include "CVertexDeclaration9.h"
@@ -172,6 +173,8 @@ public:
 	VkPhysicalDevice mPhysicalDevice;
 	VkDevice mDevice;
 	VkQueueFamilyProperties* mQueueFamilyProperties;
+	VkSurfaceCapabilitiesKHR mSurfaceCapabilities;
+	VkSurfaceKHR mSurface;
 	C9* mInstance;
 	UINT mAdapter;
 	D3DDEVTYPE mDeviceType;
@@ -179,8 +182,13 @@ public:
 	DWORD mBehaviorFlags;
 	D3DPRESENT_PARAMETERS* mPresentationParameters;
 	uint32_t mQueueCount;
+	VkDisplayKHR* mDisplays;
+	uint32_t mDisplayCount;
+	VkSwapchainKHR mSwapchain;
 
 	int mReferenceCount;
 };
+
+
 
 #endif // CDEVICE9_H
