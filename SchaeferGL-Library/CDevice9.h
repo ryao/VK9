@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3DDevice9
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
+#include <vector>
 #include "CUnknown.h"
 
 #include "CVertexDeclaration9.h"
@@ -185,8 +186,33 @@ public:
 	VkDisplayKHR* mDisplays;
 	uint32_t mDisplayCount;
 	VkSwapchainKHR mSwapchain;
-
+	uint32_t mGraphicsQueueIndex;
+	uint32_t mPresentationQueueIndex;
 	int mReferenceCount;
+	VkExtent2D mSwapchainExtent;
+	VkColorSpaceKHR mColorSpace;
+	VkSurfaceFormatKHR* mSurfaceFormats;
+	uint32_t mSurfaceFormatCount;
+	VkFormat mFormat;
+	VkSurfaceTransformFlagBitsKHR mTransformFlags;
+	VkPresentModeKHR mSwapchainPresentMode;
+	VkPresentModeKHR* mPresentationModes;
+	uint32_t mPresentationModeCount;
+	std::vector<char*> mDeviceExtensionNames;
+	uint32_t mCurrentBuffer;
+	VkCommandPool mCommandPool;
+	VkImage* mSwapchainImages;
+	VkCommandBuffer* mSwapchainBuffers;
+	VkImageView* mSwapchainViews;
+	uint32_t mSwapchainImageCount;
+	VkCommandBuffer mCommandBuffer;
+	VkQueue mQueue;
+	VkSemaphore mPresentCompleteSemaphore;
+	VkFence mNullFence;
+	VkRenderPass mRenderPass;
+	VkFramebuffer* mFramebuffers;
+
+	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 };
 
 

@@ -40,7 +40,21 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mQueueCount(0),
 	mReferenceCount(0),
 	mDisplays(NULL),
-	mDisplayCount(0)
+	mDisplayCount(0),
+	mGraphicsQueueIndex(UINT32_MAX),
+	mPresentationQueueIndex(UINT32_MAX),
+	mSurfaceFormatCount(0),
+	mSurfaceFormats(NULL),
+	mSwapchainPresentMode(VK_PRESENT_MODE_FIFO_KHR),
+	mPresentationModeCount(0),
+	mPresentationModes(NULL),
+	mSwapchainImages(NULL),
+	mSwapchainBuffers(NULL),
+	mSwapchainViews(NULL),
+	mSwapchainImageCount(0),
+	mCommandBuffer(VK_NULL_HANDLE),
+	mNullFence(VK_NULL_HANDLE),
+	mFramebuffers(NULL)
 {
 	mPhysicalDevice = mInstance->mPhysicalDevices[mAdapter]; //pull the selected physical device from the instance.
 
@@ -60,6 +74,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		}
 	}*/
 
+	mDeviceExtensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
 	float queue_priorities[1] = { 0.0 };
 	VkDeviceQueueCreateInfo queue_info = {};	
 	queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -72,8 +88,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	device_info.pNext = NULL;
 	device_info.queueCreateInfoCount = 1;
 	device_info.pQueueCreateInfos = &queue_info;
-	device_info.enabledExtensionCount = 0;
-	device_info.ppEnabledExtensionNames = NULL;
+	device_info.enabledExtensionCount = mDeviceExtensionNames.size();
+	device_info.ppEnabledExtensionNames = mDeviceExtensionNames.data();
 	device_info.enabledLayerCount = 0;
 	device_info.ppEnabledLayerNames = NULL;
 	device_info.pEnabledFeatures = NULL;
@@ -117,34 +133,430 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mPhysicalDevice, mSurface, &mSurfaceCapabilities);
+	
+	/*
+	Search for queues to use for graphics and presentation.
+	It's easier if one queue does both so if we find one that supports both than just exit.
+	Otherwise look for one for presentation and one for graphics.
+	The index of the queue us stored for later use.
+	*/
+	for (size_t i = 0; i < mQueueCount; i++)
+	{
+		VkBool32 doesSupportPresentation = false;
+		VkBool32 doesSupportGraphics = false;
 
+		vkGetPhysicalDeviceSurfaceSupportKHR(mPhysicalDevice, i, mSurface, &doesSupportPresentation);
+		doesSupportGraphics = ((mQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0);
+
+		if (doesSupportPresentation && doesSupportGraphics)
+		{
+			mGraphicsQueueIndex = i;
+			mPresentationQueueIndex = i;
+			break;
+		}
+		else if (doesSupportPresentation && mPresentationQueueIndex == UINT32_MAX)
+		{
+			mPresentationQueueIndex = i;
+		}
+		else if (doesSupportGraphics && mGraphicsQueueIndex == UINT32_MAX)
+		{
+			mGraphicsQueueIndex = i;
+		}
+
+	}
+
+	/*
+	Now we need to setup our queues and buffers.
+	We'll start with a command pool because that is where we get command buffers from.
+	*/
+
+	VkCommandPoolCreateInfo commandPoolInfo = {};
+	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	commandPoolInfo.pNext = NULL;
+	commandPoolInfo.queueFamilyIndex = mGraphicsQueueIndex; //Found earlier.
+	commandPoolInfo.flags = 0;
+
+	vkCreateCommandPool(mDevice, &commandPoolInfo, NULL, &mCommandPool);
+
+	//Create queue so we can submit command buffers.
+	vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0,&mQueue);
+
+	/*
+	Now pull some information about the surface so we can create the swapchain correctly.
+	*/
+
+	if (mSurfaceCapabilities.currentExtent.width == (uint32_t)-1) 
+	{
+		//If the height/width are -1 then just set it to the requested size and hope for the best.
+		mSwapchainExtent.width = mPresentationParameters->BackBufferWidth;
+		mSwapchainExtent.height = mPresentationParameters->BackBufferHeight;
+	}
+	else 
+	{
+		//Appearently the swap chain size must match the surface size if it is defined.
+		mSwapchainExtent = mSurfaceCapabilities.currentExtent;
+	}
+
+	vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, NULL);
+	mSurfaceFormats = new VkSurfaceFormatKHR[mSurfaceFormatCount];
+	vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, mSurfaceFormats);
+
+	if (mSurfaceFormatCount == 1 && mSurfaceFormats[0].format == VK_FORMAT_UNDEFINED)
+	{
+		mFormat = VK_FORMAT_B8G8R8A8_UNORM; //No prefered format so set a default.
+	}
+	else
+	{
+		mFormat = mSurfaceFormats[0].format; //Pull the prefered format.
+	}
+
+	if (mSurfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
+	{
+		mTransformFlags = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+	}
+	else 
+	{
+		mTransformFlags = mSurfaceCapabilities.currentTransform;
+	}
+
+	vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, NULL);
+	mPresentationModes = new VkPresentModeKHR[mPresentationModeCount];
+	vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, mPresentationModes);
+
+	/*
+	Trying modes in order of preference (Mailbox,immediate, FIFO)
+	VK_PRESENT_MODE_MAILBOX_KHR - Wait for the next vertical blanking interval to update the image. New images replace the one waiting to be displayed.
+	VK_PRESENT_MODE_IMMEDIATE_KHR - Do not wait for vertical blanking to update the image.
+	VK_PRESENT_MODE_FIFO_KHR - Wait for hte next virtical blanking interval to update the image. If the interval is missed wait for hte next one. New images will be queued for display.
+	*/
+	for (size_t i = 0; i < mPresentationModeCount; i++)
+	{
+		if (mPresentationModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
+		{
+			mSwapchainPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+			break;
+		}
+		else if (mPresentationModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)
+		{
+			mSwapchainPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+		} //Already defaulted to FIFO so do nothing for else.
+	}
+
+	/*
+	Finally create the swap chain based on the information collected.
+	This swap chain will handle the work done by the implicit swap chain in D3D9.
+	*/
 	VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
 
 	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchainCreateInfo.pNext = NULL;
 	swapchainCreateInfo.flags = 0;
 	swapchainCreateInfo.surface = mSurface;
+	swapchainCreateInfo.minImageCount = mSurfaceCapabilities.minImageCount + 1;
 	swapchainCreateInfo.imageFormat = ConvertFormat(mPresentationParameters->BackBufferFormat);
+	swapchainCreateInfo.imageColorSpace  = mSurfaceFormats[0].colorSpace;
+	swapchainCreateInfo.imageExtent = mSwapchainExtent;
+	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	swapchainCreateInfo.preTransform = mTransformFlags;
+	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	swapchainCreateInfo.imageArrayLayers = 1;
+	swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	swapchainCreateInfo.queueFamilyIndexCount = 0;
+	swapchainCreateInfo.pQueueFamilyIndices = NULL;
+	swapchainCreateInfo.presentMode = mSwapchainPresentMode;
+	swapchainCreateInfo.oldSwapchain = mSwapchain; //There is no old swapchain yet.
+	swapchainCreateInfo.clipped = true;
 
-	//TODO: finish swapchain create info including format information.
+	vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, NULL, &mSwapchain);	
 
-	vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, NULL, &mSwapchain);
-	
+	//Create the images (buffers) that will be used by the swap chain.
+	vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, NULL);
+	mSwapchainImages = new VkImage[mSwapchainImageCount];
+	vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, mSwapchainImages);
 
-	
+	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	{
+		VkImageViewCreateInfo color_image_view = {};
+
+		color_image_view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		color_image_view.pNext = NULL;
+		color_image_view.format = mFormat;
+		color_image_view.components.r = VK_COMPONENT_SWIZZLE_R;
+		color_image_view.components.g = VK_COMPONENT_SWIZZLE_G;
+		color_image_view.components.b = VK_COMPONENT_SWIZZLE_B;
+		color_image_view.components.a = VK_COMPONENT_SWIZZLE_A;
+		color_image_view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		color_image_view.subresourceRange.baseMipLevel = 0;
+		color_image_view.subresourceRange.levelCount = 1;
+		color_image_view.subresourceRange.baseArrayLayer = 0;
+		color_image_view.subresourceRange.layerCount = 1;
+		color_image_view.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		color_image_view.flags = 0;
+
+		this->SetImageLayout(mSwapchainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+		color_image_view.image = mSwapchainImages[i];	
+
+		vkCreateImageView(mDevice, &color_image_view, NULL, &mSwapchainViews[i]);
+	}
+
+	VkCommandBufferAllocateInfo commandBufferInfo = {};
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferInfo.pNext = NULL;
+	commandBufferInfo.commandPool = mCommandPool;
+	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferInfo.commandBufferCount = 1;
+
+	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	{
+		vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mSwapchainBuffers[i]);
+	}
+
+	/*
+	Now setup the render pass.
+	*/
+
+	VkAttachmentDescription renderAttachments[2];
+	renderAttachments[0].format = mFormat;
+	renderAttachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+	renderAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	renderAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	renderAttachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	renderAttachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	renderAttachments[1].format = mFormat;  //demo->depth.format; (revsit)
+	renderAttachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+	renderAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	renderAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	renderAttachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	renderAttachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	renderAttachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	renderAttachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference colorReference = {};
+	colorReference.attachment = 0;
+	colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference depthReference = {};
+	depthReference.attachment = 1;
+	depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.flags = 0;
+	subpass.inputAttachmentCount = 0;
+	subpass.pInputAttachments = NULL;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorReference;
+	subpass.pResolveAttachments = NULL;
+	subpass.pDepthStencilAttachment = &depthReference;
+	subpass.preserveAttachmentCount = 0;
+	subpass.pPreserveAttachments = NULL;
+
+	VkRenderPassCreateInfo renderPassCreateInfo = {};
+	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassCreateInfo.pNext = NULL;
+	renderPassCreateInfo.attachmentCount = 2;
+	renderPassCreateInfo.pAttachments = renderAttachments;
+	renderPassCreateInfo.subpassCount = 1;
+	renderPassCreateInfo.pSubpasses = &subpass;
+	renderPassCreateInfo.dependencyCount = 0;
+	renderPassCreateInfo.pDependencies = NULL;
+
+	vkCreateRenderPass(mDevice, &renderPassCreateInfo, NULL, &mRenderPass);
+
+	/*
+	Setup framebuffers to tie everything together.
+	*/
+
+	VkImageView attachments[1];
+	//attachments[1] = demo->depth.view; //revsit
+
+	VkFramebufferCreateInfo framebufferCreateInfo = {};
+	framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	framebufferCreateInfo.pNext = NULL;
+	framebufferCreateInfo.renderPass = mRenderPass;
+	framebufferCreateInfo.attachmentCount = 1; //2 revisit
+	framebufferCreateInfo.pAttachments = attachments;
+	framebufferCreateInfo.width = mSwapchainExtent.width; //revisit
+	framebufferCreateInfo.height = mSwapchainExtent.height; //revisit
+	framebufferCreateInfo.layers = 1;
+
+	mFramebuffers = new VkFramebuffer[mSwapchainImageCount];
+
+	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	{
+		attachments[0] = mSwapchainViews[i];
+		vkCreateFramebuffer(mDevice, &framebufferCreateInfo, NULL, &mFramebuffers[i]);
+	}
 }
 
 CDevice9::~CDevice9()
 {
-	if (mDisplays!=NULL)
+	if (mFramebuffers!=NULL)
+	{
+		for (size_t i = 0; i < mSwapchainImageCount; i++)
+		{
+			vkDestroyFramebuffer(mDevice, mFramebuffers[i], NULL);
+		}
+		delete[] mFramebuffers;
+	}
+
+	vkDestroyRenderPass(mDevice, mRenderPass, NULL);
+
+	if (mSwapchainBuffers!=NULL)
+	{
+		vkFreeCommandBuffers(mDevice, mCommandPool, mSwapchainImageCount, mSwapchainBuffers);
+		delete[] mSwapchainBuffers;
+	}
+
+	vkDestroyCommandPool(mDevice, mCommandPool, NULL);
+
+	vkDestroySwapchainKHR(mDevice, mSwapchain, NULL);
+	if (mSwapchainImages != NULL)
+	{
+		delete[] mSwapchainImages;
+	}
+
+	vkDestroyDevice(mDevice, NULL);
+
+	vkDestroySurfaceKHR(mInstance->mInstance, mSurface, NULL);
+	if (mPresentationModes != NULL)
+	{
+		delete[] mPresentationModes;
+	}
+	if (mSurfaceFormats != NULL)
+	{
+		delete[] mSurfaceFormats;
+	}
+	if (mDisplays != NULL)
 	{
 		delete[] mDisplays;
 	}
-	vkDestroySurfaceKHR(mInstance->mInstance, mSurface, NULL);
-	vkDestroyDevice(mDevice, NULL);
 }
 
-//IUknown
+HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
+{
+	//TODO: Implement.
+
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
+{
+	VkResult result = VK_SUCCESS;
+	VkSemaphoreCreateInfo presentCompleteSemaphoreCreateInfo;
+	
+	presentCompleteSemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	presentCompleteSemaphoreCreateInfo.pNext = NULL;
+	presentCompleteSemaphoreCreateInfo.flags = 0;
+
+	result = vkCreateSemaphore(mDevice, &presentCompleteSemaphoreCreateInfo, NULL, &mPresentCompleteSemaphore);
+
+	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+
+	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
+
+	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+
+	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	// demo_flush_init_cmd
+
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	commandBufferInheritanceInfo.pNext = NULL;
+	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	commandBufferInheritanceInfo.queryFlags = 0;
+	commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.pNext = NULL;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+	VkClearValue clearValues[2];
+	clearValues[0].color.float32[0] = 0.2f;
+	clearValues[0].color.float32[1] = 0.2f;
+	clearValues[0].color.float32[2] = 0.2f;
+	clearValues[0].color.float32[3] = 0.2f;
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.pNext = NULL;
+	renderPassBeginInfo.renderPass = mRenderPass;
+	renderPassBeginInfo.framebuffer = mFramebuffers[mCurrentBuffer];
+	renderPassBeginInfo.renderArea.offset.x = 0;
+	renderPassBeginInfo.renderArea.offset.y = 0;
+	renderPassBeginInfo.renderArea.extent.width = mSwapchainExtent.width;
+	renderPassBeginInfo.renderArea.extent.height = mSwapchainExtent.height;
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = clearValues;
+
+	result = vkBeginCommandBuffer(mSwapchainBuffers[mCurrentBuffer], &commandBufferBeginInfo);
+
+	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+
+	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	return D3D_OK;
+}
+
+HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
+{
+	VkResult result = VK_SUCCESS;
+	VkPipelineStageFlags pipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	VkSubmitInfo submitInfo = {};
+
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = NULL;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &mPresentCompleteSemaphore;
+	submitInfo.pWaitDstStageMask = &pipeStageFlags;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &mSwapchainBuffers[mCurrentBuffer];
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = NULL;
+
+	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
+
+	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+
+	result = vkQueueSubmit(mQueue, 1, &submitInfo, mNullFence);
+
+	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+
+	return D3D_OK;
+}
+
+HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
+{
+	VkResult result = VK_SUCCESS;
+
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.pNext = NULL;
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &mSwapchain;
+	presentInfo.pImageIndices = &mCurrentBuffer;
+
+	result = vkQueuePresentKHR(mQueue, &presentInfo);
+
+	if (result == VK_SUCCESS) result = vkQueueWaitIdle(mQueue);
+
+	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, NULL);
+
+	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+
+	return D3D_OK;
+}
 
 ULONG STDMETHODCALLTYPE CDevice9::AddRef(void)
 {
@@ -172,14 +584,6 @@ ULONG STDMETHODCALLTYPE CDevice9::Release(void)
 	return mReferenceCount;
 }
 
-//Device
-
-HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
-{
-	//TODO: Implement.
-
-	return S_OK;		
-}
 	
 HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
@@ -188,12 +592,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count,const D3DRECT *pRects,DWORD Flags,D3DCOLOR Color,float Z,DWORD Stencil)
-{
-	//TODO: Implement.
 
-	return S_OK;	
-}
 
 HRESULT STDMETHODCALLTYPE CDevice9::ColorFill(IDirect3DSurface9 *pSurface,const RECT *pRect,D3DCOLOR color)
 {
@@ -355,13 +754,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle,const float *pNumSe
 	//TODO: Implement.
 
 	return E_NOTIMPL;
-}
-
-HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
-{
-	//TODO: Implement.
-
-	return S_OK;		
 }
 	
 HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
@@ -693,13 +1085,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE Stat
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect,const RECT *pDestRect,HWND hDestWindowOverride,const RGNDATA *pDirtyRegion)
-{
-	//TODO: Implement.
-
-	return S_OK;	
-}
-
 HRESULT STDMETHODCALLTYPE CDevice9::ProcessVertices(UINT SrcStartIndex,UINT DestIndex,UINT VertexCount,IDirect3DVertexBuffer9 *pDestBuffer,IDirect3DVertexDeclaration9 *pVertexDecl,DWORD Flags)
 {
 	//TODO: Implement.
@@ -990,4 +1375,81 @@ HRESULT STDMETHODCALLTYPE CDevice9::ValidateDevice(DWORD *pNumPasses)
 	//TODO: Implement.
 
 	return S_OK;	
+}
+
+void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+{
+	/*
+	This is just a helper method to reduce repeat code.
+	*/
+	VkResult result = VK_SUCCESS;
+	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+	// If the command buffer hasn't been created yet create it so it can be used.
+	if (mCommandBuffer == VK_NULL_HANDLE)
+	{
+		VkCommandBufferAllocateInfo commandBufferInfo = {};
+		commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferInfo.pNext = NULL;
+		commandBufferInfo.commandPool = mCommandPool;
+		commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		commandBufferInfo.commandBufferCount = 1;
+
+		result = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mCommandBuffer);
+
+		if (result != VK_SUCCESS) return;
+
+		VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+		commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		commandBufferInheritanceInfo.pNext = NULL;
+		commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+		commandBufferInheritanceInfo.subpass = 0;
+		commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+		commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+		commandBufferInheritanceInfo.queryFlags = 0;
+		commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+		VkCommandBufferBeginInfo commandBufferBeginInfo;
+		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		commandBufferBeginInfo.pNext = NULL;
+		commandBufferBeginInfo.flags = 0;
+		commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+		result = vkBeginCommandBuffer(mCommandBuffer, &commandBufferBeginInfo);
+
+		if (result != VK_SUCCESS) return;
+	}
+
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.pNext = NULL;
+	imageMemoryBarrier.srcAccessMask = 0;
+	imageMemoryBarrier.dstAccessMask = 0;
+	imageMemoryBarrier.oldLayout = oldImageLayout;
+	imageMemoryBarrier.newLayout = newImageLayout;
+	imageMemoryBarrier.image = image;
+	imageMemoryBarrier.subresourceRange = { aspectMask, 0, 1, 0, 1 };
+
+	if (newImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+	}
+
+	if (newImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+	{
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	}
+
+	if (newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+	{
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	}
+
+	if (newImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+	}
+
+	vkCmdPipelineBarrier(mCommandBuffer, sourceStages, destinationStages, 0, 0, NULL, 0, NULL, 1, &imageMemoryBarrier);
 }
