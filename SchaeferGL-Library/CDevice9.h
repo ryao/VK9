@@ -27,6 +27,14 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <vector>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
 #include "CUnknown.h"
 
 #include "CVertexDeclaration9.h"
@@ -171,6 +179,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE ValidateDevice(DWORD *pNumPasses);
 	
 public:
+	VkResult mResult;
 	VkPhysicalDevice mPhysicalDevice;
 	VkDevice mDevice;
 	VkQueueFamilyProperties* mQueueFamilyProperties;

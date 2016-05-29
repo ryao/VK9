@@ -31,6 +31,7 @@ public:
 	C9();
 	~C9();
 
+	VkResult mResult;
 	VkInstance mInstance;
 	VkPhysicalDevice* mPhysicalDevices;
 	uint32_t mGpuCount;

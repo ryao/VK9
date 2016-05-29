@@ -20,10 +20,19 @@ misrepresented as being the original software.
  
 #include "D3D9.h"
 #include <vulkan/vulkan.h>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
 #include "C9.h"
 
 IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion)
 {
+	boost::log::add_file_log("SchaeferGL.log");
 	return new C9();
 }
 

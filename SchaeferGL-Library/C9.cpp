@@ -61,20 +61,36 @@ C9::C9()
 	if (VK_SUCCESS == vkCreateInstance(&inst_info, NULL, &mInstance))
 	{
 		//Fetch an array of available physical devices.
-		vkEnumeratePhysicalDevices(mInstance, &mGpuCount, NULL);
-		if (mGpuCount > 0)
+		mResult = vkEnumeratePhysicalDevices(mInstance, &mGpuCount, NULL);
+		if (mResult != VK_SUCCESS)
 		{
-			mPhysicalDevices = new VkPhysicalDevice[mGpuCount]();
-			vkEnumeratePhysicalDevices(mInstance, &mGpuCount, mPhysicalDevices);
+			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices returned " << mResult;
+			return;
 		}
 		else
 		{
-			//TODO: no physical device, find a way to fail gracefully.
+			BOOST_LOG_TRIVIAL(info) << "There were " << mGpuCount << " physical devices found.";
+		}
+
+		if (mGpuCount > 0)
+		{
+			mPhysicalDevices = new VkPhysicalDevice[mGpuCount]();
+			mResult = vkEnumeratePhysicalDevices(mInstance, &mGpuCount, mPhysicalDevices);
+			if (mResult != VK_SUCCESS)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices returned " << mResult;
+				return;
+			}
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "No phyuscial devices were found.";
 		}
 	}
 	else
 	{
-		//TODO: couldn't get instance, find a way to fail gracefully.
+		BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkCreateInstance failed.";
+		return;
 	}
 }
 
@@ -165,6 +181,11 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	CDevice9* device = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
 
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)device;
+
+	if (device->mResult != VK_SUCCESS)
+	{
+		return D3DERR_INVALIDCALL;
+	}
 
 	return result;	
 }

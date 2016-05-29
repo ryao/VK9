@@ -31,7 +31,8 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
-	: mInstance(Instance),
+	: mResult(VK_SUCCESS),
+	mInstance(Instance),
 	mAdapter(Adapter),
 	mDeviceType(DeviceType),
 	mFocusWindow(hFocusWindow),
@@ -56,10 +57,26 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mNullFence(VK_NULL_HANDLE),
 	mFramebuffers(NULL)
 {
+	if (mInstance->mGpuCount == 0)
+	{
+		mResult = VK_RESULT_MAX_ENUM;
+		BOOST_LOG_TRIVIAL(fatal) << "No physical devices were found so CDevice9 could not be created.";
+		return;
+	}
 	mPhysicalDevice = mInstance->mPhysicalDevices[mAdapter]; //pull the selected physical device from the instance.
 
 	//Fetch the queue properties.
 	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,NULL);
+	if (mQueueCount == 0)
+	{
+		mResult = VK_RESULT_MAX_ENUM;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceQueueFamilyProperties returned no results.";
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetPhysicalDeviceQueueFamilyProperties returned " << mQueueCount << " results.";
+	}
 	mQueueFamilyProperties = new VkQueueFamilyProperties[mQueueCount];
 	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,mQueueFamilyProperties);
 
@@ -94,7 +111,16 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	device_info.ppEnabledLayerNames = NULL;
 	device_info.pEnabledFeatures = NULL;
 
-	vkCreateDevice(mPhysicalDevice, &device_info, NULL, &mDevice);
+	mResult = vkCreateDevice(mPhysicalDevice, &device_info, NULL, &mDevice);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateDevice returned " << mResult;
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateDevice returned a valid device.";
+	}
 
 	/*
 	Now that the rendering is setup the surface must be created.
@@ -110,7 +136,16 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		surfaceCreateInfo.hwnd = hFocusWindow;
 		surfaceCreateInfo.hinstance = GetModuleHandle(NULL);
 
-		vkCreateWin32SurfaceKHR(mInstance->mInstance, &surfaceCreateInfo, NULL, &mSurface);
+		mResult = vkCreateWin32SurfaceKHR(mInstance->mInstance, &surfaceCreateInfo, NULL, &mSurface);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR returned an invalid surface with an error code of " << mResult;
+			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR returned a valid surface.";
+		}
 	}
 	else
 	{
@@ -132,8 +167,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		vkCreateDisplayPlaneSurfaceKHR(mInstance->mInstance,&surfaceCreateInfo,NULL, &mSurface);*/
 	}
 
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mPhysicalDevice, mSurface, &mSurfaceCapabilities);
-	
+	mResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mPhysicalDevice, mSurface, &mSurfaceCapabilities);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceCapabilitiesKHR returned " << mResult;
+		return;
+	}
+
 	/*
 	Search for queues to use for graphics and presentation.
 	It's easier if one queue does both so if we find one that supports both than just exit.
@@ -145,7 +185,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		VkBool32 doesSupportPresentation = false;
 		VkBool32 doesSupportGraphics = false;
 
-		vkGetPhysicalDeviceSurfaceSupportKHR(mPhysicalDevice, i, mSurface, &doesSupportPresentation);
+		mResult = vkGetPhysicalDeviceSurfaceSupportKHR(mPhysicalDevice, i, mSurface, &doesSupportPresentation);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceSupportKHR returned " << mResult;
+			return;
+		}
+
 		doesSupportGraphics = ((mQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0);
 
 		if (doesSupportPresentation && doesSupportGraphics)
@@ -176,7 +222,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	commandPoolInfo.queueFamilyIndex = mGraphicsQueueIndex; //Found earlier.
 	commandPoolInfo.flags = 0;
 
-	vkCreateCommandPool(mDevice, &commandPoolInfo, NULL, &mCommandPool);
+	mResult = vkCreateCommandPool(mDevice, &commandPoolInfo, NULL, &mCommandPool);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateCommandPool returned " << mResult;
+		return;
+	}
 
 	//Create queue so we can submit command buffers.
 	vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0,&mQueue);
@@ -197,9 +248,19 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mSwapchainExtent = mSurfaceCapabilities.currentExtent;
 	}
 
-	vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, NULL);
+	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, NULL);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR returned " << mResult;
+		return;
+	}
 	mSurfaceFormats = new VkSurfaceFormatKHR[mSurfaceFormatCount];
-	vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, mSurfaceFormats);
+	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, mSurfaceFormats);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR returned " << mResult;
+		return;
+	}
 
 	if (mSurfaceFormatCount == 1 && mSurfaceFormats[0].format == VK_FORMAT_UNDEFINED)
 	{
@@ -219,9 +280,19 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mTransformFlags = mSurfaceCapabilities.currentTransform;
 	}
 
-	vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, NULL);
+	mResult = vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, NULL);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR returned " << mResult;
+		return;
+	}
 	mPresentationModes = new VkPresentModeKHR[mPresentationModeCount];
-	vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, mPresentationModes);
+	mResult = vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, mPresentationModes);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR returned " << mResult;
+		return;
+	}
 
 	/*
 	Trying modes in order of preference (Mailbox,immediate, FIFO)
@@ -267,12 +338,27 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	swapchainCreateInfo.oldSwapchain = mSwapchain; //There is no old swapchain yet.
 	swapchainCreateInfo.clipped = true;
 
-	vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, NULL, &mSwapchain);	
+	mResult = vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, NULL, &mSwapchain);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateSwapchainKHR returned " << mResult;
+		return;
+	}
 
 	//Create the images (buffers) that will be used by the swap chain.
-	vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, NULL);
+	mResult = vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, NULL);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR returned " << mResult;
+		return;
+	}
 	mSwapchainImages = new VkImage[mSwapchainImageCount];
-	vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, mSwapchainImages);
+	mResult = vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, mSwapchainImages);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR returned " << mResult;
+		return;
+	}
 
 	for (size_t i = 0; i < mSwapchainImageCount; i++)
 	{
@@ -297,7 +383,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 		color_image_view.image = mSwapchainImages[i];	
 
-		vkCreateImageView(mDevice, &color_image_view, NULL, &mSwapchainViews[i]);
+		mResult = vkCreateImageView(mDevice, &color_image_view, NULL, &mSwapchainViews[i]);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView returned " << mResult;
+			return;
+		}
 	}
 
 	VkCommandBufferAllocateInfo commandBufferInfo = {};
@@ -309,7 +400,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	for (size_t i = 0; i < mSwapchainImageCount; i++)
 	{
-		vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mSwapchainBuffers[i]);
+		mResult = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mSwapchainBuffers[i]);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateCommandBuffers returned " << mResult;
+			return;
+		}
 	}
 
 	/*
@@ -365,7 +461,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	renderPassCreateInfo.dependencyCount = 0;
 	renderPassCreateInfo.pDependencies = NULL;
 
-	vkCreateRenderPass(mDevice, &renderPassCreateInfo, NULL, &mRenderPass);
+	mResult = vkCreateRenderPass(mDevice, &renderPassCreateInfo, NULL, &mRenderPass);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass returned " << mResult;
+		return;
+	}
 
 	/*
 	Setup framebuffers to tie everything together.
@@ -389,7 +490,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	for (size_t i = 0; i < mSwapchainImageCount; i++)
 	{
 		attachments[0] = mSwapchainViews[i];
-		vkCreateFramebuffer(mDevice, &framebufferCreateInfo, NULL, &mFramebuffers[i]);
+		mResult = vkCreateFramebuffer(mDevice, &framebufferCreateInfo, NULL, &mFramebuffers[i]);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateFramebuffer returned " << mResult;
+			return;
+		}
 	}
 }
 
@@ -455,11 +561,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
 
 	result = vkCreateSemaphore(mDevice, &presentCompleteSemaphoreCreateInfo, NULL, &mPresentCompleteSemaphore);
 
-	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
 
 	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
 
-	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
 
 	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -502,7 +608,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
 
 	result = vkBeginCommandBuffer(mSwapchainBuffers[mCurrentBuffer], &commandBufferBeginInfo);
 
-	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
 
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -527,11 +633,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 
 	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
 
-	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
 
 	result = vkQueueSubmit(mQueue, 1, &submitInfo, mNullFence);
 
-	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
 
 	return D3D_OK;
 }
@@ -553,7 +659,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 
 	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, NULL);
 
-	if (result != VK_SUCCESS) return D3DERR_DEVICEREMOVED;
+	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
 
 	return D3D_OK;
 }
