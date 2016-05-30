@@ -27,14 +27,45 @@ misrepresented as being the original software.
 
 C9::C9()
 	: mGpuCount(0), 
-	mPhysicalDevices(NULL),
-	mReferenceCount(0)
+	mPhysicalDevices(nullptr),
+	mReferenceCount(0),
+	mInstance(VK_NULL_HANDLE),
+	mLayerProperties(nullptr),
+	mLayerPropertyCount(0),
+	mValidationPresent(false)
 {
+	mResult = vkEnumerateInstanceLayerProperties(&mLayerPropertyCount, nullptr);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumerateInstanceLayerProperties failed with return code of " << mResult;
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "C9::C9 vkEnumerateInstanceLayerProperties found " << mLayerPropertyCount << " layers.";
+	}
+	mLayerProperties = new VkLayerProperties[mLayerPropertyCount];
+	mResult = vkEnumerateInstanceLayerProperties(&mLayerPropertyCount, mLayerProperties);
+	if (mResult == VK_SUCCESS)
+	{
+		for (size_t i = 0; i < mLayerPropertyCount; i++)
+		{
+			if (strcmp(mLayerProperties[i].layerName,"VK_LAYER_LUNARG_standard_validation")==0)
+			{
+				mValidationPresent = true;
+			}
+			BOOST_LOG_TRIVIAL(info) << "C9::C9 vkEnumerateInstanceLayerProperties - layerName: " << mLayerProperties[i].layerName;
+		}		
+	}
+
 	mExtensionNames.push_back("VK_KHR_surface");
 	mExtensionNames.push_back("VK_KHR_win32_surface");
 #ifdef _DEBUG
 	mExtensionNames.push_back("VK_EXT_debug_report");
-	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	if (mValidationPresent)
+	{
+		mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	}	
 #endif // _DEBUG
 
 	// initialize the VkApplicationInfo structure
@@ -45,19 +76,19 @@ C9::C9()
 	app_info.applicationVersion = 1;
 	app_info.pEngineName = APP_SHORT_NAME;
 	app_info.engineVersion = 1;
-	app_info.apiVersion = VK_API_VERSION;
+	app_info.apiVersion = 0; // VK_API_VERSION;
 
 	// initialize the VkInstanceCreateInfo structure
 	VkInstanceCreateInfo inst_info =
 	{
-		VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, // VkStructureType sType;
-		NULL,                                   // const void* pNext;
-		0,                                      // VkInstanceCreateFlags flags;
-		&app_info,                              // const VkApplicationInfo* pApplicationInfo;
-		mLayerExtensionNames.size(),            // uint32_t enabledLayerNameCount;
-		mLayerExtensionNames.data(),            // const char* const* ppEnabledLayerNames;
-		mExtensionNames.size(),                 // uint32_t enabledExtensionNameCount;
-		mExtensionNames.data(),                 // const char* const* ppEnabledExtensionNames;
+		VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,								  // VkStructureType sType;
+		NULL,																  // const void* pNext;
+		0,																	  // VkInstanceCreateFlags flags;
+		&app_info,															  // const VkApplicationInfo* pApplicationInfo;
+		mLayerExtensionNames.size(),										  // uint32_t enabledLayerNameCount;
+		mLayerExtensionNames.size()>0 ? mLayerExtensionNames.data() : nullptr,// const char* const* ppEnabledLayerNames;
+		mExtensionNames.size(),											      // uint32_t enabledExtensionNameCount;
+		mExtensionNames.size()>0 ? mExtensionNames.data() : nullptr,		  // const char* const* ppEnabledExtensionNames;
 	};
 
 	//Get an instance handle.
@@ -85,7 +116,7 @@ C9::C9()
 		}
 		else
 		{
-			BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateDebugReportCallbackEXT succeeded.";
+			BOOST_LOG_TRIVIAL(info) << "C9::C9 vkCreateDebugReportCallbackEXT succeeded.";
 		}
 #endif
 
@@ -379,6 +410,6 @@ HRESULT STDMETHODCALLTYPE C9::RegisterSoftwareDevice(void *pInitializeFunction)
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData)
 {
-	BOOST_LOG_TRIVIAL(error) << message;
+	BOOST_LOG_TRIVIAL(error) << "DebugReport: " << message;
 	return VK_FALSE;
 }

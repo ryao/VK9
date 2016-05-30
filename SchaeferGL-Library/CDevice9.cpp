@@ -37,7 +37,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDeviceType(DeviceType),
 	mFocusWindow(hFocusWindow),
 	mBehaviorFlags(BehaviorFlags),
-	mPresentationParameters(pPresentationParameters),
 	mQueueCount(0),
 	mReferenceCount(0),
 	mDisplays(nullptr),
@@ -53,10 +52,20 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mSwapchainBuffers(nullptr),
 	mSwapchainViews(nullptr),
 	mSwapchainImageCount(0),
-	mCommandBuffer(VK_NULL_HANDLE),
 	mNullFence(VK_NULL_HANDLE),
-	mFramebuffers(nullptr)
+	mFramebuffers(nullptr),
+	mPhysicalDevice(VK_NULL_HANDLE),
+	mDevice(VK_NULL_HANDLE),
+	mSurface(VK_NULL_HANDLE),
+	mSwapchain(VK_NULL_HANDLE),
+	mCommandPool(VK_NULL_HANDLE),
+	mCommandBuffer(VK_NULL_HANDLE),
+	mQueue(VK_NULL_HANDLE),
+	mPresentCompleteSemaphore(VK_NULL_HANDLE),
+	mRenderPass(VK_NULL_HANDLE)
 {
+	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
+
 	if (mInstance->mGpuCount == 0)
 	{
 		mResult = VK_RESULT_MAX_ENUM;
@@ -93,7 +102,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mExtensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 #ifdef _DEBUG
-	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	if (mInstance->mValidationPresent)
+	{
+		//If the instance layer is there the device should be as well.
+		mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	}
 #endif // _DEBUG
 
 	float queue_priorities[1] = { 0.0 };
@@ -130,7 +143,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	Now that the rendering is setup the surface must be created.
 	The surface maybe inside of a window or a whole display. (Think SDL)
 	*/
-	if (mPresentationParameters->Windowed)
+	if (mPresentationParameters.Windowed)
 	{
 		VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
 
@@ -259,8 +272,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	if (mSurfaceCapabilities.currentExtent.width == (uint32_t)-1) 
 	{
 		//If the height/width are -1 then just set it to the requested size and hope for the best.
-		mSwapchainExtent.width = mPresentationParameters->BackBufferWidth;
-		mSwapchainExtent.height = mPresentationParameters->BackBufferHeight;
+		mSwapchainExtent.width = mPresentationParameters.BackBufferWidth;
+		mSwapchainExtent.height = mPresentationParameters.BackBufferHeight;
 	}
 	else 
 	{
@@ -277,7 +290,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR succeeded.";
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR returned " << mSurfaceFormatCount << " surface formats.";
 	}
 	mSurfaceFormats = new VkSurfaceFormatKHR[mSurfaceFormatCount];
 	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, mSurfaceFormats);
@@ -301,6 +314,565 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mFormat = mSurfaceFormats[0].format; //Pull the prefered format.
 	}
 
+	switch (mFormat)
+	{
+	case VK_FORMAT_UNDEFINED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_UNDEFINED surface format.";
+		break;
+	case VK_FORMAT_R4G4_UNORM_PACK8:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R4G4_UNORM_PACK8 surface format.";
+		break;
+	case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R4G4B4A4_UNORM_PACK16 surface format.";
+		break;
+	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B4G4R4A4_UNORM_PACK16 surface format.";
+		break;
+	case VK_FORMAT_R5G6B5_UNORM_PACK16:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R5G6B5_UNORM_PACK16 surface format.";
+		break;
+	case VK_FORMAT_B5G6R5_UNORM_PACK16:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B5G6R5_UNORM_PACK16 surface format.";
+		break;
+	case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R5G5B5A1_UNORM_PACK16 surface format.";
+		break;
+	case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B5G5R5A1_UNORM_PACK16 surface format.";
+		break;
+	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A1R5G5B5_UNORM_PACK16 surface format.";
+		break;
+	case VK_FORMAT_R8_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8_UNORM surface format.";
+		break;
+	case VK_FORMAT_R8_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8_SNORM surface format.";
+		break;
+	case VK_FORMAT_R8_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8_USCALED surface format.";
+		break;
+	case VK_FORMAT_R8_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8_UINT surface format.";
+		break;
+	case VK_FORMAT_R8_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8_SINT surface format.";
+		break;
+	case VK_FORMAT_R8_SRGB:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8_SRGB surface format.";
+		break;
+	case VK_FORMAT_R8G8_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8_UNORM surface format.";
+		break;
+	case VK_FORMAT_R8G8_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8_SNORM surface format.";
+		break;
+	case VK_FORMAT_R8G8_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8_USCALED surface format.";
+		break;
+	case VK_FORMAT_R8G8_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R8G8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8_UINT surface format.";
+		break;
+	case VK_FORMAT_R8G8_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8_SINT surface format.";
+		break;
+	case VK_FORMAT_R8G8_SRGB:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8_SRGB surface format.";
+		break;
+	case VK_FORMAT_R8G8B8_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8_UNORM surface format.";
+		break;
+	case VK_FORMAT_R8G8B8_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8_SNORM surface format.";
+		break;
+	case VK_FORMAT_R8G8B8_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8_USCALED surface format.";
+		break;
+	case VK_FORMAT_R8G8B8_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R8G8B8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8_UINT surface format.";
+		break;
+	case VK_FORMAT_R8G8B8_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8_SINT surface format.";
+		break;
+	case VK_FORMAT_R8G8B8_SRGB:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8_SRGB surface format.";
+		break;
+	case VK_FORMAT_B8G8R8_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8_UNORM surface format.";
+		break;
+	case VK_FORMAT_B8G8R8_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8_SNORM surface format.";
+		break;
+	case VK_FORMAT_B8G8R8_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8_USCALED surface format.";
+		break;
+	case VK_FORMAT_B8G8R8_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8_SSCALED surface format.";
+		break;
+	case VK_FORMAT_B8G8R8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8_UINT surface format.";
+		break;
+	case VK_FORMAT_B8G8R8_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8_SINT surface format.";
+		break;
+	case VK_FORMAT_B8G8R8_SRGB:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8_SRGB surface format.";
+		break;
+	case VK_FORMAT_R8G8B8A8_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8A8_UNORM surface format.";
+		break;
+	case VK_FORMAT_R8G8B8A8_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8A8_SNORM surface format.";
+		break;
+	case VK_FORMAT_R8G8B8A8_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8A8_USCALED surface format.";
+		break;
+	case VK_FORMAT_R8G8B8A8_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8A8_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R8G8B8A8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8A8_UINT surface format.";
+		break;
+	case VK_FORMAT_R8G8B8A8_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8A8_SINT surface format.";
+		break;
+	case VK_FORMAT_R8G8B8A8_SRGB:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R8G8B8A8_SRGB surface format.";
+		break;
+	case VK_FORMAT_B8G8R8A8_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8A8_UNORM surface format.";
+		break;
+	case VK_FORMAT_B8G8R8A8_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8A8_SNORM surface format.";
+		break;
+	case VK_FORMAT_B8G8R8A8_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8A8_USCALED surface format.";
+		break;
+	case VK_FORMAT_B8G8R8A8_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8A8_SSCALED surface format.";
+		break;
+	case VK_FORMAT_B8G8R8A8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8A8_UINT surface format.";
+		break;
+	case VK_FORMAT_B8G8R8A8_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8A8_SINT surface format.";
+		break;
+	case VK_FORMAT_B8G8R8A8_SRGB:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B8G8R8A8_SRGB surface format.";
+		break;
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A8B8G8R8_UNORM_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A8B8G8R8_SNORM_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A8B8G8R8_USCALED_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A8B8G8R8_USCALED_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A8B8G8R8_SSCALED_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A8B8G8R8_UINT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A8B8G8R8_SINT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A8B8G8R8_SRGB_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2R10G10B10_UNORM_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2R10G10B10_SNORM_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2R10G10B10_SNORM_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2R10G10B10_USCALED_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2R10G10B10_USCALED_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2R10G10B10_SSCALED_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2R10G10B10_SSCALED_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2R10G10B10_UINT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2R10G10B10_UINT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2R10G10B10_SINT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2R10G10B10_SINT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2B10G10R10_UNORM_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2B10G10R10_SNORM_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2B10G10R10_SNORM_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2B10G10R10_USCALED_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2B10G10R10_USCALED_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2B10G10R10_SSCALED_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2B10G10R10_SSCALED_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2B10G10R10_UINT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_A2B10G10R10_SINT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_A2B10G10R10_SINT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_R16_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16_UNORM surface format.";
+		break;
+	case VK_FORMAT_R16_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16_SNORM surface format.";
+		break;
+	case VK_FORMAT_R16_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16_USCALED surface format.";
+		break;
+	case VK_FORMAT_R16_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R16_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16_UINT surface format.";
+		break;
+	case VK_FORMAT_R16_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16_SINT surface format.";
+		break;
+	case VK_FORMAT_R16_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R16G16_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16_UNORM surface format.";
+		break;
+	case VK_FORMAT_R16G16_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16_SNORM surface format.";
+		break;
+	case VK_FORMAT_R16G16_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16_USCALED surface format.";
+		break;
+	case VK_FORMAT_R16G16_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R16G16_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16_UINT surface format.";
+		break;
+	case VK_FORMAT_R16G16_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16_SINT surface format.";
+		break;
+	case VK_FORMAT_R16G16_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R16G16B16_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16_UNORM surface format.";
+		break;
+	case VK_FORMAT_R16G16B16_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16_SNORM surface format.";
+		break;
+	case VK_FORMAT_R16G16B16_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16_USCALED surface format.";
+		break;
+	case VK_FORMAT_R16G16B16_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R16G16B16_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16_UINT surface format.";
+		break;
+	case VK_FORMAT_R16G16B16_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16_SINT surface format.";
+		break;
+	case VK_FORMAT_R16G16B16_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R16G16B16A16_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16A16_UNORM surface format.";
+		break;
+	case VK_FORMAT_R16G16B16A16_SNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16A16_SNORM surface format.";
+		break;
+	case VK_FORMAT_R16G16B16A16_USCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16A16_USCALED surface format.";
+		break;
+	case VK_FORMAT_R16G16B16A16_SSCALED:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16A16_SSCALED surface format.";
+		break;
+	case VK_FORMAT_R16G16B16A16_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16A16_UINT surface format.";
+		break;
+	case VK_FORMAT_R16G16B16A16_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16A16_SINT surface format.";
+		break;
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R16G16B16A16_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R32_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32_UINT surface format.";
+		break;
+	case VK_FORMAT_R32_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32_SINT surface format.";
+		break;
+	case VK_FORMAT_R32_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R32G32_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32_UINT surface format.";
+		break;
+	case VK_FORMAT_R32G32_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32_SINT surface format.";
+		break;
+	case VK_FORMAT_R32G32_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R32G32B32_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32B32_UINT surface format.";
+		break;
+	case VK_FORMAT_R32G32B32_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32B32_SINT surface format.";
+		break;
+	case VK_FORMAT_R32G32B32_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32B32_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R32G32B32A32_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32B32A32_UINT surface format.";
+		break;
+	case VK_FORMAT_R32G32B32A32_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32B32A32_SINT surface format.";
+		break;
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R32G32B32A32_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R64_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64_UINT surface format.";
+		break;
+	case VK_FORMAT_R64_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64_SINT surface format.";
+		break;
+	case VK_FORMAT_R64_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R64G64_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64_UINT surface format.";
+		break;
+	case VK_FORMAT_R64G64_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64_SINT surface format.";
+		break;
+	case VK_FORMAT_R64G64_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R64G64B64_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64B64_UINT surface format.";
+		break;
+	case VK_FORMAT_R64G64B64_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64B64_SINT surface format.";
+		break;
+	case VK_FORMAT_R64G64B64_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64B64_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_R64G64B64A64_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64B64A64_UINT surface format.";
+		break;
+	case VK_FORMAT_R64G64B64A64_SINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64B64A64_SINT surface format.";
+		break;
+	case VK_FORMAT_R64G64B64A64_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_R64G64B64A64_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_B10G11R11_UFLOAT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 surface format.";
+		break;
+	case VK_FORMAT_D16_UNORM:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_D16_UNORM surface format.";
+		break;
+	case VK_FORMAT_X8_D24_UNORM_PACK32:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_X8_D24_UNORM_PACK32 surface format.";
+		break;
+	case VK_FORMAT_D32_SFLOAT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_D32_SFLOAT surface format.";
+		break;
+	case VK_FORMAT_S8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_S8_UINT surface format.";
+		break;
+	case VK_FORMAT_D16_UNORM_S8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_D16_UNORM_S8_UINT surface format.";
+		break;
+	case VK_FORMAT_D24_UNORM_S8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_D24_UNORM_S8_UINT surface format.";
+		break;
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_D32_SFLOAT_S8_UINT surface format.";
+		break;
+	case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC1_RGB_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC1_RGB_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC1_RGBA_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC1_RGBA_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC2_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC2_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC2_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC2_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC3_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC3_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC3_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC3_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC4_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC4_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC4_SNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC4_SNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC5_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC5_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC5_SNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC5_SNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC6H_UFLOAT_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC6H_UFLOAT_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC6H_SFLOAT_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC6H_SFLOAT_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC7_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC7_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_BC7_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_BC7_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_EAC_R11_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_EAC_R11_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_EAC_R11_SNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_EAC_R11_SNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_EAC_R11G11_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_EAC_R11G11_SNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_4x4_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_4x4_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_5x4_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_5x4_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_5x5_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_5x5_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_6x5_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_6x5_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_6x6_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_6x6_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_8x5_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_8x5_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_8x6_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_8x6_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_8x8_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_8x8_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x5_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x5_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x6_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x6_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x8_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x8_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x10_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_10x10_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_12x10_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_12x10_SRGB_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_12x12_UNORM_BLOCK surface format.";
+		break;
+	case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_FORMAT_ASTC_12x12_SRGB_BLOCK surface format.";
+		break;
+	}
+
 	if (mSurfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
 	{
 		mTransformFlags = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
@@ -319,7 +891,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR succeeded.";
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR returned " << mPresentationModeCount << " presentation modes.";
 	}
 	mPresentationModes = new VkPresentModeKHR[mPresentationModeCount];
 	mResult = vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, mPresentationModes);
@@ -353,6 +925,22 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		} //Already defaulted to FIFO so do nothing for else.
 	}
 
+	switch (mSwapchainPresentMode)
+	{
+	case VK_PRESENT_MODE_IMMEDIATE_KHR:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_PRESENT_MODE_IMMEDIATE_KHR presentation mode.";
+		break;
+	case VK_PRESENT_MODE_MAILBOX_KHR:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_PRESENT_MODE_MAILBOX_KHR presentation mode.";
+		break;
+	case VK_PRESENT_MODE_FIFO_KHR:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_PRESENT_MODE_FIFO_KHR presentation mode.";
+		break;
+	case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 using VK_PRESENT_MODE_FIFO_RELAXED_KHR presentation mode.";
+		break;
+	}
+
 	/*
 	Finally create the swap chain based on the information collected.
 	This swap chain will handle the work done by the implicit swap chain in D3D9.
@@ -364,7 +952,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	swapchainCreateInfo.flags = 0;
 	swapchainCreateInfo.surface = mSurface;
 	swapchainCreateInfo.minImageCount = mSurfaceCapabilities.minImageCount + 1;
-	swapchainCreateInfo.imageFormat = ConvertFormat(mPresentationParameters->BackBufferFormat);
+	swapchainCreateInfo.imageFormat = mFormat; //ConvertFormat(mPresentationParameters.BackBufferFormat);
 	swapchainCreateInfo.imageColorSpace  = mSurfaceFormats[0].colorSpace;
 	swapchainCreateInfo.imageExtent = mSwapchainExtent;
 	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -378,7 +966,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	swapchainCreateInfo.oldSwapchain = mSwapchain; //There is no old swapchain yet.
 	swapchainCreateInfo.clipped = true;
 
-	mResult = vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, NULL, &mSwapchain);
+	mResult = vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, nullptr, &mSwapchain);
 	if (mResult != VK_SUCCESS)
 	{
 		mResult = VK_RESULT_MAX_ENUM;
@@ -391,7 +979,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	//Create the images (buffers) that will be used by the swap chain.
-	mResult = vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, NULL);
+	mResult = vkGetSwapchainImagesKHR(mDevice, mSwapchain, &mSwapchainImageCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
 		mResult = VK_RESULT_MAX_ENUM;
@@ -400,10 +988,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR succeeded.";
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR returned " << mSwapchainImageCount << " images.";
 	}
 	mSwapchainImages = new VkImage[mSwapchainImageCount];
-	mResult = vkGetSwapchainImagesKHR(mDevice, mSurface, &mSwapchainImageCount, mSwapchainImages);
+	mSwapchainViews = new VkImageView[mSwapchainImageCount];
+	mSwapchainBuffers = new VkCommandBuffer[mSwapchainImageCount];
+	mResult = vkGetSwapchainImagesKHR(mDevice, mSwapchain, &mSwapchainImageCount, mSwapchainImages);
 	if (mResult != VK_SUCCESS)
 	{
 		mResult = VK_RESULT_MAX_ENUM;
@@ -473,7 +1063,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	Now setup the render pass.
 	*/
 
-	VkAttachmentDescription renderAttachments[2];
+	VkAttachmentDescription renderAttachments[2] = {};
 	renderAttachments[0].format = mFormat;
 	renderAttachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
 	renderAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -515,7 +1105,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	VkRenderPassCreateInfo renderPassCreateInfo = {};
 	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassCreateInfo.pNext = nullptr;
-	renderPassCreateInfo.attachmentCount = 2;
+	renderPassCreateInfo.attachmentCount = 2; //revisit
 	renderPassCreateInfo.pAttachments = renderAttachments;
 	renderPassCreateInfo.subpassCount = 1;
 	renderPassCreateInfo.pSubpasses = &subpass;
@@ -538,14 +1128,14 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	Setup framebuffers to tie everything together.
 	*/
 
-	VkImageView attachments[1];
+	VkImageView attachments[2] = {};
 	//attachments[1] = demo->depth.view; //revsit
 
 	VkFramebufferCreateInfo framebufferCreateInfo = {};
 	framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	framebufferCreateInfo.pNext = nullptr;
 	framebufferCreateInfo.renderPass = mRenderPass;
-	framebufferCreateInfo.attachmentCount = 1; //2 revisit
+	framebufferCreateInfo.attachmentCount = 2; //revisit
 	framebufferCreateInfo.pAttachments = attachments;
 	framebufferCreateInfo.width = mSwapchainExtent.width; //revisit
 	framebufferCreateInfo.height = mSwapchainExtent.height; //revisit
@@ -562,6 +1152,10 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 			mResult = VK_RESULT_MAX_ENUM;
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateFramebuffer failed with return code of " << mResult;
 			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateFramebuffer succeeded.";
 		}
 	}
 }
@@ -592,6 +1186,10 @@ CDevice9::~CDevice9()
 	{
 		delete[] mSwapchainImages;
 	}
+	if (mSwapchainViews != nullptr)
+	{
+		delete[] mSwapchainViews;
+	}
 
 	vkDestroyDevice(mDevice, nullptr);
 
@@ -612,12 +1210,26 @@ CDevice9::~CDevice9()
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
-	//TODO: Implement.
+	//VK_FORMAT_B8G8R8A8_UNORM 
+	//Revisit the byte order could be difference based on the surface format so I need a better way to handle this.
+	mClearColorValue.float32[0] = D3DCOLOR_B(Color);
+	mClearColorValue.float32[1] = D3DCOLOR_G(Color);
+	mClearColorValue.float32[2] = D3DCOLOR_R(Color);
+	mClearColorValue.float32[3] = D3DCOLOR_A(Color);
+
+	if (Count > 0 && pRects != nullptr)
+	{
+		return E_NOTIMPL;
+	}
+	else
+	{
+		//vkCmdClearColorImage(mSwapchainBuffers[mCurrentBuffer], mSwapchainImages[mCurrentBuffer], VK_IMAGE_LAYOUT_GENERAL, &clearColorValue, 0, nullptr);
+	}
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
+HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 {
 	VkResult result = VK_SUCCESS;
 	VkSemaphoreCreateInfo presentCompleteSemaphoreCreateInfo;
@@ -627,12 +1239,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
 	presentCompleteSemaphoreCreateInfo.flags = 0;
 
 	result = vkCreateSemaphore(mDevice, &presentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
-
-	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::BeginScene vkCreateSemaphore failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
 
 	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
-
-	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::BeginScene vkAcquireNextImageKHR failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
 
 	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -655,10 +1273,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
 	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 	VkClearValue clearValues[2];
-	clearValues[0].color.float32[0] = 0.2f;
-	clearValues[0].color.float32[1] = 0.2f;
-	clearValues[0].color.float32[2] = 0.2f;
-	clearValues[0].color.float32[3] = 0.2f;
+	clearValues[0].color = mClearColorValue;
+	//clearValues[0].color.float32[0] = 0.2f;
+	//clearValues[0].color.float32[1] = 0.2f;
+	//clearValues[0].color.float32[2] = 0.2f;
+	//clearValues[0].color.float32[3] = 0.2f;
 	clearValues[1].depthStencil = { 1.0f, 0 };
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
@@ -674,10 +1293,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene()
 	renderPassBeginInfo.pClearValues = clearValues;
 
 	result = vkBeginCommandBuffer(mSwapchainBuffers[mCurrentBuffer], &commandBufferBeginInfo);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::BeginScene vkBeginCommandBuffer failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
 
-	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
-
-	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
 
 	return D3D_OK;
 }
@@ -698,13 +1320,21 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 	submitInfo.signalSemaphoreCount = 0;
 	submitInfo.pSignalSemaphores = nullptr;
 
-	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
+	vkCmdEndRenderPass(mSwapchainBuffers[mCurrentBuffer]); // Why no result?
 
-	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
+	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkEndCommandBuffer failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
 
 	result = vkQueueSubmit(mQueue, 1, &submitInfo, mNullFence);
-
-	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
 
 	return D3D_OK;
 }
@@ -721,12 +1351,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	presentInfo.pImageIndices = &mCurrentBuffer;
 
 	result = vkQueuePresentKHR(mQueue, &presentInfo);
-
-	if (result == VK_SUCCESS) result = vkQueueWaitIdle(mQueue);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueuePresentKHR failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
 
 	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
-
-	if (result != VK_SUCCESS) return D3DERR_INVALIDCALL;
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkDestroySemaphore failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
 
 	return D3D_OK;
 }

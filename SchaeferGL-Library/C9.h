@@ -36,9 +36,12 @@ public:
 	VkResult mResult;
 	VkInstance mInstance;
 	VkPhysicalDevice* mPhysicalDevices;
+	VkLayerProperties* mLayerProperties;
+	uint32_t mLayerPropertyCount;
 	uint32_t mGpuCount;
 	std::vector<char*> mExtensionNames;
 	std::vector<char*> mLayerExtensionNames;
+	bool mValidationPresent;
 
 	int mReferenceCount;
 

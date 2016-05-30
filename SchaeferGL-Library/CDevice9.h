@@ -182,7 +182,7 @@ public:
 	D3DDEVTYPE mDeviceType;
 	HWND mFocusWindow;
 	DWORD mBehaviorFlags;
-	D3DPRESENT_PARAMETERS* mPresentationParameters;
+	D3DPRESENT_PARAMETERS mPresentationParameters;
 	uint32_t mQueueCount;
 	VkDisplayKHR* mDisplays;
 	uint32_t mDisplayCount;
@@ -213,6 +213,7 @@ public:
 	VkFence mNullFence;
 	VkRenderPass mRenderPass;
 	VkFramebuffer* mFramebuffers;
+	VkClearColorValue mClearColorValue;
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 };
