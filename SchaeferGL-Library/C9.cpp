@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "C9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 #define APP_SHORT_NAME "SchaeferGL"
 
 C9::C9()
@@ -28,12 +30,17 @@ C9::C9()
 	mPhysicalDevices(NULL),
 	mReferenceCount(0)
 {
-	const char *extensionNames[] = { "VK_KHR_surface", "VK_KHR_win32_surface" };
+	mExtensionNames.push_back("VK_KHR_surface");
+	mExtensionNames.push_back("VK_KHR_win32_surface");
+#ifdef _DEBUG
+	mExtensionNames.push_back("VK_EXT_debug_report");
+	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+#endif // _DEBUG
 
 	// initialize the VkApplicationInfo structure
 	VkApplicationInfo app_info = {};
 	app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	app_info.pNext = NULL;
+	app_info.pNext = nullptr;
 	app_info.pApplicationName = APP_SHORT_NAME;
 	app_info.applicationVersion = 1;
 	app_info.pEngineName = APP_SHORT_NAME;
@@ -45,26 +52,48 @@ C9::C9()
 	{
 		VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, // VkStructureType sType;
 		NULL,                                   // const void* pNext;
-
 		0,                                      // VkInstanceCreateFlags flags;
-
 		&app_info,                              // const VkApplicationInfo* pApplicationInfo;
-
-		0,                                      // uint32_t enabledLayerNameCount;
-		NULL,                                   // const char* const* ppEnabledLayerNames;
-
-		2,                                      // uint32_t enabledExtensionNameCount;
-		extensionNames,                         // const char* const* ppEnabledExtensionNames;
+		mLayerExtensionNames.size(),            // uint32_t enabledLayerNameCount;
+		mLayerExtensionNames.data(),            // const char* const* ppEnabledLayerNames;
+		mExtensionNames.size(),                 // uint32_t enabledExtensionNameCount;
+		mExtensionNames.data(),                 // const char* const* ppEnabledExtensionNames;
 	};
 
 	//Get an instance handle.
 	if (VK_SUCCESS == vkCreateInstance(&inst_info, NULL, &mInstance))
 	{
+#ifdef _DEBUG
+		/* Load VK_EXT_debug_report entry points in debug builds */
+		vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(mInstance, "vkCreateDebugReportCallbackEXT"));
+		vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(vkGetInstanceProcAddr(mInstance, "vkDebugReportMessageEXT"));
+		vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(mInstance, "vkDestroyDebugReportCallbackEXT"));
+
+		VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+		callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+		callbackCreateInfo.pNext = nullptr;
+		callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+		callbackCreateInfo.pfnCallback = &DebugReportCallback;
+		callbackCreateInfo.pUserData = nullptr;
+
+		/* Register the callback */
+		mResult = vkCreateDebugReportCallbackEXT(mInstance, &callbackCreateInfo, nullptr, &mCallback);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkCreateDebugReportCallbackEXT failed with return code of " << mResult;
+			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateDebugReportCallbackEXT succeeded.";
+		}
+#endif
+
 		//Fetch an array of available physical devices.
 		mResult = vkEnumeratePhysicalDevices(mInstance, &mGpuCount, NULL);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices returned " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices failed with return code of " << mResult;
 			return;
 		}
 		else
@@ -78,7 +107,7 @@ C9::C9()
 			mResult = vkEnumeratePhysicalDevices(mInstance, &mGpuCount, mPhysicalDevices);
 			if (mResult != VK_SUCCESS)
 			{
-				BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices returned " << mResult;
+				BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices failed with return code of " << mResult;
 				return;
 			}
 		}
@@ -101,7 +130,11 @@ C9::~C9()
 		delete[]	 mPhysicalDevices;
 	}
 
-	vkDestroyInstance(mInstance, NULL);
+#ifdef _DEBUG
+	vkDestroyDebugReportCallbackEXT(mInstance, mCallback, nullptr);
+#endif
+
+	vkDestroyInstance(mInstance, nullptr);
 }
 
 //IUnknown
@@ -342,4 +375,10 @@ HRESULT STDMETHODCALLTYPE C9::RegisterSoftwareDevice(void *pInitializeFunction)
 	//TODO: Implement.
 
 	return E_NOTIMPL;
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData)
+{
+	BOOST_LOG_TRIVIAL(error) << message;
+	return VK_FALSE;
 }

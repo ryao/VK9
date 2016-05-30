@@ -23,6 +23,8 @@ misrepresented as being the original software.
 
 #include "d3d9.h" // Base class: IDirect3D9
 #include <vulkan/vulkan.h>
+#include <vulkan/vk_sdk_platform.h>
+#include <vector>
 #include "CTypes.h"
 
 class C9 : public IDirect3D9
@@ -35,8 +37,19 @@ public:
 	VkInstance mInstance;
 	VkPhysicalDevice* mPhysicalDevices;
 	uint32_t mGpuCount;
+	std::vector<char*> mExtensionNames;
+	std::vector<char*> mLayerExtensionNames;
 
 	int mReferenceCount;
+
+#ifdef _DEBUG
+	/* Load VK_EXT_debug_report entry points in debug builds */
+	PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
+	PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
+	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
+	VkDebugReportCallbackEXT mCallback;
+#endif
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
@@ -59,5 +72,7 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps);
 	virtual HRESULT STDMETHODCALLTYPE RegisterSoftwareDevice(void *pInitializeFunction);
 };
+
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
 
 #endif // C9_H
