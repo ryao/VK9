@@ -102,11 +102,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mExtensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 #ifdef _DEBUG
-	if (mInstance->mValidationPresent)
-	{
-		//If the instance layer is there the device should be as well.
 		mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
-	}
 #endif // _DEBUG
 
 	float queue_priorities[1] = { 0.0 };

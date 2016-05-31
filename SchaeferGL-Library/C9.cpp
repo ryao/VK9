@@ -62,10 +62,7 @@ C9::C9()
 	mExtensionNames.push_back("VK_KHR_win32_surface");
 #ifdef _DEBUG
 	mExtensionNames.push_back("VK_EXT_debug_report");
-	if (mValidationPresent)
-	{
-		mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
-	}	
+	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif // _DEBUG
 
 	// initialize the VkApplicationInfo structure
