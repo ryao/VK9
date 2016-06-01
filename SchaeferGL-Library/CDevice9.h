@@ -215,6 +215,12 @@ public:
 	VkFramebuffer* mFramebuffers;
 	VkClearColorValue mClearColorValue;
 
+	VkFormat mDepthFormat;
+	VkMemoryAllocateInfo mDepthMemoryAllocateInfo;
+	VkImage mDepthImage;
+	VkDeviceMemory mDepthDeviceMemory;
+	VkImageView mDepthView;
+
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 };
 

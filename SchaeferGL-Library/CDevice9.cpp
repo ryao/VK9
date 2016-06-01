@@ -62,7 +62,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mCommandBuffer(VK_NULL_HANDLE),
 	mQueue(VK_NULL_HANDLE),
 	mPresentCompleteSemaphore(VK_NULL_HANDLE),
-	mRenderPass(VK_NULL_HANDLE)
+	mRenderPass(VK_NULL_HANDLE),
+	mDepthFormat(VK_FORMAT_UNDEFINED),
+	mDepthImage(VK_NULL_HANDLE),
+	mDepthDeviceMemory(VK_NULL_HANDLE),
+	mDepthView(VK_NULL_HANDLE)
 {
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
@@ -1056,6 +1060,105 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	/*
+	Setup Depth stuff.
+	*/
+
+	mDepthFormat = VK_FORMAT_D16_UNORM;
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = mDepthFormat;
+	imageCreateInfo.extent = { mSwapchainExtent.width, mSwapchainExtent.height, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	imageCreateInfo.flags = 0;
+
+	VkImageViewCreateInfo imageViewCreateInfo = {};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.pNext = NULL;
+	imageViewCreateInfo.image = VK_NULL_HANDLE;
+	imageViewCreateInfo.format = mDepthFormat;
+	imageViewCreateInfo.subresourceRange = {};
+	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+	imageViewCreateInfo.flags = 0;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+	VkMemoryRequirements memoryRequirements = {};
+
+	mResult = vkCreateImage(mDevice, &imageCreateInfo, NULL, &mDepthImage);
+	if (mResult != VK_SUCCESS)
+	{
+		mResult = VK_RESULT_MAX_ENUM;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImage failed with return code of " << mResult;
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateImage succeeded.";
+	}
+
+	vkGetImageMemoryRequirements(mDevice, mDepthImage, &memoryRequirements);
+
+	mDepthMemoryAllocateInfo = {};
+	mDepthMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	mDepthMemoryAllocateInfo.pNext = NULL;
+	mDepthMemoryAllocateInfo.memoryTypeIndex = 0;
+	mDepthMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	/*
+	pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits,
+		0, 
+		&demo->depth.mem_alloc.memoryTypeIndex);
+	*/
+
+	mResult = vkAllocateMemory(mDevice, &mDepthMemoryAllocateInfo, NULL,&mDepthDeviceMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		mResult = VK_RESULT_MAX_ENUM;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkAllocateMemory succeeded.";
+	}
+
+	mResult = vkBindImageMemory(mDevice, mDepthImage, mDepthDeviceMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		mResult = VK_RESULT_MAX_ENUM;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkBindImageMemory failed with return code of " << mResult;
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkBindImageMemory succeeded.";
+	}
+
+	this->SetImageLayout(mDepthImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+	imageViewCreateInfo.image = mDepthImage;
+	mResult = vkCreateImageView(mDevice, &imageViewCreateInfo, NULL, &mDepthView);
+	if (mResult != VK_SUCCESS)
+	{
+		mResult = VK_RESULT_MAX_ENUM;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << mResult;
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateImageView succeeded.";
+	}
+
+	/*
 	Now setup the render pass.
 	*/
 
@@ -1069,7 +1172,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	renderAttachments[1].format = mFormat;  //demo->depth.format; (revsit)
+	renderAttachments[1].format = mDepthFormat;
 	renderAttachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
 	renderAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	renderAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -1125,7 +1228,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	*/
 
 	VkImageView attachments[2] = {};
-	//attachments[1] = demo->depth.view; //revsit
+	attachments[1] = mDepthView;
 
 	VkFramebufferCreateInfo framebufferCreateInfo = {};
 	framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -1175,15 +1278,27 @@ CDevice9::~CDevice9()
 		delete[] mSwapchainBuffers;
 	}
 
+	vkDestroyImageView(mDevice, mDepthView, NULL);
+	vkDestroyImage(mDevice, mDepthImage, NULL);
+	vkFreeMemory(mDevice, mDepthDeviceMemory, NULL);
+
 	vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
 
 	vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
 	if (mSwapchainImages != nullptr)
 	{
+		for (size_t i = 0; i < mSwapchainImageCount; i++)
+		{
+			vkDestroyImage(mDevice, mSwapchainImages[i], NULL);
+		}
 		delete[] mSwapchainImages;
 	}
 	if (mSwapchainViews != nullptr)
 	{
+		for (size_t i = 0; i < mSwapchainImageCount; i++)
+		{
+			vkDestroyImageView(mDevice, mSwapchainViews[i], NULL);
+		}
 		delete[] mSwapchainViews;
 	}
 
@@ -1248,7 +1363,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 		return D3DERR_INVALIDCALL;
 	}
 
-	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	// demo_flush_init_cmd
 
