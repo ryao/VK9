@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CVertexShader9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
 	: mReferenceCount(0),
 	mDevice(device),
@@ -46,6 +48,8 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::QueryInterface(REFIID riid,void  **ppv
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -65,12 +69,16 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::FreePrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CVertexShader9::GetPriority()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::GetPriority is not implemented!";
 
 	return 1;
 }
@@ -79,12 +87,16 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::GetPrivateData(REFGUID refguid, void* 
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::GetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CVertexShader9::GetType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::GetType is not implemented!";
 
 	return D3DRTYPE_SURFACE;
 }
@@ -93,6 +105,8 @@ void STDMETHODCALLTYPE CVertexShader9::PreLoad()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::PreLoad is not implemented!";
+
 	return; 
 }
 
@@ -100,12 +114,16 @@ DWORD STDMETHODCALLTYPE CVertexShader9::SetPriority(DWORD PriorityNew)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::SetPriority is not implemented!";
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexShader9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::SetPrivateData is not implemented!";
 
 	return E_NOTIMPL;
 }
@@ -118,6 +136,8 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::SetPrivateData(REFGUID refguid, const 
 HRESULT STDMETHODCALLTYPE CVertexShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::GetFunction is not implemented!";
 
 	return E_NOTIMPL;
 }

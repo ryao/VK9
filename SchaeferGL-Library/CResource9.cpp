@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CResource9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CResource9::CResource9()
 	: mReferenceCount(0)
 {
@@ -42,6 +44,8 @@ HRESULT STDMETHODCALLTYPE CResource9::QueryInterface(REFIID riid,void  **ppv)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -61,12 +65,16 @@ HRESULT STDMETHODCALLTYPE CResource9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::FreePrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CResource9::GetPriority()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::GetPriority is not implemented!";
 
 	return 1;
 }
@@ -75,12 +83,16 @@ HRESULT STDMETHODCALLTYPE CResource9::GetPrivateData(REFGUID refguid, void* pDat
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::GetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CResource9::GetType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::GetType is not implemented!";
 
 	return D3DRTYPE_SURFACE;
 }
@@ -89,6 +101,8 @@ void STDMETHODCALLTYPE CResource9::PreLoad()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::PreLoad is not implemented!";
+
 	return; 
 }
 
@@ -96,12 +110,16 @@ DWORD STDMETHODCALLTYPE CResource9::SetPriority(DWORD PriorityNew)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::SetPriority is not implemented!";
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CResource9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CResource9::SetPrivateData is not implemented!";
 
 	return E_NOTIMPL;
 }

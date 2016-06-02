@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CPixelShader9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
 	: mReferenceCount(0),
 	mDevice(device),
@@ -46,6 +48,8 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::QueryInterface(REFIID riid,void  **ppv)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -65,12 +69,16 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::FreePrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CPixelShader9::GetPriority()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::GetPriority is not implemented!";
 
 	return 1;
 }
@@ -79,12 +87,16 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::GetPrivateData(REFGUID refguid, void* p
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::GetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CPixelShader9::GetType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::GetType is not implemented!";
 
 	return D3DRTYPE_SURFACE;
 }
@@ -93,12 +105,16 @@ void STDMETHODCALLTYPE CPixelShader9::PreLoad()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::PreLoad is not implemented!";
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CPixelShader9::SetPriority(DWORD PriorityNew)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::SetPriority is not implemented!";
 
 	return 1;
 }
@@ -107,12 +123,16 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::SetPrivateData(REFGUID refguid, const v
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::SetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::GetFunction is not implemented!";
 
 	return E_NOTIMPL;
 }

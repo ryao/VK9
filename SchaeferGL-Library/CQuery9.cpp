@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CQuery9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CQuery9::CQuery9(CDevice9* device, D3DQUERYTYPE Type)
 	: mReferenceCount(0),
 		mDevice(device),
@@ -46,6 +48,8 @@ HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CQuery9::QueryInterface is not implemented!";
+
 	return S_OK;
 }
 
@@ -65,6 +69,8 @@ HRESULT STDMETHODCALLTYPE CQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGe
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CQuery9::GetData is not implemented!";
+
 	return S_OK;
 }
 
@@ -73,12 +79,16 @@ DWORD STDMETHODCALLTYPE CQuery9::GetDataSize()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CQuery9::GetDataSize is not implemented!";
+
 	return 0;
 }
 
 D3DQUERYTYPE STDMETHODCALLTYPE CQuery9::GetType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CQuery9::GetType is not implemented!";
 
 	return D3DQUERYTYPE_EVENT;
 }
@@ -87,6 +97,8 @@ D3DQUERYTYPE STDMETHODCALLTYPE CQuery9::GetType()
 HRESULT STDMETHODCALLTYPE CQuery9::Issue(DWORD dwIssueFlags)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CQuery9::Issue is not implemented!";
 
 	return S_OK;	
 }

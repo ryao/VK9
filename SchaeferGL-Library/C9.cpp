@@ -35,6 +35,11 @@ C9::C9()
 	mValidationPresent(false),
 	mResult(VK_SUCCESS)
 {
+	//Setup configuration & logging.
+	boost::log::add_file_log("SchaeferGL.log");
+
+
+	//Continue instance setup.
 	mResult = vkEnumerateInstanceLayerProperties(&mLayerPropertyCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{

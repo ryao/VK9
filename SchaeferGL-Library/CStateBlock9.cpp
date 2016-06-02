@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CStateBlock9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 	: mReferenceCount(0),
 	mDevice(device),
@@ -46,6 +48,8 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::QueryInterface(REFIID riid, void  **ppv)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CStateBlock9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -65,12 +69,16 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CStateBlock9::Capture is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CStateBlock9::Apply is not implemented!";
 
 	return E_NOTIMPL;
 }

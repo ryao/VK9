@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CVertexBuffer9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, HANDLE* pSharedHandle)
 	: mReferenceCount(0),
 	mDevice(device),
@@ -50,6 +52,8 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::QueryInterface(REFIID riid,void  **ppv
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -69,12 +73,16 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::FreePrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CVertexBuffer9::GetPriority()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::GetPriority is not implemented!";
 
 	return 1;
 }
@@ -83,12 +91,16 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetPrivateData(REFGUID refguid, void* 
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::GetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CVertexBuffer9::GetType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::GetType is not implemented!";
 
 	return D3DRTYPE_SURFACE;
 }
@@ -97,12 +109,16 @@ void STDMETHODCALLTYPE CVertexBuffer9::PreLoad()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::PreLoad is not implemented!";
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CVertexBuffer9::SetPriority(DWORD PriorityNew)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::SetPriority is not implemented!";
 
 	return 1;
 }
@@ -111,12 +127,16 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::SetPrivateData(REFGUID refguid, const 
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::SetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::GetDesc is not implemented!";
 
 	return E_NOTIMPL;
 }
@@ -125,12 +145,16 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::Lock is not implemented!";
+
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::Unlock is not implemented!";
 
 	return S_OK;	
 }

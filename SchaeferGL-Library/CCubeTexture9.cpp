@@ -22,6 +22,8 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 #include "CSurface9.h"
 
+#include "Utilities.h"
+
 CCubeTexture9::CCubeTexture9(CDevice9* Device, UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
 	: mDevice(Device),
 	mEdgeLength(EdgeLength),
@@ -52,6 +54,8 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -71,12 +75,16 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::FreePrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::GetPriority()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetPriority is not implemented!";
 
 	return 1;
 }
@@ -85,12 +93,16 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::GetPrivateData(REFGUID refguid, void* p
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 void STDMETHODCALLTYPE CCubeTexture9::PreLoad()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::PreLoad is not implemented!";
 
 	return; 
 }
@@ -99,12 +111,16 @@ DWORD STDMETHODCALLTYPE CCubeTexture9::SetPriority(DWORD PriorityNew)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::SetPriority is not implemented!";
+
 	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::SetPrivateData is not implemented!";
 
 	return E_NOTIMPL;
 }
@@ -113,12 +129,16 @@ VOID STDMETHODCALLTYPE CCubeTexture9::GenerateMipSubLevels()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GenerateMipSubLevels is not implemented!";
+
 	return;
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CCubeTexture9::GetAutoGenFilterType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetAutoGenFilterType is not implemented!";
 
 	return D3DTEXF_NONE;
 }
@@ -127,12 +147,16 @@ DWORD STDMETHODCALLTYPE CCubeTexture9::GetLOD()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetLOD is not implemented!";
+
 	return 0;
 }
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::GetLevelCount()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetLevelCount is not implemented!";
 
 	return 0;
 }
@@ -141,12 +165,16 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTY
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::SetAutoGenFilterType is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CCubeTexture9::SetLOD(DWORD LODNew)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::SetLOD is not implemented!";
 
 	return 0;
 }
@@ -155,12 +183,16 @@ D3DRESOURCETYPE STDMETHODCALLTYPE CCubeTexture9::GetType()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetType is not implemented!";
+
 	return D3DRTYPE_SURFACE;
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT* pDirtyRect)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::AddDirtyRect is not implemented!";
 
 	return E_NOTIMPL;
 }
@@ -169,12 +201,16 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES Face
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetCubeMapSurface is not implemented!";
+
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::GetLevelDesc is not implemented!";
 
 	return S_OK;	
 }
@@ -183,12 +219,16 @@ HRESULT CCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::LockRect is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 HRESULT CCubeTexture9::UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::UnlockRect is not implemented!";
 
 	return E_NOTIMPL;
 }

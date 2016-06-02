@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CVertexDeclaration9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMENT9* pVertexElements)
 	: mReferenceCount(0),
 	mDevice(device),
@@ -45,6 +47,8 @@ HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CVertexDeclaration9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -63,6 +67,8 @@ ULONG STDMETHODCALLTYPE CVertexDeclaration9::Release(void)
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CVertexDeclaration9::GetDeclaration is not implemented!";
 
 	return E_NOTIMPL;
 }

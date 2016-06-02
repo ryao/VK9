@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CSurface9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CSurface9::CSurface9(CDevice9* Device,UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard,HANDLE *pSharedHandle)
 	: mDevice(Device),
 	mWidth(Width),
@@ -57,6 +59,10 @@ CSurface9::CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format
 	mWidth(Width),
 	mHeight(Height),
 	mFormat(Format),
+	mMultiSample(D3DMULTISAMPLE_NONE),
+	mMultisampleQuality(0),
+	mDiscard(0),
+	mLockable(0),
 	mSharedHandle(pSharedHandle),
 	mReferenceCount(0)
 {
@@ -79,6 +85,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid,void  **ppv)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -98,12 +106,16 @@ HRESULT STDMETHODCALLTYPE CSurface9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::FreePrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CSurface9::GetPriority()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetPriority is not implemented!";
 
 	return 1;
 }
@@ -112,12 +124,16 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetPrivateData(REFGUID refguid, void* pData
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CSurface9::GetType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetType is not implemented!";
 
 	return D3DRTYPE_SURFACE;
 }
@@ -126,12 +142,16 @@ void STDMETHODCALLTYPE CSurface9::PreLoad()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::PreLoad is not implemented!";
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CSurface9::SetPriority(DWORD PriorityNew)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::SetPriority is not implemented!";
 
 	return 1;
 }
@@ -140,6 +160,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::SetPrivateData(REFGUID refguid, const void*
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::SetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -147,12 +169,16 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetContainer(REFIID riid, void** ppContaine
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetContainer is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::GetDC(HDC* phdc)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetDC is not implemented!";
 
 	return E_NOTIMPL;
 }
@@ -162,6 +188,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetDesc is not implemented!";
+
 	return S_OK;	
 }
 
@@ -169,6 +197,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 {
 	//TODO: Implement.
 	
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::LockRect is not implemented!";
+
 	return S_OK;	
 }
 
@@ -177,6 +207,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::ReleaseDC is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -184,6 +216,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CSurface9::UnlockRect is not implemented!";
 
 	return S_OK;	
 }

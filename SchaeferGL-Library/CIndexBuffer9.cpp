@@ -21,6 +21,8 @@ misrepresented as being the original software.
 #include "CIndexBuffer9.h"
 #include "CDevice9.h"
 
+#include "Utilities.h"
+
 CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle)
 	: mReferenceCount(0),
 	mDevice(device),
@@ -50,6 +52,8 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::QueryInterface(REFIID riid,void  **ppv)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::QueryInterface is not implemented!";
+
 	return E_NOTIMPL;
 }
 
@@ -69,12 +73,16 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::FreePrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 DWORD STDMETHODCALLTYPE CIndexBuffer9::GetPriority()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::GetPriority is not implemented!";
 
 	return 1;
 }
@@ -83,12 +91,16 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::GetPrivateData(REFGUID refguid, void* p
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::GetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CIndexBuffer9::GetType()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::GetType is not implemented!";
 
 	return D3DRTYPE_SURFACE;
 }
@@ -97,12 +109,16 @@ void STDMETHODCALLTYPE CIndexBuffer9::PreLoad()
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::PreLoad is not implemented!";
+
 	return; 
 }
 
 DWORD STDMETHODCALLTYPE CIndexBuffer9::SetPriority(DWORD PriorityNew)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::SetPriority is not implemented!";
 
 	return 1;
 }
@@ -111,12 +127,16 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::SetPrivateData(REFGUID refguid, const v
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::SetPrivateData is not implemented!";
+
 	return E_NOTIMPL;
 }
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC* pDesc)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::GetDesc is not implemented!";
 
 	return S_OK;	
 }
@@ -125,12 +145,16 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::Lock is not implemented!";
+
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::Unlock()
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::Unlock is not implemented!";
 
 	return S_OK;	
 }

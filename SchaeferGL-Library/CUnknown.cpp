@@ -20,6 +20,8 @@ misrepresented as being the original software.
 
 #include "CUnknown.h"
 
+#include "Utilities.h"
+
 CUnknown::CUnknown(void)
 	: mReferenceCount(0)
 {
@@ -41,6 +43,8 @@ ULONG STDMETHODCALLTYPE CUnknown::AddRef(void)
 HRESULT STDMETHODCALLTYPE CUnknown::QueryInterface(REFIID riid,void  **ppv)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "CUnknown::QueryInterface is not implemented!";
 
 	return E_NOTIMPL;
 }

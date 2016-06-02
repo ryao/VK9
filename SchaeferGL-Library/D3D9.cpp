@@ -32,15 +32,24 @@ misrepresented as being the original software.
 
 IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion)
 {
-	boost::log::add_file_log("SchaeferGL.log");
-	return new C9();
+	C9* instance = new C9();
+
+	if (instance->mResult != VK_SUCCESS)
+	{
+		delete instance;
+		instance = nullptr;
+	}
+
+	return (IDirect3D9*)instance;
 }
 
 HRESULT WINAPI Direct3DCreate9Ex(UINT SDKVersion, IDirect3D9Ex** out)
 {
-	out = NULL;
+	out = nullptr;
 
 	//TODO: Implement, maybe.
+
+	BOOST_LOG_TRIVIAL(warning) << "Direct3DCreate9Ex is not implemented!";
 
 	return E_NOTIMPL;
 }
