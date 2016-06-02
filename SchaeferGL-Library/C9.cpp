@@ -407,6 +407,27 @@ HRESULT STDMETHODCALLTYPE C9::RegisterSoftwareDevice(void *pInitializeFunction)
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData)
 {
-	BOOST_LOG_TRIVIAL(error) << "DebugReport: " << message;
+	switch (flags)
+	{
+	case VK_DEBUG_REPORT_INFORMATION_BIT_EXT:
+		BOOST_LOG_TRIVIAL(info) << "DebugReport(Info): " << message;
+		break;
+	case VK_DEBUG_REPORT_WARNING_BIT_EXT:
+		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Warn): " << message;
+		break;
+	case VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT:
+		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Perf): " << message;
+		break;
+	case VK_DEBUG_REPORT_ERROR_BIT_EXT:
+		BOOST_LOG_TRIVIAL(error) << "DebugReport(Error): " << message;
+		break;
+	case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
+		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Debug): " << message;
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(error) << "DebugReport(?): " << message;
+		break;
+	}
+	
 	return VK_FALSE;
 }

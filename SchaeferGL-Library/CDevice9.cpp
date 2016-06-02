@@ -130,7 +130,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateDevice(mPhysicalDevice, &device_info, nullptr, &mDevice);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateDevice failed with return code of " << mResult;
 		return;
 	}
@@ -156,7 +155,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkCreateWin32SurfaceKHR(mInstance->mInstance, &surfaceCreateInfo, nullptr, &mSurface);
 		if (mResult != VK_SUCCESS)
 		{
-			mResult = VK_RESULT_MAX_ENUM;
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR failed with a return code of " << mResult;
 			return;
 		}
@@ -188,7 +186,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mPhysicalDevice, mSurface, &mSurfaceCapabilities);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed with return code of " << mResult;
 		return;
 	}
@@ -211,7 +208,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkGetPhysicalDeviceSurfaceSupportKHR(mPhysicalDevice, i, mSurface, &doesSupportPresentation);
 		if (mResult != VK_SUCCESS)
 		{
-			mResult = VK_RESULT_MAX_ENUM;
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceSupportKHR failed with return code of " << mResult;
 			return;
 		}
@@ -253,7 +249,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateCommandPool(mDevice, &commandPoolInfo, nullptr, &mCommandPool);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateCommandPool failed with return code of " << mResult;
 		return;
 	}
@@ -284,7 +279,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << mResult;
 		return;
 	}
@@ -296,7 +290,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, mSurfaceFormats);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << mResult;
 		return;
 	}
@@ -885,7 +878,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << mResult;
 		return;
 	}
@@ -897,7 +889,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, mPresentationModes);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << mResult;
 		return;
 	}
@@ -969,7 +960,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, nullptr, &mSwapchain);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateSwapchainKHR failed with return code of " << mResult;
 		return;
 	}
@@ -982,7 +972,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetSwapchainImagesKHR(mDevice, mSwapchain, &mSwapchainImageCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR failed with return code of " << mResult;
 		return;
 	}
@@ -996,7 +985,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetSwapchainImagesKHR(mDevice, mSwapchain, &mSwapchainImageCount, mSwapchainImages);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR failed with return code of " << mResult;
 		return;
 	}
@@ -1024,14 +1012,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		color_image_view.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		color_image_view.flags = 0;
 
-		this->SetImageLayout(mSwapchainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		//SetImageLayout(mSwapchainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 		color_image_view.image = mSwapchainImages[i];	
 
 		mResult = vkCreateImageView(mDevice, &color_image_view, nullptr, &mSwapchainViews[i]);
 		if (mResult != VK_SUCCESS)
 		{
-			mResult = VK_RESULT_MAX_ENUM;
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << mResult;
 			return;
 		}
@@ -1053,7 +1040,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mSwapchainBuffers[i]);
 		if (mResult != VK_SUCCESS)
 		{
-			mResult = VK_RESULT_MAX_ENUM;
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateCommandBuffers failed with return code of " << mResult;
 			return;
 		}
@@ -1096,7 +1082,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateImage(mDevice, &imageCreateInfo, NULL, &mDepthImage);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImage failed with return code of " << mResult;
 		return;
 	}
@@ -1122,7 +1107,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkAllocateMemory(mDevice, &mDepthMemoryAllocateInfo, NULL,&mDepthDeviceMemory);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateMemory failed with return code of " << mResult;
 		return;
 	}
@@ -1134,7 +1118,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkBindImageMemory(mDevice, mDepthImage, mDepthDeviceMemory, 0);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkBindImageMemory failed with return code of " << mResult;
 		return;
 	}
@@ -1143,13 +1126,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkBindImageMemory succeeded.";
 	}
 
-	this->SetImageLayout(mDepthImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	//SetImageLayout(mDepthImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 	imageViewCreateInfo.image = mDepthImage;
 	mResult = vkCreateImageView(mDevice, &imageViewCreateInfo, NULL, &mDepthView);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << mResult;
 		return;
 	}
@@ -1214,7 +1196,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateRenderPass(mDevice, &renderPassCreateInfo, nullptr, &mRenderPass);
 	if (mResult != VK_SUCCESS)
 	{
-		mResult = VK_RESULT_MAX_ENUM;
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass failed with return code of " << mResult;
 		return;
 	}
@@ -1248,7 +1229,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkCreateFramebuffer(mDevice, &framebufferCreateInfo, nullptr, &mFramebuffers[i]);
 		if (mResult != VK_SUCCESS)
 		{
-			mResult = VK_RESULT_MAX_ENUM;
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateFramebuffer failed with return code of " << mResult;
 			return;
 		}
@@ -1363,7 +1343,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 		return D3DERR_INVALIDCALL;
 	}
 
-	SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	// demo_flush_init_cmd
 
@@ -2317,8 +2297,15 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		commandBufferInfo.commandBufferCount = 1;
 
 		result = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mCommandBuffer);
-
-		if (result != VK_SUCCESS) return;
+		if (result != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkAllocateCommandBuffers failed with return code of " << mResult;
+			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkAllocateCommandBuffers succeeded.";
+		}
 
 		VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
 		commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -2337,8 +2324,15 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 		result = vkBeginCommandBuffer(mCommandBuffer, &commandBufferBeginInfo);
-
-		if (result != VK_SUCCESS) return;
+		if (result != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkBeginCommandBuffer failed with return code of " << mResult;
+			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkBeginCommandBuffer succeeded.";
+		}
 	}
 
 	VkImageMemoryBarrier imageMemoryBarrier = {};
@@ -2372,4 +2366,58 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	}
 
 	vkCmdPipelineBarrier(mCommandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+	//flush init command
+
+	if (mCommandBuffer != VK_NULL_HANDLE)
+	{
+		result = vkEndCommandBuffer(mCommandBuffer);
+		if (result != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << mResult;
+			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkEndCommandBuffer succeeded.";
+		}
+
+		VkCommandBuffer commandBuffers[] = { mCommandBuffer };
+		VkFence nullFence = VK_NULL_HANDLE;
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = NULL;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = NULL;
+		submitInfo.pWaitDstStageMask = NULL;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = commandBuffers;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = NULL;
+
+		result = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
+		if (result != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << mResult;
+			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkQueueSubmit succeeded.";
+		}
+
+		result = vkQueueWaitIdle(mQueue);
+		if (result != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << mResult;
+			return;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkQueueWaitIdle succeeded.";
+		}
+
+		vkFreeCommandBuffers(mDevice,mCommandPool, 1, commandBuffers);
+		mCommandBuffer = VK_NULL_HANDLE;
+	}
 }
