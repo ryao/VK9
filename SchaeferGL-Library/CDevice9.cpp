@@ -244,7 +244,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolInfo.pNext = nullptr;
 	commandPoolInfo.queueFamilyIndex = mGraphicsQueueIndex; //Found earlier.
-	commandPoolInfo.flags = 0;
+	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	mResult = vkCreateCommandPool(mDevice, &commandPoolInfo, nullptr, &mCommandPool);
 	if (mResult != VK_SUCCESS)
@@ -1012,7 +1012,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		color_image_view.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		color_image_view.flags = 0;
 
-		//SetImageLayout(mSwapchainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		SetImageLayout(mSwapchainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 		color_image_view.image = mSwapchainImages[i];	
 
@@ -1126,7 +1126,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkBindImageMemory succeeded.";
 	}
 
-	//SetImageLayout(mDepthImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	SetImageLayout(mDepthImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 	imageViewCreateInfo.image = mDepthImage;
 	mResult = vkCreateImageView(mDevice, &imageViewCreateInfo, NULL, &mDepthView);
@@ -1245,12 +1245,18 @@ CDevice9::~CDevice9()
 	{
 		for (size_t i = 0; i < mSwapchainImageCount; i++)
 		{
-			vkDestroyFramebuffer(mDevice, mFramebuffers[i], nullptr);
+			if (mFramebuffers[i] != VK_NULL_HANDLE)
+			{
+				vkDestroyFramebuffer(mDevice, mFramebuffers[i], nullptr);
+			}		
 		}
 		delete[] mFramebuffers;
 	}
 
-	vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
+	if (mRenderPass != VK_NULL_HANDLE)
+	{
+		vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
+	}
 
 	if (mSwapchainBuffers!= nullptr)
 	{
@@ -1258,41 +1264,77 @@ CDevice9::~CDevice9()
 		delete[] mSwapchainBuffers;
 	}
 
-	vkDestroyImageView(mDevice, mDepthView, NULL);
-	vkDestroyImage(mDevice, mDepthImage, NULL);
-	vkFreeMemory(mDevice, mDepthDeviceMemory, NULL);
-
-	vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
-
-	vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
-	if (mSwapchainImages != nullptr)
+	if (mDepthView != VK_NULL_HANDLE)
 	{
-		for (size_t i = 0; i < mSwapchainImageCount; i++)
-		{
-			vkDestroyImage(mDevice, mSwapchainImages[i], NULL);
-		}
-		delete[] mSwapchainImages;
+		vkDestroyImageView(mDevice, mDepthView, nullptr);
 	}
+
+	if (mDepthImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage(mDevice, mDepthImage, nullptr);
+	}
+
+	if (mDepthDeviceMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice, mDepthDeviceMemory, nullptr);
+	}
+	
+
+	if (mCommandPool != VK_NULL_HANDLE)
+	{
+		vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
+	}
+
+	if (mSwapchain != VK_NULL_HANDLE)
+	{
+		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
+	}	
+
 	if (mSwapchainViews != nullptr)
 	{
 		for (size_t i = 0; i < mSwapchainImageCount; i++)
 		{
-			vkDestroyImageView(mDevice, mSwapchainViews[i], NULL);
+			if (mSwapchainViews[i] != VK_NULL_HANDLE)
+			{
+				vkDestroyImageView(mDevice, mSwapchainViews[i], nullptr);
+			}
 		}
 		delete[] mSwapchainViews;
 	}
 
-	vkDestroyDevice(mDevice, nullptr);
+	if (mSwapchainImages != nullptr)
+	{
+		//For some reason destroying the images causes a crash. I'm guessing it's a double free or something like that because the views have already been destroyed.
+		//for (size_t i = 0; i < mSwapchainImageCount; i++)
+		//{
+		//	if (mSwapchainImages[i] != VK_NULL_HANDLE)
+		//	{
+		//		vkDestroyImage(mDevice, mSwapchainImages[i], nullptr);
+		//	}	
+		//}
+		delete[] mSwapchainImages;
+	}
 
-	vkDestroySurfaceKHR(mInstance->mInstance, mSurface, nullptr);
+	if (mDevice != VK_NULL_HANDLE)
+	{
+		vkDestroyDevice(mDevice, nullptr);
+	}	
+
+	if (mSurface != VK_NULL_HANDLE)
+	{
+		vkDestroySurfaceKHR(mInstance->mInstance, mSurface, nullptr);
+	}
+
 	if (mPresentationModes != nullptr)
 	{
 		delete[] mPresentationModes;
 	}
+
 	if (mSurfaceFormats != nullptr)
 	{
 		delete[] mSurfaceFormats;
 	}
+
 	if (mDisplays != nullptr)
 	{
 		delete[] mDisplays;
@@ -1343,9 +1385,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 		return D3DERR_INVALIDCALL;
 	}
 
-	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-	// demo_flush_init_cmd
+	SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
 	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -1427,6 +1467,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 		return D3DERR_INVALIDCALL;
 	}
 
+	result = vkQueueWaitIdle(mQueue);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
 	return D3D_OK;
 }
 
@@ -1440,6 +1487,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = &mSwapchain;
 	presentInfo.pImageIndices = &mCurrentBuffer;
+
+	SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 	result = vkQueuePresentKHR(mQueue, &presentInfo);
 	if (result != VK_SUCCESS)
@@ -2302,10 +2351,6 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkAllocateCommandBuffers failed with return code of " << mResult;
 			return;
 		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkAllocateCommandBuffers succeeded.";
-		}
 
 		VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
 		commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -2329,10 +2374,6 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkBeginCommandBuffer failed with return code of " << mResult;
 			return;
 		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkBeginCommandBuffer succeeded.";
-		}
 	}
 
 	VkImageMemoryBarrier imageMemoryBarrier = {};
@@ -2348,6 +2389,11 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	if (newImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 	{
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+	}
+
+	if (oldImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+	{
+		imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; //Added based on validation layer complaints.
 	}
 
 	if (newImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
@@ -2377,10 +2423,6 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << mResult;
 			return;
 		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkEndCommandBuffer succeeded.";
-		}
 
 		VkCommandBuffer commandBuffers[] = { mCommandBuffer };
 		VkFence nullFence = VK_NULL_HANDLE;
@@ -2401,20 +2443,12 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << mResult;
 			return;
 		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkQueueSubmit succeeded.";
-		}
 
 		result = vkQueueWaitIdle(mQueue);
 		if (result != VK_SUCCESS)
 		{
 			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << mResult;
 			return;
-		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(info) << "CDevice9::SetImageLayout vkQueueWaitIdle succeeded.";
 		}
 
 		vkFreeCommandBuffers(mDevice,mCommandPool, 1, commandBuffers);

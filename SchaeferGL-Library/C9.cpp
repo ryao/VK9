@@ -153,16 +153,22 @@ C9::C9()
 
 C9::~C9()
 {
-	if (mPhysicalDevices!=NULL)
+	if (mPhysicalDevices != nullptr)
 	{
 		delete[]	 mPhysicalDevices;
 	}
 
 #ifdef _DEBUG
-	vkDestroyDebugReportCallbackEXT(mInstance, mCallback, nullptr);
+	if(mCallback != VK_NULL_HANDLE)
+	{
+		vkDestroyDebugReportCallbackEXT(mInstance, mCallback, nullptr);
+	}
 #endif
 
-	vkDestroyInstance(mInstance, nullptr);
+	if (mInstance != VK_NULL_HANDLE)
+	{
+		vkDestroyInstance(mInstance, nullptr);
+	}	
 }
 
 //IUnknown
