@@ -109,6 +109,7 @@
     <ClCompile Include="CPixelShader9.cpp" />
     <ClCompile Include="CQuery9.cpp" />
     <ClCompile Include="CResource9.cpp" />
+    <ClCompile Include="CStateBlock9.cpp" />
     <ClCompile Include="CSurface9.cpp" />
     <ClCompile Include="CTexture9.cpp" />
     <ClCompile Include="CTypes.cpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="CPixelShader9.h" />
     <ClInclude Include="CQuery9.h" />
     <ClInclude Include="CResource9.h" />
+    <ClInclude Include="CStateBlock9.h" />
     <ClInclude Include="CSurface9.h" />
     <ClInclude Include="CTexture9.h" />
     <ClInclude Include="CTypes.h" />

@@ -17,39 +17,39 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
- 
-#include "CPixelShader9.h"
+
+#include "CStateBlock9.h"
 #include "CDevice9.h"
 
-CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
+CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 	: mReferenceCount(0),
 	mDevice(device),
-	mFunction((DWORD*)pFunction),
+	mType(Type),
 	mResult(VK_SUCCESS)
 {
 
 }
 
-CPixelShader9::~CPixelShader9()
+CStateBlock9::~CStateBlock9()
 {
 
 }
 
-ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(void)
+ULONG STDMETHODCALLTYPE CStateBlock9::AddRef(void)
 {
 	mReferenceCount++;
 
 	return mReferenceCount;
 }
 
-HRESULT STDMETHODCALLTYPE CPixelShader9::QueryInterface(REFIID riid,void  **ppv)
+HRESULT STDMETHODCALLTYPE CStateBlock9::QueryInterface(REFIID riid, void  **ppv)
 {
 	//TODO: Implement.
 
 	return E_NOTIMPL;
 }
 
-ULONG STDMETHODCALLTYPE CPixelShader9::Release(void)
+ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 {
 	mReferenceCount--;
 
@@ -61,56 +61,14 @@ ULONG STDMETHODCALLTYPE CPixelShader9::Release(void)
 	return mReferenceCount;
 }
 
-HRESULT STDMETHODCALLTYPE CPixelShader9::FreePrivateData(REFGUID refguid)
+HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
 	//TODO: Implement.
 
 	return E_NOTIMPL;
 }
 
-DWORD STDMETHODCALLTYPE CPixelShader9::GetPriority()
-{
-	//TODO: Implement.
-
-	return 1;
-}
-
-HRESULT STDMETHODCALLTYPE CPixelShader9::GetPrivateData(REFGUID refguid, void* pData, DWORD* pSizeOfData)
-{
-	//TODO: Implement.
-
-	return E_NOTIMPL;
-}
-
-D3DRESOURCETYPE STDMETHODCALLTYPE CPixelShader9::GetType()
-{
-	//TODO: Implement.
-
-	return D3DRTYPE_SURFACE;
-}
-
-void STDMETHODCALLTYPE CPixelShader9::PreLoad()
-{
-	//TODO: Implement.
-
-	return; 
-}
-
-DWORD STDMETHODCALLTYPE CPixelShader9::SetPriority(DWORD PriorityNew)
-{
-	//TODO: Implement.
-
-	return 1;
-}
-
-HRESULT STDMETHODCALLTYPE CPixelShader9::SetPrivateData(REFGUID refguid, const void* pData, DWORD SizeOfData, DWORD Flags)
-{
-	//TODO: Implement.
-
-	return E_NOTIMPL;
-}
-
-HRESULT STDMETHODCALLTYPE CPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
+HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
 	//TODO: Implement.
 

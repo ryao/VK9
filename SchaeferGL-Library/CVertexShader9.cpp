@@ -21,8 +21,11 @@ misrepresented as being the original software.
 #include "CVertexShader9.h"
 #include "CDevice9.h"
 
-CVertexShader9::CVertexShader9()
-	: mReferenceCount(0)
+CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
+	: mReferenceCount(0),
+	mDevice(device),
+	mFunction((DWORD*)pFunction),
+	mResult(VK_SUCCESS)
 {
 
 }

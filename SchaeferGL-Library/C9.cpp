@@ -32,7 +32,8 @@ C9::C9()
 	mInstance(VK_NULL_HANDLE),
 	mLayerProperties(nullptr),
 	mLayerPropertyCount(0),
-	mValidationPresent(false)
+	mValidationPresent(false),
+	mResult(VK_SUCCESS)
 {
 	mResult = vkEnumerateInstanceLayerProperties(&mLayerPropertyCount, nullptr);
 	if (mResult != VK_SUCCESS)
@@ -182,7 +183,8 @@ ULONG STDMETHODCALLTYPE C9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
 {
-	
+	BOOST_LOG_TRIVIAL(warning) << "C9::QueryInterface is not implemented!";
+
 	return S_OK;
 }
 
@@ -206,6 +208,8 @@ HRESULT STDMETHODCALLTYPE C9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE Dev
 	
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDepthStencilMatch is not implemented!";
+
 	return result;	
 }
 
@@ -215,6 +219,8 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceTy
 	
 	//TODO: Implement.
 	
+	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceFormat is not implemented!";
+
 	return result;	
 }
 
@@ -222,6 +228,8 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceTy
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormatConversion(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SourceFormat,D3DFORMAT TargetFormat)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceFormatConversion is not implemented!";
 
 	return E_NOTIMPL;
 }
@@ -231,12 +239,16 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE
 {
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceMultiSampleType is not implemented!";
+
 	return D3DERR_NOTAVAILABLE;	
 }
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL Windowed)
 {		
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceType is not implemented!";
 
 	return S_OK;	
 }
@@ -245,14 +257,16 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 {
 	HRESULT result = S_OK;
 
-	CDevice9* device = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
+	CDevice9* obj = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
 
-	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)device;
-
-	if (device->mResult != VK_SUCCESS)
+	if (obj->mResult != VK_SUCCESS)
 	{
-		return D3DERR_INVALIDCALL;
+		delete obj;
+		obj = nullptr;
+		result = D3DERR_INVALIDCALL;
 	}
+
+	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
 
 	return result;	
 }
@@ -260,6 +274,8 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 HRESULT STDMETHODCALLTYPE C9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDISPLAYMODE *pMode)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "C9::EnumAdapterModes is not implemented!";
 
 	return S_OK;		
 }
@@ -281,12 +297,16 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterDisplayMode is not implemented!";
+
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
 {	
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterIdentifier is not implemented!";
 
 	return S_OK;	
 }
@@ -295,6 +315,8 @@ UINT STDMETHODCALLTYPE C9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 {	
 	//TODO: Implement.
 
+	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterModeCount is not implemented!";
+
 	return 0;	
 }
 
@@ -302,6 +324,8 @@ UINT STDMETHODCALLTYPE C9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterMonitor is not implemented!";
 
 	return 0; //TODO: implement GetAdapterMonitor
 }
@@ -407,6 +431,8 @@ HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D
 HRESULT STDMETHODCALLTYPE C9::RegisterSoftwareDevice(void *pInitializeFunction)
 {
 	//TODO: Implement.
+
+	BOOST_LOG_TRIVIAL(warning) << "C9::RegisterSoftwareDevice is not implemented!";
 
 	return E_NOTIMPL;
 }

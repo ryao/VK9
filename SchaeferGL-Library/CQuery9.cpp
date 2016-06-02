@@ -21,8 +21,11 @@ misrepresented as being the original software.
 #include "CQuery9.h"
 #include "CDevice9.h"
 
-CQuery9::CQuery9()
-	: mReferenceCount(0)
+CQuery9::CQuery9(CDevice9* device, D3DQUERYTYPE Type)
+	: mReferenceCount(0),
+		mDevice(device),
+		mType(Type),
+	mResult(VK_SUCCESS)
 {
 
 }

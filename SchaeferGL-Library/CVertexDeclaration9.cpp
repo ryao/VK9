@@ -21,8 +21,11 @@ misrepresented as being the original software.
 #include "CVertexDeclaration9.h"
 #include "CDevice9.h"
 
-CVertexDeclaration9::CVertexDeclaration9()
-	: mReferenceCount(0)
+CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMENT9* pVertexElements)
+	: mReferenceCount(0),
+	mDevice(device),
+	mVertexElements((D3DVERTEXELEMENT9*)pVertexElements),
+	mResult(VK_SUCCESS)
 {
 }
 

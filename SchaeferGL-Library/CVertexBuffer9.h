@@ -29,14 +29,19 @@ class CVertexBuffer9 : public IDirect3DVertexBuffer9,CResource9
 {
 private:
 	CDevice9* mDevice;
+	UINT mLength;
+	DWORD mUsage;
+	DWORD mFVF;
+	D3DPOOL mPool;
+	HANDLE* mSharedHandle;
 private:
 	
 public:
-	CVertexBuffer9();
+	CVertexBuffer9(CDevice9* device,UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CVertexBuffer9();
 
 	int mReferenceCount;
-	
+	VkResult mResult;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

@@ -29,7 +29,6 @@ class CBaseTexture9 : public IDirect3DBaseTexture9,CResource9
 {
 private:
 	CDevice9* mDevice;
-
 public:
 	CBaseTexture9();
 	~CBaseTexture9();

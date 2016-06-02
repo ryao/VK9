@@ -21,8 +21,18 @@ misrepresented as being the original software.
 #include "CVolumeTexture9.h"
 #include "CDevice9.h"
 
-CVolumeTexture9::CVolumeTexture9()
-	: mReferenceCount(0)
+CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
+	: mReferenceCount(0),
+	mDevice(device),
+	mWidth(Width),
+	mHeight(Height),
+	mDepth(Depth),
+	mLevels(Levels),
+	mUsage(Usage),
+	mFormat(Format),
+	mPool(Pool),
+	mSharedHandle(pSharedHandle),
+	mResult(VK_SUCCESS)
 {
 
 }

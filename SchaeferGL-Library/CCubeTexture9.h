@@ -30,7 +30,7 @@ class CCubeTexture9 : public IDirect3DCubeTexture9,CBaseTexture9
 {
 private:
 	CDevice9* mDevice;
-
+	
 public:
 	CCubeTexture9(CDevice9* Device,UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CCubeTexture9();
@@ -43,6 +43,7 @@ public:
 	HANDLE* mSharedHandle;
 
 	int mReferenceCount;
+	VkResult mResult;
 
 public:
 	//IUnknown

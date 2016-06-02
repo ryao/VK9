@@ -29,12 +29,13 @@ class CPixelShader9 : public IDirect3DPixelShader9,CResource9
 {
 private:
 	CDevice9* mDevice;
+	DWORD* mFunction;
 public:
-	CPixelShader9();
+	CPixelShader9(CDevice9* device,const DWORD* pFunction);
 	~CPixelShader9();
 
 	int mReferenceCount;
-
+	VkResult mResult;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

@@ -29,12 +29,13 @@ class CQuery9 : public IDirect3DQuery9
 {
 private:
 	CDevice9* mDevice;
+	D3DQUERYTYPE mType;
 public:
-	CQuery9();
+	CQuery9(CDevice9* device, D3DQUERYTYPE Type);
 	~CQuery9();
 	
 	int mReferenceCount;
-
+	VkResult mResult;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

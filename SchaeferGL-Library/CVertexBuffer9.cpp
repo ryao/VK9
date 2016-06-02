@@ -21,8 +21,15 @@ misrepresented as being the original software.
 #include "CVertexBuffer9.h"
 #include "CDevice9.h"
 
-CVertexBuffer9::CVertexBuffer9()
-	: mReferenceCount(0)
+CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, HANDLE* pSharedHandle)
+	: mReferenceCount(0),
+	mDevice(device),
+	mLength(Length),
+	mUsage(Usage),
+	mFVF(FVF),
+	mPool(Pool),
+	mSharedHandle(pSharedHandle),
+	mResult(VK_SUCCESS)
 {
 
 }

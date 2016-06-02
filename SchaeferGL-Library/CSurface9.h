@@ -31,6 +31,8 @@ private:
 	
 public:
 	CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
+	CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
+	CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, HANDLE *pSharedHandle);
 	~CSurface9();
 
 	CDevice9* mDevice;
@@ -40,10 +42,11 @@ public:
 	D3DMULTISAMPLE_TYPE mMultiSample;
 	DWORD mMultisampleQuality;
 	BOOL mDiscard;
+	BOOL mLockable;
 	HANDLE* mSharedHandle;
 
 	int mReferenceCount;
-
+	VkResult mResult;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

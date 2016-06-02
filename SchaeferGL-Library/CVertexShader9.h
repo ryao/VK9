@@ -29,12 +29,14 @@ class CVertexShader9 : public IDirect3DVertexShader9,CResource9
 {
 private:
 	CDevice9* mDevice;
+	DWORD* mFunction;
+
 public:
-	CVertexShader9();
+	CVertexShader9(CDevice9* device, const DWORD* pFunction);
 	~CVertexShader9();
 
 	int mReferenceCount;
-
+	VkResult mResult;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

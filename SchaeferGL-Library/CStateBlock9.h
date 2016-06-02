@@ -17,36 +17,41 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
- 
-#ifndef CVERTEXDECLARATION9_H
-#define CVERTEXDECLARATION9_H
 
-#include "d3d9.h" // Base class: IDirect3DVertexDeclaration9
+#ifndef CSTATEBLOCK9_H
+#define CSTATEBLOCK9_H
+
+#include "d3d9.h"
 #include <vulkan/vulkan.h>
 #include "CUnknown.h"
 
 class CDevice9;
 
-class CVertexDeclaration9 : public IDirect3DVertexDeclaration9
+class CStateBlock9 : public IDirect3DStateBlock9
+
 {
 private:
 	CDevice9* mDevice;
-	D3DVERTEXELEMENT9* mVertexElements;
+	D3DSTATEBLOCKTYPE mType;
+
 public:
-	CVertexDeclaration9(CDevice9* device,const D3DVERTEXELEMENT9* pVertexElements);
-	~CVertexDeclaration9();
+	CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type);
+	~CStateBlock9();
 
 	int mReferenceCount;
 	VkResult mResult;
 public:
+
 	//IUnknown
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
-	virtual ULONG STDMETHODCALLTYPE AddRef(void);	
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void  **ppv);
+	virtual ULONG STDMETHODCALLTYPE AddRef(void);
 	virtual ULONG STDMETHODCALLTYPE Release(void);
 
-	//IDirect3DVertexDeclaration9
-	virtual HRESULT STDMETHODCALLTYPE GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements);
+	//IDirect3DStateBlock9
+	virtual HRESULT STDMETHODCALLTYPE Capture();
+	virtual HRESULT STDMETHODCALLTYPE Apply();
 	virtual HRESULT STDMETHODCALLTYPE GetDevice(IDirect3DDevice9** ppDevice) { (*ppDevice) = (IDirect3DDevice9*)mDevice; return S_OK; }
+
 };
 
-#endif // CVERTEXDECLARATION9_H
+#endif // CSTATEBLOCK9_H

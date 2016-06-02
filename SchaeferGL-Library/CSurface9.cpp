@@ -29,6 +29,34 @@ CSurface9::CSurface9(CDevice9* Device,UINT Width, UINT Height, D3DFORMAT Format,
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
 	mDiscard(Discard),
+	mLockable(0),
+	mSharedHandle(pSharedHandle),
+	mReferenceCount(0),
+	mResult(VK_SUCCESS)
+{
+	//TODO: Implement.
+}
+
+CSurface9::CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle, int32_t filler) //CreateRenderTarget
+	: mDevice(Device),
+	mWidth(Width),
+	mHeight(Height),
+	mFormat(Format),
+	mMultiSample(MultiSample),
+	mMultisampleQuality(MultisampleQuality),
+	mDiscard(0),
+	mLockable(Lockable),
+	mSharedHandle(pSharedHandle),
+	mReferenceCount(0)
+{
+	//TODO: Implement.
+}
+
+CSurface9::CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, HANDLE *pSharedHandle)
+	: mDevice(Device),
+	mWidth(Width),
+	mHeight(Height),
+	mFormat(Format),
 	mSharedHandle(pSharedHandle),
 	mReferenceCount(0)
 {

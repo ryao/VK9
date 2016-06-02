@@ -21,8 +21,18 @@ misrepresented as being the original software.
 #include "CTexture9.h"
 #include "CDevice9.h"
 
-CTexture9::CTexture9()
-	: mReferenceCount(0)
+CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
+	: mReferenceCount(0),
+	mDevice(device),
+	mWidth(Width),
+	mHeight(Height),
+	mDepth(0),
+	mLevels(Levels),
+	mUsage(Usage),
+	mFormat(Format),
+	mPool(Pool),
+	mSharedHandle(pSharedHandle),
+	mResult(VK_SUCCESS)
 {
 
 }

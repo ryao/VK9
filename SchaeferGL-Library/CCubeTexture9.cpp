@@ -30,7 +30,8 @@ CCubeTexture9::CCubeTexture9(CDevice9* Device, UINT EdgeLength, UINT Levels, DWO
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mReferenceCount(0)
+	mReferenceCount(0),
+	mResult(VK_SUCCESS)
 {
 	//TODO: Implement.
 }

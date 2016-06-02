@@ -29,13 +29,18 @@ class CIndexBuffer9 : public IDirect3DIndexBuffer9,CResource9
 {
 private:
 	CDevice9* mDevice;
-
+	UINT mLength;
+	DWORD mUsage;
+	D3DFORMAT mFormat; 
+	D3DPOOL mPool;
+	HANDLE* mSharedHandle;
 public:
-	CIndexBuffer9();
+	CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CIndexBuffer9();
 
 	int mReferenceCount;
-	
+	VkResult mResult;
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

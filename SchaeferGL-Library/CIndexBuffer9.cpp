@@ -21,8 +21,15 @@ misrepresented as being the original software.
 #include "CIndexBuffer9.h"
 #include "CDevice9.h"
 
-CIndexBuffer9::CIndexBuffer9()
-	: mReferenceCount(0)
+CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle)
+	: mReferenceCount(0),
+	mDevice(device),
+	mLength(Length),
+	mUsage(Usage),
+	mFormat(Format),
+	mPool(Pool),
+	mSharedHandle(pSharedHandle),
+	mResult(VK_SUCCESS)
 {
 
 }

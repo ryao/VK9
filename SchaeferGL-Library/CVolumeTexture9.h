@@ -29,12 +29,21 @@ class CVolumeTexture9 : public IDirect3DVolumeTexture9,CBaseTexture9
 {
 private:
 	CDevice9* mDevice;
+	UINT mWidth;
+	UINT mHeight;
+	UINT mDepth;
+	UINT mLevels;
+	DWORD mUsage;
+	D3DFORMAT mFormat;
+	D3DPOOL mPool;
+	HANDLE* mSharedHandle;
+
 public:
-	CVolumeTexture9();
+	CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CVolumeTexture9();
 
 	int mReferenceCount;
-
+	VkResult mResult;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
