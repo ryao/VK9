@@ -17,7 +17,9 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
- 
+
+#include <iostream>
+
 #include "C9.h"
 #include "CDevice9.h"
 
@@ -33,10 +35,25 @@ C9::C9()
 	mLayerProperties(nullptr),
 	mLayerPropertyCount(0),
 	mValidationPresent(false),
-	mResult(VK_SUCCESS)
+	mResult(VK_SUCCESS),
+	mOptionDescriptions("Allowed options")
 {
 	//Setup configuration & logging.
-	boost::log::add_file_log("SchaeferGL.log");
+
+	mOptionDescriptions.add_options()
+		("LogFile", boost::program_options::value<std::string>(), "The location of the log file.");
+
+	boost::program_options::store(boost::program_options::parse_config_file<char>("SchaeferGL.conf", mOptionDescriptions), mOptions);
+	boost::program_options::notify(mOptions);
+
+	if (mOptions.count("LogFile"))
+	{
+		boost::log::add_file_log(mOptions["LogFile"].as<std::string>());
+	}
+	else
+	{
+		boost::log::add_file_log("SchaeferGL.log");
+	}
 
 
 	//Continue instance setup.

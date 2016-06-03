@@ -25,6 +25,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <vector>
+#include <boost/program_options.hpp>
 #include "CTypes.h"
 
 class C9 : public IDirect3D9
@@ -42,6 +43,9 @@ public:
 	std::vector<char*> mExtensionNames;
 	std::vector<char*> mLayerExtensionNames;
 	bool mValidationPresent;
+
+	boost::program_options::variables_map mOptions;
+	boost::program_options::options_description mOptionDescriptions;
 
 	int mReferenceCount;
 

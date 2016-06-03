@@ -24,6 +24,8 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3DDevice9
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
+#include <boost/program_options.hpp>
+#include <boost/program_options/parsers.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>

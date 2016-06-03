@@ -148,5 +148,6 @@
     <None Include="d3d9.def">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="SchaeferGL.conf" />
   </ItemGroup>
 </Project>
