@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <vector>
+#include <map>
 #include "CUnknown.h"
 
 #include "CVertexDeclaration9.h"
@@ -220,6 +221,9 @@ public:
 	VkImage mDepthImage;
 	VkDeviceMemory mDepthDeviceMemory;
 	VkImageView mDepthView;
+
+	std::map<D3DRENDERSTATETYPE, DWORD> mRenderState;
+	std::map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransform;
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 };

@@ -279,6 +279,8 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 {
 	HRESULT result = S_OK;
 
+	//TODO: create different code path for D3DCREATE_MULTITHREADED. It's not recommended so I'll probably do that after the thread unsafe version is working correctly.
+
 	CDevice9* obj = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
 
 	if (obj->mResult != VK_SUCCESS)
