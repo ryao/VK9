@@ -21,5 +21,48 @@ misrepresented as being the original software.
 #ifndef CTYPES_H
 #define CTYPES_H
 
+#include "d3d9.h"
+
+class StreamSource
+{
+public:
+
+	UINT StreamNumber;
+	IDirect3DVertexBuffer9* StreamData;
+	UINT OffsetInBytes;
+	UINT Stride;
+
+	StreamSource()
+		: StreamSource(0, nullptr, 0, 0)
+	{
+
+	}
+
+	StreamSource(const StreamSource& value)
+		: StreamSource(value.StreamNumber, value.StreamData, value.OffsetInBytes, value.Stride)
+	{
+
+	}
+
+	StreamSource(UINT streamNumber, IDirect3DVertexBuffer9* streamData, UINT offsetInBytes, UINT stride)
+		:StreamNumber(streamNumber),
+		StreamData(streamData),
+		OffsetInBytes(offsetInBytes),
+		Stride(stride)
+	{
+		if (StreamData != nullptr)
+		{
+			StreamData->AddRef();
+		}
+	}
+
+	~StreamSource()
+	{
+		if (StreamData != nullptr)
+		{
+			StreamData->Release();
+		}
+	}
+};
 
 #endif // CTYPES_H

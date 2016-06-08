@@ -42,6 +42,11 @@ public:
 
 	int mReferenceCount;
 	VkResult mResult;
+	void* mBuffer;
+	size_t mSize;
+	size_t mCapacity;
+	bool mIsDirty;
+	int mLockCount;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

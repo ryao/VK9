@@ -174,6 +174,8 @@ public:
 public:
 	VkResult mResult;
 	VkPhysicalDevice mPhysicalDevice;
+	VkPhysicalDeviceProperties mDeviceProperties;
+	VkPhysicalDeviceFeatures mDeviceFeatures;
 	VkDevice mDevice;
 	VkQueueFamilyProperties* mQueueFamilyProperties;
 	VkSurfaceCapabilitiesKHR mSurfaceCapabilities;
@@ -222,8 +224,9 @@ public:
 	VkDeviceMemory mDepthDeviceMemory;
 	VkImageView mDepthView;
 
-	std::map<D3DRENDERSTATETYPE, DWORD> mRenderState;
-	std::map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransform;
+	std::map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
+	std::map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+	std::map<UINT, StreamSource> mStreamSources;
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 };

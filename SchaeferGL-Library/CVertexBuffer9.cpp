@@ -31,7 +31,11 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mFVF(FVF),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS)
+	mResult(VK_SUCCESS),
+	mBuffer(nullptr),
+	mSize(0),
+	mCapacity(0),
+	mIsDirty(true)
 {
 
 }
@@ -143,18 +147,23 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {
-	//TODO: Implement.
+	if (mPool == D3DPOOL_MANAGED)
+	{
+		if(!(Flags & D3DLOCK_READONLY))
+		{ //If the lock allows write mark the buffer as dirty.
+			mIsDirty = true;
+		}
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::Lock is not implemented!";
+	*ppbData = (char *)mBuffer + OffsetToLock;
+	mLockCount++;
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::Unlock is not implemented!";
+	mLockCount--;
 
 	return S_OK;	
 }

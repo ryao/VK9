@@ -79,6 +79,10 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 	mPhysicalDevice = mInstance->mPhysicalDevices[mAdapter]; //pull the selected physical device from the instance.
 
+	//Fetch the properties & features from the physical device.
+	vkGetPhysicalDeviceProperties(this->mPhysicalDevice, &mDeviceProperties);
+	vkGetPhysicalDeviceFeatures(this->mPhysicalDevice, &mDeviceFeatures);
+
 	//Fetch the queue properties.
 	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,NULL);
 	if (mQueueCount == 0)
@@ -1955,12 +1959,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172591(v=vs.85).aspx
 	*/
 
-	//Fetch the properties & features from the physical device.
-	VkPhysicalDeviceProperties properties;
-	VkPhysicalDeviceFeatures features;
-	vkGetPhysicalDeviceProperties(this->mPhysicalDevice, &properties);
-	vkGetPhysicalDeviceFeatures(this->mPhysicalDevice, &features);
-
 	//Translate the vulkan properties & features into D3D9 capabilities.
 	pCaps->DeviceType = D3DDEVTYPE_HAL; //Assume all hardware.
 	pCaps->AdapterOrdinal = 0;
@@ -1984,12 +1982,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
 	pCaps->TextureAddressCaps = D3DPTADDRESSCAPS_BORDER | D3DPTADDRESSCAPS_INDEPENDENTUV | D3DPTADDRESSCAPS_WRAP | D3DPTADDRESSCAPS_MIRROR | D3DPTADDRESSCAPS_CLAMP | D3DPTADDRESSCAPS_MIRRORONCE;
 	pCaps->VolumeTextureAddressCaps = pCaps->TextureAddressCaps;
 	pCaps->LineCaps = D3DLINECAPS_ALPHACMP | D3DLINECAPS_BLEND | D3DLINECAPS_TEXTURE | D3DLINECAPS_ZTEST | D3DLINECAPS_FOG;
-	pCaps->MaxTextureWidth = properties.limits.maxImageDimension2D; //Revisit
-	pCaps->MaxTextureHeight = properties.limits.maxImageDimension2D; //Revisit
-	pCaps->MaxVolumeExtent = properties.limits.maxImageDimensionCube; //Revisit
+	pCaps->MaxTextureWidth = mDeviceProperties.limits.maxImageDimension2D; //Revisit
+	pCaps->MaxTextureHeight = mDeviceProperties.limits.maxImageDimension2D; //Revisit
+	pCaps->MaxVolumeExtent = mDeviceProperties.limits.maxImageDimensionCube; //Revisit
 	pCaps->MaxTextureRepeat = 32768; //revisit
 	pCaps->MaxTextureAspectRatio = pCaps->MaxTextureWidth;
-	pCaps->MaxAnisotropy = features.samplerAnisotropy;
+	pCaps->MaxAnisotropy = mDeviceFeatures.samplerAnisotropy;
 	pCaps->MaxVertexW = 1e10f; //revisit
 	pCaps->GuardBandLeft = -1e9f; //revisit
 	pCaps->GuardBandTop = -1e9f; //revisit
@@ -1999,18 +1997,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
 	pCaps->StencilCaps = D3DSTENCILCAPS_KEEP | D3DSTENCILCAPS_ZERO | D3DSTENCILCAPS_REPLACE | D3DSTENCILCAPS_INCRSAT | D3DSTENCILCAPS_DECRSAT | D3DSTENCILCAPS_INVERT | D3DSTENCILCAPS_INCR | D3DSTENCILCAPS_DECR | D3DSTENCILCAPS_TWOSIDED;
 	pCaps->FVFCaps = D3DFVFCAPS_PSIZE;
 	pCaps->TextureOpCaps = D3DTEXOPCAPS_DISABLE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2 | D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_MODULATE2X | D3DTEXOPCAPS_MODULATE4X | D3DTEXOPCAPS_ADD | D3DTEXOPCAPS_ADDSIGNED | D3DTEXOPCAPS_ADDSIGNED2X | D3DTEXOPCAPS_SUBTRACT | D3DTEXOPCAPS_ADDSMOOTH | D3DTEXOPCAPS_BLENDDIFFUSEALPHA | D3DTEXOPCAPS_BLENDTEXTUREALPHA | D3DTEXOPCAPS_BLENDFACTORALPHA | D3DTEXOPCAPS_BLENDTEXTUREALPHAPM | D3DTEXOPCAPS_BLENDCURRENTALPHA | D3DTEXOPCAPS_PREMODULATE | D3DTEXOPCAPS_MODULATEALPHA_ADDCOLOR | D3DTEXOPCAPS_MODULATECOLOR_ADDALPHA | D3DTEXOPCAPS_MODULATEINVALPHA_ADDCOLOR | D3DTEXOPCAPS_MODULATEINVCOLOR_ADDALPHA | D3DTEXOPCAPS_BUMPENVMAP | D3DTEXOPCAPS_BUMPENVMAPLUMINANCE | D3DTEXOPCAPS_DOTPRODUCT3 | D3DTEXOPCAPS_MULTIPLYADD | D3DTEXOPCAPS_LERP;
-	pCaps->MaxTextureBlendStages = properties.limits.maxDescriptorSetSamplers; //revisit
-	pCaps->MaxSimultaneousTextures = properties.limits.maxDescriptorSetSampledImages; //revisit
+	pCaps->MaxTextureBlendStages = mDeviceProperties.limits.maxDescriptorSetSamplers; //revisit
+	pCaps->MaxSimultaneousTextures = mDeviceProperties.limits.maxDescriptorSetSampledImages; //revisit
 	pCaps->VertexProcessingCaps = D3DVTXPCAPS_TEXGEN | D3DVTXPCAPS_MATERIALSOURCE7 | D3DVTXPCAPS_DIRECTIONALLIGHTS | D3DVTXPCAPS_POSITIONALLIGHTS | D3DVTXPCAPS_LOCALVIEWER | D3DVTXPCAPS_TWEENING;
 	pCaps->MaxActiveLights = 0;  //Revsit should be infinite but games may not read it that way.
 	pCaps->MaxUserClipPlanes = 8; //revisit
 	pCaps->MaxVertexBlendMatrices = 4; //revisit
 	pCaps->MaxVertexBlendMatrixIndex = 7; //revisit
-	pCaps->MaxPointSize = properties.limits.pointSizeRange[1]; //revisit
+	pCaps->MaxPointSize = mDeviceProperties.limits.pointSizeRange[1]; //revisit
 	pCaps->MaxPrimitiveCount = 0xFFFFFFFF; //revisit
 	pCaps->MaxVertexIndex = 0xFFFFFFFF; //revisit
-	pCaps->MaxStreams = properties.limits.maxVertexInputBindings; //revisit
-	pCaps->MaxStreamStride = properties.limits.maxVertexInputBindingStride; //revisit
+	pCaps->MaxStreams = mDeviceProperties.limits.maxVertexInputBindings; //revisit
+	pCaps->MaxStreamStride = mDeviceProperties.limits.maxVertexInputBindingStride; //revisit
 	pCaps->VertexShaderVersion = D3DVS_VERSION(3, 0);
 	pCaps->MaxVertexShaderConst = 256; //revisit
 	pCaps->PixelShaderVersion = D3DPS_VERSION(3, 0);
@@ -2196,9 +2194,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain,D3DRASTER_S
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State,DWORD *pValue)
 {
-	(*pValue) = mRenderState[State];
+	(*pValue) = mRenderStates[State];
 
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 **ppRenderTarget)
@@ -2293,9 +2291,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage,D3DTEXTURES
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX* pMatrix)
 {
-	(*pMatrix) = mTransform[State];
+	(*pMatrix) = mTransforms[State];
 
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl)
@@ -2550,7 +2548,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister,c
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 {
-	mRenderState[State] = Value;
+	mRenderStates[State] = Value;
 
 	return S_OK;	
 }
@@ -2592,10 +2590,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride)
-{
-	//TODO: Implement.
-		
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetStreamSource is not implemented!";
+{		
+	mStreamSources[StreamNumber] = StreamSource(StreamNumber, pStreamData, OffsetInBytes, Stride);
 
 	return S_OK;
 }
@@ -2629,7 +2625,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURES
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
 {
-	mTransform[State] = (*pMatrix);
+	mTransforms[State] = (*pMatrix);
 
 	return S_OK;	
 }
