@@ -23,6 +23,12 @@ misrepresented as being the original software.
 
 #include "d3d9.h"
 
+struct Vertex
+{
+	float x, y, z; // Position of vertex in 3D space
+	DWORD color;   // Color of vertex
+};
+
 class StreamSource
 {
 public:

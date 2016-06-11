@@ -67,7 +67,9 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDepthFormat(VK_FORMAT_UNDEFINED),
 	mDepthImage(VK_NULL_HANDLE),
 	mDepthDeviceMemory(VK_NULL_HANDLE),
-	mDepthView(VK_NULL_HANDLE)
+	mDepthView(VK_NULL_HANDLE),
+	mFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE),
+	mIsDirty(true)
 {
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
@@ -80,8 +82,10 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mPhysicalDevice = mInstance->mPhysicalDevices[mAdapter]; //pull the selected physical device from the instance.
 
 	//Fetch the properties & features from the physical device.
-	vkGetPhysicalDeviceProperties(this->mPhysicalDevice, &mDeviceProperties);
-	vkGetPhysicalDeviceFeatures(this->mPhysicalDevice, &mDeviceFeatures);
+	vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
+	vkGetPhysicalDeviceFeatures(mPhysicalDevice, &mDeviceFeatures);
+	vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &mDeviceMemoryProperties);
+	
 
 	//Fetch the queue properties.
 	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,NULL);
@@ -1835,6 +1839,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount)
 {
+
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitive is not implemented!";
@@ -2068,9 +2074,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetFrontBufferData(UINT  iSwapChain,IDirect3
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetFVF(DWORD *pFVF)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetFVF is not implemented!";
+	(*pFVF) = mFVF;
 
 	return S_OK;	
 }
@@ -2451,9 +2455,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF is not implemented!";
+	mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
 
 	return S_OK;	
 }
@@ -2592,6 +2594,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride)
 {		
 	mStreamSources[StreamNumber] = StreamSource(StreamNumber, pStreamData, OffsetInBytes, Stride);
+
+	//Revisit
+	((CVertexBuffer9*)pStreamData)->mVertexInputBindingDescription[0].binding = StreamNumber;
+	((CVertexBuffer9*)pStreamData)->mVertexInputAttributeDescription[0].binding = StreamNumber;
+	((CVertexBuffer9*)pStreamData)->mVertexInputAttributeDescription[1].binding = StreamNumber;
 
 	return S_OK;
 }
@@ -2867,3 +2874,4 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		mCommandBuffer = VK_NULL_HANDLE;
 	}
 }
+

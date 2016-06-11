@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include "CUnknown.h"
 
 #include "CVertexDeclaration9.h"
@@ -176,6 +176,7 @@ public:
 	VkPhysicalDevice mPhysicalDevice;
 	VkPhysicalDeviceProperties mDeviceProperties;
 	VkPhysicalDeviceFeatures mDeviceFeatures;
+	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties;
 	VkDevice mDevice;
 	VkQueueFamilyProperties* mQueueFamilyProperties;
 	VkSurfaceCapabilitiesKHR mSurfaceCapabilities;
@@ -223,10 +224,12 @@ public:
 	VkImage mDepthImage;
 	VkDeviceMemory mDepthDeviceMemory;
 	VkImageView mDepthView;
-
-	std::map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
-	std::map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
-	std::map<UINT, StreamSource> mStreamSources;
+	
+	std::unordered_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
+	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+	std::unordered_map<UINT, StreamSource> mStreamSources;
+	DWORD mFVF;
+	BOOL mIsDirty;
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 };

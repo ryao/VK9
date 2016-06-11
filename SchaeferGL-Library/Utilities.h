@@ -41,6 +41,110 @@ misrepresented as being the original software.
 #define D3DCOLOR_G(dw) (((float)(((dw) >> 8) & 0xFF)) / 255.0f)
 #define D3DCOLOR_B(dw) (((float)(((dw) >> 0) & 0xFF)) / 255.0f)
 
+inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
+{
+	switch (input)
+	{
+	case D3DCULL_NONE:
+		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		break;
+	case D3DCULL_CW:
+		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		break;
+	case D3DCULL_CCW:
+		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		break;
+	default:
+		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		break;
+	}
+}
+
+inline VkPolygonMode ConvertFillMode(D3DFILLMODE input)
+{
+	VkPolygonMode output;
+
+	switch (input)
+	{
+	case D3DFILL_SOLID:
+		output = VK_POLYGON_MODE_FILL;
+		break;
+	case D3DFILL_POINT:
+		output = VK_POLYGON_MODE_POINT;
+		break;
+	case D3DFILL_WIREFRAME:
+		break;
+		output = VK_POLYGON_MODE_LINE;
+	default:
+		output = VK_POLYGON_MODE_POINT;
+		break;
+	}
+
+	return output;
+}
+
+inline VkPrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input)
+{
+	VkPrimitiveTopology output;
+
+	switch (input)
+	{
+	case D3DPT_POINTLIST:
+		output = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		break;
+	case D3DPT_LINELIST:
+		output = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		break;
+	case D3DPT_LINESTRIP:
+		output = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+		break;
+	case D3DPT_TRIANGLELIST:
+		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		break;
+	case D3DPT_TRIANGLESTRIP:
+		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		break;
+	case D3DPT_TRIANGLEFAN:
+		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+		break;
+	default:
+		output = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		break;
+	}
+
+	/* Types D3d9 doesn't support
+		VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY = 6,
+		VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY = 7,
+		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY = 8,
+		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY = 9,
+		VK_PRIMITIVE_TOPOLOGY_PATCH_LIST = 10,
+	*/
+
+	return output;
+}
+
+inline bool GetMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& deviceMemoryProperties, uint32_t typeBits,VkFlags requirements_mask,uint32_t *typeIndex)
+{
+	// Search memtypes to find first index with those properties
+	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
+		if ((typeBits & 1) == 1) {
+			// Type is available, does it match user properties?
+			if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask) 
+			{
+				*typeIndex = i;
+				return true;
+			}
+		}
+		typeBits >>= 1;
+	}
+	// No memory types matched, return failure
+	return false;
+}
+
 inline VkFormat ConvertFormat(D3DFORMAT format)
 {
 	/*

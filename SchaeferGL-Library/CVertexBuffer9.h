@@ -42,11 +42,41 @@ public:
 
 	int mReferenceCount;
 	VkResult mResult;
-	void* mBuffer;
+	void* mData;
 	size_t mSize;
 	size_t mCapacity;
 	bool mIsDirty;
 	int mLockCount;
+
+	VkDynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE];
+	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1];
+
+	VkMemoryRequirements mMemoryRequirements;
+	VkBuffer mBuffer;
+	VkDeviceMemory mMemory;
+	VkPipelineVertexInputStateCreateInfo mPipelineVertexInputStateCreateInfo;
+	VkPipelineInputAssemblyStateCreateInfo mPipelineInputAssemblyStateCreateInfo;
+	VkPipelineRasterizationStateCreateInfo mPipelineRasterizationStateCreateInfo;
+	VkPipelineColorBlendStateCreateInfo mPipelineColorBlendStateCreateInfo;
+	VkPipelineDepthStencilStateCreateInfo mPipelineDepthStencilStateCreateInfo;
+	VkPipelineViewportStateCreateInfo mPipelineViewportStateCreateInfo;
+	VkPipelineMultisampleStateCreateInfo mPipelineMultisampleStateCreateInfo;
+	VkPipelineDynamicStateCreateInfo mPipelineDynamicStateCreateInfo;
+	VkGraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
+	VkPipelineCacheCreateInfo mPipelineCacheCreateInfo;
+
+	VkVertexInputBindingDescription mVertexInputBindingDescription[1];
+	VkVertexInputAttributeDescription mVertexInputAttributeDescription[2];
+
+	VkDescriptorSetLayout mDescriptorSetLayout;
+	VkPipelineLayout mPipelineLayout;
+	VkPipeline mPipeline;
+	VkPipelineCache mPipelineCache;
+
+
+
+	VkPipeline GetPipeline();
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

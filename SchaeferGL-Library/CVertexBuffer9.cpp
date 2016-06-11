@@ -32,12 +32,177 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
 	mResult(VK_SUCCESS),
-	mBuffer(nullptr),
+	mData(nullptr),
 	mSize(0),
 	mCapacity(0),
-	mIsDirty(true)
+	mIsDirty(true),
+	mBuffer(VK_NULL_HANDLE),
+	mMemory(VK_NULL_HANDLE),
+	mDescriptorSetLayout(VK_NULL_HANDLE),
+	mPipelineLayout(VK_NULL_HANDLE),
+	mPipeline(VK_NULL_HANDLE),
+	mPipelineCache(VK_NULL_HANDLE)
 {
+	VkBufferCreateInfo bufferCreateInfo = {};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.pNext = NULL;
+	bufferCreateInfo.size = mLength;
+	bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferCreateInfo.flags = 0;
 
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.pNext = NULL;
+	memoryAllocateInfo.allocationSize = 0;
+	memoryAllocateInfo.memoryTypeIndex = 0;
+
+	mMemoryRequirements = {};
+
+	mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE] = {};
+	mPipelineColorBlendAttachmentState[1] = {};
+
+	mPipelineVertexInputStateCreateInfo = {};
+	mPipelineInputAssemblyStateCreateInfo = {};
+	mPipelineRasterizationStateCreateInfo = {};
+	mPipelineColorBlendStateCreateInfo = {};
+	mPipelineDepthStencilStateCreateInfo = {};
+	mPipelineViewportStateCreateInfo = {};
+	mPipelineMultisampleStateCreateInfo = {};
+	mPipelineDynamicStateCreateInfo = {};
+	mPipelineCacheCreateInfo = {};
+	mGraphicsPipelineCreateInfo = {};
+
+	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	mPipelineVertexInputStateCreateInfo.pNext = NULL;
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+	mPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = mVertexInputBindingDescription;
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2;
+	mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = mVertexInputAttributeDescription;
+
+	mVertexInputBindingDescription[0].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
+	mVertexInputBindingDescription[0].stride = sizeof(Vertex); //structure they should be passing in.
+	mVertexInputBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	mVertexInputAttributeDescription[0].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
+	mVertexInputAttributeDescription[0].location = 0;
+	mVertexInputAttributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	mVertexInputAttributeDescription[0].offset = 0;
+
+	mVertexInputAttributeDescription[1].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
+	mVertexInputAttributeDescription[1].location = 1;
+	mVertexInputAttributeDescription[1].format = VK_FORMAT_B8G8R8A8_UNORM;
+	mVertexInputAttributeDescription[1].offset = sizeof(float) * 3;
+
+	mPipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	mPipelineDynamicStateCreateInfo.pDynamicStates = mDynamicStateEnables;
+
+	mPipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	mPipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+	mPipelineRasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	mPipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+	mPipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	mPipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
+
+	mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
+	mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
+	mPipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	mPipelineColorBlendStateCreateInfo.attachmentCount = 1;
+	mPipelineColorBlendStateCreateInfo.pAttachments = mPipelineColorBlendAttachmentState;
+
+	mPipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	mPipelineViewportStateCreateInfo.viewportCount = 1;
+	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_VIEWPORT;
+	mPipelineViewportStateCreateInfo.scissorCount = 1;
+	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_SCISSOR;
+
+	mPipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	mPipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+	mPipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+	mPipelineDepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+	mPipelineDepthStencilStateCreateInfo.back.failOp = VK_STENCIL_OP_KEEP;
+	mPipelineDepthStencilStateCreateInfo.back.passOp = VK_STENCIL_OP_KEEP;
+	mPipelineDepthStencilStateCreateInfo.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	mPipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+	mPipelineDepthStencilStateCreateInfo.front = mPipelineDepthStencilStateCreateInfo.back;
+
+	mPipelineMultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	mPipelineMultisampleStateCreateInfo.pSampleMask = NULL;
+	mPipelineMultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+	mResult = vkCreateBuffer(mDevice->mDevice, &bufferCreateInfo, NULL, &mBuffer);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkCreateBuffer failed with return code of " << mResult;
+		return;
+	}
+
+	vkGetBufferMemoryRequirements(mDevice->mDevice, mBuffer, &mMemoryRequirements);
+
+	memoryAllocateInfo.allocationSize = mMemoryRequirements.size;
+
+	GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, mMemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &memoryAllocateInfo.memoryTypeIndex);
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &memoryAllocateInfo, NULL, &mMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+
+	VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
+	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+
+	descriptorSetLayoutBinding.binding = 0;
+	descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorSetLayoutBinding.descriptorCount = 0; //DEMO_TEXTURE_COUNT;
+	descriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	descriptorSetLayoutBinding.pImmutableSamplers = NULL;
+
+	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorSetLayoutCreateInfo.pNext = NULL;
+	descriptorSetLayoutCreateInfo.bindingCount = 1;
+	descriptorSetLayoutCreateInfo.pBindings = &descriptorSetLayoutBinding;
+
+	mResult = vkCreateDescriptorSetLayout(mDevice->mDevice, &descriptorSetLayoutCreateInfo, NULL, &mDescriptorSetLayout);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkCreateDescriptorSetLayout failed with return code of " << mResult;
+		return;
+	}
+
+	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCreateInfo.pNext = NULL;
+	pipelineLayoutCreateInfo.setLayoutCount = 1;
+	pipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	mResult = vkCreatePipelineLayout(mDevice->mDevice, &pipelineLayoutCreateInfo, NULL, &mPipelineLayout);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkCreatePipelineLayout failed with return code of " << mResult;
+		return;
+	}
+
+	mGraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	mGraphicsPipelineCreateInfo.layout = mPipelineLayout;
+	mGraphicsPipelineCreateInfo.pVertexInputState = &mPipelineVertexInputStateCreateInfo;
+	mGraphicsPipelineCreateInfo.pInputAssemblyState = &mPipelineInputAssemblyStateCreateInfo;
+	mGraphicsPipelineCreateInfo.pRasterizationState = &mPipelineRasterizationStateCreateInfo;
+	mGraphicsPipelineCreateInfo.pColorBlendState = &mPipelineColorBlendStateCreateInfo;
+	mGraphicsPipelineCreateInfo.pDepthStencilState = &mPipelineDepthStencilStateCreateInfo;
+	mGraphicsPipelineCreateInfo.pViewportState = &mPipelineViewportStateCreateInfo;
+	mGraphicsPipelineCreateInfo.pMultisampleState = &mPipelineMultisampleStateCreateInfo;
+	mGraphicsPipelineCreateInfo.pStages = nullptr; //shaderStages
+	mGraphicsPipelineCreateInfo.renderPass = mDevice->mRenderPass;
+	mGraphicsPipelineCreateInfo.pDynamicState = &mPipelineDynamicStateCreateInfo;
+
+	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 }
 
 CVertexBuffer9::~CVertexBuffer9()
@@ -147,6 +312,8 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetDesc(D3DVERTEXBUFFER_DESC* pDesc)
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {
+	VkResult result = VK_SUCCESS;
+
 	if (mPool == D3DPOOL_MANAGED)
 	{
 		if(!(Flags & D3DLOCK_READONLY))
@@ -155,7 +322,17 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 		}
 	}
 
-	*ppbData = (char *)mBuffer + OffsetToLock;
+	result = vkMapMemory(mDevice->mDevice, mMemory, 0, mMemoryRequirements.size, 0, &mData);
+
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::Lock vkMapMemory failed with return code of " << result;
+		*ppbData = nullptr;
+
+		return D3DERR_INVALIDCALL;
+	}
+
+	*ppbData = (char *)mData + OffsetToLock;
 	mLockCount++;
 
 	return S_OK;	
@@ -163,7 +340,62 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 {
+	VkResult result = VK_SUCCESS;
+
+	vkUnmapMemory(mDevice->mDevice, mMemory);
+
+	result = vkBindBufferMemory(mDevice->mDevice, mBuffer, mMemory, 0);
+	
 	mLockCount--;
 
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::Unlock vkBindBufferMemory failed with return code of " << result;
+
+		return D3DERR_INVALIDCALL;
+	}
+
 	return S_OK;	
+}
+
+VkPipeline CVertexBuffer9::GetPipeline()
+{
+	//Creating a pipe each time seems wasteful but depending on the draw command I'll need to alter the pipeline which I think means I need to recreate it.
+	VkResult result = VK_SUCCESS;
+
+
+	//TODO: if the FVF is something other than D3DFVF_XYZ | D3DFVF_DIFFUSE than update the input structures.
+
+	
+	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)mDevice->mRenderStates[D3DRS_FILLMODE]);
+
+	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)mDevice->mRenderStates[D3DRS_FILLMODE]);
+
+	/*
+	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+
+	mPipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	*/
+
+	result = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, NULL,&mPipelineCache);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::GetPipeline vkCreatePipelineCache failed with return code of " << mResult;
+		return mPipeline;
+	}
+
+	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, NULL, &mPipeline);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::GetPipeline vkCreateGraphicsPipelines failed with return code of " << mResult;
+		//Don't return so we can destroy cache.
+	}
+
+	vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, NULL);
+
+	mIsDirty = false;
+
+	return mPipeline;
 }
