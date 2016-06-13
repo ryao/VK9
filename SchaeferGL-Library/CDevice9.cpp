@@ -1313,8 +1313,8 @@ CDevice9::~CDevice9()
 		delete[] mSwapchainViews;
 	}
 
-	if (mSwapchainImages != nullptr)
-	{
+	//if (mSwapchainImages != nullptr)
+	//{
 		//For some reason destroying the images causes a crash. I'm guessing it's a double free or something like that because the views have already been destroyed.
 		//for (size_t i = 0; i < mSwapchainImageCount; i++)
 		//{
@@ -1324,7 +1324,7 @@ CDevice9::~CDevice9()
 		//	}	
 		//}
 		delete[] mSwapchainImages;
-	}
+	//}
 
 	if (mDevice != VK_NULL_HANDLE)
 	{
@@ -1336,20 +1336,12 @@ CDevice9::~CDevice9()
 		vkDestroySurfaceKHR(mInstance->mInstance, mSurface, nullptr);
 	}
 
-	if (mPresentationModes != nullptr)
-	{
-		delete[] mPresentationModes;
-	}
+	delete[] mPresentationModes;
 
-	if (mSurfaceFormats != nullptr)
-	{
-		delete[] mSurfaceFormats;
-	}
+	delete[] mSurfaceFormats;
 
-	if (mDisplays != nullptr)
-	{
-		delete[] mDisplays;
-	}
+	delete[] mDisplays;
+
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)

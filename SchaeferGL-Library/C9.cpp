@@ -176,10 +176,8 @@ C9::C9()
 
 C9::~C9()
 {
-	if (mPhysicalDevices != nullptr)
-	{
-		delete[]	 mPhysicalDevices;
-	}
+	delete[]	 mPhysicalDevices;
+
 
 #ifdef _DEBUG
 	if(mCallback != VK_NULL_HANDLE)
