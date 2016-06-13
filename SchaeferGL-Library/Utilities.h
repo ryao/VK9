@@ -112,7 +112,7 @@ inline VkPrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input)
 		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
 		break;
 	default:
-		output = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		break;
 	}
 

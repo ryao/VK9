@@ -73,9 +73,9 @@ public:
 	VkPipeline mPipeline;
 	VkPipelineCache mPipelineCache;
 
+	D3DPRIMITIVETYPE mLastType;
 
-
-	VkPipeline GetPipeline();
+	VkPipeline GetPipeline(D3DPRIMITIVETYPE type);
 
 public:
 	//IUnknown

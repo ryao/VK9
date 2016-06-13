@@ -1840,7 +1840,21 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount)
 {
 
+	/*
+	vkCmdBindPipeline(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		demo->pipeline);
+	vkCmdBindDescriptorSets(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		demo->pipeline_layout, 0, 1, &demo->desc_set, 0,
+		NULL);
 
+
+
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(demo->draw_cmd, VERTEX_BUFFER_BIND_ID, 1,
+		&demo->vertices.buf, offsets);
+
+	vkCmdDraw(demo->draw_cmd, 3, 1, 0, 0);
+	*/
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitive is not implemented!";

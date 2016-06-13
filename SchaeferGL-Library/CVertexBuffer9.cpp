@@ -41,7 +41,8 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mDescriptorSetLayout(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
 	mPipeline(VK_NULL_HANDLE),
-	mPipelineCache(VK_NULL_HANDLE)
+	mPipelineCache(VK_NULL_HANDLE),
+	mLastType(D3DPT_FORCE_DWORD) //used to help prevent repeating pipe creation.
 {
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -207,7 +208,30 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 
 CVertexBuffer9::~CVertexBuffer9()
 {
+	if (mPipeline != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline(mDevice->mDevice, mPipeline, NULL);
+	}
+	
+	if (mPipelineLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineLayout(mDevice->mDevice, mPipelineLayout, NULL);
+	}
 
+	if (mDescriptorSetLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorSetLayout(mDevice->mDevice, mDescriptorSetLayout, NULL);
+	}
+	
+	if (mBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer(mDevice->mDevice, mBuffer, NULL);
+	}
+
+	if (mMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mMemory, NULL);
+	}	
 }
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(void)
@@ -358,11 +382,29 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 	return S_OK;	
 }
 
-VkPipeline CVertexBuffer9::GetPipeline()
+VkPipeline CVertexBuffer9::GetPipeline(D3DPRIMITIVETYPE type)
 {
-	//Creating a pipe each time seems wasteful but depending on the draw command I'll need to alter the pipeline which I think means I need to recreate it.
 	VkResult result = VK_SUCCESS;
 
+	/**********************************************
+	* Cleanup/Fetch Pipe
+	**********************************************/
+	//TODO: add logic to return existing pipe when possible.
+
+	if (mLastType != type)
+	{
+		mIsDirty = true;
+	}
+
+	if (mPipeline != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline(mDevice->mDevice, mPipeline, NULL);
+		mPipeline = VK_NULL_HANDLE;
+	}
+
+	/**********************************************
+	* Update Pipe Creation Information
+	**********************************************/
 
 	//TODO: if the FVF is something other than D3DFVF_XYZ | D3DFVF_DIFFUSE than update the input structures.
 
@@ -371,14 +413,21 @@ VkPipeline CVertexBuffer9::GetPipeline()
 
 	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)mDevice->mRenderStates[D3DRS_FILLMODE]);
 
-	/*
-	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
-	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+	if (mDevice->mRenderStates[D3DRS_ZBIAS] > 0)
+	{
+		mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+	}
+	else
+	{
+		mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
+	}
 
-	mPipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	*/
+	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
 
+
+	/**********************************************
+	 * Create Pipe
+	 **********************************************/
 	result = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, NULL,&mPipelineCache);
 	if (result != VK_SUCCESS)
 	{
@@ -395,7 +444,10 @@ VkPipeline CVertexBuffer9::GetPipeline()
 
 	vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, NULL);
 
-	mIsDirty = false;
+	if (result == VK_SUCCESS)
+	{
+		mIsDirty = false;
+	}
 
 	return mPipeline;
 }
