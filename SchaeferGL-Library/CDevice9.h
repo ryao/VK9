@@ -230,8 +230,11 @@ public:
 	std::unordered_map<UINT, StreamSource> mStreamSources;
 	DWORD mFVF;
 	BOOL mIsDirty;
+	BOOL mIsSceneStarted;
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
+	void StartScene();
+	void StopScene();
 };
 
 

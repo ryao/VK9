@@ -69,7 +69,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDepthDeviceMemory(VK_NULL_HANDLE),
 	mDepthView(VK_NULL_HANDLE),
 	mFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE),
-	mIsDirty(true)
+	mIsDirty(true),
+	mIsSceneStarted(false)
 {
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
@@ -1374,121 +1375,31 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 
 HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 {
-	VkResult result = VK_SUCCESS;
-	VkSemaphoreCreateInfo presentCompleteSemaphoreCreateInfo;
-	
-	presentCompleteSemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	presentCompleteSemaphoreCreateInfo.pNext = nullptr;
-	presentCompleteSemaphoreCreateInfo.flags = 0;
+	//Acording to a tip from the Nine team games don't always use the begin/end scene functions correctly.
 
-	result = vkCreateSemaphore(mDevice, &presentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
-	if (result != VK_SUCCESS)
+	if (!mIsSceneStarted)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::BeginScene vkCreateSemaphore failed with return code of " << mResult;
-		return D3DERR_INVALIDCALL;
+		this->StartScene();
 	}
-
-	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::BeginScene vkAcquireNextImageKHR failed with return code of " << mResult;
-		return D3DERR_INVALIDCALL;
-	}
-
-	SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
-	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-	commandBufferInheritanceInfo.pNext = nullptr;
-	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.subpass = 0;
-	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
-	commandBufferInheritanceInfo.queryFlags = 0;
-	commandBufferInheritanceInfo.pipelineStatistics = 0;
-
-	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
-	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	commandBufferBeginInfo.pNext = nullptr;
-	commandBufferBeginInfo.flags = 0;
-	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
-
-	VkClearValue clearValues[2];
-	clearValues[0].color = mClearColorValue;
-	//clearValues[0].color.float32[0] = 0.2f;
-	//clearValues[0].color.float32[1] = 0.2f;
-	//clearValues[0].color.float32[2] = 0.2f;
-	//clearValues[0].color.float32[3] = 0.2f;
-	clearValues[1].depthStencil = { 1.0f, 0 };
-
-	VkRenderPassBeginInfo renderPassBeginInfo = {};
-	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.pNext = nullptr;
-	renderPassBeginInfo.renderPass = mRenderPass;
-	renderPassBeginInfo.framebuffer = mFramebuffers[mCurrentBuffer];
-	renderPassBeginInfo.renderArea.offset.x = 0;
-	renderPassBeginInfo.renderArea.offset.y = 0;
-	renderPassBeginInfo.renderArea.extent.width = mSwapchainExtent.width;
-	renderPassBeginInfo.renderArea.extent.height = mSwapchainExtent.height;
-	renderPassBeginInfo.clearValueCount = 2;
-	renderPassBeginInfo.pClearValues = clearValues;
-
-	result = vkBeginCommandBuffer(mSwapchainBuffers[mCurrentBuffer], &commandBufferBeginInfo);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::BeginScene vkBeginCommandBuffer failed with return code of " << mResult;
-		return D3DERR_INVALIDCALL;
-	}
-
-	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
 
 	return D3D_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 {
-	VkResult result = VK_SUCCESS;
-	VkPipelineStageFlags pipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	VkSubmitInfo submitInfo = {};
-
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &mPresentCompleteSemaphore;
-	submitInfo.pWaitDstStageMask = &pipeStageFlags;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &mSwapchainBuffers[mCurrentBuffer];
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = nullptr;
-
-	vkCmdEndRenderPass(mSwapchainBuffers[mCurrentBuffer]); // Why no result?
-
-	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkEndCommandBuffer failed with return code of " << mResult;
-		return D3DERR_INVALIDCALL;
-	}
-
-	result = vkQueueSubmit(mQueue, 1, &submitInfo, mNullFence);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << mResult;
-		return D3DERR_INVALIDCALL;
-	}
-
-	result = vkQueueWaitIdle(mQueue);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
-		return D3DERR_INVALIDCALL;
-	}
+	//Acording to a tip from the Nine team games don't always use the begin/end scene functions correctly.
 
 	return D3D_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
+	if (!mIsSceneStarted)
+	{
+		this->StartScene();
+	}
+	this->StopScene();
+
 	VkResult result = VK_SUCCESS;
 
 	VkPresentInfoKHR presentInfo = {};
@@ -1821,6 +1732,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
 {
+	if (!mIsSceneStarted)
+	{
+		this->StartScene();
+	}
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive is not implemented!";
@@ -1830,6 +1746,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,const void *pIndexData,D3DFORMAT IndexDataFormat,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
 {
+	if (!mIsSceneStarted)
+	{
+		this->StartScene();
+	}
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitiveUP is not implemented!";
@@ -1839,6 +1760,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount)
 {
+	if (!mIsSceneStarted)
+	{
+		this->StartScene();
+	}
 
 	/*
 	vkCmdBindPipeline(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1864,6 +1789,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT PrimitiveCount,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
 {
+	if (!mIsSceneStarted)
+	{
+		this->StartScene();
+	}
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitiveUP is not implemented!";
@@ -1873,6 +1803,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveTy
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawRectPatch(UINT Handle,const float *pNumSegs,const D3DRECTPATCH_INFO *pRectPatchInfo)
 {
+	if (!mIsSceneStarted)
+	{
+		this->StartScene();
+	}
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawRectPatch is not implemented!";
@@ -1882,6 +1817,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawRectPatch(UINT Handle,const float *pNumS
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle,const float *pNumSegs,const D3DTRIPATCH_INFO *pTriPatchInfo)
 {
+	if (!mIsSceneStarted)
+	{
+		this->StartScene();
+	}
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawTriPatch is not implemented!";
@@ -2889,3 +2829,117 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	}
 }
 
+void CDevice9::StartScene()
+{
+	mIsSceneStarted = true;
+
+	VkResult result = VK_SUCCESS;
+	VkSemaphoreCreateInfo presentCompleteSemaphoreCreateInfo;
+
+	presentCompleteSemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	presentCompleteSemaphoreCreateInfo.pNext = nullptr;
+	presentCompleteSemaphoreCreateInfo.flags = 0;
+
+	result = vkCreateSemaphore(mDevice, &presentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkCreateSemaphore failed with return code of " << mResult;
+		return;
+	}
+
+	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkAcquireNextImageKHR failed with return code of " << mResult;
+		return;
+	}
+
+	SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	commandBufferInheritanceInfo.pNext = nullptr;
+	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	commandBufferInheritanceInfo.queryFlags = 0;
+	commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.pNext = nullptr;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+	VkClearValue clearValues[2];
+	clearValues[0].color = mClearColorValue;
+	//clearValues[0].color.float32[0] = 0.2f;
+	//clearValues[0].color.float32[1] = 0.2f;
+	//clearValues[0].color.float32[2] = 0.2f;
+	//clearValues[0].color.float32[3] = 0.2f;
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.pNext = nullptr;
+	renderPassBeginInfo.renderPass = mRenderPass;
+	renderPassBeginInfo.framebuffer = mFramebuffers[mCurrentBuffer];
+	renderPassBeginInfo.renderArea.offset.x = 0;
+	renderPassBeginInfo.renderArea.offset.y = 0;
+	renderPassBeginInfo.renderArea.extent.width = mSwapchainExtent.width;
+	renderPassBeginInfo.renderArea.extent.height = mSwapchainExtent.height;
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = clearValues;
+
+	result = vkBeginCommandBuffer(mSwapchainBuffers[mCurrentBuffer], &commandBufferBeginInfo);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkBeginCommandBuffer failed with return code of " << mResult;
+		return;
+	}
+
+	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
+}
+
+void CDevice9::StopScene()
+{
+	mIsSceneStarted = false;
+
+	VkResult result = VK_SUCCESS;
+	VkPipelineStageFlags pipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	VkSubmitInfo submitInfo = {};
+
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &mPresentCompleteSemaphore;
+	submitInfo.pWaitDstStageMask = &pipeStageFlags;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &mSwapchainBuffers[mCurrentBuffer];
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+
+	vkCmdEndRenderPass(mSwapchainBuffers[mCurrentBuffer]); // Why no result?
+
+	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkEndCommandBuffer failed with return code of " << mResult;
+		return;
+	}
+
+	result = vkQueueSubmit(mQueue, 1, &submitInfo, mNullFence);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << mResult;
+		return;
+	}
+
+	result = vkQueueWaitIdle(mQueue);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
+		return;
+	}
+}

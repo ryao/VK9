@@ -413,6 +413,8 @@ VkPipeline CVertexBuffer9::GetPipeline(D3DPRIMITIVETYPE type)
 
 	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)mDevice->mRenderStates[D3DRS_FILLMODE]);
 
+	/*
+	// D3DRS_ZBIAS is not defined.
 	if (mDevice->mRenderStates[D3DRS_ZBIAS] > 0)
 	{
 		mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
@@ -421,6 +423,7 @@ VkPipeline CVertexBuffer9::GetPipeline(D3DPRIMITIVETYPE type)
 	{
 		mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
 	}
+	*/
 
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
 
