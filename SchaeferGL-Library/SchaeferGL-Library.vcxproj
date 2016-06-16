@@ -101,6 +101,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BufferManager.cpp" />
     <ClCompile Include="C9.cpp" />
     <ClCompile Include="CBaseTexture9.cpp" />
     <ClCompile Include="CCubeTexture9.cpp" />
@@ -134,6 +135,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BufferManager.h" />
     <ClInclude Include="C9.h" />
     <ClInclude Include="CBaseTexture9.h" />
     <ClInclude Include="CCubeTexture9.h" />

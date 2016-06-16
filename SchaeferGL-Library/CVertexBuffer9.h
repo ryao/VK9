@@ -48,34 +48,9 @@ public:
 	bool mIsDirty;
 	int mLockCount;
 
-	VkDynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE];
-	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1];
-
 	VkMemoryRequirements mMemoryRequirements;
 	VkBuffer mBuffer;
 	VkDeviceMemory mMemory;
-	VkPipelineVertexInputStateCreateInfo mPipelineVertexInputStateCreateInfo;
-	VkPipelineInputAssemblyStateCreateInfo mPipelineInputAssemblyStateCreateInfo;
-	VkPipelineRasterizationStateCreateInfo mPipelineRasterizationStateCreateInfo;
-	VkPipelineColorBlendStateCreateInfo mPipelineColorBlendStateCreateInfo;
-	VkPipelineDepthStencilStateCreateInfo mPipelineDepthStencilStateCreateInfo;
-	VkPipelineViewportStateCreateInfo mPipelineViewportStateCreateInfo;
-	VkPipelineMultisampleStateCreateInfo mPipelineMultisampleStateCreateInfo;
-	VkPipelineDynamicStateCreateInfo mPipelineDynamicStateCreateInfo;
-	VkGraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
-	VkPipelineCacheCreateInfo mPipelineCacheCreateInfo;
-
-	VkVertexInputBindingDescription mVertexInputBindingDescription[1];
-	VkVertexInputAttributeDescription mVertexInputAttributeDescription[2];
-
-	VkDescriptorSetLayout mDescriptorSetLayout;
-	VkPipelineLayout mPipelineLayout;
-	VkPipeline mPipeline;
-	VkPipelineCache mPipelineCache;
-
-	D3DPRIMITIVETYPE mLastType;
-
-	VkPipeline GetPipeline(D3DPRIMITIVETYPE type);
 
 public:
 	//IUnknown

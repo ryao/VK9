@@ -23,6 +23,8 @@ misrepresented as being the original software.
 
 #include "d3d9.h"
 
+class CVertexBuffer9;
+
 struct Vertex
 {
 	float x, y, z; // Position of vertex in 3D space
@@ -34,41 +36,14 @@ class StreamSource
 public:
 
 	UINT StreamNumber;
-	IDirect3DVertexBuffer9* StreamData;
+	CVertexBuffer9* StreamData;
 	UINT OffsetInBytes;
 	UINT Stride;
 
-	StreamSource()
-		: StreamSource(0, nullptr, 0, 0)
-	{
-
-	}
-
-	StreamSource(const StreamSource& value)
-		: StreamSource(value.StreamNumber, value.StreamData, value.OffsetInBytes, value.Stride)
-	{
-
-	}
-
-	StreamSource(UINT streamNumber, IDirect3DVertexBuffer9* streamData, UINT offsetInBytes, UINT stride)
-		:StreamNumber(streamNumber),
-		StreamData(streamData),
-		OffsetInBytes(offsetInBytes),
-		Stride(stride)
-	{
-		if (StreamData != nullptr)
-		{
-			StreamData->AddRef();
-		}
-	}
-
-	~StreamSource()
-	{
-		if (StreamData != nullptr)
-		{
-			StreamData->Release();
-		}
-	}
+	StreamSource();
+	StreamSource(const StreamSource& value);
+	StreamSource(UINT streamNumber, CVertexBuffer9* streamData, UINT offsetInBytes, UINT stride);
+	~StreamSource();
 };
 
 #endif // CTYPES_H

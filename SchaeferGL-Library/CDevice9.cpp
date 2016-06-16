@@ -1248,6 +1248,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 			BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateFramebuffer succeeded.";
 		}
 	}
+
+	mBufferManager = BufferManager(this);
 }
 
 CDevice9::~CDevice9()
@@ -1758,6 +1760,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 		this->StartScene();
 	}
 
+	vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager.mPipeline);
+
+	//vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager.mPipelineLayout, 0, 1, mBufferManager.mDescriptorSetLayout, 0,NULL);
+
+	//vkCmdBindVertexBuffers(mSwapchainBuffers[mCurrentBuffer], VERTEX_BUFFER_BIND_ID, 1,&demo->vertices.buf, offsets);
+
+	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], PrimitiveCount, 1, StartVertex, 0);
+
 	/*
 	vkCmdBindPipeline(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 		demo->pipeline);
@@ -2197,11 +2207,13 @@ BOOL STDMETHODCALLTYPE CDevice9::GetSoftwareVertexProcessing()
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride)
 {
-	//TODO: Implement.
+	StreamSource& value = mBufferManager.mStreamSources[StreamNumber];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetStreamSource is not implemented!";
+	(*ppStreamData) = (IDirect3DVertexBuffer9*)value.StreamData;
+	(*pOffsetInBytes) = value.OffsetInBytes;
+	(*pStride) = value.Stride;
 
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSourceFreq(UINT StreamNumber,UINT *pDivider)
@@ -2539,13 +2551,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride)
-{		
-	mStreamSources[StreamNumber] = StreamSource(StreamNumber, pStreamData, OffsetInBytes, Stride);
+{	
+	CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
+
+	mBufferManager.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
 
 	//Revisit
-	((CVertexBuffer9*)pStreamData)->mVertexInputBindingDescription[0].binding = StreamNumber;
-	((CVertexBuffer9*)pStreamData)->mVertexInputAttributeDescription[0].binding = StreamNumber;
-	((CVertexBuffer9*)pStreamData)->mVertexInputAttributeDescription[1].binding = StreamNumber;
+	//streamData->mVertexInputBindingDescription[0].binding = StreamNumber;
+	//streamData->mVertexInputAttributeDescription[0].binding = StreamNumber;
+	//streamData->mVertexInputAttributeDescription[1].binding = StreamNumber;
 
 	return S_OK;
 }
