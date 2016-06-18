@@ -209,6 +209,7 @@ public:
 	std::vector<char*> mLayerExtensionNames;
 	uint32_t mCurrentBuffer;
 	VkCommandPool mCommandPool;
+	VkDescriptorPool mDescriptorPool;
 	VkImage* mSwapchainImages;
 	VkCommandBuffer* mSwapchainBuffers;
 	VkImageView* mSwapchainViews;
