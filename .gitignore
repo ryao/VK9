@@ -4,3 +4,5 @@ Debug
 /.vs/SchaeferGL/v14/*.suo
 /*.sdf
 Release
+/SchaeferGL.VC.VC.opendb
+/SchaeferGL.VC.db
