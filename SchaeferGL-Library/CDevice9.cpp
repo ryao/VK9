@@ -31,8 +31,6 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
-typedef std::unordered_map<UINT, StreamSource> map_type;
-
 CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
 	: mResult(VK_SUCCESS),
 	mInstance(Instance),
@@ -1817,37 +1815,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 		this->StartScene();
 	}
 
+	/*
+	We have to tell the manager what kind of buffers we're working with so it can build the pipe.
+	*/
+	mBufferManager.UpdatePipeline(PrimitiveType);
+
 	vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager.mPipeline);
 
-
-	//TODO: handle descriptor sets.
-	//vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager.mPipelineLayout, 0, 1, mBufferManager.mDescriptorSetLayout, 0,NULL);
-
-	BOOST_FOREACH(map_type::value_type& source, mBufferManager.mStreamSources)
-	{
-		vkCmdBindVertexBuffers(mSwapchainBuffers[mCurrentBuffer], source.first, 1,&source.second.StreamData->mBuffer, &source.second.OffsetInBytes);		
-	}
+	vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager.mPipelineLayout, 0, 1, &mBufferManager.mDescriptorSet, 0,nullptr);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], PrimitiveCount, 1, StartVertex, 0);
-
-
-
-	/*
-	vkCmdBindPipeline(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		demo->pipeline);
-	vkCmdBindDescriptorSets(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		demo->pipeline_layout, 0, 1, &demo->desc_set, 0,
-		NULL);
-
-	VkDeviceSize offsets[1] = { 0 };
-	vkCmdBindVertexBuffers(demo->draw_cmd, VERTEX_BUFFER_BIND_ID, 1,
-		&demo->vertices.buf, offsets);
-
-	vkCmdDraw(demo->draw_cmd, 3, 1, 0, 0);
-	*/
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitive is not implemented!";
 
 	return S_OK;	
 }
@@ -2272,7 +2249,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber,IDirect3DV
 	StreamSource& value = mBufferManager.mStreamSources[StreamNumber];
 
 	(*ppStreamData) = (IDirect3DVertexBuffer9*)value.StreamData;
-	(*pOffsetInBytes) = value.OffsetInBytes;
+	/*
+	Vulkan wants 64bit uint but d3d9 uses 32bit uint. This cast just keeps compiler from complaining.
+	This should be safe because only 32bit can be set and d3d9 is x86 only so endianness issues shouldn't come into play.
+	*/
+	(*pOffsetInBytes) = (UINT)value.OffsetInBytes;
 	(*pStride) = value.Stride;
 
 	return S_OK;

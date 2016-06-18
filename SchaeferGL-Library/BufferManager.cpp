@@ -23,65 +23,44 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
-BufferManager::BufferManager()
-	: mDevice(nullptr),
-	mDescriptorSetLayout(VK_NULL_HANDLE),
-	mPipelineLayout(VK_NULL_HANDLE),
-	mPipeline(VK_NULL_HANDLE),
-	mPipelineCache(VK_NULL_HANDLE),
-	mLastType(D3DPT_FORCE_DWORD), //used to help prevent repeating pipe creation.
-	mIsDirty(true)
-{
+typedef std::unordered_map<UINT, StreamSource> map_type;
 
+BufferManager::BufferManager()
+{
+	//Don't use. This is only here for containers.
 }
 
 BufferManager::BufferManager(CDevice9* device)
 	: mDevice(device),
 	mDescriptorSetLayout(VK_NULL_HANDLE),
+	mDescriptorSet(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
 	mPipeline(VK_NULL_HANDLE),
 	mPipelineCache(VK_NULL_HANDLE),
 	mLastType(D3DPT_FORCE_DWORD), //used to help prevent repeating pipe creation.
 	mIsDirty(true)
 {
-
-	mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE] = {};
-	mPipelineColorBlendAttachmentState[1] = {};
-
-	mPipelineVertexInputStateCreateInfo = {};
-	mPipelineInputAssemblyStateCreateInfo = {};
-	mPipelineRasterizationStateCreateInfo = {};
-	mPipelineColorBlendStateCreateInfo = {};
-	mPipelineDepthStencilStateCreateInfo = {};
-	mPipelineViewportStateCreateInfo = {};
-	mPipelineMultisampleStateCreateInfo = {};
-	mPipelineDynamicStateCreateInfo = {};
-	mPipelineCacheCreateInfo = {};
-	mGraphicsPipelineCreateInfo = {};
-	mDescriptorSetLayoutBinding = {};
-	mDescriptorSetLayoutCreateInfo = {};
-	mPipelineLayoutCreateInfo = {};
-
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
 	mPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = mVertexInputBindingDescription;
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2;
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2; //reset later.
 	mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = mVertexInputAttributeDescription;
 
-	mVertexInputBindingDescription[0].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
-	mVertexInputBindingDescription[0].stride = sizeof(Vertex); //structure they should be passing in.
-	mVertexInputBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	//Moved to loop
+	//mVertexInputBindingDescription[0].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
+	//mVertexInputBindingDescription[0].stride = sizeof(Vertex); //structure they should be passing in.
+	//mVertexInputBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	mVertexInputAttributeDescription[0].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
-	mVertexInputAttributeDescription[0].location = 0;
-	mVertexInputAttributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	mVertexInputAttributeDescription[0].offset = 0;
+	//mVertexInputAttributeDescription[0].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
+	//mVertexInputAttributeDescription[0].location = 0;
+	//mVertexInputAttributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	//mVertexInputAttributeDescription[0].offset = 0;
 
-	mVertexInputAttributeDescription[1].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
-	mVertexInputAttributeDescription[1].location = 1;
-	mVertexInputAttributeDescription[1].format = VK_FORMAT_B8G8R8A8_UNORM;
-	mVertexInputAttributeDescription[1].offset = sizeof(float) * 3;
+	//mVertexInputAttributeDescription[1].binding = 0; //VERTEX_BUFFER_BIND_ID  Should be reset when bound.
+	//mVertexInputAttributeDescription[1].location = 1;
+	//mVertexInputAttributeDescription[1].format = VK_FORMAT_B8G8R8A8_UNORM;
+	//mVertexInputAttributeDescription[1].offset = sizeof(float) * 3;
 
 	mPipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	mPipelineDynamicStateCreateInfo.pDynamicStates = mDynamicStateEnables;
@@ -125,9 +104,15 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineMultisampleStateCreateInfo.pSampleMask = NULL;
 	mPipelineMultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
+	mDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	mDescriptorSetAllocateInfo.pNext = NULL;
+	mDescriptorSetAllocateInfo.descriptorPool = mDevice->mDescriptorPool;
+	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
+	mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
+
 	mDescriptorSetLayoutBinding.binding = 0;
 	mDescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	mDescriptorSetLayoutBinding.descriptorCount = 0; //DEMO_TEXTURE_COUNT;
+	mDescriptorSetLayoutBinding.descriptorCount = 1; //DEMO_TEXTURE_COUNT;
 	mDescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding.pImmutableSamplers = NULL;
 
@@ -155,6 +140,8 @@ BufferManager::BufferManager(CDevice9* device)
 	mGraphicsPipelineCreateInfo.pDynamicState = &mPipelineDynamicStateCreateInfo;
 
 	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+	mResult = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &mDescriptorSet);
 }
 
 BufferManager::~BufferManager()
@@ -173,9 +160,14 @@ BufferManager::~BufferManager()
 	{
 		vkDestroyDescriptorSetLayout(mDevice->mDevice, mDescriptorSetLayout, NULL);
 	}
+
+	if (mDescriptorSet != VK_NULL_HANDLE)
+	{
+		vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mDescriptorSet);
+	}
 }
 
-VkPipeline BufferManager::GetPipeline(D3DPRIMITIVETYPE type)
+void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
 
@@ -195,12 +187,19 @@ VkPipeline BufferManager::GetPipeline(D3DPRIMITIVETYPE type)
 		mPipeline = VK_NULL_HANDLE;
 	}
 
+	if (mPipelineLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineLayout(mDevice->mDevice, mPipelineLayout, NULL);
+	}
+
+	if (mDescriptorSetLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorSetLayout(mDevice->mDevice, mDescriptorSetLayout, NULL);
+	}
+
 	/**********************************************
 	* Update Pipe Creation Information
 	**********************************************/
-
-	//TODO: if the FVF is something other than D3DFVF_XYZ | D3DFVF_DIFFUSE than update the input structures.
-
 
 	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)mDevice->mRenderStates[D3DRS_FILLMODE]);
 
@@ -220,6 +219,34 @@ VkPipeline BufferManager::GetPipeline(D3DPRIMITIVETYPE type)
 
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
 
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mStreamSources.size();
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = mStreamSources.size() * 2;
+
+	int i = 0;
+	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+	{
+		int ai1 = i * 2; //attribute index 1
+		int ai2 = ai1 + 1; //attribute index 1
+
+		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
+
+		mVertexInputBindingDescription[i].binding = source.first;
+		mVertexInputBindingDescription[i].stride = source.second.Stride;
+		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		//TODO: if the FVF is something other than D3DFVF_XYZ | D3DFVF_DIFFUSE than update the input structures.
+		mVertexInputAttributeDescription[ai1].binding = source.first;
+		mVertexInputAttributeDescription[ai1].location = 0;
+		mVertexInputAttributeDescription[ai1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		mVertexInputAttributeDescription[ai1].offset = 0;
+
+		mVertexInputAttributeDescription[ai2].binding = source.first;
+		mVertexInputAttributeDescription[ai2].location = 1;
+		mVertexInputAttributeDescription[ai2].format = VK_FORMAT_B8G8R8A8_UNORM;
+		mVertexInputAttributeDescription[ai2].offset = sizeof(float) * 3;
+
+		i++;
+	}
 
 	/**********************************************
 	* Create Pipe
@@ -229,21 +256,21 @@ VkPipeline BufferManager::GetPipeline(D3DPRIMITIVETYPE type)
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::GetPipeline vkCreateDescriptorSetLayout failed with return code of " << mResult;
-		return mPipeline;
+		return;
 	}
 
 	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, NULL, &mPipelineLayout);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::GetPipeline vkCreatePipelineLayout failed with return code of " << mResult;
-		return mPipeline;
+		return;
 	}
 
 	result = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, NULL, &mPipelineCache);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::GetPipeline vkCreatePipelineCache failed with return code of " << mResult;
-		return mPipeline;
+		return;
 	}
 
 	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, NULL, &mPipeline);
@@ -260,5 +287,5 @@ VkPipeline BufferManager::GetPipeline(D3DPRIMITIVETYPE type)
 		mIsDirty = false;
 	}
 
-	return mPipeline;
+	return;
 }

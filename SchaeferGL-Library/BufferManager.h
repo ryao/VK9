@@ -43,27 +43,30 @@ public:
 
 	std::unordered_map<UINT, StreamSource> mStreamSources;
 
-	VkDynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE];
-	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1];
+	VkDynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE] = {};
+	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1] = {};
 
-	VkPipelineVertexInputStateCreateInfo mPipelineVertexInputStateCreateInfo;
-	VkPipelineInputAssemblyStateCreateInfo mPipelineInputAssemblyStateCreateInfo;
-	VkPipelineRasterizationStateCreateInfo mPipelineRasterizationStateCreateInfo;
-	VkPipelineColorBlendStateCreateInfo mPipelineColorBlendStateCreateInfo;
-	VkPipelineDepthStencilStateCreateInfo mPipelineDepthStencilStateCreateInfo;
-	VkPipelineViewportStateCreateInfo mPipelineViewportStateCreateInfo;
-	VkPipelineMultisampleStateCreateInfo mPipelineMultisampleStateCreateInfo;
-	VkPipelineDynamicStateCreateInfo mPipelineDynamicStateCreateInfo;
-	VkGraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
-	VkPipelineCacheCreateInfo mPipelineCacheCreateInfo;
+	VkPipelineVertexInputStateCreateInfo mPipelineVertexInputStateCreateInfo = {};
+	VkPipelineInputAssemblyStateCreateInfo mPipelineInputAssemblyStateCreateInfo = {};
+	VkPipelineRasterizationStateCreateInfo mPipelineRasterizationStateCreateInfo = {};
+	VkPipelineColorBlendStateCreateInfo mPipelineColorBlendStateCreateInfo = {};
+	VkPipelineDepthStencilStateCreateInfo mPipelineDepthStencilStateCreateInfo = {};
+	VkPipelineViewportStateCreateInfo mPipelineViewportStateCreateInfo = {};
+	VkPipelineMultisampleStateCreateInfo mPipelineMultisampleStateCreateInfo = {};
+	VkPipelineDynamicStateCreateInfo mPipelineDynamicStateCreateInfo = {};
+	VkGraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo = {};
+	VkPipelineCacheCreateInfo mPipelineCacheCreateInfo = {};
 
-	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding;
-	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo;
-	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo;
+	VkDescriptorSetAllocateInfo mDescriptorSetAllocateInfo = {};
+	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding = {};
+	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
+	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
 
-	VkVertexInputBindingDescription mVertexInputBindingDescription[1];
-	VkVertexInputAttributeDescription mVertexInputAttributeDescription[2];
+	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
+	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
+	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
 
+	VkDescriptorSet mDescriptorSet;
 	VkDescriptorSetLayout mDescriptorSetLayout;
 	VkPipelineLayout mPipelineLayout;
 	VkPipeline mPipeline;
@@ -71,7 +74,7 @@ public:
 
 	D3DPRIMITIVETYPE mLastType;
 
-	VkPipeline GetPipeline(D3DPRIMITIVETYPE type);
+	void UpdatePipeline(D3DPRIMITIVETYPE type);
 
 private:
 
