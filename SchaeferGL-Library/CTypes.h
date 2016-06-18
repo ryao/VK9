@@ -22,6 +22,8 @@ misrepresented as being the original software.
 #define CTYPES_H
 
 #include "d3d9.h"
+#include <vulkan/vulkan.h>
+#include <vulkan/vk_sdk_platform.h>
 
 class CVertexBuffer9;
 
@@ -37,12 +39,12 @@ public:
 
 	UINT StreamNumber;
 	CVertexBuffer9* StreamData;
-	UINT OffsetInBytes;
+	VkDeviceSize OffsetInBytes;
 	UINT Stride;
 
 	StreamSource();
 	StreamSource(const StreamSource& value);
-	StreamSource(UINT streamNumber, CVertexBuffer9* streamData, UINT offsetInBytes, UINT stride);
+	StreamSource(UINT streamNumber, CVertexBuffer9* streamData, VkDeviceSize offsetInBytes, UINT stride);
 	~StreamSource();
 };
 

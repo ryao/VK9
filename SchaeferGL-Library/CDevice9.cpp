@@ -31,6 +31,8 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
+typedef std::unordered_map<UINT, StreamSource> map_type;
+
 CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
 	: mResult(VK_SUCCESS),
 	mInstance(Instance),
@@ -1762,11 +1764,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 
 	vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager.mPipeline);
 
+
+	//TODO: handle descriptor sets.
 	//vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager.mPipelineLayout, 0, 1, mBufferManager.mDescriptorSetLayout, 0,NULL);
 
-	//vkCmdBindVertexBuffers(mSwapchainBuffers[mCurrentBuffer], VERTEX_BUFFER_BIND_ID, 1,&demo->vertices.buf, offsets);
+	BOOST_FOREACH(map_type::value_type& source, mBufferManager.mStreamSources)
+	{
+		vkCmdBindVertexBuffers(mSwapchainBuffers[mCurrentBuffer], source.first, 1,&source.second.StreamData->mBuffer, &source.second.OffsetInBytes);		
+	}
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], PrimitiveCount, 1, StartVertex, 0);
+
+
 
 	/*
 	vkCmdBindPipeline(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1774,8 +1783,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 	vkCmdBindDescriptorSets(demo->draw_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 		demo->pipeline_layout, 0, 1, &demo->desc_set, 0,
 		NULL);
-
-
 
 	VkDeviceSize offsets[1] = { 0 };
 	vkCmdBindVertexBuffers(demo->draw_cmd, VERTEX_BUFFER_BIND_ID, 1,

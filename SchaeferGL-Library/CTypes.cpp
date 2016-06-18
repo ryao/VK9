@@ -14,7 +14,7 @@ StreamSource::StreamSource(const StreamSource& value)
 
 }
 
-StreamSource::StreamSource(UINT streamNumber, CVertexBuffer9* streamData, UINT offsetInBytes, UINT stride)
+StreamSource::StreamSource(UINT streamNumber, CVertexBuffer9* streamData, VkDeviceSize offsetInBytes, UINT stride)
 	:StreamNumber(streamNumber),
 	StreamData(streamData),
 	OffsetInBytes(offsetInBytes),
