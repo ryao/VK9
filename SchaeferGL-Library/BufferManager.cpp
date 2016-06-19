@@ -17,7 +17,6 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "BufferManager.h"
 #include "CDevice9.h"
 
@@ -47,6 +46,10 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineLayout(VK_NULL_HANDLE),
 	mDescriptorSetLayout(VK_NULL_HANDLE)
 {
+
+	mVertShaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_VERT);
+	mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);
+
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
@@ -125,16 +128,29 @@ BufferManager::BufferManager(CDevice9* device)
 	mGraphicsPipelineCreateInfo.renderPass = mDevice->mRenderPass;
 	mGraphicsPipelineCreateInfo.pDynamicState = &mPipelineDynamicStateCreateInfo;
 
-	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-
-	
+	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;	
 }
 
 BufferManager::~BufferManager()
 {
+	if (mVertShaderModule != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule, NULL);
+	}
+
+	if (mFragshaderModule != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mFragshaderModule, NULL);
+	}
+	
 	if (mPipeline != VK_NULL_HANDLE)
 	{
 		vkDestroyPipeline(mDevice->mDevice, mPipeline, NULL);
+	}
+
+	if (mDescriptorSet != VK_NULL_HANDLE)
+	{
+		vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mDescriptorSet);
 	}
 
 	if (mPipelineLayout != VK_NULL_HANDLE)
@@ -145,11 +161,6 @@ BufferManager::~BufferManager()
 	if (mDescriptorSetLayout != VK_NULL_HANDLE)
 	{
 		vkDestroyDescriptorSetLayout(mDevice->mDevice, mDescriptorSetLayout, NULL);
-	}
-
-	if (mDescriptorSet != VK_NULL_HANDLE)
-	{
-		vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mDescriptorSet);
 	}
 }
 

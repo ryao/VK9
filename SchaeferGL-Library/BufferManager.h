@@ -72,6 +72,8 @@ public:
 	VkDescriptorSet mDescriptorSet;
 	VkPipeline mPipeline;
 	
+	VkShaderModule mVertShaderModule;
+	VkShaderModule mFragshaderModule;
 
 	D3DPRIMITIVETYPE mLastType;
 
