@@ -58,7 +58,7 @@ public:
 	VkPipelineCacheCreateInfo mPipelineCacheCreateInfo = {};
 
 	VkDescriptorSetAllocateInfo mDescriptorSetAllocateInfo = {};
-	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding = {};
+	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
 	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
 
@@ -66,11 +66,12 @@ public:
 	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
 	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
 
-	VkDescriptorSet mDescriptorSet;
 	VkDescriptorSetLayout mDescriptorSetLayout;
 	VkPipelineLayout mPipelineLayout;
-	VkPipeline mPipeline;
 	VkPipelineCache mPipelineCache;
+	VkDescriptorSet mDescriptorSet;
+	VkPipeline mPipeline;
+	
 
 	D3DPRIMITIVETYPE mLastType;
 
