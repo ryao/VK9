@@ -149,11 +149,24 @@
     <ClInclude Include="BufferManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def">
       <Filter>Source Files</Filter>
     </None>
     <None Include="SchaeferGL.conf" />
+    <None Include="shader1.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-frag.spv" />
+    <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-vert.spv" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Shaders.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
