@@ -43,33 +43,52 @@ misrepresented as being the original software.
 #define D3DCOLOR_G(dw) (((float)(((dw) >> 8) & 0xFF)) / 255.0f)
 #define D3DCOLOR_B(dw) (((float)(((dw) >> 0) & 0xFF)) / 255.0f)
 
-inline VkShaderModule LoadShaderFromResource(VkDevice device,int resource)
+
+HMODULE GetModule(HMODULE module = 0);
+
+inline VkShaderModule LoadShaderFromResource(VkDevice device,UINT resource)
 {
 	VkShaderModuleCreateInfo moduleCreateInfo = {};
 	VkShaderModule module = VK_NULL_HANDLE;
-	VkResult result;
+	VkResult result = VK_SUCCESS;
+	HMODULE dllModule = GetModule();
 
-	HRSRC hRes = FindResource(0, MAKEINTRESOURCE(resource), RT_RCDATA);
-	if (NULL != hRes)
+	if (dllModule == NULL)
 	{
-		HGLOBAL hData = LoadResource(0, hRes);
-		if (NULL != hData)
+		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource dllModule is null.";
+	}
+	else
+	{
+		HRSRC hRes = FindResource(dllModule, MAKEINTRESOURCE(resource), RT_RCDATA);
+		if (NULL != hRes)
 		{
-			DWORD dataSize = SizeofResource(0, hRes);
-			uint32_t* data = (uint32_t*)LockResource(hData);
-
-			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-			moduleCreateInfo.pNext = NULL;
-			moduleCreateInfo.codeSize = dataSize; 
-			moduleCreateInfo.pCode = data; //Why is this uint32_t* if the size is in bytes?
-			moduleCreateInfo.flags = 0;
-
-			result = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &module);
-			if (result != VK_SUCCESS)
+			HGLOBAL hData = LoadResource(dllModule, hRes);
+			if (NULL != hData)
 			{
-				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource vkCreateShaderModule failed with return code of " << result;
-				return VK_NULL_HANDLE;
+				DWORD dataSize = SizeofResource(dllModule, hRes);
+				uint32_t* data = (uint32_t*)LockResource(hData);
+
+				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+				moduleCreateInfo.pNext = NULL;
+				moduleCreateInfo.codeSize = dataSize; 
+				moduleCreateInfo.pCode = data; //Why is this uint32_t* if the size is in bytes?
+				moduleCreateInfo.flags = 0;
+
+				result = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &module);
+				if (result != VK_SUCCESS)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource vkCreateShaderModule failed with return code of " << result;
+					return VK_NULL_HANDLE;
+				}
 			}
+			else
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource resource data is null.";
+			}
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource resource not found.";
 		}
 	}
 

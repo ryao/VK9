@@ -18,25 +18,16 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
-// dllmain.cpp : Defines the entry point for the DLL application.
-#include "stdafx.h"
 #include "Utilities.h"
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-					 )
+HMODULE GetModule(HMODULE module)
 {
-	GetModule(hModule);
+	static HMODULE dllModule = 0;
 
-	switch (ul_reason_for_call)
+	if (module != 0)
 	{
-	case DLL_PROCESS_ATTACH:
-	case DLL_THREAD_ATTACH:
-	case DLL_THREAD_DETACH:
-	case DLL_PROCESS_DETACH:
-		break;
+		dllModule = module;
 	}
-	return TRUE;
-}
 
+	return dllModule;
+}

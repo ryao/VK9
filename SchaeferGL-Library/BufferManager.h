@@ -57,6 +57,8 @@ public:
 	VkGraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo = {};
 	VkPipelineCacheCreateInfo mPipelineCacheCreateInfo = {};
 
+	VkPipelineShaderStageCreateInfo mPipelineShaderStageCreateInfo[2] = {};
+
 	VkDescriptorSetAllocateInfo mDescriptorSetAllocateInfo = {};
 	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
