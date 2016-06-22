@@ -31,3 +31,55 @@ HMODULE GetModule(HMODULE module)
 
 	return dllModule;
 }
+
+VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource)
+{
+	VkShaderModuleCreateInfo moduleCreateInfo = {};
+	VkShaderModule module = VK_NULL_HANDLE;
+	VkResult result = VK_SUCCESS;
+	HMODULE dllModule = NULL;
+
+	//dllModule = GetModule();
+	dllModule = GetModuleHandle(L"D3d9.dll");
+
+	if (dllModule == NULL)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource dllModule is null.";
+	}
+	else
+	{
+		HRSRC hRes = FindResource(dllModule, MAKEINTRESOURCE(resource), L"Shader");
+		if (NULL != hRes)
+		{
+			HGLOBAL hData = LoadResource(dllModule, hRes);
+			if (NULL != hData)
+			{
+				DWORD dataSize = SizeofResource(dllModule, hRes);
+				uint32_t* data = (uint32_t*)LockResource(hData);
+
+				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+				moduleCreateInfo.pNext = NULL;
+				moduleCreateInfo.codeSize = dataSize;
+				moduleCreateInfo.pCode = data; //Why is this uint32_t* if the size is in bytes?
+				moduleCreateInfo.flags = 0;
+
+				result = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &module);
+				if (result != VK_SUCCESS)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource vkCreateShaderModule failed with return code of " << result;
+					return VK_NULL_HANDLE;
+				}
+			}
+			else
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource resource data is null.";
+			}
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource resource not found.";
+		}
+	}
+
+	return module;
+}

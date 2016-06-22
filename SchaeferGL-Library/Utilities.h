@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/foreach.hpp>
 #include <cstring>
+#include "winres.h"
 
 #define D3DCOLOR_A(dw) (((float)(((dw) >> 24) & 0xFF)) / 255.0f)
 #define D3DCOLOR_R(dw) (((float)(((dw) >> 16) & 0xFF)) / 255.0f)
@@ -46,54 +47,7 @@ misrepresented as being the original software.
 
 HMODULE GetModule(HMODULE module = 0);
 
-inline VkShaderModule LoadShaderFromResource(VkDevice device,UINT resource)
-{
-	VkShaderModuleCreateInfo moduleCreateInfo = {};
-	VkShaderModule module = VK_NULL_HANDLE;
-	VkResult result = VK_SUCCESS;
-	HMODULE dllModule = GetModule();
-
-	if (dllModule == NULL)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource dllModule is null.";
-	}
-	else
-	{
-		HRSRC hRes = FindResource(dllModule, MAKEINTRESOURCE(resource), RT_RCDATA);
-		if (NULL != hRes)
-		{
-			HGLOBAL hData = LoadResource(dllModule, hRes);
-			if (NULL != hData)
-			{
-				DWORD dataSize = SizeofResource(dllModule, hRes);
-				uint32_t* data = (uint32_t*)LockResource(hData);
-
-				moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-				moduleCreateInfo.pNext = NULL;
-				moduleCreateInfo.codeSize = dataSize; 
-				moduleCreateInfo.pCode = data; //Why is this uint32_t* if the size is in bytes?
-				moduleCreateInfo.flags = 0;
-
-				result = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &module);
-				if (result != VK_SUCCESS)
-				{
-					BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource vkCreateShaderModule failed with return code of " << result;
-					return VK_NULL_HANDLE;
-				}
-			}
-			else
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource resource data is null.";
-			}
-		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource resource not found.";
-		}
-	}
-
-	return module;
-}
+VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
 
 inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
 {
