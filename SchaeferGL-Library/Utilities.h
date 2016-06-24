@@ -37,7 +37,6 @@ misrepresented as being the original software.
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/foreach.hpp>
 #include <cstring>
-#include "winres.h"
 
 #define D3DCOLOR_A(dw) (((float)(((dw) >> 24) & 0xFF)) / 255.0f)
 #define D3DCOLOR_R(dw) (((float)(((dw) >> 16) & 0xFF)) / 255.0f)
@@ -46,6 +45,8 @@ misrepresented as being the original software.
 
 
 HMODULE GetModule(HMODULE module = 0);
+
+VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
 
 VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
 

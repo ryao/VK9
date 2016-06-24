@@ -31,7 +31,9 @@ BufferManager::BufferManager()
 	mPipeline(VK_NULL_HANDLE),
 	mDescriptorSet(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
-	mDescriptorSetLayout(VK_NULL_HANDLE)
+	mDescriptorSetLayout(VK_NULL_HANDLE),
+	mVertShaderModule(VK_NULL_HANDLE),
+	mFragShaderModule(VK_NULL_HANDLE)
 
 {
 	//Don't use. This is only here for containers.
@@ -44,11 +46,16 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipeline(VK_NULL_HANDLE),
 	mDescriptorSet(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
-	mDescriptorSetLayout(VK_NULL_HANDLE)
+	mDescriptorSetLayout(VK_NULL_HANDLE),
+	mVertShaderModule(VK_NULL_HANDLE),
+	mFragShaderModule(VK_NULL_HANDLE)
 {
 
-	mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
-	mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);
+	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
+	//mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);
+
+	mVertShaderModule = LoadShaderFromFile(mDevice->mDevice, "tri-vert.spv");
+	mFragShaderModule = LoadShaderFromFile(mDevice->mDevice, "tri-frag.spv");
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
@@ -124,7 +131,7 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mPipelineShaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	mPipelineShaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	mPipelineShaderStageCreateInfo[1].module = mFragshaderModule;
+	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule;
 	mPipelineShaderStageCreateInfo[1].pName = "main";
 
 	mGraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -145,34 +152,44 @@ BufferManager::BufferManager(CDevice9* device)
 
 BufferManager::~BufferManager()
 {
+	/*
+	Null handles in case destructor is called explicitly.
+	I thought about using a IsDisposed boolean. I may change this later.
+	*/
 	if (mVertShaderModule != VK_NULL_HANDLE)
 	{
 		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule, NULL);
+		mVertShaderModule = VK_NULL_HANDLE;
 	}
 
-	if (mFragshaderModule != VK_NULL_HANDLE)
+	if (mFragShaderModule != VK_NULL_HANDLE)
 	{
-		vkDestroyShaderModule(mDevice->mDevice, mFragshaderModule, NULL);
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule, NULL);
+		mFragShaderModule = VK_NULL_HANDLE;
 	}
 	
 	if (mPipeline != VK_NULL_HANDLE)
 	{
 		vkDestroyPipeline(mDevice->mDevice, mPipeline, NULL);
+		mPipeline = VK_NULL_HANDLE;
 	}
 
 	if (mDescriptorSet != VK_NULL_HANDLE)
 	{
 		vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mDescriptorSet);
+		mDescriptorSet = VK_NULL_HANDLE;
 	}
 
 	if (mPipelineLayout != VK_NULL_HANDLE)
 	{
 		vkDestroyPipelineLayout(mDevice->mDevice, mPipelineLayout, NULL);
+		mPipelineLayout = VK_NULL_HANDLE;
 	}
 
 	if (mDescriptorSetLayout != VK_NULL_HANDLE)
 	{
 		vkDestroyDescriptorSetLayout(mDevice->mDevice, mDescriptorSetLayout, NULL);
+		mDescriptorSetLayout = VK_NULL_HANDLE;
 	}
 }
 

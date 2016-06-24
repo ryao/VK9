@@ -71,7 +71,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDepthView(VK_NULL_HANDLE),
 	mFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE),
 	mIsDirty(true),
-	mIsSceneStarted(false)
+	mIsSceneStarted(false),
+	mBufferManager(nullptr)
 {
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
@@ -1300,11 +1301,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		}
 	}
 
-	mBufferManager = BufferManager(this);
+	mBufferManager = new BufferManager(this);
 }
 
 CDevice9::~CDevice9()
 {
+	delete mBufferManager;
+
 	if (mFramebuffers!= nullptr)
 	{
 		for (size_t i = 0; i < mSwapchainImageCount; i++)
@@ -1818,11 +1821,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 	/*
 	We have to tell the manager what kind of buffers we're working with so it can build the pipe.
 	*/
-	mBufferManager.UpdatePipeline(PrimitiveType);
+	mBufferManager->UpdatePipeline(PrimitiveType);
 
-	vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager.mPipeline);
+	vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
 
-	//vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager.mPipelineLayout, 0, 1, &mBufferManager.mDescriptorSet, 0,nullptr);
+	vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0,nullptr);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], PrimitiveCount, 1, StartVertex, 0);
 
@@ -2246,7 +2249,7 @@ BOOL STDMETHODCALLTYPE CDevice9::GetSoftwareVertexProcessing()
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride)
 {
-	StreamSource& value = mBufferManager.mStreamSources[StreamNumber];
+	StreamSource& value = mBufferManager->mStreamSources[StreamNumber];
 
 	(*ppStreamData) = (IDirect3DVertexBuffer9*)value.StreamData;
 	/*
@@ -2597,12 +2600,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DV
 {	
 	CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
 
-	mBufferManager.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
-
-	//Revisit
-	//streamData->mVertexInputBindingDescription[0].binding = StreamNumber;
-	//streamData->mVertexInputAttributeDescription[0].binding = StreamNumber;
-	//streamData->mVertexInputAttributeDescription[1].binding = StreamNumber;
+	mBufferManager->mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
 
 	return S_OK;
 }

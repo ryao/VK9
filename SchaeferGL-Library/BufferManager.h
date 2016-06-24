@@ -75,7 +75,7 @@ public:
 	VkPipeline mPipeline;
 	
 	VkShaderModule mVertShaderModule;
-	VkShaderModule mFragshaderModule;
+	VkShaderModule mFragShaderModule;
 
 	D3DPRIMITIVETYPE mLastType;
 
