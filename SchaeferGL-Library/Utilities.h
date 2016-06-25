@@ -85,9 +85,9 @@ inline VkPolygonMode ConvertFillMode(D3DFILLMODE input)
 	case D3DFILL_POINT:
 		output = VK_POLYGON_MODE_POINT;
 		break;
-	case D3DFILL_WIREFRAME:
-		break;
+	case D3DFILL_WIREFRAME:	
 		output = VK_POLYGON_MODE_LINE;
+		break;
 	default:
 		output = VK_POLYGON_MODE_POINT;
 		break;
