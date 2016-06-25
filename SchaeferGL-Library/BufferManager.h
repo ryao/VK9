@@ -63,6 +63,7 @@ public:
 	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
 	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
+	VkWriteDescriptorSet mWriteDescriptorSet = {};
 
 	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
 	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
@@ -76,6 +77,14 @@ public:
 	
 	VkShaderModule mVertShaderModule;
 	VkShaderModule mFragShaderModule;
+
+	VkSampler mSampler;
+	VkImage mImage;
+	VkImageLayout mImageLayout;
+	VkDeviceMemory mDeviceMemory;
+	VkImageView mImageView;
+	int32_t mTextureWidth;
+	int32_t mTextureHeight;
 
 	D3DPRIMITIVETYPE mLastType;
 

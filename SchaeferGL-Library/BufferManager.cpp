@@ -33,7 +33,15 @@ BufferManager::BufferManager()
 	mPipelineLayout(VK_NULL_HANDLE),
 	mDescriptorSetLayout(VK_NULL_HANDLE),
 	mVertShaderModule(VK_NULL_HANDLE),
-	mFragShaderModule(VK_NULL_HANDLE)
+	mFragShaderModule(VK_NULL_HANDLE),
+
+	mSampler(VK_NULL_HANDLE),
+	mImage(VK_NULL_HANDLE),
+	mImageLayout(VK_IMAGE_LAYOUT_UNDEFINED),
+	mDeviceMemory(VK_NULL_HANDLE),
+	mImageView(VK_NULL_HANDLE),
+	mTextureWidth(0),
+	mTextureHeight(0)
 
 {
 	//Don't use. This is only here for containers.
@@ -48,7 +56,16 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineLayout(VK_NULL_HANDLE),
 	mDescriptorSetLayout(VK_NULL_HANDLE),
 	mVertShaderModule(VK_NULL_HANDLE),
-	mFragShaderModule(VK_NULL_HANDLE)
+	mFragShaderModule(VK_NULL_HANDLE),
+
+	mSampler(VK_NULL_HANDLE),
+	mImage(VK_NULL_HANDLE),
+	mImageLayout(VK_IMAGE_LAYOUT_UNDEFINED),
+	mDeviceMemory(VK_NULL_HANDLE),
+	mImageView(VK_NULL_HANDLE),
+	mTextureWidth(0),
+	mTextureHeight(0)
+
 {
 
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
@@ -148,6 +165,22 @@ BufferManager::BufferManager(CDevice9* device)
 	mGraphicsPipelineCreateInfo.pDynamicState = &mPipelineDynamicStateCreateInfo;
 
 	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;	
+
+	/*
+	            demo_prepare_texture_image(
+                demo, tex_colors[i], &demo->textures[i], VK_IMAGE_TILING_LINEAR,
+                VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	
+	*/
+
+
+	mWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	//mWriteDescriptorSet.dstSet = demo->desc_set;
+	mWriteDescriptorSet.descriptorCount = 0; //DEMO_TEXTURE_COUNT;
+	mWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	mWriteDescriptorSet.pImageInfo = nullptr; //tex_descs;
 }
 
 BufferManager::~BufferManager()
@@ -314,6 +347,12 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline vkAllocateDescriptorSets failed with return code of " << mResult;
 		return;
 	}
+
+	mWriteDescriptorSet.dstSet = mDescriptorSet;
+	mWriteDescriptorSet.descriptorCount = 0; //DEMO_TEXTURE_COUNT;
+	mWriteDescriptorSet.pImageInfo = nullptr; //tex_descs;
+
+	vkUpdateDescriptorSets(mDevice->mDevice, 1, &mWriteDescriptorSet, 0, NULL);
 
 	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, NULL, &mPipelineLayout);
 	if (result != VK_SUCCESS)

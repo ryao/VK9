@@ -228,6 +228,12 @@ public:
 	VkDeviceMemory mDepthDeviceMemory;
 	VkImageView mDepthView;
 	
+	VkViewport mViewport = {};
+	VkRect2D mScissor = {};
+
+	RECT m9Scissor = {};
+	D3DVIEWPORT9 m9Viewport = {};
+
 	BufferManager* mBufferManager;
 	std::unordered_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;

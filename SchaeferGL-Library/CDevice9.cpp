@@ -322,6 +322,27 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//Create queue so we can submit command buffers.
 	vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0,&mQueue);
 
+	//initialize vulkan/d3d9 viewport and scissor structures.
+	mViewport.width = (float)mPresentationParameters.BackBufferWidth;
+	mViewport.height = (float)mPresentationParameters.BackBufferHeight;	
+	mViewport.minDepth = (float)0.0f;
+	mViewport.maxDepth = (float)1.0f;
+	
+	m9Viewport.Width = mViewport.width;
+	m9Viewport.Height = mViewport.height;
+	m9Viewport.MinZ = mViewport.minDepth;
+	m9Viewport.MaxZ = mViewport.maxDepth;
+	
+	mScissor.extent.width = mPresentationParameters.BackBufferWidth;
+	mScissor.extent.height = mPresentationParameters.BackBufferHeight;
+	mScissor.offset.x = 0; //Do I really need this if I initialize to zero?
+	mScissor.offset.y = 0; //Do I really need this if I initialize to zero?
+	
+	m9Scissor.right = mScissor.extent.width;
+	m9Scissor.bottom = mScissor.extent.height;
+	m9Scissor.left = 0;
+	m9Scissor.top = 0;
+
 	/*
 	Now pull some information about the surface so we can create the swapchain correctly.
 	*/
@@ -2231,11 +2252,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler,D3DSAMPLERSTAT
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetScissorRect(RECT *pRect)
 {
-	//TODO: Implement.
+	(*pRect) = m9Scissor;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetScissorRect is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 BOOL STDMETHODCALLTYPE CDevice9::GetSoftwareVertexProcessing()
@@ -2352,9 +2371,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetViewport is not implemented!";
+	(*pViewport) = m9Viewport;
 
 	return S_OK;		
 }
@@ -2580,9 +2597,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTAT
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT *pRect)
 {
-	//TODO: Implement.
+	m9Scissor = (*pRect);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetScissorRect is not implemented!";
+	mScissor.extent.width = m9Scissor.right;
+	mScissor.extent.height = m9Scissor.bottom;
+	mScissor.offset.x = m9Scissor.left;
+	mScissor.offset.y = m9Scissor.top;
 
 	return S_OK;	
 }
@@ -2686,9 +2706,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 {
-	//TODO: Implement.
+	m9Viewport = (*pViewport);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetViewport is not implemented!";
+	mViewport.width = m9Viewport.Width;
+	mViewport.height = m9Viewport.Height;
+	mViewport.minDepth = m9Viewport.MinZ;
+	mViewport.maxDepth = m9Viewport.MaxZ;
 
 	return S_OK;	
 }
@@ -2950,6 +2973,9 @@ void CDevice9::StartScene()
 	}
 
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
+
+	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mViewport);
+	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mScissor);
 }
 
 void CDevice9::StopScene()
