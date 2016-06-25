@@ -228,7 +228,7 @@ public:
 	VkDeviceMemory mDepthDeviceMemory;
 	VkImageView mDepthView;
 	
-	BufferManager mBufferManager;
+	BufferManager* mBufferManager;
 	std::unordered_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
 	DWORD mFVF;

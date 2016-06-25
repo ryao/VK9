@@ -43,38 +43,12 @@ misrepresented as being the original software.
 #define D3DCOLOR_G(dw) (((float)(((dw) >> 8) & 0xFF)) / 255.0f)
 #define D3DCOLOR_B(dw) (((float)(((dw) >> 0) & 0xFF)) / 255.0f)
 
-inline VkShaderModule LoadShaderFromResource(VkDevice device,int resource)
-{
-	VkShaderModuleCreateInfo moduleCreateInfo = {};
-	VkShaderModule module = VK_NULL_HANDLE;
-	VkResult result;
 
-	HRSRC hRes = FindResource(0, MAKEINTRESOURCE(resource), RT_RCDATA);
-	if (NULL != hRes)
-	{
-		HGLOBAL hData = LoadResource(0, hRes);
-		if (NULL != hData)
-		{
-			DWORD dataSize = SizeofResource(0, hRes);
-			uint32_t* data = (uint32_t*)LockResource(hData);
+HMODULE GetModule(HMODULE module = 0);
 
-			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-			moduleCreateInfo.pNext = NULL;
-			moduleCreateInfo.codeSize = dataSize; 
-			moduleCreateInfo.pCode = data; //Why is this uint32_t* if the size is in bytes?
-			moduleCreateInfo.flags = 0;
+VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
 
-			result = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &module);
-			if (result != VK_SUCCESS)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource vkCreateShaderModule failed with return code of " << result;
-				return VK_NULL_HANDLE;
-			}
-		}
-	}
-
-	return module;
-}
+VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
 
 inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
 {
