@@ -36,6 +36,7 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mSize(0),
 	mCapacity(0),
 	mIsDirty(true),
+	mLockCount(0),
 	mBuffer(VK_NULL_HANDLE),
 	mMemory(VK_NULL_HANDLE)
 {
