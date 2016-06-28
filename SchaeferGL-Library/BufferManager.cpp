@@ -167,28 +167,183 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;	
 
 	/*
-	            demo_prepare_texture_image(
-                demo, tex_colors[i], &demo->textures[i], VK_IMAGE_TILING_LINEAR,
-                VK_IMAGE_USAGE_SAMPLED_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	
+	Setup the texture to be written into the descriptor set.
 	*/
 
+	const VkFormat textureFormat = VK_FORMAT_B8G8R8A8_UNORM;
+	VkFormatProperties formatProperties;
+	const uint32_t textureColors[2] = { 0xffff0000, 0xff00ff00 };
+
+	const int32_t textureWidth = 1;
+	const int32_t textureHeight = 1;
+
+	vkGetPhysicalDeviceFormatProperties(mDevice->mPhysicalDevice, textureFormat, &formatProperties); //why no result.
+
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = textureFormat;
+	imageCreateInfo.extent = { textureWidth, textureHeight, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageCreateInfo.flags = 0;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.pNext = NULL;
+	memoryAllocateInfo.allocationSize = 0;
+	memoryAllocateInfo.memoryTypeIndex = 0;
+
+	VkMemoryRequirements memoryRequirements = {};
+
+	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateImage failed with return code of " << mResult;
+		return;
+	}
+
+	vkGetImageMemoryRequirements(mDevice->mDevice, mImage, &memoryRequirements);
+
+	memoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memoryAllocateInfo.memoryTypeIndex);
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &memoryAllocateInfo, NULL, &mDeviceMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkBindImageMemory(mDevice->mDevice, mImage, mDeviceMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkBindImageMemory failed with return code of " << mResult;
+		return;
+	}
+
+	VkImageSubresource imageSubresource = {};
+	imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageSubresource.mipLevel = 0;
+	imageSubresource.arrayLayer = 0;
+
+	VkSubresourceLayout subresourceLayout = {};
+	void* data = nullptr;
+	int32_t x = 0;
+	int32_t y = 0;
+
+	vkGetImageSubresourceLayout(mDevice->mDevice, mImage, &imageSubresource, &subresourceLayout); //no result?
+
+	mResult = vkMapMemory(mDevice->mDevice, mDeviceMemory, 0, memoryAllocateInfo.allocationSize, 0, &data);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkMapMemory failed with return code of " << mResult;
+		return;
+	}
+
+	for (y = 0; y < textureHeight; y++) {
+		uint32_t *row = (uint32_t *)((char *)data + subresourceLayout.rowPitch * y);
+		for (x = 0; x < textureWidth; x++)
+			row[x] = textureColors[(x & 1) ^ (y & 1)];
+	}
+
+	vkUnmapMemory(mDevice->mDevice, mDeviceMemory);
+
+	mImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	mDevice->SetImageLayout(mImage, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, mImageLayout); //VK_ACCESS_HOST_WRITE_BIT
+
+	VkSamplerCreateInfo samplerCreateInfo = {};
+	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerCreateInfo.pNext = NULL;
+	samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.mipLodBias = 0.0f;
+	samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	samplerCreateInfo.maxAnisotropy = 1;
+	samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
+	samplerCreateInfo.minLod = 0.0f;
+	samplerCreateInfo.maxLod = 0.0f;
+	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+
+	VkImageViewCreateInfo imageViewCreateInfo = {};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.pNext = NULL;
+	imageViewCreateInfo.image = VK_NULL_HANDLE;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = textureFormat;
+	imageViewCreateInfo.components =
+		{
+			VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+			VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
+		};
+	imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	imageViewCreateInfo.flags = 0;
+
+	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL,&mSampler);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateSampler failed with return code of " << mResult;
+		return;
+	}
+
+	imageViewCreateInfo.image = mImage;
+
+	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL,&mImageView);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateImageView failed with return code of " << mResult;
+		return;
+	}
+
+	mDescriptorImageInfo.sampler = mSampler;
+	mDescriptorImageInfo.imageView = mImageView;
+	mDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 	mWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet.dstSet = demo->desc_set;
-	mWriteDescriptorSet.descriptorCount = 0; //DEMO_TEXTURE_COUNT;
+	mWriteDescriptorSet.descriptorCount = 1;
 	mWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	mWriteDescriptorSet.pImageInfo = nullptr; //tex_descs;
+	mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
 }
 
 BufferManager::~BufferManager()
 {
-	/*
-	Null handles in case destructor is called explicitly.
-	I thought about using a IsDisposed boolean. I may change this later.
-	*/
+	if (mImageView != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(mDevice->mDevice, mImageView, nullptr);
+		mImageView = VK_NULL_HANDLE;
+	}
+
+	if (mImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage(mDevice->mDevice, mImage, nullptr);
+		mImage = VK_NULL_HANDLE;
+	}
+
+	if (mDeviceMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mDeviceMemory, nullptr);
+		mDeviceMemory = VK_NULL_HANDLE;
+	}
+
+	if (mSampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+		mSampler = VK_NULL_HANDLE;
+	}
+
 	if (mVertShaderModule != VK_NULL_HANDLE)
 	{
 		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule, NULL);
@@ -349,8 +504,8 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	}
 
 	mWriteDescriptorSet.dstSet = mDescriptorSet;
-	mWriteDescriptorSet.descriptorCount = 0; //DEMO_TEXTURE_COUNT;
-	mWriteDescriptorSet.pImageInfo = nullptr; //tex_descs;
+	mWriteDescriptorSet.descriptorCount = 1;
+	mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
 
 	vkUpdateDescriptorSets(mDevice->mDevice, 1, &mWriteDescriptorSet, 0, NULL);
 

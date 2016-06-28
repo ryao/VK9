@@ -85,6 +85,7 @@ public:
 	VkImageView mImageView;
 	int32_t mTextureWidth;
 	int32_t mTextureHeight;
+	VkDescriptorImageInfo mDescriptorImageInfo = {};
 
 	D3DPRIMITIVETYPE mLastType;
 
