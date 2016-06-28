@@ -176,6 +176,8 @@
   <ItemGroup>
     <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-frag.spv" />
     <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-vert.spv" />
+    <None Include="C:\VulkanSDK\1.0.17.0\Demos\tri-frag.spv" />
+    <None Include="C:\VulkanSDK\1.0.17.0\Demos\tri-vert.spv" />
     <None Include="d3d9.def" />
     <None Include="SchaeferGL.conf">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
