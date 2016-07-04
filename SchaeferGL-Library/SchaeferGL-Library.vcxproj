@@ -82,6 +82,10 @@
       <Version>
       </Version>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -112,6 +116,10 @@
       </Version>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BufferManager.cpp" />
@@ -174,10 +182,6 @@
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-frag.spv" />
-    <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-vert.spv" />
-    <None Include="C:\VulkanSDK\1.0.17.0\Demos\tri-frag.spv" />
-    <None Include="C:\VulkanSDK\1.0.17.0\Demos\tri-vert.spv" />
     <None Include="d3d9.def" />
     <None Include="SchaeferGL.conf">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -186,6 +190,8 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
     </None>
     <None Include="shader1.bin" />
+    <None Include="Shaders\VertexBuffer.frag" />
+    <None Include="Shaders\VertexBuffer.vert" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc" />

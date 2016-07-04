@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{cc225075-770e-4039-8f2b-4822226ae36b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D3D9.cpp">
@@ -164,10 +167,12 @@
     <None Include="shader1.bin">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-frag.spv" />
-    <None Include="C:\VulkanSDK\1.0.13.0\Demos\tri-vert.spv" />
-    <None Include="C:\VulkanSDK\1.0.17.0\Demos\tri-frag.spv" />
-    <None Include="C:\VulkanSDK\1.0.17.0\Demos\tri-vert.spv" />
+    <None Include="Shaders\VertexBuffer.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">
