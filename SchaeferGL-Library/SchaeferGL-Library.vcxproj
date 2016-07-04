@@ -83,8 +83,8 @@
       </Version>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,8 +117,8 @@
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -s -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

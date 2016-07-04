@@ -71,8 +71,8 @@ BufferManager::BufferManager(CDevice9* device)
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
 	//mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);
 
-	mVertShaderModule = LoadShaderFromFile(mDevice->mDevice, "tri-vert.spv");
-	mFragShaderModule = LoadShaderFromFile(mDevice->mDevice, "tri-frag.spv");
+	mVertShaderModule = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer.vert.spv");
+	mFragShaderModule = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer.frag.spv");
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;

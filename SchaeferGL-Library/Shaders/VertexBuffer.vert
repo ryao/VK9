@@ -23,7 +23,7 @@ misrepresented as being the original software.
 #extension GL_ARB_shading_language_420pack : enable
 
 layout (location = 0) in vec4 position;
-layout (location = 1) in int attr;
+layout (location = 1) in float attr;
 layout (location = 0) out vec4 color;
 
 out gl_PerVertex 
@@ -34,9 +34,9 @@ out gl_PerVertex
 void main() 
 {
 	vec4 unpackedValues = vec4(1.0, 256.0, 65536.0,16777216.0);
-	unpackedValues = fract(unpackedValues * packedValue);
+	unpackedValues = fract(unpackedValues * attr);
 	unpackedValues *= 255.0; 
 
-	gl_Position = pos;
+	gl_Position = position;
 	color = unpackedValues;  
 }
