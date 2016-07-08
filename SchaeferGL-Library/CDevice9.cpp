@@ -1318,12 +1318,31 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		}
 	}
 
+	mPresentCompleteSemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	mPresentCompleteSemaphoreCreateInfo.pNext = nullptr;
+	mPresentCompleteSemaphoreCreateInfo.flags = 0;
+
+	mResult = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateSemaphore failed with return code of " << mResult;
+		return;
+	}
+
 	mBufferManager = new BufferManager(this);
-}
+} 
 
 CDevice9::~CDevice9()
 {
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
+
 	delete mBufferManager;
+
+	if (mPresentCompleteSemaphore != VK_NULL_HANDLE)
+	{
+		vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
+		mPresentCompleteSemaphore = VK_NULL_HANDLE;
+	}
 
 	if (mFramebuffers!= nullptr)
 	{
@@ -1479,7 +1498,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	presentInfo.pSwapchains = &mSwapchain;
 	presentInfo.pImageIndices = &mCurrentBuffer;
 
-	SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 	result = vkQueuePresentKHR(mQueue, &presentInfo);
 	if (result != VK_SUCCESS)
@@ -1488,10 +1507,23 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 		return D3DERR_INVALIDCALL;
 	}
 
-	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
+	result = vkQueueWaitIdle(mQueue);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkDestroySemaphore failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
+	if (mPresentCompleteSemaphore != VK_NULL_HANDLE)
+	{
+		vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
+		mPresentCompleteSemaphore = VK_NULL_HANDLE;
+	}
+
+	result = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkCreateSemaphore failed with return code of " << mResult;
 		return D3DERR_INVALIDCALL;
 	}
 
@@ -1843,6 +1875,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 	vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
 
 	vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0,nullptr);
+
+	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mViewport);
+	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mScissor);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], PrimitiveCount, 1, StartVertex, 0);
 
@@ -2935,18 +2970,6 @@ void CDevice9::StartScene()
 	mIsSceneStarted = true;
 
 	VkResult result = VK_SUCCESS;
-	VkSemaphoreCreateInfo presentCompleteSemaphoreCreateInfo;
-
-	presentCompleteSemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	presentCompleteSemaphoreCreateInfo.pNext = nullptr;
-	presentCompleteSemaphoreCreateInfo.flags = 0;
-
-	result = vkCreateSemaphore(mDevice, &presentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkCreateSemaphore failed with return code of " << mResult;
-		return;
-	}
 
 	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
 	if (result != VK_SUCCESS)
@@ -3002,10 +3025,22 @@ void CDevice9::StartScene()
 		return;
 	}
 
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.pNext = nullptr;
+	imageMemoryBarrier.srcAccessMask = 0;
+	imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.image = mSwapchainImages[mCurrentBuffer];
+	imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
 
-	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mViewport);
-	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mScissor);
+
 }
 
 void CDevice9::StopScene()
@@ -3028,6 +3063,21 @@ void CDevice9::StopScene()
 
 	vkCmdEndRenderPass(mSwapchainBuffers[mCurrentBuffer]); // Why no result?
 
+	VkImageMemoryBarrier prePresentBarrier = {};
+	prePresentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	prePresentBarrier.pNext = nullptr;
+	prePresentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	prePresentBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	prePresentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	prePresentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	prePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	prePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	prePresentBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+	prePresentBarrier.image = mSwapchainImages[mCurrentBuffer];
+	VkImageMemoryBarrier* memoryBarrier = &prePresentBarrier;
+	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,nullptr, 1, memoryBarrier);
+
 	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
 	if (result != VK_SUCCESS)
 	{
@@ -3039,13 +3089,6 @@ void CDevice9::StopScene()
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << mResult;
-		return;
-	}
-
-	result = vkQueueWaitIdle(mQueue);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
 		return;
 	}
 }

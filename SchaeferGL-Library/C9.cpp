@@ -176,6 +176,8 @@ C9::C9()
 
 C9::~C9()
 {
+	BOOST_LOG_TRIVIAL(info) << "C9::~C9";
+
 	delete[]	 mPhysicalDevices;
 
 
@@ -464,22 +466,22 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, 
 	switch (flags)
 	{
 	case VK_DEBUG_REPORT_INFORMATION_BIT_EXT:
-		BOOST_LOG_TRIVIAL(info) << "DebugReport(Info): " << message;
+		BOOST_LOG_TRIVIAL(info) << "DebugReport(Info): " << message << " " << objectType;
 		break;
 	case VK_DEBUG_REPORT_WARNING_BIT_EXT:
-		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Warn): " << message;
+		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Warn): " << message << " " << objectType;
 		break;
 	case VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT:
-		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Perf): " << message;
+		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Perf): " << message << " " << objectType;
 		break;
 	case VK_DEBUG_REPORT_ERROR_BIT_EXT:
-		BOOST_LOG_TRIVIAL(error) << "DebugReport(Error): " << message;
+		BOOST_LOG_TRIVIAL(error) << "DebugReport(Error): " << message << " " << objectType;
 		break;
 	case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
-		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Debug): " << message;
+		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Debug): " << message << " " << objectType;
 		break;
 	default:
-		BOOST_LOG_TRIVIAL(error) << "DebugReport(?): " << message;
+		BOOST_LOG_TRIVIAL(error) << "DebugReport(?): " << message << " " << objectType;
 		break;
 	}
 	

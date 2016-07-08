@@ -230,6 +230,7 @@ public:
 	
 	VkViewport mViewport = {};
 	VkRect2D mScissor = {};
+	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
 
 	RECT m9Scissor = {};
 	D3DVIEWPORT9 m9Viewport = {};
@@ -239,7 +240,7 @@ public:
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
 	DWORD mFVF;
 	BOOL mIsDirty;
-	BOOL mIsSceneStarted;
+	BOOL mIsSceneStarted; 
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
 	void StartScene();
