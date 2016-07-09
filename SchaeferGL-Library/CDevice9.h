@@ -231,6 +231,14 @@ public:
 	VkViewport mViewport = {};
 	VkRect2D mScissor = {};
 	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
+	VkCommandBufferInheritanceInfo mCommandBufferInheritanceInfo = {};
+	VkCommandBufferBeginInfo mCommandBufferBeginInfo = {};
+	VkClearValue mClearValues[2] = {};
+	VkRenderPassBeginInfo mRenderPassBeginInfo = {};
+	VkImageMemoryBarrier mImageMemoryBarrier = {};
+	VkSubmitInfo mSubmitInfo = {};
+	VkImageMemoryBarrier mPrePresentBarrier = {};
+	VkPresentInfoKHR mPresentInfo = {};
 
 	RECT m9Scissor = {};
 	D3DVIEWPORT9 m9Viewport = {};

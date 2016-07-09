@@ -89,6 +89,7 @@ public:
 
 	D3DPRIMITIVETYPE mLastType;
 
+	void BindVertexBuffers(D3DPRIMITIVETYPE type);
 	void UpdatePipeline(D3DPRIMITIVETYPE type);
 
 private:

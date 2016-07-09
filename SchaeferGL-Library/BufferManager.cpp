@@ -381,6 +381,14 @@ BufferManager::~BufferManager()
 	}
 }
 
+void BufferManager::BindVertexBuffers(D3DPRIMITIVETYPE type)
+{
+	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+	{
+		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
+	}
+}
+
 void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
@@ -457,8 +465,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		mDescriptorSetLayoutBinding[i].descriptorCount = 1;
 		mDescriptorSetLayoutBinding[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		mDescriptorSetLayoutBinding[i].pImmutableSamplers = NULL;	
-
-		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
 
 		mVertexInputBindingDescription[i].binding = source.first;
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
