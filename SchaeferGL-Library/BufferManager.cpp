@@ -449,11 +449,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
 
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mStreamSources.size();
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = mStreamSources.size() * 2;
-	mDescriptorSetAllocateInfo.descriptorSetCount = mStreamSources.size();
-	mPipelineLayoutCreateInfo.setLayoutCount = mStreamSources.size();
-
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
 	{
@@ -487,6 +482,14 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
 	mPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	mDescriptorSetLayoutCreateInfo.bindingCount = mStreamSources.size();
+	mDescriptorSetAllocateInfo.descriptorSetCount = mStreamSources.size();
+	mPipelineLayoutCreateInfo.setLayoutCount = mStreamSources.size();
+
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mStreamSources.size();
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = mStreamSources.size() * 2;
+	
 
 
 	/**********************************************

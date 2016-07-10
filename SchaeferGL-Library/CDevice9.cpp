@@ -322,32 +322,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//Create queue so we can submit command buffers.
 	vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0,&mQueue);
 
-	//initialize vulkan/d3d9 viewport and scissor structures.
-	mViewport.width = (float)mPresentationParameters.BackBufferWidth;
-	mViewport.height = (float)mPresentationParameters.BackBufferHeight;	
-	mViewport.minDepth = (float)0.0f;
-	mViewport.maxDepth = (float)1.0f;
-	
-	m9Viewport.Width = mViewport.width;
-	m9Viewport.Height = mViewport.height;
-	m9Viewport.MinZ = mViewport.minDepth;
-	m9Viewport.MaxZ = mViewport.maxDepth;
-	
-	mScissor.extent.width = mPresentationParameters.BackBufferWidth;
-	mScissor.extent.height = mPresentationParameters.BackBufferHeight;
-	mScissor.offset.x = 0; //Do I really need this if I initialize to zero?
-	mScissor.offset.y = 0; //Do I really need this if I initialize to zero?
-	
-	m9Scissor.right = mScissor.extent.width;
-	m9Scissor.bottom = mScissor.extent.height;
-	m9Scissor.left = 0;
-	m9Scissor.top = 0;
-
 	/*
 	Now pull some information about the surface so we can create the swapchain correctly.
 	*/
 
-	if (mSurfaceCapabilities.currentExtent.width == (uint32_t)-1) 
+	if (mSurfaceCapabilities.currentExtent.width < (uint32_t)1 || mSurfaceCapabilities.currentExtent.height < (uint32_t)1)
 	{
 		//If the height/width are -1 then just set it to the requested size and hope for the best.
 		mSwapchainExtent.width = mPresentationParameters.BackBufferWidth;
@@ -357,7 +336,32 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	{
 		//Appearently the swap chain size must match the surface size if it is defined.
 		mSwapchainExtent = mSurfaceCapabilities.currentExtent;
+		mPresentationParameters.BackBufferWidth = mSurfaceCapabilities.currentExtent.width;
+		mPresentationParameters.BackBufferHeight = mSurfaceCapabilities.currentExtent.height;
 	}
+
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 the height/width of the surfaces are " << mPresentationParameters.BackBufferHeight << "/" << mPresentationParameters.BackBufferWidth;
+
+	//initialize vulkan/d3d9 viewport and scissor structures.
+	mViewport.width = (float)mPresentationParameters.BackBufferWidth;
+	mViewport.height = (float)mPresentationParameters.BackBufferHeight;
+	mViewport.minDepth = (float)0.0f;
+	mViewport.maxDepth = (float)1.0f;
+
+	m9Viewport.Width = mViewport.width;
+	m9Viewport.Height = mViewport.height;
+	m9Viewport.MinZ = mViewport.minDepth;
+	m9Viewport.MaxZ = mViewport.maxDepth;
+
+	mScissor.extent.width = mPresentationParameters.BackBufferWidth;
+	mScissor.extent.height = mPresentationParameters.BackBufferHeight;
+	mScissor.offset.x = 0; //Do I really need this if I initialize to zero?
+	mScissor.offset.y = 0; //Do I really need this if I initialize to zero?
+
+	m9Scissor.right = mScissor.extent.width;
+	m9Scissor.bottom = mScissor.extent.height;
+	m9Scissor.left = 0;
+	m9Scissor.top = 0;
 
 	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, nullptr);
 	if (mResult != VK_SUCCESS)
@@ -1026,7 +1030,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	swapchainCreateInfo.flags = 0;
 	swapchainCreateInfo.surface = mSurface;
 	swapchainCreateInfo.minImageCount = mSurfaceCapabilities.minImageCount + 1;
-	swapchainCreateInfo.imageFormat = mFormat; //ConvertFormat(mPresentationParameters.BackBufferFormat);
+	swapchainCreateInfo.imageFormat = mFormat;
 	swapchainCreateInfo.imageColorSpace  = mSurfaceFormats[0].colorSpace;
 	swapchainCreateInfo.imageExtent = mSwapchainExtent;
 	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -1083,10 +1087,10 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		color_image_view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		color_image_view.pNext = nullptr;
 		color_image_view.format = mFormat;
-		color_image_view.components.r = VK_COMPONENT_SWIZZLE_R;
-		color_image_view.components.g = VK_COMPONENT_SWIZZLE_G;
-		color_image_view.components.b = VK_COMPONENT_SWIZZLE_B;
-		color_image_view.components.a = VK_COMPONENT_SWIZZLE_A;
+		color_image_view.components.r = VK_COMPONENT_SWIZZLE_IDENTITY; //VK_COMPONENT_SWIZZLE_R
+		color_image_view.components.g = VK_COMPONENT_SWIZZLE_IDENTITY; //VK_COMPONENT_SWIZZLE_G
+		color_image_view.components.b = VK_COMPONENT_SWIZZLE_IDENTITY; //VK_COMPONENT_SWIZZLE_B
+		color_image_view.components.a = VK_COMPONENT_SWIZZLE_IDENTITY; //VK_COMPONENT_SWIZZLE_A
 		color_image_view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		color_image_view.subresourceRange.baseMipLevel = 0;
 		color_image_view.subresourceRange.levelCount = 1;
@@ -1094,9 +1098,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		color_image_view.subresourceRange.layerCount = 1;
 		color_image_view.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		color_image_view.flags = 0;
-
-		//Removed for issue #2
-		//SetImageLayout(mSwapchainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 		color_image_view.image = mSwapchainImages[i];	
 
@@ -1134,12 +1135,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	*/
 
 	mDepthFormat = VK_FORMAT_D16_UNORM;
+
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.pNext = nullptr;
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 	imageCreateInfo.format = mDepthFormat;
-	imageCreateInfo.extent = { mSwapchainExtent.width, mSwapchainExtent.height, 1 };
+	imageCreateInfo.extent = { mPresentationParameters.BackBufferWidth,mPresentationParameters.BackBufferHeight, 1 };
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -1149,7 +1151,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	imageViewCreateInfo.pNext = NULL;
+	imageViewCreateInfo.pNext = nullptr;
 	imageViewCreateInfo.image = VK_NULL_HANDLE;
 	imageViewCreateInfo.format = mDepthFormat;
 	imageViewCreateInfo.subresourceRange = {};
@@ -1163,7 +1165,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	VkMemoryRequirements memoryRequirements = {};
 
-	mResult = vkCreateImage(mDevice, &imageCreateInfo, NULL, &mDepthImage);
+	mResult = vkCreateImage(mDevice, &imageCreateInfo, nullptr, &mDepthImage);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImage failed with return code of " << mResult;
@@ -1231,8 +1233,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	renderAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	renderAttachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	renderAttachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	/*	
 	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	*/
 
 	renderAttachments[1].format = mDepthFormat;
 	renderAttachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
@@ -2952,7 +2959,7 @@ void CDevice9::StartScene()
 	}
 
 	//maybe add back later
-	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR); //VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 
 	mClearValues[0].color = mClearColorValue;
 	mClearValues[1].depthStencil = { 1.0f, 0 };
@@ -2980,7 +2987,7 @@ void CDevice9::StartScene()
 	mImageMemoryBarrier.srcAccessMask = 0;
 	mImageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 	mImageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	mImageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	mImageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.image = mSwapchainImages[mCurrentBuffer];
@@ -3014,7 +3021,7 @@ void CDevice9::StopScene()
 	mPrePresentBarrier.pNext = nullptr;
 	mPrePresentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 	mPrePresentBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	mPrePresentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	mPrePresentBarrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	mPrePresentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	mPrePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mPrePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;

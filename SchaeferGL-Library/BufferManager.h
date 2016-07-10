@@ -1,4 +1,4 @@
-/*
+/*VkPipelineShaderStageCreateInfo
 Copyright(c) 2016 Christopher Joseph Dean Schaefer
 
 This software is provided 'as-is', without any express or implied
