@@ -332,7 +332,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mSwapchainExtent.width = mPresentationParameters.BackBufferWidth;
 		mSwapchainExtent.height = mPresentationParameters.BackBufferHeight;
 	}
-	else 
+	else
 	{
 		//Appearently the swap chain size must match the surface size if it is defined.
 		mSwapchainExtent = mSurfaceCapabilities.currentExtent;

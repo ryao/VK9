@@ -60,6 +60,7 @@ float decode32(vec4 rgba)
 void main() 
 {
 	gl_Position = position;
-	//gl_Position.z+=1.00f;
-	color = encode32(attr);
+	gl_Position.y = -gl_Position.y;
+	//color = encode32(attr);
+	color = vec4( 0.0, 0.4, 1.0, 1.0 );
 }
