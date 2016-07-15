@@ -75,6 +75,7 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 		return;
 	}
 
+	mSize = mLength / (sizeof(float)*3 + sizeof(DWORD)); //TODO: add support for other formats.
 
 }
 

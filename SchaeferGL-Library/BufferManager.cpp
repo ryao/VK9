@@ -41,7 +41,8 @@ BufferManager::BufferManager()
 	mDeviceMemory(VK_NULL_HANDLE),
 	mImageView(VK_NULL_HANDLE),
 	mTextureWidth(0),
-	mTextureHeight(0)
+	mTextureHeight(0),
+	mVertexCount(0)
 
 {
 	//Don't use. This is only here for containers.
@@ -64,8 +65,8 @@ BufferManager::BufferManager(CDevice9* device)
 	mDeviceMemory(VK_NULL_HANDLE),
 	mImageView(VK_NULL_HANDLE),
 	mTextureWidth(0),
-	mTextureHeight(0)
-
+	mTextureHeight(0),
+	mVertexCount(0)
 {
 
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
@@ -383,15 +384,19 @@ BufferManager::~BufferManager()
 
 void BufferManager::BindVertexBuffers(D3DPRIMITIVETYPE type)
 {
+	mVertexCount = 0;
+
 	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
 	{
 		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
+		mVertexCount += source.second.StreamData->mSize;
 	}
 }
 
 void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
+	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
 
 	/**********************************************
 	* Cleanup/Fetch Pipe
@@ -431,9 +436,17 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	* Update Pipe Creation Information
 	**********************************************/
 
-	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)mDevice->mRenderStates[D3DRS_FILLMODE]);
+	searchResult = mDevice->mRenderStates.find(D3DRS_FILLMODE);
+	if (searchResult != mDevice->mRenderStates.end())
+	{
+		mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)mDevice->mRenderStates[D3DRS_FILLMODE]);
+	}
 
-	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)mDevice->mRenderStates[D3DRS_FILLMODE]);
+	searchResult = mDevice->mRenderStates.find(D3DRS_CULLMODE);
+	if (searchResult != mDevice->mRenderStates.end())
+	{
+		SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)searchResult->second);
+	}
 
 	/*
 	// D3DRS_ZBIAS is not defined.
@@ -473,11 +486,11 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 		mVertexInputAttributeDescription[ai2].binding = source.first;
 		mVertexInputAttributeDescription[ai2].location = 1;
-		mVertexInputAttributeDescription[ai2].format = VK_FORMAT_B8G8R8A8_UNORM;
+		mVertexInputAttributeDescription[ai2].format = VK_FORMAT_B8G8R8A8_UINT;
 		mVertexInputAttributeDescription[ai2].offset = sizeof(float) * 3;
 		
 		i++;
-	}
+	} 
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;

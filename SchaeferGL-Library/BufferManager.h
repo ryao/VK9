@@ -86,6 +86,7 @@ public:
 	int32_t mTextureWidth;
 	int32_t mTextureHeight;
 	VkDescriptorImageInfo mDescriptorImageInfo = {};
+	uint32_t mVertexCount;
 
 	D3DPRIMITIVETYPE mLastType;
 

@@ -23,7 +23,7 @@ misrepresented as being the original software.
 #extension GL_ARB_shading_language_420pack : enable
 
 layout (location = 0) in vec4 position;
-layout (location = 1) in float attr;
+layout (location = 1) in uvec4 attr;
 layout (location = 0) out vec4 color;
 
 out gl_PerVertex 
@@ -31,36 +31,28 @@ out gl_PerVertex
         vec4 gl_Position;
 };
 
-vec4 encode32(float f) 
+vec4 Convert(uvec4 rgba)
 {
-    float e =5.0;
+	vec4 unpacked;
 
-    float F = abs(f); 
-    float Sign = step(0.0,-f);
-    float Exponent = floor(log2(F)); 
-    float Mantissa = (exp2(- Exponent) * F);
-    Exponent = floor(log2(F) + 127.0) + floor(log2(Mantissa));
-    vec4 rgba;
-    rgba[0] = 128.0 * Sign  + floor(Exponent*exp2(-1.0));
-    rgba[1] = 128.0 * mod(Exponent,2.0) + mod(floor(Mantissa*128.0),128.0);  
-    rgba[2] = floor(mod(floor(Mantissa*exp2(23.0 -8.0)),exp2(8.0)));
-    rgba[3] = floor(exp2(23.0)*mod(Mantissa,exp2(-15.0)));
-    return rgba;
-}
+	unpacked.w = float(rgba.w);
+	unpacked.z = float(rgba.z);
+	unpacked.y = float(rgba.y);
+	unpacked.x = float(rgba.x);
 
-float decode32(vec4 rgba) 
-{
-    float Sign = 1.0 - step(128.0,rgba[0])*2.0;
-    float Exponent = 2.0 * mod(rgba[0],128.0) + step(128.0,rgba[1]) - 127.0; 
-    float Mantissa = mod(rgba[1],128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + float(0x800000);
-    float Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 )); 
-    return Result;
+	return unpacked;
 }
 
 void main() 
 {
 	gl_Position = position;
 	gl_Position.y = -gl_Position.y;
-	//color = encode32(attr);
-	color = vec4( 0.0, 0.4, 1.0, 1.0 );
+
+	color = Convert(attr);
+
+	color.x = color.x / 255;
+	color.y = color.y / 255;
+	color.z = color.z / 255;
+	color.w = color.w / 255;	
+
 }
