@@ -21,6 +21,9 @@ misrepresented as being the original software.
 #ifndef CTYPES_H
 #define CTYPES_H
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "d3d9.h"
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
@@ -31,6 +34,12 @@ struct Vertex
 {
 	float x, y, z; // Position of vertex in 3D space
 	DWORD color;   // Color of vertex
+};
+
+struct UniformBufferObject {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
 };
 
 class StreamSource

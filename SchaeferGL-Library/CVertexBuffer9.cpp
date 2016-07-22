@@ -75,6 +75,13 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 		return;
 	}
 
+	mResult = vkBindBufferMemory(mDevice->mDevice, mBuffer, mMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkBindBufferMemory failed with return code of " << mResult;
+		return;
+	}
+
 	mSize = mLength / (sizeof(float)*3 + sizeof(DWORD)); //TODO: add support for other formats.
 
 }
@@ -226,16 +233,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 
 	vkUnmapMemory(mDevice->mDevice, mMemory);
 
-	result = vkBindBufferMemory(mDevice->mDevice, mBuffer, mMemory, 0);
-	
 	mLockCount--;
-
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::Unlock vkBindBufferMemory failed with return code of " << result;
-
-		return D3DERR_INVALIDCALL;
-	}
 
 	return S_OK;	
 }

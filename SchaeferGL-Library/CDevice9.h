@@ -239,6 +239,8 @@ public:
 	VkSubmitInfo mSubmitInfo = {};
 	VkImageMemoryBarrier mPrePresentBarrier = {};
 	VkPresentInfoKHR mPresentInfo = {};
+	VkPushConstantRange mPushConstants[1] = {};
+	UniformBufferObject mUBO = {};
 
 	RECT m9Scissor = {};
 	D3DVIEWPORT9 m9Viewport = {};

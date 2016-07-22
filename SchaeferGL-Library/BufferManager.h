@@ -86,7 +86,14 @@ public:
 	int32_t mTextureWidth;
 	int32_t mTextureHeight;
 	VkDescriptorImageInfo mDescriptorImageInfo = {};
+	VkDescriptorBufferInfo mDescriptorBufferInfo = {};
 	uint32_t mVertexCount;
+
+	VkBuffer mTransformationBuffer;
+	VkMemoryRequirements mTransformationMemoryRequirements = {};
+	VkDeviceMemory mTransformationMemory;
+
+	uint32_t mTransformationCount;
 
 	D3DPRIMITIVETYPE mLastType;
 

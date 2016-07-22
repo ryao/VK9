@@ -42,8 +42,11 @@ BufferManager::BufferManager()
 	mImageView(VK_NULL_HANDLE),
 	mTextureWidth(0),
 	mTextureHeight(0),
-	mVertexCount(0)
+	mVertexCount(0),
 
+	mTransformationBuffer(VK_NULL_HANDLE),
+	mTransformationMemory(VK_NULL_HANDLE),
+	mTransformationCount(1)
 {
 	//Don't use. This is only here for containers.
 }
@@ -66,7 +69,11 @@ BufferManager::BufferManager(CDevice9* device)
 	mImageView(VK_NULL_HANDLE),
 	mTextureWidth(0),
 	mTextureHeight(0),
-	mVertexCount(0)
+	mVertexCount(0),
+
+	mTransformationBuffer(VK_NULL_HANDLE),
+	mTransformationMemory(VK_NULL_HANDLE),
+	mTransformationCount(1)
 {
 
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
@@ -139,6 +146,8 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineLayoutCreateInfo.pNext = NULL;
 	mPipelineLayoutCreateInfo.setLayoutCount = 1;
 	mPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+	//mPipelineLayoutCreateInfo.pPushConstantRanges = mDevice->mPushConstants;
+	//mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 
 	mGraphicsPipelineCreateInfo.stageCount = 2;
 
@@ -312,15 +321,72 @@ BufferManager::BufferManager(CDevice9* device)
 	mDescriptorImageInfo.imageView = mImageView;
 	mDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
+	VkBufferCreateInfo bufferCreateInfo = {};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.pNext = NULL;
+	bufferCreateInfo.size = (sizeof(UniformBufferObject));
+	bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	bufferCreateInfo.flags = 0;
+
+	VkMemoryAllocateInfo transformationMemoryAllocateInfo = {};
+	transformationMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	transformationMemoryAllocateInfo.pNext = NULL;
+	transformationMemoryAllocateInfo.allocationSize = 0;
+	transformationMemoryAllocateInfo.memoryTypeIndex = 0;
+
+	mResult = vkCreateBuffer(mDevice->mDevice, &bufferCreateInfo, NULL, &mTransformationBuffer);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateBuffer failed with return code of " << mResult;
+		return;
+	}
+
+	vkGetBufferMemoryRequirements(mDevice->mDevice, mTransformationBuffer, &mTransformationMemoryRequirements);
+
+	transformationMemoryAllocateInfo.allocationSize = mTransformationMemoryRequirements.size;
+
+	GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, mTransformationMemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &transformationMemoryAllocateInfo.memoryTypeIndex);
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &transformationMemoryAllocateInfo, NULL, &mTransformationMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkBindBufferMemory(mDevice->mDevice, mTransformationBuffer, mTransformationMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkBindBufferMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mDescriptorBufferInfo.buffer = mTransformationBuffer;
+	mDescriptorBufferInfo.range = VK_WHOLE_SIZE; //(mTransformationCount * sizeof(D3DMATRIX));
+	mDescriptorBufferInfo.offset = 0;
+
 	mWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet.dstSet = demo->desc_set;
 	mWriteDescriptorSet.descriptorCount = 1;
-	mWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
-}
+	mWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	//mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
+	mWriteDescriptorSet.pBufferInfo = &mDescriptorBufferInfo;
+} 
 
 BufferManager::~BufferManager()
 {
+	if (mTransformationBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer(mDevice->mDevice, mTransformationBuffer, NULL);
+		mTransformationBuffer = VK_NULL_HANDLE;
+	}
+
+	//if (mTransformationMemory != VK_NULL_HANDLE)
+	//{
+	//	vkFreeMemory(mDevice->mDevice, mTransformationMemory, NULL);
+	//	mTransformationMemory = VK_NULL_HANDLE;
+	//}
+
 	if (mImageView != VK_NULL_HANDLE)
 	{
 		vkDestroyImageView(mDevice->mDevice, mImageView, nullptr);
@@ -469,9 +535,9 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		int ai2 = ai1 + 1; //attribute index 1
 
 		mDescriptorSetLayoutBinding[i].binding = source.first;
-		mDescriptorSetLayoutBinding[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		mDescriptorSetLayoutBinding[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
 		mDescriptorSetLayoutBinding[i].descriptorCount = 1;
-		mDescriptorSetLayoutBinding[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		mDescriptorSetLayoutBinding[i].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS; //VK_SHADER_STAGE_FRAGMENT_BIT
 		mDescriptorSetLayoutBinding[i].pImmutableSamplers = NULL;	
 
 		mVertexInputBindingDescription[i].binding = source.first;
@@ -527,7 +593,8 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 	mWriteDescriptorSet.dstSet = mDescriptorSet;
 	mWriteDescriptorSet.descriptorCount = 1;
-	mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
+	//mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
+	mWriteDescriptorSet.pBufferInfo = &mDescriptorBufferInfo;
 
 	vkUpdateDescriptorSets(mDevice->mDevice, 1, &mWriteDescriptorSet, 0, NULL);
 
@@ -563,4 +630,4 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	}
 
 	return;
-}
+} 

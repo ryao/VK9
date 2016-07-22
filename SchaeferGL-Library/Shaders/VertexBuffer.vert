@@ -22,9 +22,16 @@ misrepresented as being the original software.
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
 
+layout(binding = 0) uniform UniformBufferObject {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+} ubo;
+
 layout (location = 0) in vec4 position;
 layout (location = 1) in uvec4 attr;
 layout (location = 0) out vec4 color;
+layout (location = 1) out mat4 test1;
 
 out gl_PerVertex 
 {
@@ -55,4 +62,5 @@ void main()
 	color.z = color.z / 255;
 	color.w = color.w / 255;	
 
+	test1 = ubo.proj;
 }

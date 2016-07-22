@@ -2658,7 +2658,53 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURES
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
 {
+	VkResult result;
+	void* data=nullptr;
+
 	mTransforms[State] = (*pMatrix);
+
+	switch (State)
+	{
+	case D3DTS_WORLD:
+		for (size_t i = 0; i < 4; i++)
+		{
+			for (size_t j = 0; j < 4; j++)
+			{
+				mUBO.model[i][j] = pMatrix->m[i][j];
+			}
+		}	
+		break;
+	case D3DTS_VIEW:
+		for (size_t i = 0; i < 4; i++)
+		{
+			for (size_t j = 0; j < 4; j++)
+			{
+				mUBO.view[i][j] = pMatrix->m[i][j];
+			}
+		}
+		break;
+	case D3DTS_PROJECTION:
+		for (size_t i = 0; i < 4; i++)
+		{
+			for (size_t j = 0; j < 4; j++)
+			{
+				mUBO.proj[i][j] = pMatrix->m[i][j];
+			}
+		}
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetTransform The following state type was ignored. " << State;
+		break;
+	}
+
+	result = vkMapMemory(mDevice, mBufferManager->mTransformationMemory, 0, mBufferManager->mTransformationMemoryRequirements.size, 0, &data);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetTransform vkMapMemory failed with return code of " << result;
+		return D3DERR_INVALIDCALL;
+	}
+	memcpy(data, &mUBO, sizeof(UniformBufferObject));
+	vkUnmapMemory(mDevice, mBufferManager->mTransformationMemory);
 
 	return S_OK;	
 }
