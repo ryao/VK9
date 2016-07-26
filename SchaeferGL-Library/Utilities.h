@@ -50,6 +50,19 @@ VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
 
 VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
 
+inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+	{
+		if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+		{
+			return i;
+		}
+	}
+
+	return 0;
+}
+
 inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits,VkFlags requirements_mask,uint32_t *typeIndex)
 {
 	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++) 

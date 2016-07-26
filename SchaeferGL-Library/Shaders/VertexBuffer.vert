@@ -47,6 +47,11 @@ vec4 Convert(uvec4 rgba)
 	unpacked.y = float(rgba.y);
 	unpacked.x = float(rgba.x);
 
+	unpacked.x = unpacked.x / 255;
+	unpacked.y = unpacked.y / 255;
+	unpacked.z = unpacked.z / 255;
+	unpacked.w = unpacked.w / 255;	
+
 	return unpacked;
 }
 
@@ -57,10 +62,5 @@ void main()
 
 	color = Convert(attr);
 
-	color.x = color.x / 255;
-	color.y = color.y / 255;
-	color.z = color.z / 255;
-	color.w = color.w / 255;	
-
-	test1 = ubo.proj;
+	test1 = ubo.model;
 }

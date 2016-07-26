@@ -2697,14 +2697,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 		break;
 	}
 
-	result = vkMapMemory(mDevice, mBufferManager->mTransformationMemory, 0, mBufferManager->mTransformationMemoryRequirements.size, 0, &data);
+	result = vkMapMemory(mDevice, mBufferManager->mUniformStagingBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetTransform vkMapMemory failed with return code of " << result;
 		return D3DERR_INVALIDCALL;
 	}
 	memcpy(data, &mUBO, sizeof(UniformBufferObject));
-	vkUnmapMemory(mDevice, mBufferManager->mTransformationMemory);
+	vkUnmapMemory(mDevice, mBufferManager->mUniformStagingBufferMemory);
+	mBufferManager->CopyBuffer(mBufferManager->mUniformStagingBuffer, mBufferManager->mUniformBuffer, sizeof(UniformBufferObject));
 
 	return S_OK;	
 }

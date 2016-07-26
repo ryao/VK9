@@ -89,16 +89,18 @@ public:
 	VkDescriptorBufferInfo mDescriptorBufferInfo = {};
 	uint32_t mVertexCount;
 
-	VkBuffer mTransformationBuffer;
-	VkMemoryRequirements mTransformationMemoryRequirements = {};
-	VkDeviceMemory mTransformationMemory;
-
-	uint32_t mTransformationCount;
+	VkBuffer mUniformStagingBuffer;
+	VkDeviceMemory mUniformStagingBufferMemory;
+	VkBuffer mUniformBuffer;
+	VkDeviceMemory mUniformBufferMemory;
 
 	D3DPRIMITIVETYPE mLastType;
 
 	void BindVertexBuffers(D3DPRIMITIVETYPE type);
 	void UpdatePipeline(D3DPRIMITIVETYPE type);
+
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 private:
 

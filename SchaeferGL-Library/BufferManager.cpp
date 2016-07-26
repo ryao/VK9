@@ -44,9 +44,10 @@ BufferManager::BufferManager()
 	mTextureHeight(0),
 	mVertexCount(0),
 
-	mTransformationBuffer(VK_NULL_HANDLE),
-	mTransformationMemory(VK_NULL_HANDLE),
-	mTransformationCount(1)
+	mUniformStagingBuffer(VK_NULL_HANDLE),
+	mUniformStagingBufferMemory(VK_NULL_HANDLE),
+	mUniformBuffer(VK_NULL_HANDLE),
+	mUniformBufferMemory(VK_NULL_HANDLE)
 {
 	//Don't use. This is only here for containers.
 }
@@ -71,9 +72,10 @@ BufferManager::BufferManager(CDevice9* device)
 	mTextureHeight(0),
 	mVertexCount(0),
 
-	mTransformationBuffer(VK_NULL_HANDLE),
-	mTransformationMemory(VK_NULL_HANDLE),
-	mTransformationCount(1)
+	mUniformStagingBuffer(VK_NULL_HANDLE),
+	mUniformStagingBufferMemory(VK_NULL_HANDLE),
+	mUniformBuffer(VK_NULL_HANDLE),
+	mUniformBufferMemory(VK_NULL_HANDLE)
 {
 
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
@@ -328,63 +330,41 @@ BufferManager::BufferManager(CDevice9* device)
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	bufferCreateInfo.flags = 0;
 
-	VkMemoryAllocateInfo transformationMemoryAllocateInfo = {};
-	transformationMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	transformationMemoryAllocateInfo.pNext = NULL;
-	transformationMemoryAllocateInfo.allocationSize = 0;
-	transformationMemoryAllocateInfo.memoryTypeIndex = 0;
+	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mUniformStagingBuffer, mUniformStagingBufferMemory);
+	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
 
-	mResult = vkCreateBuffer(mDevice->mDevice, &bufferCreateInfo, NULL, &mTransformationBuffer);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateBuffer failed with return code of " << mResult;
-		return;
-	}
-
-	vkGetBufferMemoryRequirements(mDevice->mDevice, mTransformationBuffer, &mTransformationMemoryRequirements);
-
-	transformationMemoryAllocateInfo.allocationSize = mTransformationMemoryRequirements.size;
-
-	GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, mTransformationMemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &transformationMemoryAllocateInfo.memoryTypeIndex);
-
-	mResult = vkAllocateMemory(mDevice->mDevice, &transformationMemoryAllocateInfo, NULL, &mTransformationMemory);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkAllocateMemory failed with return code of " << mResult;
-		return;
-	}
-
-	mResult = vkBindBufferMemory(mDevice->mDevice, mTransformationBuffer, mTransformationMemory, 0);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkBindBufferMemory failed with return code of " << mResult;
-		return;
-	}
-
-	mDescriptorBufferInfo.buffer = mTransformationBuffer;
-	mDescriptorBufferInfo.range = VK_WHOLE_SIZE; //(mTransformationCount * sizeof(D3DMATRIX));
+	mDescriptorBufferInfo.buffer = mUniformBuffer;
 	mDescriptorBufferInfo.offset = 0;
+	mDescriptorBufferInfo.range = sizeof(UniformBufferObject);
 
 	mWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	//mWriteDescriptorSet.dstSet = demo->desc_set;
+	//mWriteDescriptorSet.dstSet = descriptorSet;
+	mWriteDescriptorSet.dstBinding = 0;
+	mWriteDescriptorSet.dstArrayElement = 0;
+	mWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	mWriteDescriptorSet.descriptorCount = 1;
-	mWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	//mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
 	mWriteDescriptorSet.pBufferInfo = &mDescriptorBufferInfo;
 } 
 
 BufferManager::~BufferManager()
 {
-	if (mTransformationBuffer != VK_NULL_HANDLE)
+	if (mUniformStagingBuffer != VK_NULL_HANDLE)
 	{
-		vkDestroyBuffer(mDevice->mDevice, mTransformationBuffer, NULL);
-		mTransformationBuffer = VK_NULL_HANDLE;
+		vkDestroyBuffer(mDevice->mDevice, mUniformStagingBuffer, NULL);
+		mUniformStagingBuffer = VK_NULL_HANDLE;
 	}
 
-	//if (mTransformationMemory != VK_NULL_HANDLE)
+	if (mUniformBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer(mDevice->mDevice, mUniformBuffer, NULL);
+		mUniformBuffer = VK_NULL_HANDLE;
+	}
+
+	//if (mUniformStagingBufferMemory != VK_NULL_HANDLE)
 	//{
-	//	vkFreeMemory(mDevice->mDevice, mTransformationMemory, NULL);
-	//	mTransformationMemory = VK_NULL_HANDLE;
+	//	vkFreeMemory(mDevice->mDevice, mUniformStagingBufferMemory, NULL);
+	//	mUniformStagingBufferMemory = VK_NULL_HANDLE;
 	//}
 
 	if (mImageView != VK_NULL_HANDLE)
@@ -593,7 +573,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 	mWriteDescriptorSet.dstSet = mDescriptorSet;
 	mWriteDescriptorSet.descriptorCount = 1;
-	//mWriteDescriptorSet.pImageInfo = &mDescriptorImageInfo;
 	mWriteDescriptorSet.pBufferInfo = &mDescriptorBufferInfo;
 
 	vkUpdateDescriptorSets(mDevice->mDevice, 1, &mWriteDescriptorSet, 0, NULL);
@@ -630,4 +609,79 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	}
 
 	return;
-} 
+}
+
+void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)
+{
+	VkResult result = VK_SUCCESS;
+
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	result = vkCreateBuffer(mDevice->mDevice, &bufferInfo, nullptr, &buffer);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateBuffer vkCreateBuffer failed with return code of " << mResult;
+		return;
+	}
+
+	VkMemoryRequirements memoryRequirements;
+	vkGetBufferMemoryRequirements(mDevice->mDevice, buffer, &memoryRequirements);
+
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memoryRequirements.size;
+	//allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, properties, &allocInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "Memory type index not found!";
+		return;
+	}
+
+	result = vkAllocateMemory(mDevice->mDevice, &allocInfo, nullptr, &deviceMemory);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateBuffer vkCreateBuffer failed with return code of " << mResult;
+		return;
+	}
+
+	vkBindBufferMemory(mDevice->mDevice, buffer, deviceMemory, 0);
+}
+
+void BufferManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = mDevice->mCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(mDevice->mDevice, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	VkBufferCopy copyRegion = {};
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(mDevice->mQueue);
+
+	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, &commandBuffer);
+}

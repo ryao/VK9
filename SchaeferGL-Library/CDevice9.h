@@ -240,6 +240,7 @@ public:
 	VkImageMemoryBarrier mPrePresentBarrier = {};
 	VkPresentInfoKHR mPresentInfo = {};
 	VkPushConstantRange mPushConstants[1] = {};
+	
 	UniformBufferObject mUBO = {};
 
 	RECT m9Scissor = {};
