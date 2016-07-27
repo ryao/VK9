@@ -23,6 +23,8 @@ misrepresented as being the original software.
 
 #include "stdafx.h"
 #include "SchaeferGL-Tests.h"
+#include <d3d9.h>
+#include <d3dx9.h>
 
 #define MAX_LOADSTRING 100
 
@@ -61,6 +63,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SCHAEFERGLTESTS));
+
+
+	D3DXMATRIX mWorld;
+	D3DXMatrixTranslation(&mWorld, 0.0f, 0.0f, 5.0f);
+
+	D3DXMATRIX mProjection;
+	D3DXMatrixPerspectiveFovLH(&mProjection, D3DXToRadian(45.0f), 1.0f, 1.0f, 100.0f);
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))

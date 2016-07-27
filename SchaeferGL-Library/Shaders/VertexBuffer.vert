@@ -25,13 +25,12 @@ misrepresented as being the original software.
 layout(binding = 0) uniform UniformBufferObject {
     mat4 model;
     mat4 view;
-    mat4 proj;
+    mat4 projection;
 } ubo;
 
 layout (location = 0) in vec4 position;
 layout (location = 1) in uvec4 attr;
 layout (location = 0) out vec4 color;
-layout (location = 1) out mat4 test1;
 
 out gl_PerVertex 
 {
@@ -57,10 +56,9 @@ vec4 Convert(uvec4 rgba)
 
 void main() 
 {
-	gl_Position = position;
+	mat4 matrix = ubo.projection * ubo.view * ubo.model; 
+	gl_Position = matrix * position;
 	gl_Position.y = -gl_Position.y;
 
 	color = Convert(attr);
-
-	test1 = ubo.model;
 }
