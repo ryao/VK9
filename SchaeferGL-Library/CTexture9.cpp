@@ -34,8 +34,65 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS)
+	mResult(VK_SUCCESS),
+
+	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM),
+	mSampler(VK_NULL_HANDLE),
+	mImage(VK_NULL_HANDLE),
+	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
+	mDeviceMemory(VK_NULL_HANDLE),
+	mImageView(VK_NULL_HANDLE)
 {
+	mRealFormat = ConvertFormat(mFormat);
+
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = mRealFormat;
+	imageCreateInfo.extent = { mWidth, mHeight, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageCreateInfo.flags = 0;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;	
+
+	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << mResult;
+		return;
+	}
+
+	VkMemoryRequirements memoryRequirements = {};
+	vkGetImageMemoryRequirements(mDevice->mDevice, mImage, &memoryRequirements);
+
+	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	mMemoryAllocateInfo.pNext = NULL;
+	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+	mMemoryAllocateInfo.memoryTypeIndex = 0;
+
+	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 Could not find memory type from properties.";
+		return;
+	}
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL,&mDeviceMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkBindImageMemory(mDevice->mDevice, mImage, mDeviceMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
+		return;
+	}
 
 }
 
