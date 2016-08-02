@@ -94,11 +94,72 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		return;
 	}
 
+	VkSamplerCreateInfo samplerCreateInfo = {};
+	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerCreateInfo.pNext = NULL;
+	samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.mipLodBias = 0.0f;
+	samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	samplerCreateInfo.maxAnisotropy = 1;
+	samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
+	samplerCreateInfo.minLod = 0.0f;
+	samplerCreateInfo.maxLod = 0.0f;
+	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+
+	VkImageViewCreateInfo imageViewCreateInfo = {};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+	imageViewCreateInfo.pNext = NULL;
+	imageViewCreateInfo.image = VK_NULL_HANDLE;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = mRealFormat;
+	imageViewCreateInfo.components =
+	{
+		VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+		VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
+	};
+	imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	imageViewCreateInfo.flags = 0;
+
+	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL,&mSampler);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateSampler failed with return code of " << mResult;
+		return;
+	}
+
+	imageViewCreateInfo.image = mImage;
+	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL,&mImageView);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << mResult;
+		return;
+	}
 }
 
 CTexture9::~CTexture9()
 {
-
+	if (mImageView!=VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(mDevice->mDevice, mImageView, NULL);
+	}
+	if (mImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage(mDevice->mDevice, mImage, NULL);
+	}
+	if (mDeviceMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mDeviceMemory, NULL);
+	}
+	if (mSampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+	}	
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)
