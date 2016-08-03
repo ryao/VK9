@@ -361,11 +361,11 @@ BufferManager::~BufferManager()
 		mUniformBuffer = VK_NULL_HANDLE;
 	}
 
-	//if (mUniformStagingBufferMemory != VK_NULL_HANDLE)
-	//{
-	//	vkFreeMemory(mDevice->mDevice, mUniformStagingBufferMemory, NULL);
-	//	mUniformStagingBufferMemory = VK_NULL_HANDLE;
-	//}
+	if (mUniformStagingBufferMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mUniformStagingBufferMemory, NULL);
+		mUniformStagingBufferMemory = VK_NULL_HANDLE;
+	}
 
 	if (mImageView != VK_NULL_HANDLE)
 	{
