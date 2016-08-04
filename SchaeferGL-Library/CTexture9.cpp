@@ -41,7 +41,9 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mImage(VK_NULL_HANDLE),
 	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
 	mDeviceMemory(VK_NULL_HANDLE),
-	mImageView(VK_NULL_HANDLE)
+	mImageView(VK_NULL_HANDLE),
+
+	mData(nullptr)
 {
 	mRealFormat = ConvertFormat(mFormat);
 
@@ -338,18 +340,31 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurfac
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	//TODO: Implement.
+	/*
+	I will need to revisit this later because I'm not using the level and other parameters.
+	*/
+	VkResult result = VK_SUCCESS;
 
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::LockRect is not implemented!";
+	result = vkMapMemory(mDevice->mDevice, mDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::LockRect vkMapMemory failed with return code of " << result;
+		pLockedRect->pBits = nullptr;
+		return D3DERR_INVALIDCALL;
+	}
+
+	pLockedRect->pBits = mData;
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::UnlockRect is not implemented!";
+	/*
+	I will need to revisit this later because I'm not using the level.
+	*/
+	vkUnmapMemory(mDevice->mDevice, mDeviceMemory); //No return value so I can't verify success.
+	mData = nullptr;
 
 	return S_OK;	
 }

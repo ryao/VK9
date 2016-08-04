@@ -54,6 +54,8 @@ public:
 	VkDeviceMemory mDeviceMemory;
 	VkImageView mImageView;
 
+	void* mData;
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
