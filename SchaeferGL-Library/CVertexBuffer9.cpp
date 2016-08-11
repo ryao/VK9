@@ -108,11 +108,11 @@ ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::QueryInterface is not implemented!";
 
-	return E_NOTIMPL;
+	(*ppv) = this;
+
+	return S_OK;
 }
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::Release(void)

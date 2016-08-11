@@ -25,6 +25,7 @@ misrepresented as being the original software.
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "d3d9.h"
+#include "d3d9types.h"
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 

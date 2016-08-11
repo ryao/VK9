@@ -1509,9 +1509,9 @@ ULONG STDMETHODCALLTYPE CDevice9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CDevice9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::QueryInterface is not implemented!";
+
+	(*ppv) = this;
 
 	return S_OK;
 }

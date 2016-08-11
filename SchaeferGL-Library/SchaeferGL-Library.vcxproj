@@ -175,6 +175,7 @@
     <ClInclude Include="CVertexDeclaration9.h" />
     <ClInclude Include="CVertexShader9.h" />
     <ClInclude Include="CVolumeTexture9.h" />
+    <ClInclude Include="PrivateTypes.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SchaeferGL-Library.h" />
     <ClInclude Include="stdafx.h" />

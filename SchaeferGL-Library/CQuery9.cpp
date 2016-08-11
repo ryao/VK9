@@ -46,9 +46,9 @@ ULONG STDMETHODCALLTYPE CQuery9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CQuery9::QueryInterface is not implemented!";
+
+	(*ppv) = this;
 
 	return S_OK;
 }

@@ -18,9 +18,11 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
  
+
 #include "CVolumeTexture9.h"
 #include "CDevice9.h"
 
+#include "PrivateTypes.h"
 #include "Utilities.h"
 
 CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
@@ -53,11 +55,36 @@ ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
+	if (ppv == nullptr)
+	{
+		return E_POINTER;
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::QueryInterface is not implemented!";
+	if (IsEqualGUID(riid, IID_IDirect3DVolumeTexture9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
 
-	return E_NOTIMPL;
+	if (IsEqualGUID(riid, IID_IDirect3DTexture9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	if (IsEqualGUID(riid, IID_IDirect3DResource9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	if (IsEqualGUID(riid, IID_IUnknown))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	return E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::Release(void)

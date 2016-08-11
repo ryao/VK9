@@ -46,11 +46,11 @@ ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::QueryInterface is not implemented!";
 
-	return E_NOTIMPL;
+	(*ppv) = this;
+
+	return S_OK;
 }
 
 ULONG STDMETHODCALLTYPE CPixelShader9::Release(void)

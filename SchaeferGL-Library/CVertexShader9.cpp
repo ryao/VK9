@@ -46,11 +46,11 @@ ULONG STDMETHODCALLTYPE CVertexShader9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CVertexShader9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::QueryInterface is not implemented!";
 
-	return E_NOTIMPL;
+	(*ppv) = this;
+
+	return S_OK;
 }
 
 ULONG STDMETHODCALLTYPE CVertexShader9::Release(void)

@@ -83,11 +83,11 @@ ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CSurface9::QueryInterface is not implemented!";
 
-	return E_NOTIMPL;
+	(*ppv) = this;
+
+	return S_OK;
 }
 
 ULONG STDMETHODCALLTYPE CSurface9::Release(void)

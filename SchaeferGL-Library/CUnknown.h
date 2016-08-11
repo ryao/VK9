@@ -38,7 +38,6 @@ public:
 
 public:
 	int mReferenceCount;
-
 };
 
 #endif // CUNKNOWN_H

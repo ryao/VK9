@@ -200,7 +200,10 @@ inline VkFormat ConvertFormat(D3DFORMAT format)
 	case D3DFMT_A8R8G8B8:
 		return VK_FORMAT_B8G8R8A8_UNORM;
 	case D3DFMT_X8R8G8B8:
-		return VK_FORMAT_UNDEFINED; //B8G8R8X8_UNORM
+		/*
+		There is technically no alpha so this may cause problems but I don't see anything that is a 100% match for this format in Vulkan.
+		*/
+		return VK_FORMAT_B8G8R8A8_UNORM; //B8G8R8X8_UNORM
 	case D3DFMT_R5G6B5:
 		return VK_FORMAT_B5G6R5_UNORM_PACK16;
 	case D3DFMT_X1R5G5B5:

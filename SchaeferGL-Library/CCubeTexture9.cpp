@@ -52,11 +52,11 @@ ULONG STDMETHODCALLTYPE CCubeTexture9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::QueryInterface is not implemented!";
 
-	return E_NOTIMPL;
+	(*ppv) = this;
+
+	return S_OK;
 }
 
 ULONG STDMETHODCALLTYPE CCubeTexture9::Release(void)

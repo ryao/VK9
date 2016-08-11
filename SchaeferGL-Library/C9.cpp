@@ -207,6 +207,8 @@ HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
 {
 	BOOST_LOG_TRIVIAL(warning) << "C9::QueryInterface is not implemented!";
 
+	(*ppv) = this;
+
 	return S_OK;
 }
 

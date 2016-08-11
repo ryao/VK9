@@ -43,11 +43,11 @@ ULONG STDMETHODCALLTYPE CBaseTexture9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CBaseTexture9::QueryInterface(REFIID riid,void  **ppv)
 {
-	//TODO: Implement.
-
 	BOOST_LOG_TRIVIAL(warning) << "CBaseTexture9::QueryInterface is not implemented!";
 
-	return E_NOTIMPL;
+	(*ppv) = this;
+
+	return S_OK;
 }
 
 ULONG STDMETHODCALLTYPE CBaseTexture9::Release(void)
