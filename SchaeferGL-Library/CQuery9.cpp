@@ -46,11 +46,30 @@ ULONG STDMETHODCALLTYPE CQuery9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CQuery9::QueryInterface is not implemented!";
+	if (ppv == nullptr)
+	{
+		return E_POINTER;
+	}
 
-	(*ppv) = this;
+	if (IsEqualGUID(riid, IID_IDirect3DQuery9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
 
-	return S_OK;
+	if (IsEqualGUID(riid, IID_IDirect3DResource9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	if (IsEqualGUID(riid, IID_IUnknown))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	return E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE CQuery9::Release(void)

@@ -42,11 +42,18 @@ ULONG STDMETHODCALLTYPE CUnknown::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CUnknown::QueryInterface(REFIID riid,void  **ppv)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CUnknown::QueryInterface is not implemented!";
+	if (ppv == nullptr)
+	{
+		return E_POINTER;
+	}
 
-	(*ppv) = this;
+	if (IsEqualGUID(riid, IID_IUnknown))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
 
-	return S_OK;
+	return E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE CUnknown::Release(void)

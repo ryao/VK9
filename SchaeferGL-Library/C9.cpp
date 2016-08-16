@@ -205,11 +205,18 @@ ULONG STDMETHODCALLTYPE C9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
 {
-	BOOST_LOG_TRIVIAL(warning) << "C9::QueryInterface is not implemented!";
+	if (ppv == nullptr)
+	{
+		return E_POINTER;
+	}
 
-	(*ppv) = this;
+	if (IsEqualGUID(riid, IID_IUnknown))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
 
-	return S_OK;
+	return E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE C9::Release(void)

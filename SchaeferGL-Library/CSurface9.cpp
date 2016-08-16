@@ -83,11 +83,30 @@ ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid,void  **ppv)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CSurface9::QueryInterface is not implemented!";
+	if (ppv == nullptr)
+	{
+		return E_POINTER;
+	}
 
-	(*ppv) = this;
+	if (IsEqualGUID(riid, IID_IDirect3DSurface9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
 
-	return S_OK;
+	if (IsEqualGUID(riid, IID_IDirect3DResource9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	if (IsEqualGUID(riid, IID_IUnknown))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	return E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE CSurface9::Release(void)

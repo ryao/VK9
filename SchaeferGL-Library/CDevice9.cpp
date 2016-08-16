@@ -1509,11 +1509,24 @@ ULONG STDMETHODCALLTYPE CDevice9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CDevice9::QueryInterface(REFIID riid,void  **ppv)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::QueryInterface is not implemented!";
+	if (ppv == nullptr)
+	{
+		return E_POINTER;
+	}
 
-	(*ppv) = this;
+	if (IsEqualGUID(riid, IID_IDirect3DDevice9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
 
-	return S_OK;
+	if (IsEqualGUID(riid, IID_IUnknown))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	return E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE CDevice9::Release(void)

@@ -45,11 +45,30 @@ ULONG STDMETHODCALLTYPE CVertexDeclaration9::AddRef(void)
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  **ppv)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CVertexDeclaration9::QueryInterface is not implemented!";
+	if (ppv == nullptr)
+	{
+		return E_POINTER;
+	}
 
-	(*ppv) = this;
+	if (IsEqualGUID(riid, IID_IDirect3DVertexDeclaration9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
 
-	return S_OK;
+	if (IsEqualGUID(riid, IID_IDirect3DResource9))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	if (IsEqualGUID(riid, IID_IUnknown))
+	{
+		(*ppv) = this;
+		return S_OK;
+	}
+
+	return E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::Release(void)
