@@ -29,7 +29,15 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 
+#include <vector>
+
 class CVertexBuffer9;
+
+struct Monitor
+{
+	HMONITOR hMonitor = NULL;
+	HDC hdcMonitor = NULL;
+};
 
 struct Vertex
 {

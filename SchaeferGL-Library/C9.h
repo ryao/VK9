@@ -42,6 +42,7 @@ public:
 	uint32_t mGpuCount;
 	std::vector<char*> mExtensionNames;
 	std::vector<char*> mLayerExtensionNames;
+	std::vector<Monitor> mMonitors;
 	bool mValidationPresent;
 
 	boost::program_options::variables_map mOptions;
@@ -81,5 +82,7 @@ public:
 };
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
+
+BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
 
 #endif // C9_H

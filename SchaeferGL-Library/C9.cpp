@@ -19,6 +19,7 @@ misrepresented as being the original software.
 */
 
 #include <iostream>
+#include "wtypes.h"
 
 #include "C9.h"
 #include "CDevice9.h"
@@ -36,7 +37,8 @@ C9::C9()
 	mLayerPropertyCount(0),
 	mValidationPresent(false),
 	mResult(VK_SUCCESS),
-	mOptionDescriptions("Allowed options")
+	mOptionDescriptions("Allowed options"),
+	mMonitors(4)
 {
 	//Setup configuration & logging.
 
@@ -172,6 +174,9 @@ C9::C9()
 		BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkCreateInstance failed.";
 		return;
 	}
+
+	//WINAPI to get monitor info
+	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
 }
 
 C9::~C9()
@@ -320,17 +325,26 @@ UINT STDMETHODCALLTYPE C9::GetAdapterCount()
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
 {
-	//Wanted to use vkGetPhysicalDeviceDisplayPropertiesKHR but it looks like it's an extension that isn't available.
+	Monitor monitor = mMonitors[Adapter];
+
+	pMode->Height = ::GetDeviceCaps(monitor.hdcMonitor, HORZRES);
+	pMode->Width = ::GetDeviceCaps(monitor.hdcMonitor, VERTRES);
+	pMode->RefreshRate = ::GetDeviceCaps(monitor.hdcMonitor, VREFRESH);
+
+	if (pMode->RefreshRate == 0 || pMode->RefreshRate == 1)
+	{
+		pMode->RefreshRate = 60;
+	}
 
 	//Fake it till you make it.
-	pMode->Height = 1080;
-	pMode->Width = 1920;
-	pMode->RefreshRate = 60;
-	pMode->Format = D3DFMT_UNKNOWN;
-
-	//TODO: Implement.
+	//pMode->Height = 1080;
+	//pMode->Width = 1920;
+	//pMode->RefreshRate = 60;
+	//pMode->Format = D3DFMT_UNKNOWN;	
 
 	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterDisplayMode is not implemented!";
+	
+	//TODO: Implement.
 
 	return S_OK;	
 }
@@ -495,4 +509,19 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, 
 	}
 	
 	return VK_FALSE;
+}
+
+BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+	std::vector<Monitor>* monitors;
+	Monitor monitor;
+	
+	monitor.hMonitor = hMonitor;
+	monitor.hdcMonitor = hdcMonitor;
+
+	monitors = (std::vector<Monitor>*)dwData;
+
+	monitors->push_back(monitor);
+
+	return true;
 }
