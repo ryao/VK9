@@ -59,7 +59,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
 	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 	imageCreateInfo.flags = 0;
-	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;	
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;  //VK_IMAGE_LAYOUT_PREINITIALIZED;
 
 	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
 	if (mResult != VK_SUCCESS)

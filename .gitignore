@@ -6,3 +6,5 @@ Debug
 Release
 /SchaeferGL.VC.VC.opendb
 /SchaeferGL.VC.db
+*.db
+*.opendb

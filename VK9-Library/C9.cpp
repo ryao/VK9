@@ -176,7 +176,7 @@ C9::C9()
 	}
 
 	//WINAPI to get monitor info
-	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
+	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)&mMonitors);
 }
 
 C9::~C9()
@@ -332,19 +332,31 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 	pMode->RefreshRate = ::GetDeviceCaps(monitor.hdcMonitor, VREFRESH);
 
 	if (pMode->RefreshRate == 0 || pMode->RefreshRate == 1)
-	{
+	{ //This is actually in the spec
 		pMode->RefreshRate = 60;
 	}
 
-	//Fake it till you make it.
-	//pMode->Height = 1080;
-	//pMode->Width = 1920;
-	//pMode->RefreshRate = 60;
-	//pMode->Format = D3DFMT_UNKNOWN;	
+	if (pMode->Height == 0)
+	{ //Sometimes the WINAPI returns 0.
+		pMode->Height = 1080;
+		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode The height was defaulted.";
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterDisplayMode is not implemented!";
-	
-	//TODO: Implement.
+	if (pMode->Width == 0)
+	{ //Sometimes the WINAPI returns 0.
+		pMode->Width = 1920;
+		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode The width was defaulted.";
+	}
+
+	//Fake it till you make it.
+	pMode->Format = D3DFMT_R8G8B8; //revisit.
+	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode The format was defaulted.";
+
+	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Adapter: " << Adapter;
+	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Height: " << pMode->Height;
+	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Width: " << pMode->Width;
+	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode RefreshRate: " << pMode->RefreshRate;
+	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Format: " << pMode->Format;
 
 	return S_OK;	
 }
@@ -513,15 +525,33 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, 
 
 BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
 {
-	std::vector<Monitor>* monitors;
 	Monitor monitor;
 	
 	monitor.hMonitor = hMonitor;
-	monitor.hdcMonitor = hdcMonitor;
+	
+	if (hdcMonitor == NULL)
+	{
+		monitor.hdcMonitor = GetWindowDC(NULL);
+	}
+	else
+	{
+		monitor.hdcMonitor = hdcMonitor;
+	}
 
-	monitors = (std::vector<Monitor>*)dwData;
+	if (dwData != NULL)
+	{
+		std::vector<Monitor>* monitors;
+		monitors = (std::vector<Monitor>*)dwData;
+		monitors->push_back(monitor);
 
-	monitors->push_back(monitor);
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc HMONITOR: " << hMonitor;
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc HDC: " << hdcMonitor;
 
-	return true;
+		return true;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(error) << "MonitorEnumProc: monitor vector is null.";
+		return false;
+	}	
 }
