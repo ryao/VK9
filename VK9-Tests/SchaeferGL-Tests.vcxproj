@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}</ProjectGuid>
-    <RootNamespace>SchaeferGLTests</RootNamespace>
+    <RootNamespace>VK9Tests</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>VK9-Tests</ProjectName>
   </PropertyGroup>
@@ -94,7 +94,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SchaeferGL-Library\SchaeferGL-Library.vcxproj">
+    <ProjectReference Include="..\VK9-Library\VK9-Library.vcxproj">
       <Project>{687fc2b4-7887-45d0-b455-dd32f9680fe2}</Project>
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>

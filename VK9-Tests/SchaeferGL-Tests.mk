@@ -3,10 +3,10 @@
 ## any manual changes will be erased      
 ##
 ## Debug
-ProjectName            :=SchaeferGL-Tests
+ProjectName            :=VK9-Tests
 ConfigurationName      :=Debug
-WorkspacePath          := "S:\Git\SchaeferGL"
-ProjectPath            := "S:\Git\SchaeferGL\SchaeferGL-Tests"
+WorkspacePath          := "S:\Git\VK9"
+ProjectPath            := "S:\Git\VK9\VK9-Tests"
 IntermediateDirectory  :=$(ConfigurationName)
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
@@ -32,7 +32,7 @@ Preprocessors          :=$(PreprocessorSwitch)WIN32 $(PreprocessorSwitch)_DEBUG 
 ObjectSwitch           :=/Fo
 ArchiveOutputSwitch    :=/OUT:
 PreprocessOnlySwitch   :=-E
-ObjectsFileList        :="SchaeferGL-Tests.txt"
+ObjectsFileList        :="VK9-Tests.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=makedir
 RcCmpOptions           := 
@@ -63,7 +63,7 @@ AS       := as
 ##
 CodeLiteDir:=S:\Applications\CodeLite
 UNIT_TEST_PP_SRC_DIR:=S:\Applications\UnitTest++-1.3
-Objects0=$(IntermediateDirectory)/Main.cpp$(ObjectSuffix) $(IntermediateDirectory)/stdafx.cpp$(ObjectSuffix) $(IntermediateDirectory)/SchaeferGL-Tests.rc$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/Main.cpp$(ObjectSuffix) $(IntermediateDirectory)/stdafx.cpp$(ObjectSuffix) $(IntermediateDirectory)/VK9-Tests.rc$(ObjectSuffix) 
 
 
 
@@ -91,17 +91,17 @@ PreBuild:
 ## Objects
 ##
 $(IntermediateDirectory)/Main.cpp$(ObjectSuffix): Main.cpp 
-	$(CXX) $(IncludePCH) $(SourceSwitch) "S:/Git/SchaeferGL/SchaeferGL-Tests/Main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Main.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "S:/Git/VK9/VK9-Tests/Main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Main.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/Main.cpp$(PreprocessSuffix): Main.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Main.cpp$(PreprocessSuffix) "Main.cpp"
 
 $(IntermediateDirectory)/stdafx.cpp$(ObjectSuffix): stdafx.cpp 
-	$(CXX) $(IncludePCH) $(SourceSwitch) "S:/Git/SchaeferGL/SchaeferGL-Tests/stdafx.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/stdafx.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "S:/Git/VK9/VK9-Tests/stdafx.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/stdafx.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/stdafx.cpp$(PreprocessSuffix): stdafx.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/stdafx.cpp$(PreprocessSuffix) "stdafx.cpp"
 
-$(IntermediateDirectory)/SchaeferGL-Tests.rc$(ObjectSuffix): SchaeferGL-Tests.rc
-	$(RcCompilerName) -i "S:/Git/SchaeferGL/SchaeferGL-Tests/SchaeferGL-Tests.rc" $(RcCmpOptions)   $(ObjectSwitch)$(IntermediateDirectory)/SchaeferGL-Tests.rc$(ObjectSuffix) $(RcIncludePath)
+$(IntermediateDirectory)/VK9-Tests.rc$(ObjectSuffix): VK9-Tests.rc
+	$(RcCompilerName) -i "S:/Git/VK9/VK9-Tests/VK9-Tests.rc" $(RcCmpOptions)   $(ObjectSwitch)$(IntermediateDirectory)/VK9-Tests.rc$(ObjectSuffix) $(RcIncludePath)
 ##
 ## Clean
 ##
@@ -110,6 +110,6 @@ clean:
 	$(RM) $(ConfigurationName)/*$(DependSuffix)
 	$(RM) $(OutputFile)
 	$(RM) $(OutputFile).exe
-	$(RM) "../.build-debug/SchaeferGL-Tests"
+	$(RM) "../.build-debug/VK9-Tests"
 
 

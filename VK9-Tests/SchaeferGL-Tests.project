@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="SchaeferGL-Library">
+<CodeLite_Project Name="VK9-Tests">
   <Description/>
   <VirtualDirectory Name="src"/>
   <VirtualDirectory Name="include"/>
   <Dependencies/>
-  <Settings Type="Dynamic Library">
+  <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
         <IncludePath Value="."/>
@@ -14,13 +14,11 @@
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
-    <Configuration Name="Debug" CompilerType="Visual C++ 9" DebuggerType="GNU gdb debugger" Type="Dynamic Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Debug" CompilerType="Visual C++ 9" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g -Wall" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <Preprocessor Value="WIN32"/>
         <Preprocessor Value="_DEBUG"/>
         <Preprocessor Value="_WINDOWS"/>
-        <Preprocessor Value="_USRDLL"/>
-        <Preprocessor Value="SCHAEFERGLLIBRARY_EXPORTS"/>
       </Compiler>
       <Linker Options="-O0" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
@@ -56,13 +54,11 @@
         <SearchPaths/>
       </Completion>
     </Configuration>
-    <Configuration Name="Release" CompilerType="Visual C++ 9" DebuggerType="GNU gdb debugger" Type="Dynamic Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+    <Configuration Name="Release" CompilerType="Visual C++ 9" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g -Wall" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <Preprocessor Value="WIN32"/>
         <Preprocessor Value="NDEBUG"/>
         <Preprocessor Value="_WINDOWS"/>
-        <Preprocessor Value="_USRDLL"/>
-        <Preprocessor Value="SCHAEFERGLLIBRARY_EXPORTS"/>
       </Compiler>
       <Linker Options="-O0" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
@@ -100,85 +96,18 @@
     </Configuration>
   </Settings>
   <VirtualDirectory Name="Source Files">
-    <File Name="D3D9.cpp"/>
-    <File Name="dllmain.cpp"/>
-    <File Name="IDirect3D9.cpp"/>
-    <File Name="IDirect3DBaseTexture9.cpp"/>
-    <File Name="IDirect3DDevice9.cpp"/>
-    <File Name="IDirect3DIndexBuffer9.cpp"/>
-    <File Name="IDirect3DPixelShader9.cpp"/>
-    <File Name="IDirect3DQuery9.cpp"/>
-    <File Name="IDirect3DResource9.cpp"/>
-    <File Name="IDirect3DStateBlock9.cpp"/>
-    <File Name="IDirect3DSurface9.cpp"/>
-    <File Name="IDirect3DSwapChain9.cpp"/>
-    <File Name="IDirect3DTexture9.cpp"/>
-    <File Name="IDirect3DVertexBuffer9.cpp"/>
-    <File Name="IDirect3DVertexDeclaration9.cpp"/>
-    <File Name="IDirect3DVertexShader9.cpp"/>
-    <File Name="IDirect3DVolume9.cpp"/>
-    <File Name="IDirect3DVolumeTexture9.cpp"/>
-    <File Name="IUnknown.cpp"/>
-    <File Name="SchaeferGL-Library.cpp"/>
+    <File Name="Main.cpp"/>
     <File Name="stdafx.cpp"/>
-    <File Name="COpenGLUnknown.cpp"/>
-    <File Name="COpenGLResource9.cpp"/>
-    <File Name="COpenGLBaseTexture9.cpp"/>
-    <File Name="COpenGLTexture9.cpp"/>
-    <File Name="COpenGLCubeTexture9.cpp"/>
-    <File Name="COpenGLVolumeTexture9.cpp"/>
-    <File Name="COpenGLSurface9.cpp"/>
-    <File Name="COpenGL9.cpp"/>
-    <File Name="COpenGLVertexDeclaration9.cpp"/>
-    <File Name="COpenGLQuery9.cpp"/>
-    <File Name="COpenGLVertexBuffer9.cpp"/>
-    <File Name="COpenGLIndexBuffer9.cpp"/>
-    <File Name="COpenGLPixelShader9.cpp"/>
-    <File Name="COpenGLVertexShader9.cpp"/>
-    <File Name="COpenGLDevice9.cpp"/>
-    <File Name="IDirect3DCubeTexture9.cpp"/>
-    <File Name="COpenGLTypes.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Header Files">
-    <File Name="D3D9.h"/>
-    <File Name="IDirect3D9.h"/>
-    <File Name="IDirect3DBaseTexture9.h"/>
-    <File Name="IDirect3DCubeTexture9.h"/>
-    <File Name="IDirect3DDevice9.h"/>
-    <File Name="IDirect3DIndexBuffer9.h"/>
-    <File Name="IDirect3DPixelShader9.h"/>
-    <File Name="IDirect3DQuery9.h"/>
-    <File Name="IDirect3DResource9.h"/>
-    <File Name="IDirect3DStateBlock9.h"/>
-    <File Name="IDirect3DSurface9.h"/>
-    <File Name="IDirect3DSwapChain9.h"/>
-    <File Name="IDirect3DTexture9.h"/>
-    <File Name="IDirect3DVertexBuffer9.h"/>
-    <File Name="IDirect3DVertexDeclaration9.h"/>
-    <File Name="IDirect3DVertexShader9.h"/>
-    <File Name="IDirect3DVolume9.h"/>
-    <File Name="IDirect3DVolumeTexture9.h"/>
-    <File Name="IUnknown.h"/>
-    <File Name="SchaeferGL-Library.h"/>
+    <File Name="Resource.h"/>
+    <File Name="VK9-Tests.h"/>
     <File Name="stdafx.h"/>
     <File Name="targetver.h"/>
-    <File Name="types.h"/>
-    <File Name="COpenGLUnknown.h"/>
-    <File Name="COpenGLResource9.h"/>
-    <File Name="COpenGLBaseTexture9.h"/>
-    <File Name="COpenGLTexture9.h"/>
-    <File Name="COpenGLCubeTexture9.h"/>
-    <File Name="COpenGLVolumeTexture9.h"/>
-    <File Name="COpenGLSurface9.h"/>
-    <File Name="COpenGL9.h"/>
-    <File Name="COpenGLVertexDeclaration9.h"/>
-    <File Name="COpenGLQuery9.h"/>
-    <File Name="COpenGLVertexBuffer9.h"/>
-    <File Name="COpenGLIndexBuffer9.h"/>
-    <File Name="COpenGLPixelShader9.h"/>
-    <File Name="COpenGLVertexShader9.h"/>
-    <File Name="COpenGLDevice9.h"/>
-    <File Name="COpenGLTypes.h"/>
   </VirtualDirectory>
-  <VirtualDirectory Name="Resource Files"/>
+  <VirtualDirectory Name="Resource Files">
+    <File Name="VK9-Tests.ico"/>
+    <File Name="VK9-Tests.rc"/>
+    <File Name="small.ico"/>
+  </VirtualDirectory>
 </CodeLite_Project>

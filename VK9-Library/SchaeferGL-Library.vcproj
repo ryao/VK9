@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="SchaeferGL-Library"
+	Name="VK9-Library"
 	ProjectGUID="{687FC2B4-7887-45D0-B455-DD32F9680FE2}"
-	RootNamespace="SchaeferGLLibrary"
+	RootNamespace="VK9Library"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\local\boost_1_57_0\;&quot;S:\Git\SchaeferGL\SchaeferGL-Library\&quot;"
+				AdditionalIncludeDirectories="C:\local\boost_1_57_0\;&quot;S:\Git\VK9\VK9-Library\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -303,7 +303,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SchaeferGL-Library.cpp"
+				RelativePath=".\VK9-Library.cpp"
 				>
 			</File>
 			<File
@@ -481,7 +481,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SchaeferGL-Library.h"
+				RelativePath=".\VK9-Library.h"
 				>
 			</File>
 			<File

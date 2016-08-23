@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{687FC2B4-7887-45D0-B455-DD32F9680FE2}</ProjectGuid>
-    <RootNamespace>SchaeferGLLibrary</RootNamespace>
+    <RootNamespace>VK9Library</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <ProjectName>VK9-Library</ProjectName>

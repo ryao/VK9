@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="SchaeferGL-Tests"
+	Name="VK9-Tests"
 	ProjectGUID="{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}"
-	RootNamespace="SchaeferGLTests"
+	RootNamespace="VK9Tests"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -165,7 +165,7 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{687FC2B4-7887-45D0-B455-DD32F9680FE2}"
-			RelativePathToProject=".\SchaeferGL-Library\SchaeferGL-Library.vcproj"
+			RelativePathToProject=".\VK9-Library\VK9-Library.vcproj"
 		/>
 	</References>
 	<Files>
@@ -209,7 +209,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SchaeferGL-Tests.h"
+				RelativePath=".\VK9-Tests.h"
 				>
 			</File>
 			<File
@@ -227,11 +227,11 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\SchaeferGL-Tests.ico"
+				RelativePath=".\VK9-Tests.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\SchaeferGL-Tests.rc"
+				RelativePath=".\VK9-Tests.rc"
 				>
 			</File>
 			<File
