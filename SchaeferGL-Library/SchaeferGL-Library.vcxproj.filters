@@ -24,9 +24,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SchaeferGL-Library.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,11 +84,11 @@
     <ClCompile Include="Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VK9-Library.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SchaeferGL-Library.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -161,12 +158,14 @@
     <ClInclude Include="PrivateTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VK9-Library.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="SchaeferGL.conf" />
     <None Include="shader1.bin">
       <Filter>Resource Files</Filter>
     </None>
@@ -176,6 +175,7 @@
     <None Include="Shaders\VertexBuffer.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="VK9.conf" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">

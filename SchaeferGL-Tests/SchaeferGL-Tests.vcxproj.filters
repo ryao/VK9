@@ -26,26 +26,26 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SchaeferGL-Tests.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VK9-Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="SchaeferGL-Tests.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="small.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="VK9-Tests.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SchaeferGL-Tests.rc">
+    <ResourceCompile Include="VK9-Tests.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

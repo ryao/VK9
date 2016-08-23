@@ -26,7 +26,7 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
-#define APP_SHORT_NAME "SchaeferGL"
+#define APP_SHORT_NAME "VK9"
 
 C9::C9()
 	: mGpuCount(0), 
@@ -45,7 +45,7 @@ C9::C9()
 	mOptionDescriptions.add_options()
 		("LogFile", boost::program_options::value<std::string>(), "The location of the log file.");
 
-	boost::program_options::store(boost::program_options::parse_config_file<char>("SchaeferGL.conf", mOptionDescriptions), mOptions);
+	boost::program_options::store(boost::program_options::parse_config_file<char>("VK9.conf", mOptionDescriptions), mOptions);
 	boost::program_options::notify(mOptions);
 
 	if (mOptions.count("LogFile"))
@@ -54,7 +54,7 @@ C9::C9()
 	}
 	else
 	{
-		boost::log::add_file_log("SchaeferGL.log");
+		boost::log::add_file_log("VK9.log");
 	}
 
 

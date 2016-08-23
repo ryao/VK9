@@ -22,7 +22,7 @@ misrepresented as being the original software.
 //
 
 #include "stdafx.h"
-#include "SchaeferGL-Tests.h"
+#include "VK9-Tests.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 

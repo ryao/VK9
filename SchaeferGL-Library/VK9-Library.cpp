@@ -22,7 +22,7 @@ misrepresented as being the original software.
 //
 
 #include "stdafx.h"
-#include "SchaeferGL-Library.h"
+#include "VK9-Library.h"
 
 
 // This is an example of an exported variable
