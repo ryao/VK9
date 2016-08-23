@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SchaeferGL-Tests", "SchaeferGL-Tests\SchaeferGL-Tests.vcxproj", "{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VK9-Tests", "VK9-Tests\VK9-Tests.vcxproj", "{B55BDFC0-AAA6-46EF-885C-169FCEB0740B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SchaeferGL-Library", "SchaeferGL-Library\SchaeferGL-Library.vcxproj", "{687FC2B4-7887-45D0-B455-DD32F9680FE2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VK9-Library", "VK9-Library\VK9-Library.vcxproj", "{687FC2B4-7887-45D0-B455-DD32F9680FE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
