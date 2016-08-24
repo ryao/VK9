@@ -263,11 +263,13 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceTy
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormatConversion(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SourceFormat,D3DFORMAT TargetFormat)
 {
+	HRESULT result = S_OK;
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceFormatConversion is not implemented!";
 
-	return E_NOTIMPL;
+	return result;
 }
 
 

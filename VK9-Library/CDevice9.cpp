@@ -2093,11 +2093,25 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDirect3D(IDirect3D9 **ppD3D9)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMODE *pMode)
 {
-	//TODO: Implement.
+	if (iSwapChain)
+	{
+		//TODO: Implement.
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetDisplayMode multiple swapchains are not implemented!";
+	}
+	else
+	{
+		pMode->Height = this->mSwapchainExtent.height;
+		pMode->Width = this->mSwapchainExtent.width;
+		pMode->RefreshRate = 60; //fake it till you make it.
+		pMode->Format = ConvertFormat(this->mFormat);
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetDisplayMode is not implemented!";
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Height: " << pMode->Height;
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Width: " << pMode->Width;
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode RefreshRate: " << pMode->RefreshRate;
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Format: " << pMode->Format;
 
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetFrontBufferData(UINT  iSwapChain,IDirect3DSurface9 *pDestSurface)

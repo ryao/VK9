@@ -51,7 +51,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageCreateInfo.pNext = NULL;
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = mRealFormat;
+	imageCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM; //mRealFormat;
 	imageCreateInfo.extent = { mWidth, mHeight, 1 };
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
