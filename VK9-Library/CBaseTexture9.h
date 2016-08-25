@@ -29,11 +29,10 @@ class CBaseTexture9 : public IDirect3DBaseTexture9,CResource9
 {
 private:
 	CDevice9* mDevice;
+	int mReferenceCount;
 public:
 	CBaseTexture9();
 	~CBaseTexture9();
-
-	int mReferenceCount;
 
 public:
 	//IUnknown

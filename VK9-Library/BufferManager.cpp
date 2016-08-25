@@ -29,6 +29,7 @@ BufferManager::BufferManager()
 	mLastType(D3DPT_FORCE_DWORD), //used to help prevent repeating pipe creation.
 	mIsDirty(true),
 	mPipeline(VK_NULL_HANDLE),
+	mPipelineCache(VK_NULL_HANDLE),
 	mDescriptorSet(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
 	mDescriptorSetLayout(VK_NULL_HANDLE),
@@ -47,7 +48,9 @@ BufferManager::BufferManager()
 	mUniformStagingBuffer(VK_NULL_HANDLE),
 	mUniformStagingBufferMemory(VK_NULL_HANDLE),
 	mUniformBuffer(VK_NULL_HANDLE),
-	mUniformBufferMemory(VK_NULL_HANDLE)
+	mUniformBufferMemory(VK_NULL_HANDLE),
+
+	mResult(VK_SUCCESS)
 {
 	//Don't use. This is only here for containers.
 }
@@ -57,6 +60,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mLastType(D3DPT_FORCE_DWORD), //used to help prevent repeating pipe creation.
 	mIsDirty(true),
 	mPipeline(VK_NULL_HANDLE),
+	mPipelineCache(VK_NULL_HANDLE),
 	mDescriptorSet(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
 	mDescriptorSetLayout(VK_NULL_HANDLE),
@@ -613,7 +617,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)
 {
-	VkResult result = VK_SUCCESS;
+	VkResult result; // = VK_SUCCESS
 
 	VkBufferCreateInfo bufferInfo = {};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

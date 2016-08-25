@@ -24,7 +24,8 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CBaseTexture9::CBaseTexture9()
-	: mReferenceCount(0)
+	: mReferenceCount(0),
+	mDevice(nullptr)
 {
 
 }

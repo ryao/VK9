@@ -3016,7 +3016,7 @@ void CDevice9::StartScene()
 {
 	mIsSceneStarted = true;
 
-	VkResult result = VK_SUCCESS;
+	VkResult result; // = VK_SUCCESS
 
 	result = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
 	if (result != VK_SUCCESS)
@@ -3076,7 +3076,7 @@ void CDevice9::StopScene()
 {
 	mIsSceneStarted = false;
 
-	VkResult result = VK_SUCCESS;
+	VkResult result; // = VK_SUCCESS
 	VkPipelineStageFlags pipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
 	mSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
