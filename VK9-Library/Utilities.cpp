@@ -48,7 +48,7 @@ VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename)
 		size_t dataSize = ftell(fp);	
 		fseek(fp, 0L, SEEK_SET);
 		void* data = (uint32_t*)malloc(dataSize);
-		if (fread(data, dataSize, 1, fp))
+		if (data != nullptr && fread(data, dataSize, 1, fp))
 		{
 			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			moduleCreateInfo.pNext = NULL;

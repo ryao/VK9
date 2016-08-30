@@ -33,7 +33,7 @@ class BufferManager
 {
 public:
 	BufferManager();
-	BufferManager(CDevice9* device);
+	explicit BufferManager(CDevice9* device);
 	~BufferManager();
 
 	VkResult mResult;

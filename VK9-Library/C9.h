@@ -26,6 +26,8 @@ misrepresented as being the original software.
 #include <vulkan/vk_sdk_platform.h>
 #include <vector>
 #include <boost/program_options.hpp>
+//#include <boost/log/utility/setup/file.hpp>
+//#include <boost/log/sinks/sync_frontend.hpp>
 #include "CTypes.h"
 
 class C9 : public IDirect3D9
@@ -47,7 +49,7 @@ public:
 
 	boost::program_options::variables_map mOptions;
 	boost::program_options::options_description mOptionDescriptions;
-
+	//std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mSink;
 	int mReferenceCount;
 
 #ifdef _DEBUG

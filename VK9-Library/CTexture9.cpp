@@ -49,47 +49,36 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = nullptr;
+	imageCreateInfo.pNext = NULL;
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM; //mRealFormat;
+	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
 	imageCreateInfo.extent = { mWidth, mHeight, 1 };
+	//imageCreateInfo.extent = { mDevice->mSwapchainExtent.width, mDevice->mSwapchainExtent.height ,1}; //testing
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL; //VK_IMAGE_TILING_LINEAR;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; //VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 	imageCreateInfo.flags = 0;
-	//imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;  //VK_IMAGE_LAYOUT_PREINITIALIZED;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 
-	/*	
-	VkImageCreateInfo imageCreateInfo = {};
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = nullptr;
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = mDepthFormat;
-	imageCreateInfo.extent = { mPresentationParameters.BackBufferWidth,mPresentationParameters.BackBufferHeight, 1 };
-	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	imageCreateInfo.flags = 0;
-	*/
+	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	mMemoryAllocateInfo.pNext = NULL;
+	mMemoryAllocateInfo.allocationSize = 0;
+	mMemoryAllocateInfo.memoryTypeIndex = 0;
 
+	VkMemoryRequirements memoryRequirements = {};
+	
 	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << mResult;
 		return;
 	}
-
-	VkMemoryRequirements memoryRequirements = {};
+	
 	vkGetImageMemoryRequirements(mDevice->mDevice, mImage, &memoryRequirements);
 
-	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	mMemoryAllocateInfo.pNext = NULL;
 	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-	mMemoryAllocateInfo.memoryTypeIndex = 0;
 
 	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &mMemoryAllocateInfo.memoryTypeIndex))
 	{
