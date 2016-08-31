@@ -50,13 +50,24 @@ C9::C9()
 
 	if (mOptions.count("LogFile"))
 	{
-		boost::log::add_file_log(mOptions["LogFile"].as<std::string>());
+		boost::log::add_file_log(
+			boost::log::keywords::file_name = mOptions["LogFile"].as<std::string>(),
+			boost::log::keywords::format = "[%TimeStamp%]: %Message%",
+			boost::log::keywords::auto_flush = true
+		);
 	}
 	else
 	{
-		boost::log::add_file_log("VK9.log");
+		boost::log::add_file_log(
+			boost::log::keywords::file_name = "VK9.log",
+			boost::log::keywords::format = "[%TimeStamp%]: %Message%",
+			boost::log::keywords::auto_flush = true
+		);
 	}
 
+#ifndef _DEBUG
+	boost::log::core::get()->set_filter(boost::log::trivial::severity > boost::log::trivial::info);
+#endif
 
 	//Continue instance setup.
 	mResult = vkEnumerateInstanceLayerProperties(&mLayerPropertyCount, nullptr);
@@ -231,6 +242,7 @@ ULONG STDMETHODCALLTYPE C9::Release(void)
 	if (mReferenceCount <= 0)
 	{
 		delete this;
+		return 0;
 	}
 
 	return mReferenceCount;

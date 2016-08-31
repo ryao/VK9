@@ -88,7 +88,41 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
 	vkGetPhysicalDeviceFeatures(mPhysicalDevice, &mDeviceFeatures);
 	vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &mDeviceMemoryProperties);
+
+	BOOST_LOG_TRIVIAL(info) << "GPU name: " << mDeviceProperties.deviceName;
+
+	switch (mDeviceProperties.deviceType)
+	{
+	case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+		BOOST_LOG_TRIVIAL(info) << "GPU type: Integrated.";
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+		BOOST_LOG_TRIVIAL(info) << "GPU type: Discrete.";
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+		BOOST_LOG_TRIVIAL(info) << "GPU type: Virtual.";
+	break;
+	case VK_PHYSICAL_DEVICE_TYPE_CPU:
+		BOOST_LOG_TRIVIAL(info) << "GPU type: CPU.";
+		break;
+	default:
+		break;
+	}
+
+	BOOST_LOG_TRIVIAL(info) << "GPU driver version: " << mDeviceProperties.driverVersion;
+	BOOST_LOG_TRIVIAL(info) << "GPU API version: " << mDeviceProperties.apiVersion;
 	
+	for (size_t i = 0; i < mDeviceMemoryProperties.memoryHeapCount; i++)
+	{
+		if ((mDeviceMemoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) == VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+		{
+			BOOST_LOG_TRIVIAL(info) << "GPU local heap (" << i << ") size:" << mDeviceMemoryProperties.memoryHeaps[i].size;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "GPU heap (" << i << ") size:" << mDeviceMemoryProperties.memoryHeaps[i].size;
+		}	
+	}
 
 	//Fetch the queue properties.
 	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,NULL);
@@ -1536,6 +1570,7 @@ ULONG STDMETHODCALLTYPE CDevice9::Release(void)
 	if (mReferenceCount <= 0)
 	{
 		delete this;
+		return 0;
 	}
 
 	return mReferenceCount;

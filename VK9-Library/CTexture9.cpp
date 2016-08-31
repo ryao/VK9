@@ -52,8 +52,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	imageCreateInfo.pNext = NULL;
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { mWidth, mHeight, 1 };
-	//imageCreateInfo.extent = { mDevice->mSwapchainExtent.width, mDevice->mSwapchainExtent.height ,1}; //testing
+	//imageCreateInfo.extent = { mWidth, mHeight, 1 };
+	imageCreateInfo.extent = {1, 1 ,1}; //testing
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -210,6 +210,7 @@ ULONG STDMETHODCALLTYPE CTexture9::Release(void)
 	if (mReferenceCount <= 0)
 	{
 		delete this;
+		return 0;
 	}
 
 	return mReferenceCount;

@@ -79,6 +79,7 @@ ULONG STDMETHODCALLTYPE CVertexShader9::Release(void)
 	if (mReferenceCount <= 0)
 	{
 		delete this;
+		return 0;
 	}
 
 	return mReferenceCount;
