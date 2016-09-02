@@ -33,7 +33,7 @@ CSurface9::CSurface9(CDevice9* Device,UINT Width, UINT Height, D3DFORMAT Format,
 	mDiscard(Discard),
 	mLockable(0),
 	mSharedHandle(pSharedHandle),
-	mReferenceCount(0),
+	mReferenceCount(1),
 	mResult(VK_SUCCESS)
 {
 	//TODO: Implement.
@@ -49,7 +49,7 @@ CSurface9::CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format
 	mDiscard(0),
 	mLockable(Lockable),
 	mSharedHandle(pSharedHandle),
-	mReferenceCount(0)
+	mReferenceCount(1)
 {
 	//TODO: Implement.
 }
@@ -64,7 +64,7 @@ CSurface9::CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format
 	mDiscard(0),
 	mLockable(0),
 	mSharedHandle(pSharedHandle),
-	mReferenceCount(0)
+	mReferenceCount(1)
 {
 	//TODO: Implement.
 }

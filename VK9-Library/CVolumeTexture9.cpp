@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
-	: mReferenceCount(0),
+	: mReferenceCount(1),
 	mDevice(device),
 	mWidth(Width),
 	mHeight(Height),

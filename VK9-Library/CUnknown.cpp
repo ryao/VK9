@@ -23,7 +23,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CUnknown::CUnknown(void)
-	: mReferenceCount(0)
+	: mReferenceCount(1)
 {
 
 }

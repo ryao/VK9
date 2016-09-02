@@ -24,7 +24,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CResource9::CResource9()
-	: mReferenceCount(0)
+	: mReferenceCount(1)
 {
 
 }

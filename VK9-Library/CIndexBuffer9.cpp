@@ -24,7 +24,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle)
-	: mReferenceCount(0),
+	: mReferenceCount(1),
 	mDevice(device),
 	mLength(Length),
 	mUsage(Usage),

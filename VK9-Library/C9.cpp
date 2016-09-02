@@ -31,7 +31,7 @@ misrepresented as being the original software.
 C9::C9()
 	: mGpuCount(0), 
 	mPhysicalDevices(nullptr),
-	mReferenceCount(0),
+	mReferenceCount(1),
 	mInstance(VK_NULL_HANDLE),
 	mLayerProperties(nullptr),
 	mLayerPropertyCount(0),

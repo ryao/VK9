@@ -39,7 +39,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mFocusWindow(hFocusWindow),
 	mBehaviorFlags(BehaviorFlags),
 	mQueueCount(0),
-	mReferenceCount(0),
+	mReferenceCount(1),
 	mDisplays(nullptr),
 	mDisplayCount(0),
 	mGraphicsQueueIndex(UINT32_MAX),
@@ -75,6 +75,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mBufferManager(nullptr)
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Started.";
+
+	mInstance->AddRef();
 
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
@@ -1387,6 +1389,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 CDevice9::~CDevice9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
+
+	mInstance->Release();
 
 	delete mBufferManager;
 

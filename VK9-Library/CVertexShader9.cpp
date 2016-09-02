@@ -24,7 +24,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
-	: mReferenceCount(0),
+	: mReferenceCount(1),
 	mDevice(device),
 	mFunction((DWORD*)pFunction),
 	mResult(VK_SUCCESS)
