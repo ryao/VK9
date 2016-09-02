@@ -45,6 +45,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 	mData(nullptr)
 {
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9"; //TODO: Remove after testing.
+
 	mRealFormat = ConvertFormat(mFormat);
 
 	VkImageCreateInfo imageCreateInfo = {};
@@ -150,6 +152,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 CTexture9::~CTexture9()
 {
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9"; //TODO: Remove after testing.
+
 	if (mImageView!=VK_NULL_HANDLE)
 	{
 		vkDestroyImageView(mDevice->mDevice, mImageView, NULL);

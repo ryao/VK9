@@ -74,6 +74,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mIsSceneStarted(false),
 	mBufferManager(nullptr)
 {
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Started.";
+
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
 	if (mInstance->mGpuCount == 0)
@@ -1378,6 +1380,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mCommandBufferBeginInfo.pInheritanceInfo = &mCommandBufferInheritanceInfo;
 
 	mBufferManager = new BufferManager(this);
+
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
 } 
 
 CDevice9::~CDevice9()

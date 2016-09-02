@@ -40,6 +40,7 @@ C9::C9()
 	mOptionDescriptions("Allowed options"),
 	mMonitors(4)
 {
+	BOOST_LOG_TRIVIAL(info) << "C9::C9 Started.";
 	//Setup configuration & logging.
 
 	mOptionDescriptions.add_options()
@@ -188,6 +189,8 @@ C9::C9()
 
 	//WINAPI to get monitor info
 	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)&mMonitors);
+
+	BOOST_LOG_TRIVIAL(info) << "C9::C9 Finished.";
 }
 
 C9::~C9()
