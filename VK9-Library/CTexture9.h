@@ -21,6 +21,7 @@ misrepresented as being the original software.
 #ifndef CTEXTURE9_H
 #define CTEXTURE9_H
 
+#include <vector>
 #include "d3d9.h" // Base class: IDirect3DTexture9
 #include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
@@ -46,15 +47,7 @@ public:
 	int mReferenceCount;
 	VkResult mResult;
 
-	VkFormat mRealFormat;
-	VkSampler mSampler;
-	VkImage mImage;
-	VkImageLayout mImageLayout;
-	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
-	VkDeviceMemory mDeviceMemory;
-	VkImageView mImageView;
-
-	void* mData;
+	std::vector<CSurface9*> mSurfaces;
 
 public:
 	//IUnknown

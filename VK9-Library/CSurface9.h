@@ -47,6 +47,16 @@ public:
 
 	int mReferenceCount;
 	VkResult mResult;
+
+	VkFormat mRealFormat;
+	void* mData;
+
+	VkSampler mSampler;
+	VkImage mImage;
+	VkImageLayout mImageLayout;
+	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
+	VkDeviceMemory mDeviceMemory;
+	VkImageView mImageView;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

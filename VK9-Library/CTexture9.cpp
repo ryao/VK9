@@ -34,142 +34,25 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS),
-
-	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM),
-	mSampler(VK_NULL_HANDLE),
-	mImage(VK_NULL_HANDLE),
-	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
-	mDeviceMemory(VK_NULL_HANDLE),
-	mImageView(VK_NULL_HANDLE),
-
-	mData(nullptr)
+	mResult(VK_SUCCESS)
 {
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9"; //TODO: Remove after testing.
-
-	mRealFormat = ConvertFormat(mFormat);
-
-	VkImageCreateInfo imageCreateInfo = {};
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = NULL;
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	//imageCreateInfo.extent = { mWidth, mHeight, 1 };
-	imageCreateInfo.extent = {1, 1 ,1}; //testing
-	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-	imageCreateInfo.flags = 0;
-	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-
-	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	mMemoryAllocateInfo.pNext = NULL;
-	mMemoryAllocateInfo.allocationSize = 0;
-	mMemoryAllocateInfo.memoryTypeIndex = 0;
-
-	VkMemoryRequirements memoryRequirements = {};
-	
-	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
-	if (mResult != VK_SUCCESS)
+	if (mLevels>0)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << mResult;
-		return;
+		mSurfaces.reserve(mLevels);
+		//TODO: populate mipmaps in range.
 	}
-	
-	vkGetImageMemoryRequirements(mDevice->mDevice, mImage, &memoryRequirements);
-
-	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &mMemoryAllocateInfo.memoryTypeIndex))
+	else //zero means make'em all.
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 Could not find memory type from properties.";
-		return;
-	}
-
-	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL,&mDeviceMemory);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkAllocateMemory failed with return code of " << mResult;
-		return;
-	}
-
-	mResult = vkBindImageMemory(mDevice->mDevice, mImage, mDeviceMemory, 0);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
-		return;
-	}
-
-	VkSamplerCreateInfo samplerCreateInfo = {};
-	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerCreateInfo.pNext = NULL;
-	samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-	samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
-	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerCreateInfo.mipLodBias = 0.0f;
-	samplerCreateInfo.anisotropyEnable = VK_FALSE;
-	samplerCreateInfo.maxAnisotropy = 1;
-	samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
-	samplerCreateInfo.minLod = 0.0f;
-	samplerCreateInfo.maxLod = 0.0f;
-	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
-
-	VkImageViewCreateInfo imageViewCreateInfo = {};
-	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-	imageViewCreateInfo.pNext = NULL;
-	imageViewCreateInfo.image = VK_NULL_HANDLE;
-	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewCreateInfo.format = mRealFormat;
-	imageViewCreateInfo.components =
-	{
-		VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
-		VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
-	};
-	imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	imageViewCreateInfo.flags = 0;
-
-	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL,&mSampler);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateSampler failed with return code of " << mResult;
-		return;
-	}
-
-	imageViewCreateInfo.image = mImage;
-	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL,&mImageView);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << mResult;
-		return;
+		//TOOD: calculate and create mipmaps all the way to 1x1.
 	}
 }
 
 CTexture9::~CTexture9()
 {
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9"; //TODO: Remove after testing.
-
-	if (mImageView!=VK_NULL_HANDLE)
+	for (size_t i = 0; i < mSurfaces.size(); i++)
 	{
-		vkDestroyImageView(mDevice->mDevice, mImageView, NULL);
+		delete mSurfaces[i];
 	}
-	if (mImage != VK_NULL_HANDLE)
-	{
-		vkDestroyImage(mDevice->mDevice, mImage, NULL);
-	}
-	if (mDeviceMemory != VK_NULL_HANDLE)
-	{
-		vkFreeMemory(mDevice->mDevice, mDeviceMemory, NULL);
-	}
-	if (mSampler != VK_NULL_HANDLE)
-	{
-		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
-	}	
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)
@@ -359,40 +242,17 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* p
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetSurfaceLevel is not implemented!";
+	(*ppSurfaceLevel) = ((IDirect3DSurface9*)this->mSurfaces[Level]);
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	/*
-	I will need to revisit this later because I'm not using the level and other parameters.
-	*/
-	VkResult result = VK_SUCCESS;
-
-	result = vkMapMemory(mDevice->mDevice, mDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::LockRect vkMapMemory failed with return code of " << result;
-		pLockedRect->pBits = nullptr;
-		return D3DERR_INVALIDCALL;
-	}
-
-	pLockedRect->pBits = mData;
-
-	return S_OK;	
+	return mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
-	/*
-	I will need to revisit this later because I'm not using the level.
-	*/
-	vkUnmapMemory(mDevice->mDevice, mDeviceMemory); //No return value so I can't verify success.
-	mData = nullptr;
-
-	return S_OK;	
+	return mSurfaces[Level]->UnlockRect();
 }
