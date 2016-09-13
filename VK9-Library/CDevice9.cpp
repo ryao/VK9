@@ -1390,8 +1390,6 @@ CDevice9::~CDevice9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
 
-	mInstance->Release();
-
 	delete mBufferManager;
 
 	if (mFramebuffers!= nullptr)
@@ -1488,6 +1486,7 @@ CDevice9::~CDevice9()
 
 	delete[] mDisplays;
 
+	mInstance->Release();
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
@@ -1636,7 +1635,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateDepthStencilSurface(UINT Width,UINT He
 {
 	HRESULT result = S_OK;
 
-	CSurface9* obj = new CSurface9(this,Width,Height,Format,MultiSample,MultisampleQuality,Discard,pSharedHandle);
+	CSurface9* obj = new CSurface9(this,nullptr,Width,Height,Format,MultiSample,MultisampleQuality,Discard,pSharedHandle);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -1672,7 +1671,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width,UINT 
 {
 	HRESULT result = S_OK;
 
-	CSurface9* obj = new CSurface9(this, Width, Height, Format, pSharedHandle);
+	CSurface9* obj = new CSurface9(this, nullptr, Width, Height, Format, pSharedHandle);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -1727,7 +1726,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width,UINT Height,D3
 	HRESULT result = S_OK;
 
 	//I added an extra int at the end so the signature would be different for this version. Locakable/Discard are both BOOL.
-	CSurface9* obj = new CSurface9(this, Width, Height, Format, MultiSample, MultisampleQuality, Lockable, pSharedHandle,0);
+	CSurface9* obj = new CSurface9(this, nullptr, Width, Height, Format, MultiSample, MultisampleQuality, Lockable, pSharedHandle,0);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -2317,11 +2316,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTargetData(IDirect3DSurface9 *pRend
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD *pValue)
 {
-	//TODO: Implement.
+	(*pValue) = mSamplerStates[Sampler][Type];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetSamplerState is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetScissorRect(RECT *pRect)
@@ -2662,9 +2659,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDir
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetSamplerState is not implemented!";
+	mSamplerStates[Sampler][Type] = Value;
 
 	return S_OK;
 }

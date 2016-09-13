@@ -30,12 +30,13 @@ class CSurface9 : public IDirect3DSurface9,CResource9
 private:
 	
 public:
-	CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
-	CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
-	CSurface9(CDevice9* Device, UINT Width, UINT Height, D3DFORMAT Format, HANDLE *pSharedHandle);
+	CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
+	CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
+	CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, HANDLE *pSharedHandle);
 	~CSurface9();
 
 	CDevice9* mDevice;
+	IDirect3DTexture9* mTexture;
 	UINT mWidth;
 	UINT mHeight;
 	D3DFORMAT mFormat;
@@ -57,6 +58,8 @@ public:
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
 	VkDeviceMemory mDeviceMemory;
 	VkImageView mImageView;
+
+	void Init();
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

@@ -249,6 +249,9 @@ public:
 	BufferManager* mBufferManager;
 	std::unordered_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+
+	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
+
 	DWORD mFVF;
 	BOOL mIsDirty;
 	BOOL mIsSceneStarted; 

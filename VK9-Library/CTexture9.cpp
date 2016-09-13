@@ -36,14 +36,34 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mSharedHandle(pSharedHandle),
 	mResult(VK_SUCCESS)
 {
-	if (mLevels>0)
+	mDevice->AddRef();
+
+	if (mLevels>0) //one or more means make that many.
 	{
 		mSurfaces.reserve(mLevels);
-		//TODO: populate mipmaps in range.
+		UINT width=mWidth, height=mHeight;
+		for (size_t i = mLevels; i > 0; i--)
+		{
+			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, width, height, mFormat, mSharedHandle);
+
+			mSurfaces.push_back(ptr);
+
+			width /= 2;
+			height /= 2;
+		}
 	}
 	else //zero means make'em all.
 	{
-		//TOOD: calculate and create mipmaps all the way to 1x1.
+		UINT width = mWidth, height = mHeight;
+		while (width>2 && height > 2)
+		{
+			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, width, height, mFormat, mSharedHandle);
+
+			mSurfaces.push_back(ptr);
+
+			width /= 2;
+			height /= 2;
+		}
 	}
 }
 
@@ -53,6 +73,8 @@ CTexture9::~CTexture9()
 	{
 		delete mSurfaces[i];
 	}
+
+	mDevice->Release();
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)
