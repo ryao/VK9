@@ -1671,16 +1671,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width,UINT 
 {
 	HRESULT result = S_OK;
 
-	CSurface9* obj = new CSurface9(this, nullptr, Width, Height, Format, pSharedHandle);
+	CSurface9* ptr = new CSurface9(this, nullptr, Width, Height, 1, 0, Format, Pool, pSharedHandle);
 
-	if (obj->mResult != VK_SUCCESS)
+	if (ptr->mResult != VK_SUCCESS)
 	{
-		delete obj;
-		obj = nullptr;
+		delete ptr;
+		ptr = nullptr;
 		result = D3DERR_INVALIDCALL;
 	}
 
-	(*ppSurface) = (IDirect3DSurface9*)obj;
+	(*ppSurface) = (IDirect3DSurface9*)ptr;
 
 	return result;
 }

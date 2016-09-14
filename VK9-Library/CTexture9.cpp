@@ -44,7 +44,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		UINT width=mWidth, height=mHeight;
 		for (size_t i = mLevels; i > 0; i--)
 		{
-			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, width, height, mFormat, mSharedHandle);
+			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
 			mSurfaces.push_back(ptr);
 
@@ -57,7 +57,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		UINT width = mWidth, height = mHeight;
 		while (width>2 && height > 2)
 		{
-			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, width, height, mFormat, mSharedHandle);
+			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
 			mSurfaces.push_back(ptr);
 

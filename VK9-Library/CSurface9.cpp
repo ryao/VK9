@@ -28,11 +28,13 @@ CSurface9::CSurface9(CDevice9* Device, IDirect3DTexture9* Texture,UINT Width, UI
 	mTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
+	mUsage(0),
 	mFormat(Format),
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
 	mDiscard(Discard),
 	mLockable(0),
+	mPool(D3DPOOL_DEFAULT),
 	mSharedHandle(pSharedHandle),
 	mReferenceCount(1),
 	mResult(VK_SUCCESS),
@@ -55,11 +57,13 @@ CSurface9::CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, U
 	mTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
+	mUsage(0),
 	mFormat(Format),
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
 	mDiscard(0),
 	mLockable(Lockable),
+	mPool(D3DPOOL_DEFAULT),
 	mSharedHandle(pSharedHandle),
 	mReferenceCount(1),
 	mResult(VK_SUCCESS),
@@ -77,16 +81,18 @@ CSurface9::CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, U
 	Init();
 }
 
-CSurface9::CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, HANDLE *pSharedHandle)
+CSurface9::CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
 	: mDevice(Device),
 	mTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
+	mUsage(Usage),
 	mFormat(Format),
 	mMultiSample(D3DMULTISAMPLE_NONE),
 	mMultisampleQuality(0),
 	mDiscard(0),
 	mLockable(0),
+	mPool(Pool),
 	mSharedHandle(pSharedHandle),
 	mReferenceCount(1),
 	mResult(VK_SUCCESS),
@@ -363,9 +369,15 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDC(HDC* phdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 {
-	//TODO: Implement.
+	pDesc->Format = this->mFormat;
+	pDesc->Type = D3DRTYPE_SURFACE;
+	pDesc->Usage = this->mUsage;
+	pDesc->Pool = this->mPool;
 
-	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetDesc is not implemented!";
+	pDesc->MultiSampleType = this->mMultiSample;
+	pDesc->MultiSampleQuality = this->mMultisampleQuality;
+	pDesc->Width = this->mWidth;
+	pDesc->Height = this->mHeight;
 
 	return S_OK;	
 }
