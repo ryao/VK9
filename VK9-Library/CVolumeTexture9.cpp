@@ -210,11 +210,13 @@ DWORD STDMETHODCALLTYPE CVolumeTexture9::SetLOD(DWORD LODNew)
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CVolumeTexture9::GetType()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::GetType is not implemented!";
-
-	return D3DRTYPE_SURFACE;
+	//return D3DRTYPE_SURFACE;
+	//return D3DRTYPE_VOLUME;
+	//return D3DRTYPE_TEXTURE;
+	return D3DRTYPE_VOLUMETEXTURE;
+	//return D3DRTYPE_CUBETEXTURE;
+	//return D3DRTYPE_VERTEXBUFFER;
+	//return D3DRTYPE_INDEXBUFFER;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::AddDirtyBox(const D3DBOX* pDirtyBox)

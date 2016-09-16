@@ -176,11 +176,13 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::GetPrivateData(REFGUID refguid, void* 
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CVertexBuffer9::GetType()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CVertexBuffer9::GetType is not implemented!";
-
-	return D3DRTYPE_SURFACE;
+	//return D3DRTYPE_SURFACE;
+	//return D3DRTYPE_VOLUME;
+	//return D3DRTYPE_TEXTURE;
+	//return D3DRTYPE_VOLUMETEXTURE;
+	//return D3DRTYPE_CUBETEXTURE;
+	return D3DRTYPE_VERTEXBUFFER;
+	//return D3DRTYPE_INDEXBUFFER;
 }
 
 void STDMETHODCALLTYPE CVertexBuffer9::PreLoad()

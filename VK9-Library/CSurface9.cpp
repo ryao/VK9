@@ -314,11 +314,13 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetPrivateData(REFGUID refguid, void* pData
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CSurface9::GetType()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetType is not implemented!";
-
 	return D3DRTYPE_SURFACE;
+	//return D3DRTYPE_VOLUME;
+	//return D3DRTYPE_TEXTURE;
+	//return D3DRTYPE_VOLUMETEXTURE;
+	//return D3DRTYPE_CUBETEXTURE;
+	//return D3DRTYPE_VERTEXBUFFER;
+	//return D3DRTYPE_INDEXBUFFER;
 }
 
 void STDMETHODCALLTYPE CSurface9::PreLoad()
@@ -386,15 +388,20 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 {
 	VkResult result = VK_SUCCESS;
 
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect start";
+
 	result = vkMapMemory(mDevice->mDevice, mDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::LockRect vkMapMemory failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkMapMemory failed with return code of " << result;
 		pLockedRect->pBits = nullptr;
 		return D3DERR_INVALIDCALL;
 	}
 
 	pLockedRect->pBits = mData;
+	pLockedRect->Pitch = mWidth * 4; //revisit
+
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect end";
 
 	return S_OK;
 }
@@ -412,8 +419,12 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect start";
+
 	vkUnmapMemory(mDevice->mDevice, mDeviceMemory); //No return value so I can't verify success.
 	mData = nullptr;
+
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect end";
 
 	return S_OK;
 }

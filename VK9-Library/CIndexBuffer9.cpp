@@ -118,11 +118,13 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::GetPrivateData(REFGUID refguid, void* p
 
 D3DRESOURCETYPE STDMETHODCALLTYPE CIndexBuffer9::GetType()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::GetType is not implemented!";
-
-	return D3DRTYPE_SURFACE;
+	//return D3DRTYPE_SURFACE;
+	//return D3DRTYPE_VOLUME;
+	//return D3DRTYPE_TEXTURE;
+	//return D3DRTYPE_VOLUMETEXTURE;
+	//return D3DRTYPE_CUBETEXTURE;
+	//return D3DRTYPE_VERTEXBUFFER;
+	return D3DRTYPE_INDEXBUFFER;
 }
 
 void STDMETHODCALLTYPE CIndexBuffer9::PreLoad()
