@@ -388,7 +388,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 {
 	VkResult result = VK_SUCCESS;
 
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect start";
+	//BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect start";
 
 	result = vkMapMemory(mDevice->mDevice, mDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
 	if (result != VK_SUCCESS)
@@ -401,7 +401,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	pLockedRect->pBits = mData;
 	pLockedRect->Pitch = mWidth * 4; //revisit
 
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect end";
+	//BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect end";
 
 	return S_OK;
 }
@@ -419,12 +419,12 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect start";
+	//BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect start";
 
 	vkUnmapMemory(mDevice->mDevice, mDeviceMemory); //No return value so I can't verify success.
 	mData = nullptr;
 
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect end";
+	//BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect end";
 
 	return S_OK;
 }

@@ -64,6 +64,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 			width /= 2;
 			height /= 2;
 		}
+		mLevels = mSurfaces.size();
 	}
 }
 
@@ -209,11 +210,7 @@ DWORD STDMETHODCALLTYPE CTexture9::GetLOD()
 
 DWORD STDMETHODCALLTYPE CTexture9::GetLevelCount()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetLevelCount is not implemented!";
-
-	return 0;
+	return mLevels;
 }
 
 
@@ -257,11 +254,7 @@ HRESULT STDMETHODCALLTYPE CTexture9::AddDirtyRect(const RECT* pDirtyRect)
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetLevelDesc is not implemented!";
-
-	return S_OK;	
+	return mSurfaces[Level]->GetDesc(pDesc);
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel)
