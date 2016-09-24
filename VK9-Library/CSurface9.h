@@ -25,18 +25,20 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
 
+class CTexture9;
+
 class CSurface9 : public IDirect3DSurface9,CResource9
 {
 private:
 	
 public:
-	CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
-	CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
-	CSurface9(CDevice9* Device, IDirect3DTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
+	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
+	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
+	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CSurface9();
 
 	CDevice9* mDevice;
-	IDirect3DTexture9* mTexture;
+	CTexture9* mTexture;
 	UINT mWidth;
 	UINT mHeight;
 	DWORD mUsage;
@@ -54,12 +56,7 @@ public:
 	VkFormat mRealFormat;
 	void* mData;
 
-	VkSampler mSampler;
-	VkImage mImage;
 	VkImageLayout mImageLayout;
-	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
-	VkDeviceMemory mDeviceMemory;
-	VkImageView mImageView;
 
 	void Init();
 public:

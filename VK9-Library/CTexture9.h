@@ -47,6 +47,14 @@ public:
 	int mReferenceCount;
 	VkResult mResult;
 
+	VkFormat mRealFormat;
+
+	VkImage mImage;
+	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
+	VkDeviceMemory mDeviceMemory;
+	VkSampler mSampler;
+	VkImageView mImageView;
+
 	std::vector<CSurface9*> mSurfaces;
 
 public:

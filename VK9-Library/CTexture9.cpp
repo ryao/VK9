@@ -34,9 +34,16 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS)
+	mResult(VK_SUCCESS),
+
+	mImage(VK_NULL_HANDLE),
+	mDeviceMemory(VK_NULL_HANDLE),
+	mSampler(VK_NULL_HANDLE),
+	mImageView(VK_NULL_HANDLE)
 {
 	mDevice->AddRef();
+
+	mRealFormat = ConvertFormat(mFormat);
 
 	if (mLevels>0) //one or more means make that many.
 	{
@@ -44,7 +51,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		UINT width=mWidth, height=mHeight;
 		for (size_t i = mLevels; i > 0; i--)
 		{
-			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
 			mSurfaces.push_back(ptr);
 
@@ -57,7 +64,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		UINT width = mWidth, height = mHeight;
 		while (width>2 && height > 2)
 		{
-			CSurface9* ptr = new CSurface9(mDevice, (IDirect3DTexture9*)this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
 			mSurfaces.push_back(ptr);
 
@@ -66,10 +73,130 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		}
 		mLevels = mSurfaces.size();
 	}
+
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
+	imageCreateInfo.extent = { mWidth, mHeight, 1 };
+	imageCreateInfo.mipLevels = mLevels;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageCreateInfo.flags = 0;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+
+	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << mResult;
+		return;
+	}
+
+	VkMemoryRequirements memoryRequirements = {};
+	vkGetImageMemoryRequirements(mDevice->mDevice, mImage, &memoryRequirements);
+
+	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	mMemoryAllocateInfo.pNext = NULL;
+	mMemoryAllocateInfo.allocationSize = 0;
+	mMemoryAllocateInfo.memoryTypeIndex = 0;
+	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 Could not find memory type from properties.";
+		return;
+	}
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mDeviceMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkBindImageMemory(mDevice->mDevice, mImage, mDeviceMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
+		return;
+	}
+
+	VkSamplerCreateInfo samplerCreateInfo = {};
+	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerCreateInfo.pNext = NULL;
+	samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerCreateInfo.mipLodBias = 0.0f;
+	samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	samplerCreateInfo.maxAnisotropy = 1;
+	samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
+	samplerCreateInfo.minLod = 0.0f;
+	samplerCreateInfo.maxLod = (float)mLevels;
+	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+
+	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateSampler failed with return code of " << mResult;
+		return;
+	}
+
+	VkImageViewCreateInfo imageViewCreateInfo = {};
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+	imageViewCreateInfo.pNext = NULL;
+	imageViewCreateInfo.image = VK_NULL_HANDLE;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = mRealFormat;
+	imageViewCreateInfo.components =
+	{
+		VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+		VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
+	};
+	imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	imageViewCreateInfo.subresourceRange.levelCount = mLevels;
+	imageViewCreateInfo.flags = 0;
+
+	imageViewCreateInfo.image = mImage;
+
+	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL, &mImageView);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << mResult;
+		return;
+	}
+
 }
 
 CTexture9::~CTexture9()
 {
+	if (mImageView != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(mDevice->mDevice, mImageView, NULL);
+	}
+
+	if (mSampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+	}
+
+	if (mImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage(mDevice->mDevice, mImage, NULL);
+	}
+
+	if (mDeviceMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mDeviceMemory, NULL);
+	}
+
 	for (size_t i = 0; i < mSurfaces.size(); i++)
 	{
 		delete mSurfaces[i];
@@ -259,6 +386,9 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* p
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel)
 {
+	//BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetSurfaceLevel Level: " << Level;
+	//BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetSurfaceLevel Size: " << this->mSurfaces.size();
+
 	(*ppSurfaceLevel) = ((IDirect3DSurface9*)this->mSurfaces[Level]);
 
 	return S_OK;	
