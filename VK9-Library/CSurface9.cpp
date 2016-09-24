@@ -258,7 +258,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 {
 	VkResult result = VK_SUCCESS;
 
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Not implemented";
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Not implemented!";
 
 	result = vkMapMemory(mDevice->mDevice, mTexture->mDeviceMemory, 0, mTexture->mMemoryAllocateInfo.allocationSize, 0, &mData);
 	if (result != VK_SUCCESS)
