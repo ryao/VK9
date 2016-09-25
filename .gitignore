@@ -8,3 +8,4 @@ Release
 /SchaeferGL.VC.db
 *.db
 *.opendb
+/.vs
