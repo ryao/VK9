@@ -1383,6 +1383,10 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mBufferManager = new BufferManager(this);
 
+	mSamplerStates[0][D3DSAMP_MINFILTER] = D3DTEXF_NONE;
+	mSamplerStates[0][D3DSAMP_MAGFILTER] = D3DTEXF_NONE;
+	mSamplerStates[0][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
 } 
 
@@ -3014,7 +3018,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		result = vkEndCommandBuffer(mCommandBuffer);
 		if (result != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << result;
 			return;
 		}
 
@@ -3034,14 +3038,14 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		result = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
 		if (result != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << result;
 			return;
 		}
 
 		result = vkQueueWaitIdle(mQueue);
 		if (result != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << result;
 			return;
 		}
 

@@ -318,11 +318,151 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 {
-	//TODO: Implement.
+	VkResult result = VK_SUCCESS;
+	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkCommandBuffer commandBuffer;
+	D3DTEXTUREFILTERTYPE filter = D3DTEXF_LINEAR;
+	VkFilter realFilter = VK_FILTER_LINEAR;
 
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetAutoGenFilterType is not implemented!";
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
+	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
+	filter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
 
-	return D3DTEXF_NONE;
+	realFilter = ConvertFilter(filter);
+
+	VkCommandBufferAllocateInfo commandBufferInfo = {};
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferInfo.pNext = nullptr;
+	commandBufferInfo.commandPool = mDevice->mCommandPool;
+	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferInfo.commandBufferCount = 1;
+
+	result = vkAllocateCommandBuffers(mDevice->mDevice, &commandBufferInfo, &commandBuffer);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkAllocateCommandBuffers failed with return code of " << mResult;
+		return filter;
+	}
+
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	commandBufferInheritanceInfo.pNext = nullptr;
+	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	commandBufferInheritanceInfo.queryFlags = 0;
+	commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo;
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.pNext = nullptr;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkBeginCommandBuffer failed with return code of " << mResult;
+		return filter;
+	}
+
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.pNext = nullptr;
+	imageMemoryBarrier.srcAccessMask = 0;
+	imageMemoryBarrier.dstAccessMask = 0;
+
+	VkImageSubresourceRange mipSubRange = {};
+	mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	mipSubRange.levelCount = 1;
+	mipSubRange.layerCount = 1;
+
+	/*	
+	I'm debating whether or not to have the population of the image here. If I don't I'll end up creating another command for that. On the other hand this method should purely populate the other levels as per the spec.
+	*/
+
+	// Transiton zero mip level to transfer source
+	//mipSubRange.baseMipLevel = 0;
+
+	//imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	//imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	//imageMemoryBarrier.image = mImage;
+	//imageMemoryBarrier.subresourceRange = mipSubRange;
+	//vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+	for (int32_t i = 1; i < mLevels; i++)
+	{
+		VkImageBlit imageBlit{};
+
+		// Source
+		imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		imageBlit.srcSubresource.layerCount = 1;
+		imageBlit.srcSubresource.mipLevel = 0;
+		imageBlit.srcOffsets[1].x = int32_t(mWidth);
+		imageBlit.srcOffsets[1].y = int32_t(mHeight);
+		imageBlit.srcOffsets[1].z = 1;
+
+		// Destination
+		imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		imageBlit.dstSubresource.layerCount = 1;
+		imageBlit.dstSubresource.mipLevel = i;
+		imageBlit.dstOffsets[1].x = int32_t(mWidth >> i);
+		imageBlit.dstOffsets[1].y = int32_t(mHeight >> i);
+		imageBlit.dstOffsets[1].z = 1;
+
+		mipSubRange.baseMipLevel = i;
+
+		// Transiton current mip level to transfer dest
+		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		imageMemoryBarrier.image = mImage;
+		imageMemoryBarrier.subresourceRange = mipSubRange;
+		vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+		// Blit from zero level
+		vkCmdBlitImage(commandBuffer,mImage,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,mImage,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,&imageBlit,VK_FILTER_LINEAR);
+	}
+
+	result = vkEndCommandBuffer(commandBuffer);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkEndCommandBuffer failed with return code of " << result;
+		return filter;
+	}
+
+	VkCommandBuffer commandBuffers[] = { commandBuffer };
+	VkFence nullFence = VK_NULL_HANDLE;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = NULL;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = NULL;
+	submitInfo.pWaitDstStageMask = NULL;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = NULL;
+
+	result = vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, nullFence);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkQueueSubmit failed with return code of " << result;
+		return filter;
+	}
+
+	result = vkQueueWaitIdle(mDevice->mQueue);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkQueueWaitIdle failed with return code of " << result;
+		return filter;
+	}
+
+	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, commandBuffers);
+	commandBuffer = VK_NULL_HANDLE;
+
+	return filter;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::GetLOD()
