@@ -54,7 +54,6 @@ public:
 	VkResult mResult;
 
 	VkFormat mRealFormat;
-	void* mData;
 
 	VkImageLayout mImageLayout;
 

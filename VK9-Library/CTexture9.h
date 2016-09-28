@@ -46,12 +46,15 @@ public:
 
 	int mReferenceCount;
 	VkResult mResult;
+	D3DTEXTUREFILTERTYPE mFilter;
 
 	VkFormat mRealFormat;
 
-	VkImage mImage;
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
 	VkDeviceMemory mDeviceMemory;
+	void* mData;
+
+	VkImage mImage;
 	VkSampler mSampler;
 	VkImageView mImageView;
 

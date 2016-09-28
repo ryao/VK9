@@ -41,8 +41,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture,UINT Width, UINT Heigh
 
 	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
 
-	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM),
-	mData(nullptr)
+	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
 {
 	Init();
 }
@@ -65,8 +64,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 
 	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
 
-	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM),
-	mData(nullptr)
+	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
 {
 	Init();
 }
@@ -89,8 +87,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 
 	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
 
-	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM),
-	mData(nullptr)
+	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
 {	
 	Init();
 }
@@ -256,21 +253,11 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	VkResult result = VK_SUCCESS;
-
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Not implemented!";
-
-	result = vkMapMemory(mDevice->mDevice, mTexture->mDeviceMemory, 0, mTexture->mMemoryAllocateInfo.allocationSize, 0, &mData);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkMapMemory failed with return code of " << result;
-		pLockedRect->pBits = nullptr;
-		return D3DERR_INVALIDCALL;
-	}
-
-	pLockedRect->pBits = mData;
+	/*
+	I'll need to Make sure direct access to image memory is allowed and that it can remain mapped.
+	*/
+	pLockedRect->pBits = mTexture->mData;
 	pLockedRect->Pitch = mWidth * 4; //revisit
-
 
 	return S_OK;
 }
@@ -288,11 +275,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect Not implemented";
-
-	vkUnmapMemory(mDevice->mDevice, mTexture->mDeviceMemory); //No return value so I can't verify success.
-	mData = nullptr;
-
-
+	/*
+	I'll need to Make sure direct access to image memory is allowed and that it can remain mapped.
+	*/
 	return S_OK;
 }

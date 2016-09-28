@@ -36,8 +36,11 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mSharedHandle(pSharedHandle),
 	mResult(VK_SUCCESS),
 
-	mImage(VK_NULL_HANDLE),
+	mFilter(D3DTEXF_NONE),
 	mDeviceMemory(VK_NULL_HANDLE),
+	mData(nullptr),
+
+	mImage(VK_NULL_HANDLE),
 	mSampler(VK_NULL_HANDLE),
 	mImageView(VK_NULL_HANDLE)
 {
@@ -84,7 +87,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 	imageCreateInfo.flags = 0;
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 
@@ -121,6 +124,13 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkMapMemory(mDevice->mDevice, mDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkMapMemory failed with return code of " << mResult;
 		return;
 	}
 
@@ -172,7 +182,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << mResult;
 		return;
 	}
-
 }
 
 CTexture9::~CTexture9()
@@ -185,6 +194,12 @@ CTexture9::~CTexture9()
 	if (mSampler != VK_NULL_HANDLE)
 	{
 		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+	}
+
+	if (mData != nullptr)
+	{
+		vkUnmapMemory(mDevice->mDevice, mDeviceMemory);
+		mData = nullptr;
 	}
 
 	if (mImage != VK_NULL_HANDLE)
@@ -309,27 +324,16 @@ HRESULT STDMETHODCALLTYPE CTexture9::SetPrivateData(REFGUID refguid, const void*
 
 VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::GenerateMipSubLevels is not implemented!";
-
-	return;
-}
-
-D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
-{
 	VkResult result = VK_SUCCESS;
 	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkCommandBuffer commandBuffer;
-	D3DTEXTUREFILTERTYPE filter = D3DTEXF_LINEAR;
 	VkFilter realFilter = VK_FILTER_LINEAR;
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
 	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
-	filter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
-
-	realFilter = ConvertFilter(filter);
+	mFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
+	realFilter = ConvertFilter(mFilter);
 
 	VkCommandBufferAllocateInfo commandBufferInfo = {};
 	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -341,8 +345,8 @@ D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 	result = vkAllocateCommandBuffers(mDevice->mDevice, &commandBufferInfo, &commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkAllocateCommandBuffers failed with return code of " << mResult;
-		return filter;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkAllocateCommandBuffers failed with return code of " << mResult;
+		return;
 	}
 
 	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
@@ -364,8 +368,8 @@ D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkBeginCommandBuffer failed with return code of " << mResult;
-		return filter;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkBeginCommandBuffer failed with return code of " << mResult;
+		return;
 	}
 
 	VkImageMemoryBarrier imageMemoryBarrier = {};
@@ -379,7 +383,7 @@ D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 	mipSubRange.levelCount = 1;
 	mipSubRange.layerCount = 1;
 
-	/*	
+	/*
 	I'm debating whether or not to have the population of the image here. If I don't I'll end up creating another command for that. On the other hand this method should purely populate the other levels as per the spec.
 	*/
 
@@ -422,14 +426,14 @@ D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 		vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
 		// Blit from zero level
-		vkCmdBlitImage(commandBuffer,mImage,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,mImage,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,&imageBlit,VK_FILTER_LINEAR);
+		vkCmdBlitImage(commandBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
 	}
 
 	result = vkEndCommandBuffer(commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkEndCommandBuffer failed with return code of " << result;
-		return filter;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkEndCommandBuffer failed with return code of " << result;
+		return;
 	}
 
 	VkCommandBuffer commandBuffers[] = { commandBuffer };
@@ -448,21 +452,26 @@ D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 	result = vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, nullFence);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkQueueSubmit failed with return code of " << result;
-		return filter;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueSubmit failed with return code of " << result;
+		return;
 	}
 
 	result = vkQueueWaitIdle(mDevice->mQueue);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GetAutoGenFilterType vkQueueWaitIdle failed with return code of " << result;
-		return filter;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueWaitIdle failed with return code of " << result;
+		return;
 	}
 
 	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, commandBuffers);
 	commandBuffer = VK_NULL_HANDLE;
 
-	return filter;
+	return;
+}
+
+D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
+{
+	return mFilter;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::GetLOD()
@@ -483,11 +492,9 @@ DWORD STDMETHODCALLTYPE CTexture9::GetLevelCount()
 
 HRESULT STDMETHODCALLTYPE CTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
-	//TODO: Implement.
+	mFilter = FilterType; //revisit
 
-	BOOST_LOG_TRIVIAL(warning) << "CTexture9::SetAutoGenFilterType is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::SetLOD(DWORD LODNew)
