@@ -48,6 +48,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 	mRealFormat = ConvertFormat(mFormat);
 
+	if(!mLevels) mLevels = 1; //For testing.
+
 	if (mLevels>0) //one or more means make that many.
 	{
 		mSurfaces.reserve(mLevels);
