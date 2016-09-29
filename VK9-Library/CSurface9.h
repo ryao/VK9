@@ -56,6 +56,8 @@ public:
 	VkFormat mRealFormat;
 
 	VkImageLayout mImageLayout;
+	VkSubresourceLayout mLayout = {};
+	VkImageSubresource mSubresource = {};
 
 	void Init();
 public:

@@ -257,7 +257,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	I'll need to Make sure direct access to image memory is allowed and that it can remain mapped.
 	*/
 	pLockedRect->pBits = mTexture->mData;
-	pLockedRect->Pitch = mWidth * 4; //revisit
+	pLockedRect->Pitch = mLayout.rowPitch;
 
 	return S_OK;
 }

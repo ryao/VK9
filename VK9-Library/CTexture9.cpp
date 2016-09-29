@@ -48,37 +48,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 	mRealFormat = ConvertFormat(mFormat);
 
-	if(!mLevels) mLevels = 1; //For testing.
-
-	if (mLevels>0) //one or more means make that many.
-	{
-		mSurfaces.reserve(mLevels);
-		UINT width=mWidth, height=mHeight;
-		for (size_t i = mLevels; i > 0; i--)
-		{
-			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
-
-			mSurfaces.push_back(ptr);
-
-			width /= 2;
-			height /= 2;
-		}
-	}
-	else //zero means make'em all.
-	{
-		UINT width = mWidth, height = mHeight;
-		while (width>2 && height > 2)
-		{
-			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
-
-			mSurfaces.push_back(ptr);
-
-			width /= 2;
-			height /= 2;
-		}
-		mLevels = mSurfaces.size();
-	}
-
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageCreateInfo.pNext = NULL;
@@ -163,7 +132,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-	imageViewCreateInfo.pNext = NULL;
+		imageViewCreateInfo.pNext = NULL;
 	imageViewCreateInfo.image = VK_NULL_HANDLE;
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	imageViewCreateInfo.format = mRealFormat;
@@ -183,6 +152,51 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << mResult;
 		return;
+	}
+
+	if(!mLevels) mLevels = 1; //For testing.
+
+	if (mLevels>0) //one or more means make that many.
+	{
+		mSurfaces.reserve(mLevels);
+		UINT width=mWidth, height=mHeight;
+		for (size_t i = 0; i < mLevels; i++)
+		{
+			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+
+			ptr->mSubresource.mipLevel = i;
+			ptr->mSubresource.arrayLayer = 1;
+			ptr->mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+			vkGetImageSubresourceLayout(mDevice->mDevice, mImage, &ptr->mSubresource, &ptr->mLayout);
+
+			mSurfaces.push_back(ptr);
+
+			width /= 2;
+			height /= 2;
+		}
+	}
+	else //zero means make'em all.
+	{
+		UINT width = mWidth, height = mHeight;
+		size_t i = 0;
+		while (width>2 && height > 2)
+		{
+			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+
+			ptr->mSubresource.mipLevel = i;
+			ptr->mSubresource.arrayLayer = 1;
+			ptr->mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+			vkGetImageSubresourceLayout(mDevice->mDevice, mImage, &ptr->mSubresource, &ptr->mLayout);
+
+			mSurfaces.push_back(ptr);
+
+			width /= 2;
+			height /= 2;
+			i++;
+		}
+		mLevels = mSurfaces.size();
 	}
 }
 
