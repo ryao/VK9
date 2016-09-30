@@ -17,11 +17,14 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
- 
+
 #include "CTexture9.h"
 #include "CDevice9.h"
 
 #include "Utilities.h"
+
+#include <math.h>
+#include <algorithm>
 
 CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
 	: mReferenceCount(1),
@@ -47,6 +50,18 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mDevice->AddRef();
 
 	mRealFormat = ConvertFormat(mFormat);
+
+	if (!mLevels)
+	{
+		if (mUsage & D3DUSAGE_AUTOGENMIPMAP)
+		{
+			mLevels = 1;
+		}
+		else
+		{
+			mLevels = log2(std::max(mWidth, mHeight)) + 1;
+		}
+	}
 
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -131,8 +146,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	}
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
-	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-		imageViewCreateInfo.pNext = NULL;
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.pNext = NULL;
 	imageViewCreateInfo.image = VK_NULL_HANDLE;
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	imageViewCreateInfo.format = mRealFormat;
@@ -154,54 +169,33 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		return;
 	}
 
-	if(!mLevels) mLevels = 1; //For testing.
-
-	if (mLevels>0) //one or more means make that many.
+	mSurfaces.reserve(mLevels);
+	UINT width = mWidth, height = mHeight;
+	for (size_t i = 0; i < mLevels; i++)
 	{
-		mSurfaces.reserve(mLevels);
-		UINT width=mWidth, height=mHeight;
-		for (size_t i = 0; i < mLevels; i++)
-		{
-			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+		CSurface9* ptr = new CSurface9(mDevice, this, width, height, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
-			ptr->mSubresource.mipLevel = i;
-			ptr->mSubresource.arrayLayer = 1;
-			ptr->mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		ptr->mSubresource.mipLevel = i;
+		ptr->mSubresource.arrayLayer = 1;
+		ptr->mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-			vkGetImageSubresourceLayout(mDevice->mDevice, mImage, &ptr->mSubresource, &ptr->mLayout);
+		vkGetImageSubresourceLayout(mDevice->mDevice, mImage, &ptr->mSubresource, &ptr->mLayout);
 
-			mSurfaces.push_back(ptr);
+		mSurfaces.push_back(ptr);
 
-			width /= 2;
-			height /= 2;
-		}
+		width /= 2;
+		height /= 2;
 	}
-	else //zero means make'em all.
-	{
-		UINT width = mWidth, height = mHeight;
-		size_t i = 0;
-		while (width>2 && height > 2)
-		{
-			CSurface9* ptr = new CSurface9(mDevice, this, mWidth, mHeight, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
-			ptr->mSubresource.mipLevel = i;
-			ptr->mSubresource.arrayLayer = 1;
-			ptr->mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-			vkGetImageSubresourceLayout(mDevice->mDevice, mImage, &ptr->mSubresource, &ptr->mLayout);
-
-			mSurfaces.push_back(ptr);
-
-			width /= 2;
-			height /= 2;
-			i++;
-		}
-		mLevels = mSurfaces.size();
-	}
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
+	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
+	mFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
 }
 
 CTexture9::~CTexture9()
 {
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::~CTexture9";
+
 	if (mImageView != VK_NULL_HANDLE)
 	{
 		vkDestroyImageView(mDevice->mDevice, mImageView, NULL);
@@ -230,7 +224,7 @@ CTexture9::~CTexture9()
 
 	for (size_t i = 0; i < mSurfaces.size(); i++)
 	{
-		delete mSurfaces[i];
+		mSurfaces[i]->Release();
 	}
 
 	mDevice->Release();
@@ -243,7 +237,7 @@ ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)
 	return mReferenceCount;
 }
 
-HRESULT STDMETHODCALLTYPE CTexture9::QueryInterface(REFIID riid,void  **ppv)
+HRESULT STDMETHODCALLTYPE CTexture9::QueryInterface(REFIID riid, void  **ppv)
 {
 	if (ppv == nullptr)
 	{
@@ -317,7 +311,7 @@ void STDMETHODCALLTYPE CTexture9::PreLoad()
 
 	BOOST_LOG_TRIVIAL(warning) << "CTexture9::PreLoad is not implemented!";
 
-	return; 
+	return;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::SetPriority(DWORD PriorityNew)
@@ -346,9 +340,6 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	VkCommandBuffer commandBuffer;
 	VkFilter realFilter = VK_FILTER_LINEAR;
 
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
-	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
-	mFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
 	realFilter = ConvertFilter(mFilter);
 
 	VkCommandBufferAllocateInfo commandBufferInfo = {};
@@ -549,12 +540,17 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* p
 
 HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurface9** ppSurfaceLevel)
 {
-	//BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetSurfaceLevel Level: " << Level;
-	//BOOST_LOG_TRIVIAL(warning) << "CTexture9::GetSurfaceLevel Size: " << this->mSurfaces.size();
+	IDirect3DSurface9* surface = (IDirect3DSurface9*)this->mSurfaces[Level];
 
-	(*ppSurfaceLevel) = ((IDirect3DSurface9*)this->mSurfaces[Level]);
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205912(v=vs.85).aspx
+	"Calling this method will increase the internal reference count on the IDirect3DSurface9 interface."
+	*/
+	surface->AddRef();
 
-	return S_OK;	
+	(*ppSurfaceLevel) = surface;
+
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)

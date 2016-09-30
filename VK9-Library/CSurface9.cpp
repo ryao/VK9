@@ -28,7 +28,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture,UINT Width, UINT Heigh
 	mTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
-	mUsage(0),
+	mUsage(D3DUSAGE_RENDERTARGET),
 	mFormat(Format),
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
@@ -51,7 +51,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
-	mUsage(0),
+	mUsage(D3DUSAGE_RENDERTARGET),
 	mFormat(Format),
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
@@ -95,12 +95,29 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 void CSurface9::Init()
 {
 	mDevice->AddRef();
+	
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172611(v=vs.85).aspx
+	Only these two are valid usage values for surface per the documentation.
+	*/
+	switch (mUsage)
+	{
+	case D3DUSAGE_DEPTHSTENCIL:
+		break;
+	case D3DUSAGE_RENDERTARGET:
+		break;
+	default:
+		mUsage = D3DUSAGE_DEPTHSTENCIL;
+		break;
+	}
 
 	mRealFormat = ConvertFormat(mFormat);
 }
 
 CSurface9::~CSurface9()
 {
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
+
 	mDevice->Release();
 }
 
@@ -258,6 +275,10 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	*/
 	pLockedRect->pBits = mTexture->mData;
 	pLockedRect->Pitch = mLayout.rowPitch;
+
+	//BOOST_LOG_TRIVIAL(warning) << "CSurface9::LockRect Data: " << mTexture->mData;
+	//BOOST_LOG_TRIVIAL(warning) << "CSurface9::LockRect RowPitch: " << mLayout.rowPitch;
+	//BOOST_LOG_TRIVIAL(warning) << "CSurface9::LockRect Size: " << mLayout.size;
 
 	return S_OK;
 }
