@@ -1542,6 +1542,30 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	}
 	this->StopScene();
 
+	VkResult result; // = VK_SUCCESS
+
+	mPresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	mPresentInfo.pNext = nullptr;
+	mPresentInfo.swapchainCount = 1;
+	mPresentInfo.pSwapchains = &mSwapchain;
+	mPresentInfo.pImageIndices = &mCurrentBuffer;
+
+	result = vkQueuePresentKHR(mQueue, &mPresentInfo);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueuePresentKHR failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
+	result = vkQueueWaitIdle(mQueue);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
+	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
+
 	return D3D_OK;
 }
 
@@ -1901,15 +1925,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 	*/
 	mBufferManager->UpdatePipeline(PrimitiveType);
 
-	vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
-	vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS,mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0,nullptr);
-	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mViewport);
-	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mScissor);
+	if (mBufferManager->mIsDirty)
+	{
+		vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
+		vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0, nullptr);
 
-	/*
-	The buffer manager isn't doing much on this call but it may do more later.
-	*/
-	mBufferManager->BindVertexBuffers(PrimitiveType);
+		/*
+		The buffer manager isn't doing much on this call but it may do more later.
+		*/
+		mBufferManager->BindVertexBuffers(PrimitiveType);
+	}
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], mBufferManager->mVertexCount, 1, StartVertex, 0); //TODO: implement PrimitiveCount
 
@@ -3112,6 +3137,11 @@ void CDevice9::StartScene()
 	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
+
+	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mViewport);
+	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mScissor);
+
+	this->mBufferManager->mLastType = D3DPT_FORCE_DWORD;
 }
 
 void CDevice9::StopScene()
@@ -3161,25 +3191,10 @@ void CDevice9::StopScene()
 		return;
 	}
 
-	mPresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	mPresentInfo.pNext = nullptr;
-	mPresentInfo.swapchainCount = 1;
-	mPresentInfo.pSwapchains = &mSwapchain;
-	mPresentInfo.pImageIndices = &mCurrentBuffer;
-
-	result = vkQueuePresentKHR(mQueue, &mPresentInfo);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueuePresentKHR failed with return code of " << mResult;
-		return;
-	}
-
-	result = vkQueueWaitIdle(mQueue);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
-		return;
-	}
-
-	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
+	//result = vkQueueWaitIdle(mQueue);
+	//if (result != VK_SUCCESS)
+	//{
+	//	BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
+	//	return;
+	//}
 }

@@ -371,6 +371,12 @@ BufferManager::~BufferManager()
 		mUniformStagingBufferMemory = VK_NULL_HANDLE;
 	}
 
+	if (mUniformBufferMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mUniformBufferMemory, NULL);
+		mUniformBufferMemory = VK_NULL_HANDLE;
+	}
+
 	if (mImageView != VK_NULL_HANDLE)
 	{
 		vkDestroyImageView(mDevice->mDevice, mImageView, nullptr);
@@ -456,6 +462,11 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	if (mLastType != type)
 	{
 		mIsDirty = true;
+		mLastType = type;
+	}
+	else
+	{
+		mIsDirty = false;
 	}
 
 	if (mPipeline != VK_NULL_HANDLE)
@@ -606,11 +617,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 	vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, NULL);
 	mPipelineCache = VK_NULL_HANDLE;
-
-	if (result == VK_SUCCESS)
-	{
-		mIsDirty = false;
-	}
 
 	return;
 }
