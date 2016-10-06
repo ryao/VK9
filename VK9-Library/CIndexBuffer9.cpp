@@ -58,18 +58,21 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::QueryInterface(REFIID riid,void  **ppv)
 	if (IsEqualGUID(riid, IID_IDirect3DIndexBuffer9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IDirect3DResource9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IUnknown))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 

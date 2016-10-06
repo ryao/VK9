@@ -63,24 +63,28 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::QueryInterface(REFIID riid,void  **pp
 	if (IsEqualGUID(riid, IID_IDirect3DVolumeTexture9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IDirect3DTexture9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IDirect3DResource9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IUnknown))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 

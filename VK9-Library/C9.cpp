@@ -232,8 +232,11 @@ HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
 	if (IsEqualGUID(riid, IID_IUnknown))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
+
+	(*ppv) = nullptr;
 
 	return E_NOINTERFACE;
 }

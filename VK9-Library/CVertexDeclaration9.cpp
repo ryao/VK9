@@ -53,18 +53,21 @@ HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  
 	if (IsEqualGUID(riid, IID_IDirect3DVertexDeclaration9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IDirect3DResource9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IUnknown))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 

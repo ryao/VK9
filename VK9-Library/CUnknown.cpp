@@ -50,6 +50,7 @@ HRESULT STDMETHODCALLTYPE CUnknown::QueryInterface(REFIID riid,void  **ppv)
 	if (IsEqualGUID(riid, IID_IUnknown))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 

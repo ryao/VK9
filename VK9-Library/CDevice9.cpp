@@ -1490,7 +1490,7 @@ CDevice9::~CDevice9()
 
 	delete[] mDisplays;
 
-	mInstance->Release();
+	//mInstance->Release(); //This should be a leak but d3dx messes with the reference count.
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
@@ -1586,12 +1586,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::QueryInterface(REFIID riid,void  **ppv)
 	if (IsEqualGUID(riid, IID_IDirect3DDevice9))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 
 	if (IsEqualGUID(riid, IID_IUnknown))
 	{
 		(*ppv) = this;
+		this->AddRef();
 		return S_OK;
 	}
 

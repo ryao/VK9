@@ -32,6 +32,8 @@ misrepresented as being the original software.
 
 class C9 : public IDirect3D9
 {
+private:
+	int mReferenceCount;
 public:
 	C9();
 	~C9();
@@ -49,8 +51,7 @@ public:
 
 	boost::program_options::variables_map mOptions;
 	boost::program_options::options_description mOptionDescriptions;
-	//std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mSink;
-	int mReferenceCount;
+	//std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mSink;	
 
 #ifdef _DEBUG
 	/* Load VK_EXT_debug_report entry points in debug builds */

@@ -467,6 +467,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	else
 	{
 		mIsDirty = false;
+		return;
 	}
 
 	if (mPipeline != VK_NULL_HANDLE)
