@@ -46,7 +46,9 @@ public:
 
 	int mReferenceCount;
 	VkResult mResult;
-	D3DTEXTUREFILTERTYPE mFilter;
+	D3DTEXTUREFILTERTYPE mMipFilter;
+	D3DTEXTUREFILTERTYPE mMinFilter;
+	D3DTEXTUREFILTERTYPE mMagFilter;
 
 	VkFormat mRealFormat;
 

@@ -39,7 +39,9 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mSharedHandle(pSharedHandle),
 	mResult(VK_SUCCESS),
 
-	mFilter(D3DTEXF_NONE),
+	mMipFilter(D3DTEXF_NONE),
+	mMinFilter(D3DTEXF_NONE),
+	mMagFilter(D3DTEXF_NONE),
 	mDeviceMemory(VK_NULL_HANDLE),
 	mData(nullptr),
 
@@ -48,6 +50,12 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mImageView(VK_NULL_HANDLE)
 {
 	mDevice->AddRef();
+
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
+	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
+	mMipFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
+	mMinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MINFILTER];
+	mMagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MAGFILTER];
 
 	mRealFormat = ConvertFormat(mFormat);
 
@@ -123,9 +131,9 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	VkSamplerCreateInfo samplerCreateInfo = {};
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerCreateInfo.pNext = NULL;
-	samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-	samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
-	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.magFilter = ConvertFilter(mMagFilter);
+	samplerCreateInfo.minFilter = ConvertFilter(mMinFilter);
+	samplerCreateInfo.mipmapMode = ConvertMipmapMode(mMipFilter); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -186,10 +194,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		width /= 2;
 		height /= 2;
 	}
-
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
-	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
-	mFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
 }
 
 CTexture9::~CTexture9()
@@ -343,7 +347,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	VkCommandBuffer commandBuffer;
 	VkFilter realFilter = VK_FILTER_LINEAR;
 
-	realFilter = ConvertFilter(mFilter);
+	realFilter = ConvertFilter(mMipFilter);
 
 	VkCommandBufferAllocateInfo commandBufferInfo = {};
 	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -481,7 +485,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
 {
-	return mFilter;
+	return mMipFilter;
 }
 
 DWORD STDMETHODCALLTYPE CTexture9::GetLOD()
@@ -502,7 +506,7 @@ DWORD STDMETHODCALLTYPE CTexture9::GetLevelCount()
 
 HRESULT STDMETHODCALLTYPE CTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
-	mFilter = FilterType; //revisit
+	mMipFilter = FilterType; //revisit
 
 	return S_OK;
 }

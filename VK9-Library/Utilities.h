@@ -104,6 +104,35 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 	}
 }
 
+inline VkSamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input)
+{
+	VkSamplerMipmapMode output;
+
+	switch (input)
+	{
+	case D3DTEXF_NONE:	// filtering disabled (valid for mip filter only)
+		output = VK_SAMPLER_MIPMAP_MODE_NEAREST; //revisit
+		break;
+	case D3DTEXF_POINT:	// nearest
+		output = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		break;
+	case D3DTEXF_LINEAR:	// linear interpolation
+		output = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		break;
+	case D3DTEXF_ANISOTROPIC:	// anisotropic
+		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		break;
+	case D3DTEXF_PYRAMIDALQUAD:	// 4-sample tent
+		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		break;
+	case D3DTEXF_GAUSSIANQUAD:	// 4-sample gaussian
+		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		break;
+	}
+
+	return output;
+}
+
 inline VkFilter ConvertFilter(D3DTEXTUREFILTERTYPE input)
 {
 	VkFilter output;
