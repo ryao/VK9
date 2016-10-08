@@ -28,6 +28,8 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 projection;
 } ubo;
 
+layout(binding = 1) uniform sampler2D textures[16];
+
 layout (location = 0) in vec4 position;
 layout (location = 1) in uvec4 attr;
 layout (location = 0) out vec4 color;

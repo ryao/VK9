@@ -323,9 +323,69 @@ BufferManager::BufferManager(CDevice9* device)
 		return;
 	}
 
-	mDescriptorImageInfo.sampler = mSampler;
-	mDescriptorImageInfo.imageView = mImageView;
-	mDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[0].sampler = mSampler;
+	mDescriptorImageInfo[0].imageView = mImageView;
+	mDescriptorImageInfo[0].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[1].sampler = mSampler;
+	mDescriptorImageInfo[1].imageView = mImageView;
+	mDescriptorImageInfo[1].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[2].sampler = mSampler;
+	mDescriptorImageInfo[2].imageView = mImageView;
+	mDescriptorImageInfo[2].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[3].sampler = mSampler;
+	mDescriptorImageInfo[3].imageView = mImageView;
+	mDescriptorImageInfo[3].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[4].sampler = mSampler;
+	mDescriptorImageInfo[4].imageView = mImageView;
+	mDescriptorImageInfo[4].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[5].sampler = mSampler;
+	mDescriptorImageInfo[5].imageView = mImageView;
+	mDescriptorImageInfo[5].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[6].sampler = mSampler;
+	mDescriptorImageInfo[6].imageView = mImageView;
+	mDescriptorImageInfo[6].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[7].sampler = mSampler;
+	mDescriptorImageInfo[7].imageView = mImageView;
+	mDescriptorImageInfo[7].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[8].sampler = mSampler;
+	mDescriptorImageInfo[8].imageView = mImageView;
+	mDescriptorImageInfo[8].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[9].sampler = mSampler;
+	mDescriptorImageInfo[9].imageView = mImageView;
+	mDescriptorImageInfo[9].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[10].sampler = mSampler;
+	mDescriptorImageInfo[10].imageView = mImageView;
+	mDescriptorImageInfo[10].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[11].sampler = mSampler;
+	mDescriptorImageInfo[11].imageView = mImageView;
+	mDescriptorImageInfo[11].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[12].sampler = mSampler;
+	mDescriptorImageInfo[12].imageView = mImageView;
+	mDescriptorImageInfo[12].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[13].sampler = mSampler;
+	mDescriptorImageInfo[13].imageView = mImageView;
+	mDescriptorImageInfo[13].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[14].sampler = mSampler;
+	mDescriptorImageInfo[14].imageView = mImageView;
+	mDescriptorImageInfo[14].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	mDescriptorImageInfo[15].sampler = mSampler;
+	mDescriptorImageInfo[15].imageView = mImageView;
+	mDescriptorImageInfo[15].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -342,13 +402,21 @@ BufferManager::BufferManager(CDevice9* device)
 	mDescriptorBufferInfo.offset = 0;
 	mDescriptorBufferInfo.range = sizeof(UniformBufferObject);
 
-	mWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	mWriteDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet.dstSet = descriptorSet;
-	mWriteDescriptorSet.dstBinding = 0;
-	mWriteDescriptorSet.dstArrayElement = 0;
-	mWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	mWriteDescriptorSet.descriptorCount = 1;
-	mWriteDescriptorSet.pBufferInfo = &mDescriptorBufferInfo;
+	mWriteDescriptorSet[0].dstBinding = 0;
+	mWriteDescriptorSet[0].dstArrayElement = 0;
+	mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mWriteDescriptorSet[0].descriptorCount = 1;
+	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
+
+	mWriteDescriptorSet[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	//mWriteDescriptorSet[1].dstSet = descriptorSet;
+	mWriteDescriptorSet[1].dstBinding = 1;
+	mWriteDescriptorSet[1].dstArrayElement = 0;
+	mWriteDescriptorSet[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	mWriteDescriptorSet[1].descriptorCount = 1;
+	mWriteDescriptorSet[1].pImageInfo = mDescriptorImageInfo;
 } 
 
 BufferManager::~BufferManager()
@@ -542,7 +610,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
 		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-		//TODO: if the FVF is something other than D3DFVF_XYZ | D3DFVF_DIFFUSE than update the input structures.
 		if (mDevice->mFVF & D3DFVF_XYZ)
 		{
 			mVertexInputAttributeDescription[ai1].binding = source.first;
@@ -563,6 +630,9 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			location += 1;
 		}
 
+		/*
+		Curiously examples use 0 for TEX1 so I'm not sure if this is valid even though it's defined.
+		*/
 		if (mDevice->mFVF & D3DFVF_TEX0)
 		{
 			mVertexInputAttributeDescription[ai2].binding = source.first;
@@ -689,11 +759,15 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		return;
 	}
 
-	mWriteDescriptorSet.dstSet = mDescriptorSet;
-	mWriteDescriptorSet.descriptorCount = 1;
-	mWriteDescriptorSet.pBufferInfo = &mDescriptorBufferInfo;
+	mWriteDescriptorSet[0].dstSet = mDescriptorSet;
+	mWriteDescriptorSet[0].descriptorCount = 1;
+	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
 
-	vkUpdateDescriptorSets(mDevice->mDevice, 1, &mWriteDescriptorSet, 0, NULL);
+	mWriteDescriptorSet[1].dstSet = mDescriptorSet;
+	mWriteDescriptorSet[1].descriptorCount = 1;
+	mWriteDescriptorSet[1].pImageInfo = mDescriptorImageInfo;
+
+	vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, NULL);
 
 	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, NULL, &mPipelineLayout);
 	if (result != VK_SUCCESS)

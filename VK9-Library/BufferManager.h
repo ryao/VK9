@@ -63,7 +63,7 @@ public:
 	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
 	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
-	VkWriteDescriptorSet mWriteDescriptorSet = {};
+	VkWriteDescriptorSet mWriteDescriptorSet[2] = {};
 
 	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
 	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
@@ -85,7 +85,7 @@ public:
 	VkImageView mImageView;
 	int32_t mTextureWidth;
 	int32_t mTextureHeight;
-	VkDescriptorImageInfo mDescriptorImageInfo = {};
+	VkDescriptorImageInfo mDescriptorImageInfo[16] = {};
 	VkDescriptorBufferInfo mDescriptorBufferInfo = {};
 	uint32_t mVertexCount;
 
