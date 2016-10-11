@@ -169,13 +169,19 @@
     <None Include="shader1.bin">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Shaders\VertexBuffer.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\VertexBuffer.vert">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="VK9.conf" />
+    <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ_TEX1.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ_TEX1.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">

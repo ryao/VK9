@@ -28,10 +28,12 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 proj;
 } ubo;
 
-layout (location = 0) in vec4 color;
+layout(binding = 1) uniform sampler2D textures[16];
+
+layout (location = 0) in vec4 texcoord;
 layout (location = 0) out vec4 uFragColor;
 
 void main() 
 {
-   uFragColor = color;
+   uFragColor = texture(textures[1], texcoord.xy);
 }

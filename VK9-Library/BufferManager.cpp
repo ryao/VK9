@@ -33,8 +33,12 @@ BufferManager::BufferManager()
 	mDescriptorSet(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
 	mDescriptorSetLayout(VK_NULL_HANDLE),
-	mVertShaderModule(VK_NULL_HANDLE),
-	mFragShaderModule(VK_NULL_HANDLE),
+
+	mVertShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
+	mFragShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
+
+	mVertShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
+	mFragShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
 
 	mSampler(VK_NULL_HANDLE),
 	mImage(VK_NULL_HANDLE),
@@ -64,8 +68,12 @@ BufferManager::BufferManager(CDevice9* device)
 	mDescriptorSet(VK_NULL_HANDLE),
 	mPipelineLayout(VK_NULL_HANDLE),
 	mDescriptorSetLayout(VK_NULL_HANDLE),
-	mVertShaderModule(VK_NULL_HANDLE),
-	mFragShaderModule(VK_NULL_HANDLE),
+
+	mVertShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
+	mFragShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
+
+	mVertShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
+	mFragShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
 
 	mSampler(VK_NULL_HANDLE),
 	mImage(VK_NULL_HANDLE),
@@ -81,12 +89,14 @@ BufferManager::BufferManager(CDevice9* device)
 	mUniformBuffer(VK_NULL_HANDLE),
 	mUniformBufferMemory(VK_NULL_HANDLE)
 {
-
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
 	//mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);
 
-	mVertShaderModule = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer.vert.spv");
-	mFragShaderModule = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer.frag.spv");
+	mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
+	mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
+
+	mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
+	mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
@@ -159,12 +169,12 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mPipelineShaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	mPipelineShaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule;
+	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[0].pName = "main";
 
 	mPipelineShaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	mPipelineShaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule;
+	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[1].pName = "main";
 
 	mGraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -469,18 +479,30 @@ BufferManager::~BufferManager()
 		mSampler = VK_NULL_HANDLE;
 	}
 
-	if (mVertShaderModule != VK_NULL_HANDLE)
+	if (mVertShaderModule_XYZ_DIFFUSE != VK_NULL_HANDLE)
 	{
-		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule, NULL);
-		mVertShaderModule = VK_NULL_HANDLE;
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_DIFFUSE, NULL);
+		mVertShaderModule_XYZ_DIFFUSE = VK_NULL_HANDLE;
 	}
 
-	if (mFragShaderModule != VK_NULL_HANDLE)
+	if (mFragShaderModule_XYZ_DIFFUSE != VK_NULL_HANDLE)
 	{
-		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule, NULL);
-		mFragShaderModule = VK_NULL_HANDLE;
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_DIFFUSE, NULL);
+		mFragShaderModule_XYZ_DIFFUSE = VK_NULL_HANDLE;
 	}
 	
+	if (mVertShaderModule_XYZ_TEX1 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_TEX1, NULL);
+		mVertShaderModule_XYZ_TEX1 = VK_NULL_HANDLE;
+	}
+
+	if (mFragShaderModule_XYZ_TEX1 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_TEX1, NULL);
+		mFragShaderModule_XYZ_TEX1 = VK_NULL_HANDLE;
+	}
+
 	if (mPipeline != VK_NULL_HANDLE)
 	{
 		vkDestroyPipeline(mDevice->mDevice, mPipeline, NULL);
@@ -591,6 +613,12 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	*/
 
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
+
+	if (mDevice->mFVF == D3DFVF_XYZ | D3DFVF_TEX1)
+	{
+		mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+		mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+	}
 
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mStreamSources)

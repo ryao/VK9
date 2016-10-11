@@ -75,8 +75,11 @@ public:
 	VkDescriptorSet mDescriptorSet;
 	VkPipeline mPipeline;
 	
-	VkShaderModule mVertShaderModule;
-	VkShaderModule mFragShaderModule;
+	VkShaderModule mVertShaderModule_XYZ_DIFFUSE;
+	VkShaderModule mFragShaderModule_XYZ_DIFFUSE;
+
+	VkShaderModule mVertShaderModule_XYZ_TEX1;
+	VkShaderModule mFragShaderModule_XYZ_TEX1;
 
 	VkSampler mSampler;
 	VkImage mImage;

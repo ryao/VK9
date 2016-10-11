@@ -93,8 +93,10 @@
       </Version>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,8 +136,10 @@
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer.frag"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -201,6 +205,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def" />
+    <None Include="Shaders\VertexBuffer_XYZ_TEX1.frag" />
+    <None Include="Shaders\VertexBuffer_XYZ_TEX1.vert" />
     <None Include="VK9.conf">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
@@ -208,8 +214,14 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
     </None>
     <None Include="shader1.bin" />
-    <None Include="Shaders\VertexBuffer.frag" />
-    <None Include="Shaders\VertexBuffer.vert" />
+    <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE.frag">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE.vert">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc" />
