@@ -149,7 +149,7 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mDescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	mDescriptorSetLayoutCreateInfo.pNext = NULL;
-	mDescriptorSetLayoutCreateInfo.bindingCount = 1;
+	mDescriptorSetLayoutCreateInfo.bindingCount = 2;
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 
 	mDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -614,11 +614,23 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
 
-	if (mDevice->mFVF == D3DFVF_XYZ | D3DFVF_TEX1)
+	if (mDevice->mFVF == (D3DFVF_XYZ | D3DFVF_TEX1))
 	{
 		mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
 		mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
 	}
+	 
+	mDescriptorSetLayoutBinding[0].binding = 0;
+	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // VK_SHADER_STAGE_ALL_GRAPHICS
+	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
+
+	mDescriptorSetLayoutBinding[1].binding = 1;
+	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	mDescriptorSetLayoutBinding[1].descriptorCount = 16; //Update to use mapped texture.
+	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
@@ -627,12 +639,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		int ai2 = ai1 + 1; //attribute index 1
 		uint32_t offset = 0;
 		uint32_t location = 0;
-
-		mDescriptorSetLayoutBinding[i].binding = source.first;
-		mDescriptorSetLayoutBinding[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-		mDescriptorSetLayoutBinding[i].descriptorCount = 1;
-		mDescriptorSetLayoutBinding[i].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS; //VK_SHADER_STAGE_FRAGMENT_BIT
-		mDescriptorSetLayoutBinding[i].pImmutableSamplers = NULL;	
 
 		mVertexInputBindingDescription[i].binding = source.first;
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
@@ -758,7 +764,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
 	mPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
 
-	mDescriptorSetLayoutCreateInfo.bindingCount = mStreamSources.size();
+	mDescriptorSetLayoutCreateInfo.bindingCount = 2; //mStreamSources.size()
 	mDescriptorSetAllocateInfo.descriptorSetCount = mStreamSources.size();
 	mPipelineLayoutCreateInfo.setLayoutCount = mStreamSources.size();
 
@@ -792,7 +798,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
 
 	mWriteDescriptorSet[1].dstSet = mDescriptorSet;
-	mWriteDescriptorSet[1].descriptorCount = 1;
+	mWriteDescriptorSet[1].descriptorCount = 16;
 	mWriteDescriptorSet[1].pImageInfo = mDescriptorImageInfo;
 
 	vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, NULL);

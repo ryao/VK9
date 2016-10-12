@@ -22,12 +22,6 @@ misrepresented as being the original software.
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
 
-layout(binding = 0) uniform UniformBufferObject {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} ubo;
-
 layout(binding = 1) uniform sampler2D textures[16];
 
 layout (location = 0) in vec4 texcoord;
