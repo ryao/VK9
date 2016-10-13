@@ -29,8 +29,8 @@ layout(binding = 0) uniform UniformBufferObject {
 } ubo;
 
 layout (location = 0) in vec4 position;
-layout (location = 1) in uvec4 attr;
-layout (location = 0) out vec4 texcoord;
+layout (location = 1) in vec2 attr;
+layout (location = 0) out vec2 texcoord;
 
 out gl_PerVertex 
 {

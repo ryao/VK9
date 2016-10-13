@@ -24,7 +24,7 @@ misrepresented as being the original software.
 
 layout(binding = 1) uniform sampler2D textures[16];
 
-layout (location = 0) in vec4 texcoord;
+layout (location = 0) in vec2 texcoord;
 layout (location = 0) out vec4 uFragColor;
 
 void main() 

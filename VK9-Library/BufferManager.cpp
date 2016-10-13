@@ -664,9 +664,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			location += 1;
 		}
 
-		/*
-		Curiously examples use 0 for TEX1 so I'm not sure if this is valid even though it's defined.
-		*/
 		if (mDevice->mFVF & D3DFVF_TEX0)
 		{
 			mVertexInputAttributeDescription[ai2].binding = source.first;
