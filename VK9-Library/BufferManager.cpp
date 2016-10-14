@@ -632,11 +632,61 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
+	uint32_t attributeCount = 0;
+	if (mDevice->mFVF & D3DFVF_XYZ)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_DIFFUSE)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX1)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX2)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX3)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX4)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX5)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX6)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX7)
+	{
+		attributeCount += 1;
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX8)
+	{
+		attributeCount += 1;
+	}
+
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
 	{
-		int ai1 = i * 2; //attribute index 1
-		int ai2 = ai1 + 1; //attribute index 1
+		int attributeIndex = i * attributeCount;
 		uint32_t offset = 0;
 		uint32_t location = 0;
 
@@ -646,112 +696,123 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 		if (mDevice->mFVF & D3DFVF_XYZ)
 		{
-			mVertexInputAttributeDescription[ai1].binding = source.first;
-			mVertexInputAttributeDescription[ai1].location = location;
-			mVertexInputAttributeDescription[ai1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			mVertexInputAttributeDescription[ai1].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 3);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_DIFFUSE)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_B8G8R8A8_UINT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += sizeof(uint32_t);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX0)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX1)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX2)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX3)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX4)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX5)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX6)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX7)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		if (mDevice->mFVF & D3DFVF_TEX8)
 		{
-			mVertexInputAttributeDescription[ai2].binding = source.first;
-			mVertexInputAttributeDescription[ai2].location = location;
-			mVertexInputAttributeDescription[ai2].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[ai2].offset = offset;
+			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+			mVertexInputAttributeDescription[attributeIndex].location = location;
+			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+			mVertexInputAttributeDescription[attributeIndex].offset = offset;
 			offset += (sizeof(float) * 2);
 			location += 1;
+			attributeIndex += 1;
 		}
 
 		i++;
@@ -766,7 +827,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mPipelineLayoutCreateInfo.setLayoutCount = mStreamSources.size();
 
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mStreamSources.size();
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = mStreamSources.size() * 2;
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = mStreamSources.size() * attributeCount;
 	
 
 

@@ -82,7 +82,60 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 		return;
 	}
 
-	mSize = mLength / (sizeof(float)*3 + sizeof(DWORD)); //TODO: add support for other formats.
+	uint32_t attributeStride = 0;
+
+	if (mDevice->mFVF & D3DFVF_XYZ)
+	{
+		attributeStride += (sizeof(float) * 3);
+	}
+
+	if (mDevice->mFVF & D3DFVF_DIFFUSE)
+	{
+		attributeStride += sizeof(uint32_t);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX1)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX2)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX3)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX4)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX5)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX6)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX7)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	if (mDevice->mFVF & D3DFVF_TEX8)
+	{
+		attributeStride += (sizeof(float) * 2);
+	}
+
+	//mSize = mLength / (sizeof(float)*3 + sizeof(DWORD));
+	mSize = mLength / attributeStride;
 
 }
 
