@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "CBaseTexture9.h"
 #include "CSurface9.h"
 
-class CTexture9 : public IDirect3DTexture9,CBaseTexture9
+class CTexture9 : public IDirect3DTexture9
 {
 private:
 	CDevice9* mDevice;

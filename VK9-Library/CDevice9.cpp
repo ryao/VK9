@@ -2736,9 +2736,19 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
-	//TODO: Implement.
+	auto texture = (CTexture9*)pTexture;
+	auto sampler = mBufferManager->mDescriptorImageInfo[Sampler];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetTexture is not implemented!";
+	if (pTexture==nullptr)
+	{
+		sampler.sampler = mBufferManager->mSampler;
+		sampler.imageView = mBufferManager->mImageView;
+	}
+	else
+	{
+		sampler.sampler = texture->mSampler;
+		sampler.imageView = texture->mImageView;
+	}
 
 	return S_OK;	
 }
