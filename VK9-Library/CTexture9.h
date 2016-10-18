@@ -40,6 +40,8 @@ private:
 	D3DPOOL mPool; 
 	HANDLE* mSharedHandle;
 
+	void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
+
 public:
 	CTexture9(CDevice9* device,UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CTexture9();
@@ -53,10 +55,15 @@ public:
 	VkFormat mRealFormat;
 
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
-	VkDeviceMemory mDeviceMemory;
+	
 	void* mData;
 
+	VkImage mStagingImage;
+	VkDeviceMemory mStagingDeviceMemory;
+
 	VkImage mImage;
+	VkDeviceMemory mDeviceMemory;
+
 	VkSampler mSampler;
 	VkImageView mImageView;
 

@@ -2748,6 +2748,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 	{
 		sampler.sampler = texture->mSampler;
 		sampler.imageView = texture->mImageView;
+		sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
 	return S_OK;	
