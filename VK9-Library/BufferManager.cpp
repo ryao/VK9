@@ -613,12 +613,6 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	*/
 
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
-
-	if (mDevice->mFVF == (D3DFVF_XYZ | D3DFVF_TEX1))
-	{
-		mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
-		mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
-	}
 	 
 	mDescriptorSetLayoutBinding[0].binding = 0;
 	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
@@ -633,54 +627,76 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
 	uint32_t attributeCount = 0;
-	if (mDevice->mFVF & D3DFVF_XYZ)
+	if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 	{
 		attributeCount += 1;
 	}
 
-	if (mDevice->mFVF & D3DFVF_DIFFUSE)
+	if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 	{
 		attributeCount += 1;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX1)
+	uint32_t textureCount = 0;
+	if ((mDevice->mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
 	{
 		attributeCount += 1;
+		textureCount = 1;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX2)
+	if ((mDevice->mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
 	{
-		attributeCount += 1;
+		textureCount = 2;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX3)
+	if ((mDevice->mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
 	{
 		attributeCount += 1;
+		textureCount = 3;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX4)
+	if ((mDevice->mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
 	{
 		attributeCount += 1;
+		textureCount = 4;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX5)
+	if ((mDevice->mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
 	{
 		attributeCount += 1;
+		textureCount = 5;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX6)
+	if ((mDevice->mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
 	{
 		attributeCount += 1;
+		textureCount = 6;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX7)
+	if ((mDevice->mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
 	{
 		attributeCount += 1;
+		textureCount = 7;
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX8)
+	if ((mDevice->mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
 	{
 		attributeCount += 1;
+		textureCount = 8;
+	}
+
+	if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+	{
+		switch (textureCount)
+		{
+		case 1:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
+			break;
+		}
 	}
 
 	int i = 0;
@@ -694,7 +710,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
 		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-		if (mDevice->mFVF & D3DFVF_XYZ)
+		if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 		{
 			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
 			mVertexInputAttributeDescription[attributeIndex].location = location;
@@ -705,7 +721,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			attributeIndex += 1;
 		}
 
-		if (mDevice->mFVF & D3DFVF_DIFFUSE)
+		if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 		{
 			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
 			mVertexInputAttributeDescription[attributeIndex].location = location;
@@ -716,95 +732,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			attributeIndex += 1;
 		}
 
-		if (mDevice->mFVF & D3DFVF_TEX0)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX1)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX2)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX3)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX4)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX5)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX6)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX7)
-		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
-		}
-
-		if (mDevice->mFVF & D3DFVF_TEX8)
+		for (size_t j = 0; j < textureCount; j++)
 		{
 			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
 			mVertexInputAttributeDescription[attributeIndex].location = location;
@@ -859,9 +787,9 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mWriteDescriptorSet[1].descriptorCount = 16;
 	mWriteDescriptorSet[1].pImageInfo = mDescriptorImageInfo;
 
-	vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, NULL);
+	vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
 
-	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, NULL, &mPipelineLayout);
+	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, nullptr, &mPipelineLayout);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline vkCreatePipelineLayout failed with return code of " << mResult;
@@ -870,21 +798,21 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 	mGraphicsPipelineCreateInfo.layout = mPipelineLayout;
 
-	result = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, NULL, &mPipelineCache);
+	result = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, nullptr, &mPipelineCache);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline vkCreatePipelineCache failed with return code of " << mResult;
 		return;
 	}
 
-	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, NULL, &mPipeline);
+	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, nullptr, &mPipeline);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline vkCreateGraphicsPipelines failed with return code of " << mResult;
 		//Don't return so we can destroy cache.
 	}
 
-	vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, NULL);
+	vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, nullptr);
 	mPipelineCache = VK_NULL_HANDLE;
 
 	return;

@@ -2581,6 +2581,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
 	mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
 
+	mBufferManager->mLastType = D3DPT_FORCE_DWORD; //force pipe to reset if it's been built.
+
 	return S_OK;	
 }
 

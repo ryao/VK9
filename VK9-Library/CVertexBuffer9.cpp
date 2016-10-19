@@ -84,52 +84,52 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 
 	uint32_t attributeStride = 0;
 
-	if (mDevice->mFVF & D3DFVF_XYZ)
+	if ((mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 	{
 		attributeStride += (sizeof(float) * 3);
 	}
 
-	if (mDevice->mFVF & D3DFVF_DIFFUSE)
+	if ((mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 	{
 		attributeStride += sizeof(uint32_t);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX1)
+	if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX2)
+	if ((mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX3)
+	if ((mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX4)
+	if ((mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX5)
+	if ((mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX6)
+	if ((mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX7)
+	if ((mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
 
-	if (mDevice->mFVF & D3DFVF_TEX8)
+	if ((mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
 	{
 		attributeStride += (sizeof(float) * 2);
 	}
