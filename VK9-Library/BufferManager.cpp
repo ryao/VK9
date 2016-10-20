@@ -335,67 +335,67 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mDescriptorImageInfo[0].sampler = mSampler;
 	mDescriptorImageInfo[0].imageView = mImageView;
-	mDescriptorImageInfo[0].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[1].sampler = mSampler;
 	mDescriptorImageInfo[1].imageView = mImageView;
-	mDescriptorImageInfo[1].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[2].sampler = mSampler;
 	mDescriptorImageInfo[2].imageView = mImageView;
-	mDescriptorImageInfo[2].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[3].sampler = mSampler;
 	mDescriptorImageInfo[3].imageView = mImageView;
-	mDescriptorImageInfo[3].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[3].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[4].sampler = mSampler;
 	mDescriptorImageInfo[4].imageView = mImageView;
-	mDescriptorImageInfo[4].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[4].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[5].sampler = mSampler;
 	mDescriptorImageInfo[5].imageView = mImageView;
-	mDescriptorImageInfo[5].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[5].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[6].sampler = mSampler;
 	mDescriptorImageInfo[6].imageView = mImageView;
-	mDescriptorImageInfo[6].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[6].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[7].sampler = mSampler;
 	mDescriptorImageInfo[7].imageView = mImageView;
-	mDescriptorImageInfo[7].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[7].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[8].sampler = mSampler;
 	mDescriptorImageInfo[8].imageView = mImageView;
-	mDescriptorImageInfo[8].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[8].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[9].sampler = mSampler;
 	mDescriptorImageInfo[9].imageView = mImageView;
-	mDescriptorImageInfo[9].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[9].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[10].sampler = mSampler;
 	mDescriptorImageInfo[10].imageView = mImageView;
-	mDescriptorImageInfo[10].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[10].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[11].sampler = mSampler;
 	mDescriptorImageInfo[11].imageView = mImageView;
-	mDescriptorImageInfo[11].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[11].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[12].sampler = mSampler;
 	mDescriptorImageInfo[12].imageView = mImageView;
-	mDescriptorImageInfo[12].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[12].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[13].sampler = mSampler;
 	mDescriptorImageInfo[13].imageView = mImageView;
-	mDescriptorImageInfo[13].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[13].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[14].sampler = mSampler;
 	mDescriptorImageInfo[14].imageView = mImageView;
-	mDescriptorImageInfo[14].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[14].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mDescriptorImageInfo[15].sampler = mSampler;
 	mDescriptorImageInfo[15].imageView = mImageView;
-	mDescriptorImageInfo[15].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	mDescriptorImageInfo[15].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -689,6 +689,9 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	{
 		switch (textureCount)
 		{
+		case 0:
+			//No textures.
+			break;
 		case 1:
 				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
 				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;

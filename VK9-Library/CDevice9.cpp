@@ -2739,7 +2739,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
 	auto texture = (CTexture9*)pTexture;
-	auto sampler = mBufferManager->mDescriptorImageInfo[Sampler];
+	VkDescriptorImageInfo& sampler = mBufferManager->mDescriptorImageInfo[Sampler];
 
 	if (pTexture==nullptr)
 	{
@@ -2750,7 +2750,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 	{
 		sampler.sampler = texture->mSampler;
 		sampler.imageView = texture->mImageView;
-		sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
 	return S_OK;	
@@ -2939,6 +2938,11 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
+	if (aspectMask==0)
+	{
+		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
 	// If the command buffer hasn't been created yet create it so it can be used.
 	if (mCommandBuffer == VK_NULL_HANDLE)
 	{
@@ -2982,13 +2986,16 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 
 	VkImageMemoryBarrier imageMemoryBarrier = {};
 	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageMemoryBarrier.pNext = nullptr;
-	imageMemoryBarrier.srcAccessMask = 0;
-	imageMemoryBarrier.dstAccessMask = 0;
 	imageMemoryBarrier.oldLayout = oldImageLayout;
 	imageMemoryBarrier.newLayout = newImageLayout;
+	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.image = image;
-	imageMemoryBarrier.subresourceRange = { aspectMask, 0, 1, 0, 1 };
+	imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
+	imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+	imageMemoryBarrier.subresourceRange.levelCount = 1;
+	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+	imageMemoryBarrier.subresourceRange.layerCount = 1;
 
 	switch (oldImageLayout)
 	{
@@ -3008,6 +3015,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_PREINITIALIZED:
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
@@ -3036,9 +3044,10 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; // VK_ACCESS_TRANSFER_READ_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_PREINITIALIZED:
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_HOST_WRITE_BIT;
