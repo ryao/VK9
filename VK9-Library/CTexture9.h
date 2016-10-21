@@ -40,8 +40,6 @@ private:
 	D3DPOOL mPool; 
 	HANDLE* mSharedHandle;
 
-	void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
-
 public:
 	CTexture9(CDevice9* device,UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CTexture9();
@@ -68,6 +66,8 @@ public:
 	VkImageView mImageView;
 
 	std::vector<CSurface9*> mSurfaces;
+
+	void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
 
 public:
 	//IUnknown

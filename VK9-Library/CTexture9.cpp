@@ -601,21 +601,11 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurfac
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PREINITIALIZED);
-	this->mDevice->SetImageLayout(mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PREINITIALIZED);
-
 	return mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
-	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	this->mDevice->SetImageLayout(mImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-	CopyImage(mStagingImage, mImage, mWidth, mHeight);
-
-	this->mDevice->SetImageLayout(mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
 	return mSurfaces[Level]->UnlockRect();
 }
 

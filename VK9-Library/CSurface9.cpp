@@ -273,15 +273,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	/*
-	I'll need to Make sure direct access to image memory is allowed and that it can remain mapped.
-	*/
 	pLockedRect->pBits = mTexture->mData;
 	pLockedRect->Pitch = mLayout.rowPitch;
-
-	//BOOST_LOG_TRIVIAL(warning) << "CSurface9::LockRect Data: " << mTexture->mData;
-	//BOOST_LOG_TRIVIAL(warning) << "CSurface9::LockRect RowPitch: " << mLayout.rowPitch;
-	//BOOST_LOG_TRIVIAL(warning) << "CSurface9::LockRect Size: " << mLayout.size;
 
 	return S_OK;
 }
@@ -299,8 +292,12 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
-	/*
-	I'll need to Make sure direct access to image memory is allowed and that it can remain mapped.
-	*/
+	this->mDevice->SetImageLayout(mTexture->mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	mTexture->CopyImage(mTexture->mStagingImage, mTexture->mImage, mWidth, mHeight);
+
+	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
 	return S_OK;
 }
