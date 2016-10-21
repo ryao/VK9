@@ -2748,6 +2748,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 	}
 	else
 	{
+		texture->GenerateSampler(Sampler);
 		sampler.sampler = texture->mSampler;
 		sampler.imageView = texture->mImageView;
 	}

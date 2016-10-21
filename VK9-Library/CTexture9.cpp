@@ -56,12 +56,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 {
 	mDevice->AddRef();
 
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
-	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
-	mMipFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MIPFILTER];
-	mMinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MINFILTER];
-	mMagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[0][D3DSAMP_MAGFILTER];
-
 	mRealFormat = ConvertFormat(mFormat);
 
 	if (!mLevels)
@@ -163,31 +157,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		return;
 	}
 
-	VkSamplerCreateInfo samplerCreateInfo = {};
-	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerCreateInfo.pNext = NULL;
-	samplerCreateInfo.magFilter = ConvertFilter(mMagFilter);
-	samplerCreateInfo.minFilter = ConvertFilter(mMinFilter);
-	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.anisotropyEnable = VK_FALSE;
-	samplerCreateInfo.maxAnisotropy = 16;
-	samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
-	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerCreateInfo.mipmapMode = ConvertMipmapMode(mMipFilter); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	samplerCreateInfo.mipLodBias = 0.0f;
-	samplerCreateInfo.minLod = 0.0f;
-	samplerCreateInfo.maxLod = (float)mLevels;
-	
-	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateSampler failed with return code of " << mResult;
-		return;
-	}
-
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCreateInfo.image = mImage;
@@ -237,6 +206,7 @@ CTexture9::~CTexture9()
 	if (mSampler != VK_NULL_HANDLE)
 	{
 		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+		mSampler = VK_NULL_HANDLE;
 	}
 
 	if (mData != nullptr)
@@ -709,4 +679,52 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 	}
 
 	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, commandBuffers);
+}
+
+void CTexture9::GenerateSampler(DWORD samplerIdex)
+{
+	if (mSampler != VK_NULL_HANDLE)
+	{
+		return; //already created.
+	}
+
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
+	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
+	mMipFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIdex][D3DSAMP_MIPFILTER];
+	mMinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIdex][D3DSAMP_MINFILTER];
+	mMagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIdex][D3DSAMP_MAGFILTER];
+
+	VkSamplerCreateInfo samplerCreateInfo = {};
+	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerCreateInfo.pNext = NULL;
+	samplerCreateInfo.magFilter = ConvertFilter(mMagFilter);
+	samplerCreateInfo.minFilter = ConvertFilter(mMinFilter);
+	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	samplerCreateInfo.maxAnisotropy = 16;
+	samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerCreateInfo.mipmapMode = ConvertMipmapMode(mMipFilter); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.mipLodBias = 0.0f;
+	samplerCreateInfo.minLod = 0.0f;
+	samplerCreateInfo.maxLod = (float)mLevels;
+
+	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateSampler vkCreateSampler failed with return code of " << mResult;
+		return;
+	}
+}
+
+void CTexture9::MarkSamplerDirty()
+{
+	if (mSampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+		mSampler = VK_NULL_HANDLE;
+	}
 }
