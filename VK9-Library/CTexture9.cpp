@@ -699,11 +699,11 @@ void CTexture9::GenerateSampler(DWORD samplerIdex)
 	samplerCreateInfo.pNext = NULL;
 	samplerCreateInfo.magFilter = ConvertFilter(mMagFilter);
 	samplerCreateInfo.minFilter = ConvertFilter(mMinFilter);
-	samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerCreateInfo.addressModeU = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIdex][D3DSAMP_ADDRESSU]);
+	samplerCreateInfo.addressModeV = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIdex][D3DSAMP_ADDRESSV]);
+	samplerCreateInfo.addressModeW = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIdex][D3DSAMP_ADDRESSW]);
 	samplerCreateInfo.anisotropyEnable = VK_FALSE;
-	samplerCreateInfo.maxAnisotropy = 16;
+	samplerCreateInfo.maxAnisotropy = mDevice->mSamplerStates[samplerIdex][D3DSAMP_MAXANISOTROPY];  //16 D3DSAMP_MAXANISOTROPY
 	samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
 	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;

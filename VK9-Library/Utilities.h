@@ -104,6 +104,35 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 	}
 }
 
+inline VkSamplerAddressMode ConvertTextureAddress(D3DTEXTUREADDRESS input)
+{
+	VkSamplerAddressMode output;
+
+	switch (input)
+	{
+	case D3DTADDRESS_WRAP:
+		output = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		break;
+	case D3DTADDRESS_MIRROR:
+		output = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+		break;
+	case D3DTADDRESS_CLAMP:
+		output = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		break;
+	case D3DTADDRESS_BORDER:
+		output = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+		break;
+	case D3DTADDRESS_MIRRORONCE:
+		output = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+		break;
+	default:
+		output = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		break;
+	}
+
+	return output;
+}
+
 inline VkSamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input)
 {
 	VkSamplerMipmapMode output;

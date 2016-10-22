@@ -1381,11 +1381,24 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mCommandBufferBeginInfo.flags = 0;
 	mCommandBufferBeginInfo.pInheritanceInfo = &mCommandBufferInheritanceInfo;
 
-	mBufferManager = new BufferManager(this);
+	for (size_t i = 0; i < 16; i++)
+	{
+		mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
+		mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
+		mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
+		mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
+		mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
+		mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
+		mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+		mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
+		mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
+		mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
+		mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
+		mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
+		mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
+	}
 
-	mSamplerStates[0][D3DSAMP_MINFILTER] = D3DTEXF_NONE;
-	mSamplerStates[0][D3DSAMP_MAGFILTER] = D3DTEXF_NONE;
-	mSamplerStates[0][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+	mBufferManager = new BufferManager(this);
 
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
 } 
