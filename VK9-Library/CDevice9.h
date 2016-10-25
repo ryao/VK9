@@ -256,7 +256,7 @@ public:
 	BOOL mIsDirty;
 	BOOL mIsSceneStarted; 
 
-	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
+	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1);
 	void StartScene();
 	void StopScene();
 };

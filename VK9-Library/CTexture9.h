@@ -29,20 +29,19 @@ misrepresented as being the original software.
 
 class CTexture9 : public IDirect3DTexture9
 {
-private:
-	CDevice9* mDevice;
-	UINT mWidth; 
-	UINT mHeight; 
-	UINT mDepth;
-	UINT mLevels; 
-	DWORD mUsage; 
-	D3DFORMAT mFormat; 
-	D3DPOOL mPool; 
-	HANDLE* mSharedHandle;
-
 public:
 	CTexture9(CDevice9* device,UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CTexture9();
+
+	CDevice9* mDevice;
+	UINT mWidth;
+	UINT mHeight;
+	UINT mDepth;
+	UINT mLevels;
+	DWORD mUsage;
+	D3DFORMAT mFormat;
+	D3DPOOL mPool;
+	HANDLE* mSharedHandle;
 
 	int mReferenceCount;
 	VkResult mResult;
@@ -54,11 +53,6 @@ public:
 
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
 	
-	void* mData;
-
-	VkImage mStagingImage;
-	VkDeviceMemory mStagingDeviceMemory;
-
 	VkImage mImage;
 	VkDeviceMemory mDeviceMemory;
 
@@ -67,8 +61,8 @@ public:
 
 	std::vector<CSurface9*> mSurfaces;
 
-	void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
-	void GenerateSampler(DWORD samplerIdex);
+	void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
+	void GenerateSampler(DWORD samplerIndex);
 	void MarkSamplerDirty();
 
 public:

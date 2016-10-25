@@ -55,9 +55,16 @@ public:
 
 	VkFormat mRealFormat;
 
+	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
 	VkImageLayout mImageLayout;
 	VkSubresourceLayout mLayout = {};
 	VkImageSubresource mSubresource = {};
+
+	void* mData;
+	VkImage mStagingImage;
+	VkDeviceMemory mStagingDeviceMemory;
+
+	uint32_t mMipIndex;
 
 	void Init();
 public:

@@ -41,6 +41,8 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture,UINT Width, UINT Heigh
 
 	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
 
+	mMipIndex(0),
+
 	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
 {
 	Init();
@@ -64,6 +66,8 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 
 	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
 
+	mMipIndex(0),
+
 	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
 {
 	Init();
@@ -86,6 +90,8 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mResult(VK_SUCCESS),
 
 	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
+
+	mMipIndex(0),
 
 	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
 {	
@@ -117,6 +123,18 @@ void CSurface9::Init()
 CSurface9::~CSurface9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
+
+	if (mStagingImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage(mDevice->mDevice, mStagingImage, NULL);
+		mStagingImage = VK_NULL_HANDLE;
+	}
+
+	if (mStagingDeviceMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mStagingDeviceMemory, NULL);
+		mStagingDeviceMemory = VK_NULL_HANDLE;
+	}
 
 	mDevice->Release();
 }
@@ -273,7 +291,70 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	pLockedRect->pBits = mTexture->mData;
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
+	imageCreateInfo.extent = { mWidth, mHeight, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	imageCreateInfo.flags = 0;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+
+	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mStagingImage);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkCreateImage failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
+	VkMemoryRequirements memoryRequirements = {};
+	vkGetImageMemoryRequirements(mDevice->mDevice, mStagingImage, &memoryRequirements);
+
+	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	mMemoryAllocateInfo.pNext = NULL;
+	mMemoryAllocateInfo.allocationSize = 0;
+	mMemoryAllocateInfo.memoryTypeIndex = 0;
+	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect Could not find memory type from properties.";
+		return D3DERR_INVALIDCALL;
+	}
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mStagingDeviceMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkAllocateMemory failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
+	mResult = vkBindImageMemory(mDevice->mDevice, mStagingImage, mStagingDeviceMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkBindImageMemory failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
+	mSubresource.mipLevel = 0;
+	mSubresource.arrayLayer = 1;
+	mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayout);
+
+	mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkMapMemory failed with return code of " << mResult;
+		return D3DERR_INVALIDCALL;
+	}
+
+	pLockedRect->pBits = mData;
 	pLockedRect->Pitch = mLayout.rowPitch;
 
 	return S_OK;
@@ -292,10 +373,28 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
-	this->mDevice->SetImageLayout(mTexture->mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	if (mData != nullptr)
+	{
+		vkUnmapMemory(mDevice->mDevice, mStagingDeviceMemory);
+		mData = nullptr;
+	}
 
-	mTexture->CopyImage(mTexture->mStagingImage, mTexture->mImage, mWidth, mHeight);
+	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL); //VK_IMAGE_LAYOUT_PREINITIALIZED
+	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mTexture->mLevels);
+
+	mTexture->CopyImage(mStagingImage, mTexture->mImage, mWidth, mHeight,0,this->mMipIndex);
+
+	if (mStagingImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage(mDevice->mDevice, mStagingImage, NULL);
+		mStagingImage = VK_NULL_HANDLE;
+	}
+
+	if (mStagingDeviceMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mStagingDeviceMemory, NULL);
+		mStagingDeviceMemory = VK_NULL_HANDLE;
+	}
 
 	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 

@@ -43,11 +43,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mMinFilter(D3DTEXF_NONE),
 	mMagFilter(D3DTEXF_NONE),
 	
-	mData(nullptr),
-
-	mStagingImage(VK_NULL_HANDLE),
-	mStagingDeviceMemory(VK_NULL_HANDLE),
-
 	mImage(VK_NULL_HANDLE),
 	mDeviceMemory(VK_NULL_HANDLE),
 
@@ -60,15 +55,10 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 	if (!mLevels)
 	{
-		if (mUsage & D3DUSAGE_AUTOGENMIPMAP)
-		{
-			mLevels = 1;
-		}
-		else
-		{
-			mLevels = log2(std::max(mWidth, mHeight)) + 1;
-		}
+		mLevels = log2(std::max(mWidth, mHeight)) + 1;
 	}
+
+	//mLevels = 1; //workaround
 
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -79,20 +69,10 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	imageCreateInfo.mipLevels = mLevels;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	imageCreateInfo.flags = 0;
-	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-
-	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mStagingImage);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << mResult;
-		return;
-	}
-
 	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageCreateInfo.flags = 0;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //VK_IMAGE_LAYOUT_PREINITIALIZED;
 
 	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
 	if (mResult != VK_SUCCESS)
@@ -102,33 +82,13 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	}
 
 	VkMemoryRequirements memoryRequirements = {};
-	vkGetImageMemoryRequirements(mDevice->mDevice, mStagingImage, &memoryRequirements);
+	vkGetImageMemoryRequirements(mDevice->mDevice, mImage, &memoryRequirements);
 
 	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	mMemoryAllocateInfo.pNext = NULL;
 	mMemoryAllocateInfo.allocationSize = 0;
 	mMemoryAllocateInfo.memoryTypeIndex = 0;
 	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mMemoryAllocateInfo.memoryTypeIndex))
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 Could not find memory type from properties.";
-		return;
-	}
-
-	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mStagingDeviceMemory);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkAllocateMemory failed with return code of " << mResult;
-		return;
-	}
-
-	mResult = vkBindImageMemory(mDevice->mDevice, mStagingImage, mStagingDeviceMemory, 0);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
-		return;
-	}
 
 	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mMemoryAllocateInfo.memoryTypeIndex))
 	{
@@ -147,13 +107,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
-		return;
-	}
-
-	mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkMapMemory failed with return code of " << mResult;
 		return;
 	}
 
@@ -181,11 +134,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	{
 		CSurface9* ptr = new CSurface9(mDevice, this, width, height, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
-		ptr->mSubresource.mipLevel = i;
-		ptr->mSubresource.arrayLayer = 1;
-		ptr->mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-		vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &ptr->mSubresource, &ptr->mLayout);
+		ptr->mMipIndex = i;
 
 		mSurfaces.push_back(ptr);
 
@@ -209,25 +158,9 @@ CTexture9::~CTexture9()
 		mSampler = VK_NULL_HANDLE;
 	}
 
-	if (mData != nullptr)
-	{
-		vkUnmapMemory(mDevice->mDevice, mStagingDeviceMemory);
-		mData = nullptr;
-	}
-
-	if (mStagingImage != VK_NULL_HANDLE)
-	{
-		vkDestroyImage(mDevice->mDevice, mStagingImage, NULL);
-	}
-
 	if (mImage != VK_NULL_HANDLE)
 	{
 		vkDestroyImage(mDevice->mDevice, mImage, NULL);
-	}
-
-	if (mStagingDeviceMemory != VK_NULL_HANDLE)
-	{
-		vkFreeMemory(mDevice->mDevice, mStagingDeviceMemory, NULL);
 	}
 
 	if (mDeviceMemory != VK_NULL_HANDLE)
@@ -580,7 +513,7 @@ HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 }
 
 
-void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height)
+void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
 {
 	VkResult result = VK_SUCCESS;
 	VkCommandBuffer commandBuffer;
@@ -622,15 +555,21 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 		return;
 	}
 
-	VkImageSubresourceLayers subResource = {};
-	subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subResource.baseArrayLayer = 0;
-	subResource.mipLevel = 0;
-	subResource.layerCount = 1;
+	VkImageSubresourceLayers subResource1 = {};
+	subResource1.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subResource1.baseArrayLayer = 0;
+	subResource1.mipLevel = srcMip;
+	subResource1.layerCount = 1;
+
+	VkImageSubresourceLayers subResource2 = {};
+	subResource2.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subResource2.baseArrayLayer = 0;
+	subResource2.mipLevel = dstMip;
+	subResource2.layerCount = 1;
 
 	VkImageCopy region = {};
-	region.srcSubresource = subResource;
-	region.dstSubresource = subResource;
+	region.srcSubresource = subResource1;
+	region.dstSubresource = subResource2;
 	region.srcOffset = { 0, 0, 0 };
 	region.dstOffset = { 0, 0, 0 };
 	region.extent.width = width;
@@ -681,7 +620,7 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, commandBuffers);
 }
 
-void CTexture9::GenerateSampler(DWORD samplerIdex)
+void CTexture9::GenerateSampler(DWORD samplerIndex)
 {
 	if (mSampler != VK_NULL_HANDLE)
 	{
@@ -690,27 +629,24 @@ void CTexture9::GenerateSampler(DWORD samplerIdex)
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
 	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
-	mMipFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIdex][D3DSAMP_MIPFILTER];
-	mMinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIdex][D3DSAMP_MINFILTER];
-	mMagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIdex][D3DSAMP_MAGFILTER];
 
 	VkSamplerCreateInfo samplerCreateInfo = {};
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerCreateInfo.pNext = NULL;
-	samplerCreateInfo.magFilter = ConvertFilter(mMagFilter);
-	samplerCreateInfo.minFilter = ConvertFilter(mMinFilter);
-	samplerCreateInfo.addressModeU = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIdex][D3DSAMP_ADDRESSU]);
-	samplerCreateInfo.addressModeV = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIdex][D3DSAMP_ADDRESSV]);
-	samplerCreateInfo.addressModeW = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIdex][D3DSAMP_ADDRESSW]);
+	samplerCreateInfo.magFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER]);
+	samplerCreateInfo.minFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIndex][D3DSAMP_MINFILTER]);
+	samplerCreateInfo.addressModeU = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU]);
+	samplerCreateInfo.addressModeV = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV]);
+	samplerCreateInfo.addressModeW = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW]);
 	samplerCreateInfo.anisotropyEnable = VK_FALSE;
-	samplerCreateInfo.maxAnisotropy = mDevice->mSamplerStates[samplerIdex][D3DSAMP_MAXANISOTROPY];  //16 D3DSAMP_MAXANISOTROPY
-	samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerCreateInfo.maxAnisotropy = mDevice->mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];  //16 D3DSAMP_MAXANISOTROPY
+	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; // VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
 	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerCreateInfo.mipmapMode = ConvertMipmapMode(mMipFilter); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.mipmapMode = ConvertMipmapMode((D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER]); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.mipLodBias = 0.0f;
 	samplerCreateInfo.minLod = 0.0f;
-	samplerCreateInfo.maxLod = (float)mLevels;
+	//samplerCreateInfo.maxLod = (float)mLevels;
 
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
 	if (mResult != VK_SUCCESS)
