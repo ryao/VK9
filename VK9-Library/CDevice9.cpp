@@ -1951,7 +1951,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 		mBufferManager->BindVertexBuffers(PrimitiveType);
 	}
 
-	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], mBufferManager->mVertexCount, 1, StartVertex, 0); //TODO: implement PrimitiveCount
+	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
 
 	return S_OK;	
 }

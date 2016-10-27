@@ -44,5 +44,5 @@ void main()
 	gl_Position.y = -gl_Position.y;
 
 	texcoord = attr;
-	texcoord.y = -texcoord.y;
+	//texcoord.y = -texcoord.y;
 }

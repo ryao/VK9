@@ -81,6 +81,38 @@ inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memory
 	return false;
 }
 
+inline uint32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType, UINT primtiveCount)
+{
+	uint32_t output;
+
+	switch (primtiveType)
+	{
+	case D3DPT_POINTLIST:
+		output = primtiveCount;
+		break;
+	case D3DPT_LINELIST:
+		output = primtiveCount * 2;
+		break;
+	case D3DPT_LINESTRIP:
+		output = primtiveCount + 1;
+		break;
+	case D3DPT_TRIANGLELIST:
+		output = primtiveCount * 3;
+		break;
+	case D3DPT_TRIANGLESTRIP:
+		output = primtiveCount + 2;
+		break;
+	case D3DPT_TRIANGLEFAN:
+		output = primtiveCount + 2;
+		break;
+	default:
+		output = primtiveCount;
+		break;
+	}
+
+	return output;
+}
+
 inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
 {
 	switch (input)

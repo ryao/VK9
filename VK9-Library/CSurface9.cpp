@@ -310,7 +310,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	{
 		/*
 		Dear C++ committee Why can't we just assume incrment is in bytes for void pointer?
-		I mean what else could I possibly mean when dealing with a untyped binary blob.
+		I mean what else could I possibly mean when dealing with an untyped binary blob.
 		It's not like I picked void* so "don't use void*" is a terrible argument.
 		*/
 		char* bytes = (char*)mData;
