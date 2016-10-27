@@ -2951,51 +2951,48 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	VkResult result = VK_SUCCESS;
 	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 
 	if (aspectMask==0)
 	{
 		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	// If the command buffer hasn't been created yet create it so it can be used.
-	if (mCommandBuffer == VK_NULL_HANDLE)
+	VkCommandBufferAllocateInfo commandBufferInfo = {};
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferInfo.pNext = nullptr;
+	commandBufferInfo.commandPool = mCommandPool;
+	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferInfo.commandBufferCount = 1;
+
+	result = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &commandBuffer);
+	if (result != VK_SUCCESS)
 	{
-		VkCommandBufferAllocateInfo commandBufferInfo = {};
-		commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		commandBufferInfo.pNext = nullptr;
-		commandBufferInfo.commandPool = mCommandPool;
-		commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		commandBufferInfo.commandBufferCount = 1;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkAllocateCommandBuffers failed with return code of " << mResult;
+		return;
+	}
 
-		result = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mCommandBuffer);
-		if (result != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkAllocateCommandBuffers failed with return code of " << mResult;
-			return;
-		}
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	commandBufferInheritanceInfo.pNext = nullptr;
+	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	commandBufferInheritanceInfo.queryFlags = 0;
+	commandBufferInheritanceInfo.pipelineStatistics = 0;
 
-		VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
-		commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		commandBufferInheritanceInfo.pNext = nullptr;
-		commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
-		commandBufferInheritanceInfo.subpass = 0;
-		commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
-		commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
-		commandBufferInheritanceInfo.queryFlags = 0;
-		commandBufferInheritanceInfo.pipelineStatistics = 0;
+	VkCommandBufferBeginInfo commandBufferBeginInfo;
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.pNext = nullptr;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
-		VkCommandBufferBeginInfo commandBufferBeginInfo;
-		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		commandBufferBeginInfo.pNext = nullptr;
-		commandBufferBeginInfo.flags = 0;
-		commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
-
-		result = vkBeginCommandBuffer(mCommandBuffer, &commandBufferBeginInfo);
-		if (result != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkBeginCommandBuffer failed with return code of " << mResult;
-			return;
-		}
+	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkBeginCommandBuffer failed with return code of " << mResult;
+		return;
 	}
 
 	VkImageMemoryBarrier imageMemoryBarrier = {};
@@ -3072,49 +3069,43 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		break;
 	}
 
-	vkCmdPipelineBarrier(mCommandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+	vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-	//flush init command
-
-	if (mCommandBuffer != VK_NULL_HANDLE)
+	result = vkEndCommandBuffer(commandBuffer);
+	if (result != VK_SUCCESS)
 	{
-		result = vkEndCommandBuffer(mCommandBuffer);
-		if (result != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << result;
-			return;
-		}
-
-		VkCommandBuffer commandBuffers[] = { mCommandBuffer };
-		VkFence nullFence = VK_NULL_HANDLE;
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pNext = NULL;
-		submitInfo.waitSemaphoreCount = 0;
-		submitInfo.pWaitSemaphores = NULL;
-		submitInfo.pWaitDstStageMask = NULL;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = commandBuffers;
-		submitInfo.signalSemaphoreCount = 0;
-		submitInfo.pSignalSemaphores = NULL;
-
-		result = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
-		if (result != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << result;
-			return;
-		}
-
-		result = vkQueueWaitIdle(mQueue);
-		if (result != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << result;
-			return;
-		}
-
-		vkFreeCommandBuffers(mDevice,mCommandPool, 1, commandBuffers);
-		mCommandBuffer = VK_NULL_HANDLE;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << result;
+		return;
 	}
+
+	VkCommandBuffer commandBuffers[] = { commandBuffer };
+	VkFence nullFence = VK_NULL_HANDLE;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = NULL;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = NULL;
+	submitInfo.pWaitDstStageMask = NULL;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = NULL;
+
+	result = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << result;
+		return;
+	}
+
+	result = vkQueueWaitIdle(mQueue);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << result;
+		return;
+	}
+
+	vkFreeCommandBuffers(mDevice,mCommandPool, 1, commandBuffers);
 }
 
 void CDevice9::StartScene()

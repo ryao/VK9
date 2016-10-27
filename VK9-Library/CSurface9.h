@@ -30,7 +30,9 @@ class CTexture9;
 class CSurface9 : public IDirect3DSurface9,CResource9
 {
 private:
-	
+	void* mData;
+	VkImage mStagingImage;
+	VkDeviceMemory mStagingDeviceMemory;
 public:
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
@@ -60,13 +62,13 @@ public:
 	VkSubresourceLayout mLayout = {};
 	VkImageSubresource mSubresource = {};
 
-	void* mData;
-	VkImage mStagingImage;
-	VkDeviceMemory mStagingDeviceMemory;
-
 	uint32_t mMipIndex;
 
 	void Init();
+
+	void Prepare();
+	void Flush();
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

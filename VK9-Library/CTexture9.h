@@ -65,6 +65,8 @@ public:
 	void GenerateSampler(DWORD samplerIndex);
 	void MarkSamplerDirty();
 
+	void Flush();
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

@@ -622,6 +622,8 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 
 void CTexture9::GenerateSampler(DWORD samplerIndex)
 {
+	Flush();
+
 	if (mSampler != VK_NULL_HANDLE)
 	{
 		return; //already created.
@@ -662,5 +664,13 @@ void CTexture9::MarkSamplerDirty()
 	{
 		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
 		mSampler = VK_NULL_HANDLE;
+	}
+}
+
+void CTexture9::Flush()
+{
+	for (size_t i = 0; i < mSurfaces.size(); i++)
+	{
+		mSurfaces[i]->Flush();
 	}
 }
