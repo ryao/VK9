@@ -84,59 +84,65 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 
 	uint32_t attributeStride = 0;
 
-	if ((mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+	if (mFVF)
 	{
-		attributeStride += (sizeof(float) * 3);
-	}
+		if ((mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+		{
+			attributeStride += (sizeof(float) * 3);
+		}
 
-	if ((mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+		if ((mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+		{
+			attributeStride += sizeof(uint32_t);
+		}
+
+		if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		//mSize = mLength / (sizeof(float)*3 + sizeof(DWORD));
+		mSize = mLength / attributeStride;
+	}
+	else
 	{
-		attributeStride += sizeof(uint32_t);
+		mSize = mLength / sizeof(float); //For now assume one float. There should be at least 4 bytes.
 	}
-
-	if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	if ((mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	if ((mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	if ((mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	if ((mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	if ((mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	if ((mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	if ((mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
-	{
-		attributeStride += (sizeof(float) * 2);
-	}
-
-	//mSize = mLength / (sizeof(float)*3 + sizeof(DWORD));
-	mSize = mLength / attributeStride;
-
 }
 
 CVertexBuffer9::~CVertexBuffer9()

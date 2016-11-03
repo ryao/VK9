@@ -72,6 +72,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE),
 	mIsDirty(true),
 	mIsSceneStarted(false),
+	mVertexDeclaration(nullptr),
 	mBufferManager(nullptr)
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Started.";
@@ -2834,9 +2835,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetVertexDeclaration is not implemented!";
+	mVertexDeclaration = (CVertexDeclaration9*)pDecl;
 
 	return S_OK;	
 }

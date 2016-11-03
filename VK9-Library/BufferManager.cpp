@@ -627,127 +627,147 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
 	uint32_t attributeCount = 0;
-	if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+
+	if (mDevice->mFVF)
 	{
-		attributeCount += 1;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
-	{
-		attributeCount += 1;
-	}
-
-	uint32_t textureCount = 0;
-	if ((mDevice->mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
-	{
-		attributeCount += 1;
-		textureCount = 1;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
-	{
-		textureCount = 2;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
-	{
-		attributeCount += 1;
-		textureCount = 3;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
-	{
-		attributeCount += 1;
-		textureCount = 4;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
-	{
-		attributeCount += 1;
-		textureCount = 5;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
-	{
-		attributeCount += 1;
-		textureCount = 6;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
-	{
-		attributeCount += 1;
-		textureCount = 7;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
-	{
-		attributeCount += 1;
-		textureCount = 8;
-	}
-
-	if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
-	{
-		switch (textureCount)
-		{
-		case 0:
-			//No textures.
-			break;
-		case 1:
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
-			break;
-		}
-	}
-
-	int i = 0;
-	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
-	{
-		int attributeIndex = i * attributeCount;
-		uint32_t offset = 0;
-		uint32_t location = 0;
-
-		mVertexInputBindingDescription[i].binding = source.first;
-		mVertexInputBindingDescription[i].stride = source.second.Stride;
-		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
 		if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 3);
-			location += 1;
-			attributeIndex += 1;
+			attributeCount += 1;
 		}
 
 		if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += sizeof(uint32_t);
-			location += 1;
-			attributeIndex += 1;
+			attributeCount += 1;
 		}
 
-		for (size_t j = 0; j < textureCount; j++)
+		uint32_t textureCount = 0;
+		if ((mDevice->mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
 		{
-			mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-			mVertexInputAttributeDescription[attributeIndex].location = location;
-			mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-			mVertexInputAttributeDescription[attributeIndex].offset = offset;
-			offset += (sizeof(float) * 2);
-			location += 1;
-			attributeIndex += 1;
+			attributeCount += 1;
+			textureCount = 1;
 		}
 
-		i++;
-	} 
+		if ((mDevice->mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+		{
+			textureCount = 2;
+		}
+
+		if ((mDevice->mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
+		{
+			attributeCount += 1;
+			textureCount = 3;
+		}
+
+		if ((mDevice->mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
+		{
+			attributeCount += 1;
+			textureCount = 4;
+		}
+
+		if ((mDevice->mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
+		{
+			attributeCount += 1;
+			textureCount = 5;
+		}
+
+		if ((mDevice->mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
+		{
+			attributeCount += 1;
+			textureCount = 6;
+		}
+
+		if ((mDevice->mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
+		{
+			attributeCount += 1;
+			textureCount = 7;
+		}
+
+		if ((mDevice->mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
+		{
+			attributeCount += 1;
+			textureCount = 8;
+		}
+
+		if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+		{
+			switch (textureCount)
+			{
+			case 0:
+				//No textures.
+				break;
+			case 1:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+				break;
+			default:
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
+				break;
+			}
+		}
+
+		int i = 0;
+		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+		{
+			int attributeIndex = i * attributeCount;
+			uint32_t offset = 0;
+			uint32_t location = 0;
+
+			mVertexInputBindingDescription[i].binding = source.first;
+			mVertexInputBindingDescription[i].stride = source.second.Stride;
+			mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+			if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += (sizeof(float) * 3);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += sizeof(uint32_t);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			for (size_t j = 0; j < textureCount; j++)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += (sizeof(float) * 2);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			i++;
+		}
+	}
+	else if(mDevice->mVertexDeclaration != nullptr)
+	{
+		int i = 0;
+		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+		{
+			mVertexInputBindingDescription[i].binding = source.first;
+			mVertexInputBindingDescription[i].stride = source.second.Stride;
+			mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+			//TODO: implement vertex
+
+			i++;
+		}
+
+	}
+
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
@@ -758,7 +778,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mPipelineLayoutCreateInfo.setLayoutCount = mStreamSources.size();
 
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mStreamSources.size();
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = mStreamSources.size() * attributeCount;
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount; //mStreamSources.size() *
 	
 
 

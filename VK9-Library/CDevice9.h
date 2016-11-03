@@ -255,6 +255,8 @@ public:
 	DWORD mFVF;
 	BOOL mIsDirty;
 	BOOL mIsSceneStarted; 
+	
+	CVertexDeclaration9* mVertexDeclaration;
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1);
 	void StartScene();
