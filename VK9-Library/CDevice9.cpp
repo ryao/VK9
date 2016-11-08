@@ -70,6 +70,9 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDepthDeviceMemory(VK_NULL_HANDLE),
 	mDepthView(VK_NULL_HANDLE),
 	mFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE),
+	mFVFHasPosition(0),
+    mFVFHasColor(0),
+	mFVFTextureCount(0),
 	mIsDirty(true),
 	mIsSceneStarted(false),
 	mVertexDeclaration(nullptr),
@@ -2596,6 +2599,56 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 	mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
 
 	mBufferManager->mLastType = D3DPT_FORCE_DWORD; //force pipe to reset if it's been built.
+
+	if ((mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+	{
+		mFVFHasPosition = true;
+	}
+
+	if ((mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+	{
+		mFVFHasColor = true;
+	}
+
+	if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
+	{
+		mFVFTextureCount = 1;
+	}
+
+	if ((mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+	{
+		mFVFTextureCount = 2;
+	}
+
+	if ((mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
+	{
+		mFVFTextureCount = 3;
+	}
+
+	if ((mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
+	{
+		mFVFTextureCount = 4;
+	}
+
+	if ((mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
+	{
+		mFVFTextureCount = 5;
+	}
+
+	if ((mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
+	{
+		mFVFTextureCount = 6;
+	}
+
+	if ((mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
+	{
+		mFVFTextureCount = 7;
+	}
+
+	if ((mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
+	{
+		mFVFTextureCount = 8;
+	}
 
 	return S_OK;	
 }

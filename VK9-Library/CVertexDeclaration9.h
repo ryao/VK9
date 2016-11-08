@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3DVertexDeclaration9
 #include <vulkan/vulkan.h>
 #include "CUnknown.h"
+#include <vector>
 
 class CDevice9;
 
@@ -31,10 +32,14 @@ class CVertexDeclaration9 : public IDirect3DVertexDeclaration9
 {
 private:
 	CDevice9* mDevice;
-	D3DVERTEXELEMENT9* mVertexElements;
 public:
 	CVertexDeclaration9(CDevice9* device,const D3DVERTEXELEMENT9* pVertexElements);
 	~CVertexDeclaration9();
+
+	std::vector<D3DVERTEXELEMENT9> mVertexElements;
+	BOOL mHasPosition;
+	BOOL mHasColor;
+	int32_t mTextureCount;
 
 	int mReferenceCount;
 	VkResult mResult;

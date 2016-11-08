@@ -627,84 +627,50 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
 	uint32_t attributeCount = 0;
+	uint32_t textureCount = 0;
+	BOOL hasColor = 0;
+	BOOL hasPosition = 0;
 
 	if (mDevice->mFVF)
 	{
-		if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
-		{
-			attributeCount += 1;
-		}
+		attributeCount += mDevice->mFVFHasColor;
+		attributeCount += mDevice->mFVFHasPosition;
+		attributeCount += mDevice->mFVFTextureCount;
 
-		if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
-		{
-			attributeCount += 1;
-		}
+		hasColor = mDevice->mFVFHasColor;
+		hasPosition = mDevice->mFVFHasPosition;
+		textureCount = mDevice->mFVFTextureCount;
+	}
+	else if (mDevice->mVertexDeclaration != nullptr)
+	{
+		attributeCount += mDevice->mVertexDeclaration->mHasColor;
+		attributeCount += mDevice->mVertexDeclaration->mHasPosition;
+		attributeCount += mDevice->mVertexDeclaration->mTextureCount;
 
-		uint32_t textureCount = 0;
-		if ((mDevice->mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
-		{
-			attributeCount += 1;
-			textureCount = 1;
-		}
+		hasColor = mDevice->mVertexDeclaration->mHasColor;
+		hasPosition = mDevice->mVertexDeclaration->mHasPosition;
+		textureCount = mDevice->mVertexDeclaration->mTextureCount;
+	}
 
-		if ((mDevice->mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+	if (hasPosition && !hasColor)
+	{
+		switch (textureCount)
 		{
-			textureCount = 2;
+		case 0:
+			//No textures.
+			break;
+		case 1:
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
+			break;
 		}
+	}
 
-		if ((mDevice->mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
-		{
-			attributeCount += 1;
-			textureCount = 3;
-		}
-
-		if ((mDevice->mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
-		{
-			attributeCount += 1;
-			textureCount = 4;
-		}
-
-		if ((mDevice->mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
-		{
-			attributeCount += 1;
-			textureCount = 5;
-		}
-
-		if ((mDevice->mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
-		{
-			attributeCount += 1;
-			textureCount = 6;
-		}
-
-		if ((mDevice->mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
-		{
-			attributeCount += 1;
-			textureCount = 7;
-		}
-
-		if ((mDevice->mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
-		{
-			attributeCount += 1;
-			textureCount = 8;
-		}
-
-		if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
-		{
-			switch (textureCount)
-			{
-			case 0:
-				//No textures.
-				break;
-			case 1:
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
-				break;
-			default:
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
-				break;
-			}
-		}
-
+	if (mDevice->mFVF)
+	{
 		int i = 0;
 		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
 		{
@@ -716,7 +682,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			mVertexInputBindingDescription[i].stride = source.second.Stride;
 			mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-			if ((mDevice->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+			if (hasPosition)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
 				mVertexInputAttributeDescription[attributeIndex].location = location;

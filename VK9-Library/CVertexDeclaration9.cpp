@@ -26,9 +26,35 @@ misrepresented as being the original software.
 CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMENT9* pVertexElements)
 	: mReferenceCount(1),
 	mDevice(device),
-	mVertexElements((D3DVERTEXELEMENT9*)pVertexElements),
-	mResult(VK_SUCCESS)
+	mResult(VK_SUCCESS),
+	mHasPosition(0),
+	mHasColor(0),
+	mTextureCount(0)
 {
+	size_t i = 0;
+
+	while (pVertexElements[i].Stream != 0xFF)
+	{
+		mVertexElements.push_back(pVertexElements[i]);
+
+		switch(pVertexElements[i].Usage)
+		{
+		case D3DDECLUSAGE_POSITION:
+			mHasPosition = true;
+			break;
+		case D3DDECLUSAGE_COLOR:
+			mHasColor = true;
+			break;
+		case D3DDECLUSAGE_TEXCOORD:
+			mTextureCount++;
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(fatal) << "CVertexDeclaration9::CVertexDeclaration9 unknown vertex usage " << pVertexElements[i].Usage;
+			break;
+		}
+
+		i++;
+	}
 }
 
 CVertexDeclaration9::~CVertexDeclaration9()
@@ -89,9 +115,16 @@ ULONG STDMETHODCALLTYPE CVertexDeclaration9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements)
 {
-	//TODO: Implement.
+	(*pNumElements) = mVertexElements.size() + 1; //+1 for the terminator.
 
-	BOOST_LOG_TRIVIAL(warning) << "CVertexDeclaration9::GetDeclaration is not implemented!";
+	if (pDecl!=nullptr) //If null only return the count so the caller can use it to construct an array of the correct size.
+	{
+		for (size_t i = 0; i < mVertexElements.size(); i++)
+		{
+			pDecl[i] = mVertexElements[i];
+		}
+		pDecl[mVertexElements.size()] = D3DDECL_END(); //not a mistake raw D3DVERTEXELEMENT9 arrays contain a terminator but I don't store it because all I reall need is a count.
+	}
 
 	return E_NOTIMPL;
 }

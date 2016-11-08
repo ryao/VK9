@@ -253,6 +253,10 @@ public:
 	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
 
 	DWORD mFVF;
+	BOOL mFVFHasPosition;
+	BOOL mFVFHasColor;
+	int32_t mFVFTextureCount;
+
 	BOOL mIsDirty;
 	BOOL mIsSceneStarted; 
 	
