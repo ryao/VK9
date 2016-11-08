@@ -1,11 +1,8 @@
 Debug
-/SchaeferGL.VC.opendb
-/ipch/SCHAEFERGL-TESTS-9b7fad9d/*.ipch
-/.vs/SchaeferGL/v14/*.suo
-/*.sdf
+*.sdf
+*.suo
+ipch
 Release
-/SchaeferGL.VC.VC.opendb
-/SchaeferGL.VC.db
 *.db
 *.opendb
 /.vs
