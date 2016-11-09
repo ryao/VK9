@@ -668,19 +668,45 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			break;
 		}
 	}
+	else if(hasPosition && hasColor)
+	{
+		switch (textureCount)
+		{
+		case 0:
+			//No textures.
+			break;
+		//case 1:
+		//	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+		//	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+		//	break;
+		default:
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
+			break;
+		}
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported layout.";
+	}
+
+	int i = 0;
+	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+	{
+		mVertexInputBindingDescription[i].binding = source.first;
+		mVertexInputBindingDescription[i].stride = source.second.Stride;
+		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		i++;
+	}
 
 	if (mDevice->mFVF)
 	{
-		int i = 0;
+		i = 0;
 		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
 		{
 			int attributeIndex = i * attributeCount;
 			uint32_t offset = 0;
 			uint32_t location = 0;
-
-			mVertexInputBindingDescription[i].binding = source.first;
-			mVertexInputBindingDescription[i].stride = source.second.Stride;
-			mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			if (hasPosition)
 			{
@@ -720,17 +746,10 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	}
 	else if(mDevice->mVertexDeclaration != nullptr)
 	{
-		int i = 0;
-		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
-		{
-			mVertexInputBindingDescription[i].binding = source.first;
-			mVertexInputBindingDescription[i].stride = source.second.Stride;
-			mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
 
 			//TODO: implement vertex
 
-			i++;
-		}
 
 	}
 
