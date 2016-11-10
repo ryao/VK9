@@ -81,6 +81,67 @@ inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memory
 	return false;
 }
 
+//D3DDECLTYPE
+
+inline VkFormat ConvertDeclType(D3DDECLTYPE input)
+{
+	VkFormat output = VK_FORMAT_UNDEFINED;
+	//TODO: finish mapping.
+	switch (input)
+	{
+	case D3DDECLTYPE_FLOAT1: // 1D float expanded to (value, 0., 0., 1.)
+		output = VK_FORMAT_R32_SFLOAT;
+		break;
+	case D3DDECLTYPE_FLOAT2:  // 2D float expanded to (value, value, 0., 1.)
+		output = VK_FORMAT_R32G32_SFLOAT;
+		break;
+	case D3DDECLTYPE_FLOAT3: // 3D float expanded to (value, value, value, 1.)
+		output = VK_FORMAT_R32G32B32_SFLOAT;
+		break;
+	case D3DDECLTYPE_FLOAT4:  // 4D float
+		output = VK_FORMAT_R32G32B32A32_SFLOAT;
+		break;
+	case D3DDECLTYPE_D3DCOLOR:  // 4D packed unsigned bytes mapped to 0. to 1. range
+		output = VK_FORMAT_B8G8R8A8_UINT;
+		break; // Input is in D3DCOLOR format (ARGB) expanded to (R, G, B, A)
+	case D3DDECLTYPE_UBYTE4: // 4D unsigned byte
+		break;
+	case D3DDECLTYPE_SHORT2:  // 2D signed short expanded to (value, value, 0., 1.)
+		output = VK_FORMAT_R16G16_SINT;
+		break;
+	case D3DDECLTYPE_SHORT4:  // 4D signed short
+		output = VK_FORMAT_R16G16B16_SINT;
+		break;
+	case D3DDECLTYPE_UBYTE4N:  // Each of 4 bytes is normalized by dividing to 255.0
+		break;
+	case D3DDECLTYPE_SHORT2N: // 2D signed short normalized (v[0]/32767.0,v[1]/32767.0,0,1)
+		break;
+	case D3DDECLTYPE_SHORT4N:  // 4D signed short normalized (v[0]/32767.0,v[1]/32767.0,v[2]/32767.0,v[3]/32767.0)
+		break;
+	case D3DDECLTYPE_USHORT2N:  // 2D unsigned short normalized (v[0]/65535.0,v[1]/65535.0,0,1)
+		break;
+	case D3DDECLTYPE_USHORT4N:  // 4D unsigned short normalized (v[0]/65535.0,v[1]/65535.0,v[2]/65535.0,v[3]/65535.0)
+		break;
+	case D3DDECLTYPE_UDEC3:  // 3D unsigned 10 10 10 format expanded to (value, value, value, 1)
+		break;
+	case D3DDECLTYPE_DEC3N:  // 3D signed 10 10 10 format normalized and expanded to (v[0]/511.0, v[1]/511.0, v[2]/511.0, 1)
+		break;
+	case D3DDECLTYPE_FLOAT16_2:  // Two 16-bit floating point values, expanded to (value, value, 0, 1)
+		output = VK_FORMAT_R16G16_SFLOAT;
+		break;
+	case D3DDECLTYPE_FLOAT16_4:  // Four 16-bit floating point values
+		output = VK_FORMAT_R16G16B16A16_SFLOAT;
+		break;
+	case D3DDECLTYPE_UNUSED:  // When the type field in a decl is unused.
+		output = VK_FORMAT_UNDEFINED;
+		break;
+	default:
+		break;
+	}
+
+	return output;
+}
+
 inline uint32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType, UINT primtiveCount)
 {
 	uint32_t output;

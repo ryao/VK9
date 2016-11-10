@@ -701,6 +701,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 	if (mDevice->mFVF)
 	{
+		//revisit - make sure multiple sources is valid for FVF.
 		i = 0;
 		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
 		{
@@ -746,11 +747,59 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	}
 	else if(mDevice->mVertexDeclaration != nullptr)
 	{
+		uint32_t textureIndex = 0;
 
+		attributeCount = mDevice->mVertexDeclaration->mVertexElements.size();
 
-			//TODO: implement vertex
+		for (size_t i = 0; i < attributeCount; i++)
+		{
+			D3DVERTEXELEMENT9& element = mDevice->mVertexDeclaration->mVertexElements[i];
 
+			int t = D3DDECLTYPE_FLOAT3;
 
+			mVertexInputAttributeDescription[i].binding = element.Stream;
+			//mVertexInputAttributeDescription[i].location = location;
+			mVertexInputAttributeDescription[i].format = ConvertDeclType((D3DDECLTYPE)element.Type);
+			mVertexInputAttributeDescription[i].offset = element.Offset;
+
+			switch ((D3DDECLUSAGE)element.Usage)
+			{
+			case D3DDECLUSAGE_POSITION:
+				mVertexInputAttributeDescription[i].location = 0;
+				break;
+			case D3DDECLUSAGE_BLENDWEIGHT:
+				break;
+			case D3DDECLUSAGE_BLENDINDICES:
+				break;
+			case D3DDECLUSAGE_NORMAL:
+				break;
+			case D3DDECLUSAGE_PSIZE:
+				break;
+			case D3DDECLUSAGE_TEXCOORD:
+				mVertexInputAttributeDescription[i].location = hasPosition + hasColor + textureIndex;
+				textureIndex += 1;
+				break;
+			case D3DDECLUSAGE_TANGENT:
+				break;
+			case D3DDECLUSAGE_BINORMAL:
+				break;
+			case D3DDECLUSAGE_TESSFACTOR:
+				break;
+			case D3DDECLUSAGE_POSITIONT:
+				break;
+			case D3DDECLUSAGE_COLOR:
+				mVertexInputAttributeDescription[i].location = hasPosition;
+				break;
+			case D3DDECLUSAGE_FOG:
+				break;
+			case D3DDECLUSAGE_DEPTH:
+				break;
+			case D3DDECLUSAGE_SAMPLE:
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 
