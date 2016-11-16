@@ -81,6 +81,9 @@ public:
 	VkShaderModule mVertShaderModule_XYZ_TEX1;
 	VkShaderModule mFragShaderModule_XYZ_TEX1;
 
+	VkShaderModule mVertShaderModule_XYZ_DIFFUSE_TEX1;
+	VkShaderModule mFragShaderModule_XYZ_DIFFUSE_TEX1;
+
 	VkSampler mSampler;
 	VkImage mImage;
 	VkImageLayout mImageLayout;

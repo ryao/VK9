@@ -40,6 +40,9 @@ BufferManager::BufferManager()
 	mVertShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
 	mFragShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
 
+	mVertShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
+	mFragShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
+
 	mSampler(VK_NULL_HANDLE),
 	mImage(VK_NULL_HANDLE),
 	mImageLayout(VK_IMAGE_LAYOUT_UNDEFINED),
@@ -97,6 +100,9 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
 	mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
+
+	mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
+	mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
@@ -503,6 +509,18 @@ BufferManager::~BufferManager()
 		mFragShaderModule_XYZ_TEX1 = VK_NULL_HANDLE;
 	}
 
+	if (mVertShaderModule_XYZ_DIFFUSE_TEX1 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_DIFFUSE_TEX1, NULL);
+		mVertShaderModule_XYZ_DIFFUSE_TEX1 = VK_NULL_HANDLE;
+	}
+
+	if (mFragShaderModule_XYZ_DIFFUSE_TEX1 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_DIFFUSE_TEX1, NULL);
+		mFragShaderModule_XYZ_DIFFUSE_TEX1 = VK_NULL_HANDLE;
+	}
+
 	if (mPipeline != VK_NULL_HANDLE)
 	{
 		vkDestroyPipeline(mDevice->mDevice, mPipeline, NULL);
@@ -675,10 +693,10 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		case 0:
 			//No textures.
 			break;
-		//case 1:
-		//	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
-		//	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
-		//	break;
+		case 1:
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
+			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
 			break;
