@@ -57,8 +57,7 @@ vec4 Convert(uvec4 rgba)
 void main() 
 {
 	mat4 matrix = ubo.projection * ubo.view * ubo.model; 
-	gl_Position = matrix * position;
-	gl_Position.y = -gl_Position.y;
+	gl_Position = matrix * position * vec4(1.0,-1.0,1.0,1.0);
 
 	color = Convert(attr);
 }

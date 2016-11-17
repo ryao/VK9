@@ -631,7 +631,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	*/
 
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
-	 
+	
 	mDescriptorSetLayoutBinding[0].binding = 0;
 	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
 	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
@@ -857,7 +857,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline vkAllocateDescriptorSets failed with return code of " << mResult;
 		return;
 	}
-
+	 
 	mWriteDescriptorSet[0].dstSet = mDescriptorSet;
 	mWriteDescriptorSet[0].descriptorCount = 1;
 	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
