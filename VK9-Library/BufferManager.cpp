@@ -649,7 +649,17 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
 
-	if (mDevice->mFVF)
+	if (mDevice->mVertexDeclaration != nullptr)
+	{
+		attributeCount += mDevice->mVertexDeclaration->mHasColor;
+		attributeCount += mDevice->mVertexDeclaration->mHasPosition;
+		attributeCount += mDevice->mVertexDeclaration->mTextureCount;
+
+		hasColor = mDevice->mVertexDeclaration->mHasColor;
+		hasPosition = mDevice->mVertexDeclaration->mHasPosition;
+		textureCount = mDevice->mVertexDeclaration->mTextureCount;
+	}
+	else if (mDevice->mFVF)
 	{
 		attributeCount += mDevice->mFVFHasColor;
 		attributeCount += mDevice->mFVFHasPosition;
@@ -659,15 +669,9 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		hasPosition = mDevice->mFVFHasPosition;
 		textureCount = mDevice->mFVFTextureCount;
 	}
-	else if (mDevice->mVertexDeclaration != nullptr)
+	else
 	{
-		attributeCount += mDevice->mVertexDeclaration->mHasColor;
-		attributeCount += mDevice->mVertexDeclaration->mHasPosition;
-		attributeCount += mDevice->mVertexDeclaration->mTextureCount;
-
-		hasColor = mDevice->mVertexDeclaration->mHasColor;
-		hasPosition = mDevice->mVertexDeclaration->mHasPosition;
-		textureCount = mDevice->mVertexDeclaration->mTextureCount;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported layout definition.";
 	}
 
 	if (hasPosition && !hasColor)
@@ -717,53 +721,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		i++;
 	}
 
-	if (mDevice->mFVF)
-	{
-		//revisit - make sure multiple sources is valid for FVF.
-		i = 0;
-		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
-		{
-			int attributeIndex = i * attributeCount;
-			uint32_t offset = 0;
-			uint32_t location = 0;
-
-			if (hasPosition)
-			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-				mVertexInputAttributeDescription[attributeIndex].location = location;
-				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
-				mVertexInputAttributeDescription[attributeIndex].offset = offset;
-				offset += (sizeof(float) * 3);
-				location += 1;
-				attributeIndex += 1;
-			}
-
-			if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
-			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-				mVertexInputAttributeDescription[attributeIndex].location = location;
-				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
-				mVertexInputAttributeDescription[attributeIndex].offset = offset;
-				offset += sizeof(uint32_t);
-				location += 1;
-				attributeIndex += 1;
-			}
-
-			for (size_t j = 0; j < textureCount; j++)
-			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
-				mVertexInputAttributeDescription[attributeIndex].location = location;
-				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
-				mVertexInputAttributeDescription[attributeIndex].offset = offset;
-				offset += (sizeof(float) * 2);
-				location += 1;
-				attributeIndex += 1;
-			}
-
-			i++;
-		}
-	}
-	else if(mDevice->mVertexDeclaration != nullptr)
+	if (mDevice->mVertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
@@ -819,15 +777,61 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			}
 		}
 	}
+	else if (mDevice->mFVF)
+	{
+		//revisit - make sure multiple sources is valid for FVF.
+		i = 0;
+		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+		{
+			int attributeIndex = i * attributeCount;
+			uint32_t offset = 0;
+			uint32_t location = 0;
 
+			if (hasPosition)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += (sizeof(float) * 3);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += sizeof(uint32_t);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			for (size_t j = 0; j < textureCount; j++)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += (sizeof(float) * 2);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			i++;
+		}
+	}
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
-	mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
-	mPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+	mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.
 
-	mDescriptorSetLayoutCreateInfo.bindingCount = 2; //mStreamSources.size()
-	mDescriptorSetAllocateInfo.descriptorSetCount = mStreamSources.size();
-	mPipelineLayoutCreateInfo.setLayoutCount = mStreamSources.size();
+	mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
+	mDescriptorSetAllocateInfo.descriptorSetCount = 1; //mStreamSources.size(); //determines the number of descriptor sets to be allocated from the pool.
+	
+	mPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+	mPipelineLayoutCreateInfo.setLayoutCount = 1; // mStreamSources.size(); // The number of descriptor sets included in the pipeline layout.
 
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mStreamSources.size();
 	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount; //mStreamSources.size() *
