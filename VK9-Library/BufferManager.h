@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include <unordered_map>
 
 #include "CTypes.h"
+#include "CIndexBuffer9.h"
 
 class CDevice9;
 
@@ -42,6 +43,7 @@ public:
 	bool mIsDirty;
 
 	std::unordered_map<UINT, StreamSource> mStreamSources;
+	CIndexBuffer9* mIndexBuffer;
 
 	VkDynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE] = {};
 	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1] = {};

@@ -31,14 +31,71 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS)
+	mResult(VK_SUCCESS),
+	mData(nullptr),
+	mSize(0),
+	mCapacity(0),
+	mIsDirty(true),
+	mLockCount(0),
+	mBuffer(VK_NULL_HANDLE),
+	mMemory(VK_NULL_HANDLE)
 {
+	VkBufferCreateInfo bufferCreateInfo = {};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.pNext = NULL;
+	bufferCreateInfo.size = mLength;
+	bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferCreateInfo.flags = 0;
 
+	VkMemoryAllocateInfo memoryAllocateInfo = {};
+	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memoryAllocateInfo.pNext = NULL;
+	memoryAllocateInfo.allocationSize = 0;
+	memoryAllocateInfo.memoryTypeIndex = 0;
+
+	mMemoryRequirements = {};
+
+	mResult = vkCreateBuffer(mDevice->mDevice, &bufferCreateInfo, NULL, &mBuffer);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 vkCreateBuffer failed with return code of " << mResult;
+		return;
+	}
+
+	vkGetBufferMemoryRequirements(mDevice->mDevice, mBuffer, &mMemoryRequirements);
+
+	memoryAllocateInfo.allocationSize = mMemoryRequirements.size;
+
+	GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, mMemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &memoryAllocateInfo.memoryTypeIndex);
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &memoryAllocateInfo, NULL, &mMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkBindBufferMemory(mDevice->mDevice, mBuffer, mMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 vkBindBufferMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mSize = mLength / sizeof(WORD);
 }
 
 CIndexBuffer9::~CIndexBuffer9()
 {
+	if (mBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer(mDevice->mDevice, mBuffer, NULL);
+	}
 
+	if (mMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mMemory, NULL);
+	}
 }
 
 ULONG STDMETHODCALLTYPE CIndexBuffer9::AddRef(void)
@@ -168,18 +225,39 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC* pDesc)
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {
-	//TODO: Implement.
+	VkResult result = VK_SUCCESS;
 
-	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::Lock is not implemented!";
+	if (mPool == D3DPOOL_MANAGED)
+	{
+		if (!(Flags & D3DLOCK_READONLY))
+		{ //If the lock allows write mark the buffer as dirty.
+			mIsDirty = true;
+		}
+	}
 
-	return S_OK;	
+	result = vkMapMemory(mDevice->mDevice, mMemory, 0, mMemoryRequirements.size, 0, &mData);
+
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::Lock vkMapMemory failed with return code of " << result;
+		*ppbData = nullptr;
+
+		return D3DERR_INVALIDCALL;
+	}
+
+	*ppbData = (char *)mData + OffsetToLock;
+	mLockCount++;
+
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::Unlock()
 {
-	//TODO: Implement.
+	VkResult result = VK_SUCCESS;
 
-	BOOST_LOG_TRIVIAL(warning) << "CIndexBuffer9::Unlock is not implemented!";
+	vkUnmapMemory(mDevice->mDevice, mMemory);
 
-	return S_OK;	
+	mLockCount--;
+
+	return S_OK;
 }

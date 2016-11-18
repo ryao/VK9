@@ -57,6 +57,8 @@ BufferManager::BufferManager()
 	mUniformBuffer(VK_NULL_HANDLE),
 	mUniformBufferMemory(VK_NULL_HANDLE),
 
+	mIndexBuffer(nullptr),
+
 	mResult(VK_SUCCESS)
 {
 	//Don't use. This is only here for containers.
@@ -78,6 +80,9 @@ BufferManager::BufferManager(CDevice9* device)
 	mVertShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
 	mFragShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
 
+	mVertShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
+	mFragShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
+
 	mSampler(VK_NULL_HANDLE),
 	mImage(VK_NULL_HANDLE),
 	mImageLayout(VK_IMAGE_LAYOUT_UNDEFINED),
@@ -90,7 +95,11 @@ BufferManager::BufferManager(CDevice9* device)
 	mUniformStagingBuffer(VK_NULL_HANDLE),
 	mUniformStagingBufferMemory(VK_NULL_HANDLE),
 	mUniformBuffer(VK_NULL_HANDLE),
-	mUniformBufferMemory(VK_NULL_HANDLE)
+	mUniformBufferMemory(VK_NULL_HANDLE),
+
+	mIndexBuffer(nullptr),
+
+	mResult(VK_SUCCESS)
 {
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
 	//mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);

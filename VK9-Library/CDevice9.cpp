@@ -1906,16 +1906,44 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
 {
+	if (mBufferManager->mIndexBuffer == nullptr)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive called with null index buffer.";
+		return D3DERR_INVALIDCALL;
+	}
+
 	if (!mIsSceneStarted)
 	{
 		this->StartScene();
 	}
 
-	//TODO: Implement.
+	/*
+	We have to tell the manager what kind of buffers we're working with so it can build the pipe.
+	*/
+	mBufferManager->UpdatePipeline(Type);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive is not implemented!";
+	if (mBufferManager->mIsDirty)
+	{
+		vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
+		vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0, nullptr);
 
-	return S_OK;	
+		/*
+		The buffer manager isn't doing much on this call but it may do more later.
+		*/
+		mBufferManager->BindVertexBuffers(Type);
+
+		vkCmdBindIndexBuffer(mSwapchainBuffers[mCurrentBuffer], mBufferManager->mIndexBuffer->mBuffer, 0, VK_INDEX_TYPE_UINT32);
+	}
+
+	/*
+		https://vulkan-tutorial.com/code/model_loading.cpp
+		https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
+		https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
+	*/
+	
+	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mIndexBuffer->mSize, PrimitiveCount), 1, StartIndex, BaseVertexIndex, 0);
+
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,const void *pIndexData,D3DFORMAT IndexDataFormat,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
@@ -2662,9 +2690,7 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetIndices is not implemented!";
+	mBufferManager->mIndexBuffer = (CIndexBuffer9*)pIndexData;
 
 	return S_OK;
 }

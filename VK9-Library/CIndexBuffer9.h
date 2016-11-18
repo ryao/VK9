@@ -40,6 +40,15 @@ public:
 
 	int mReferenceCount;
 	VkResult mResult;
+	void* mData;
+	size_t mSize;
+	size_t mCapacity;
+	bool mIsDirty;
+	int mLockCount;
+
+	VkMemoryRequirements mMemoryRequirements;
+	VkBuffer mBuffer;
+	VkDeviceMemory mMemory;
 
 public:
 	//IUnknown
