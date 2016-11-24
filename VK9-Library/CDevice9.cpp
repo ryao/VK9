@@ -1925,14 +1925,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 	if (mBufferManager->mIsDirty)
 	{
 		vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
-		vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0, nullptr);
 
 		/*
 		The buffer manager isn't doing much on this call but it may do more later.
 		*/
 		mBufferManager->BindVertexBuffers(Type);
-
 		vkCmdBindIndexBuffer(mSwapchainBuffers[mCurrentBuffer], mBufferManager->mIndexBuffer->mBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0, nullptr);
 	}
 
 	/*
