@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "CIndexBuffer9.h"
 #include "CQuery9.h"
 #include "CBaseTexture9.h"
+#include "CSwapChain9.h"
 
 #include "BufferManager.h"
 
@@ -251,6 +252,7 @@ public:
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
 
 	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
+	std::vector<CSwapChain9*> mSwapChains;
 
 	DWORD mFVF;
 	BOOL mFVFHasPosition;

@@ -1404,12 +1404,21 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mBufferManager = new BufferManager(this);
 
+	//Add implicit swap chain.
+	CSwapChain9* ptr = new CSwapChain9(pPresentationParameters);
+	mSwapChains.push_back(ptr);
+
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
 } 
 
 CDevice9::~CDevice9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
+
+	for (size_t i = 0; i < mSwapChains.size(); i++)
+	{
+		delete mSwapChains[i];
+	}
 
 	delete mBufferManager;
 
@@ -2439,11 +2448,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSourceFreq(UINT StreamNumber,UINT *
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetSwapChain(UINT  iSwapChain,IDirect3DSwapChain9 **ppSwapChain)
 {
-	//TODO: Implement.
+	(*ppSwapChain) = (IDirect3DSwapChain9*)mSwapChains[iSwapChain];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetSwapChain is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTexture(DWORD Stage,IDirect3DBaseTexture9 **ppTexture)

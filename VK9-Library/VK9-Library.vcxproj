@@ -158,6 +158,7 @@
     <ClCompile Include="CResource9.cpp" />
     <ClCompile Include="CStateBlock9.cpp" />
     <ClCompile Include="CSurface9.cpp" />
+    <ClCompile Include="CSwapChain9.cpp" />
     <ClCompile Include="CTexture9.cpp" />
     <ClCompile Include="CTypes.cpp" />
     <ClCompile Include="CUnknown.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="CResource9.h" />
     <ClInclude Include="CStateBlock9.h" />
     <ClInclude Include="CSurface9.h" />
+    <ClInclude Include="CSwapChain9.h" />
     <ClInclude Include="CTexture9.h" />
     <ClInclude Include="CTypes.h" />
     <ClInclude Include="CUnknown.h" />
