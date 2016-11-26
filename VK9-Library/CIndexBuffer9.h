@@ -49,6 +49,7 @@ public:
 	VkMemoryRequirements mMemoryRequirements;
 	VkBuffer mBuffer;
 	VkDeviceMemory mMemory;
+	VkIndexType mIndexType;
 
 public:
 	//IUnknown

@@ -38,7 +38,8 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 	mIsDirty(true),
 	mLockCount(0),
 	mBuffer(VK_NULL_HANDLE),
-	mMemory(VK_NULL_HANDLE)
+	mMemory(VK_NULL_HANDLE),
+	mIndexType(VK_INDEX_TYPE_UINT32)
 {
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -82,7 +83,20 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 		return;
 	}
 
-	mSize = mLength / sizeof(WORD);
+	switch (Format)
+	{
+	case D3DFMT_INDEX16:
+		mIndexType = VK_INDEX_TYPE_UINT16;
+		mSize = mLength / sizeof(uint16_t); //WORD
+		break;
+	case D3DFMT_INDEX32:
+		mIndexType = VK_INDEX_TYPE_UINT32;
+		mSize = mLength / sizeof(uint32_t);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 invalid D3DFORMAT of " << Format;
+		break;
+	}
 }
 
 CIndexBuffer9::~CIndexBuffer9()

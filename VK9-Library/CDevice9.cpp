@@ -1939,18 +1939,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 		The buffer manager isn't doing much on this call but it may do more later.
 		*/
 		mBufferManager->BindVertexBuffers(Type);
-		vkCmdBindIndexBuffer(mSwapchainBuffers[mCurrentBuffer], mBufferManager->mIndexBuffer->mBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(mSwapchainBuffers[mCurrentBuffer], mBufferManager->mIndexBuffer->mBuffer, 0, mBufferManager->mIndexBuffer->mIndexType);
 
 		vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0, nullptr);
 	}
 
 	/*
-		https://vulkan-tutorial.com/code/model_loading.cpp
 		https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 		https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
+
 	*/
 	
-	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mIndexBuffer->mSize, PrimitiveCount), 1, StartIndex, BaseVertexIndex, 0);
+	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
 
 	return S_OK;
 }
