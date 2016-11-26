@@ -100,6 +100,34 @@ C9::C9()
 #ifdef _DEBUG
 	mExtensionNames.push_back("VK_EXT_debug_report");
 	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+
+	HINSTANCE instnace = LoadLibraryA("renderdoc.dll");
+	HMODULE mod = GetModuleHandleA("renderdoc.dll");
+	if(mod!=nullptr)
+	{
+		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
+		if (RENDERDOC_GetAPI!=nullptr)
+		{
+			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_1, (void **)&mRenderDocApi);
+			if (ret!=1)
+			{
+				BOOST_LOG_TRIVIAL(warning) << "C9::C9 unable to find RENDERDOC_API_Version_1_1_ !";
+			}
+			else
+			{
+				mRenderDocApi->SetLogFilePathTemplate("vk");
+			}
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(warning) << "C9::C9 unable to find RENDERDOC_GetAPI !";
+		}
+		
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(warning) << "C9::C9 unable to find renderdoc.dll !";
+	}
 #endif // _DEBUG
 
 	// initialize the VkApplicationInfo structure
@@ -325,6 +353,22 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	}
 
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
+
+#ifdef _DEBUG
+	if (mRenderDocApi!=nullptr)
+	{
+		//mRenderDocApi->TriggerCapture();
+		uint32_t pid = mRenderDocApi->LaunchReplayUI(1, nullptr);
+		if (pid==0)
+		{
+			BOOST_LOG_TRIVIAL(warning) << "C9::CreateDevice unable to launch RenderDoc!";
+		}
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(warning) << "C9::CreateDevice unable to access RenderDoc API!";
+	}
+#endif // _DEBUG
 
 	return result;	
 }

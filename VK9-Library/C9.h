@@ -30,6 +30,10 @@ misrepresented as being the original software.
 //#include <boost/log/sinks/sync_frontend.hpp>
 #include "CTypes.h"
 
+#ifdef _DEBUG
+#include "renderdoc_app.h"
+#endif // _DEBUG
+
 class C9 : public IDirect3D9
 {
 private:
@@ -37,6 +41,10 @@ private:
 public:
 	C9();
 	~C9();
+
+#ifdef _DEBUG
+	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
+#endif // _DEBUG
 
 	VkResult mResult;
 	VkInstance mInstance;
