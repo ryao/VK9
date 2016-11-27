@@ -427,9 +427,22 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
 {	
-	//TODO: Implement.
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(mPhysicalDevices[Adapter], &deviceProperties);
+	
+	(*pIdentifier) = {}; //zero it out.
 
-	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterIdentifier is not implemented!";
+	strcpy(pIdentifier->DeviceName, deviceProperties.deviceName); //256 to 32 revisit
+	strcpy(pIdentifier->Driver, "");
+	strcpy(pIdentifier->Description, "");
+	pIdentifier->VendorId = deviceProperties.vendorID;
+	pIdentifier->DeviceId = deviceProperties.deviceID;
+	pIdentifier->DriverVersion.QuadPart = deviceProperties.driverVersion;
+	
+	//pIdentifier->SubSysId = 0;
+	//pIdentifier->Revision = 0;
+	//pIdentifier->DeviceIdentifier = 0;
+	//pIdentifier->WHQLLevel = 0;
 
 	return S_OK;	
 }

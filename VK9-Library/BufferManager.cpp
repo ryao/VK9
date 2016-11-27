@@ -657,6 +657,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 	uint32_t textureCount = 0;
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
+	BOOL hasNormal = 0;
 
 	if (mDevice->mVertexDeclaration != nullptr)
 	{
@@ -666,7 +667,8 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 
 		hasColor = mDevice->mVertexDeclaration->mHasColor;
 		hasPosition = mDevice->mVertexDeclaration->mHasPosition;
-		textureCount = mDevice->mVertexDeclaration->mTextureCount;
+		hasNormal = mDevice->mVertexDeclaration->mHasNormal;
+		textureCount = mDevice->mVertexDeclaration->mTextureCount;	
 	}
 	else if (mDevice->mFVF)
 	{
@@ -683,7 +685,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported layout definition.";
 	}
 
-	if (hasPosition && !hasColor)
+	if (hasPosition && !hasColor && !hasNormal)
 	{
 		switch (textureCount)
 		{
@@ -699,7 +701,7 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			break;
 		}
 	}
-	else if(hasPosition && hasColor)
+	else if(hasPosition && hasColor && !hasNormal)
 	{
 		switch (textureCount)
 		{
@@ -709,6 +711,19 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 		case 1:
 			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
+			break;
+		}
+	}
+	else if (hasPosition && hasColor && hasNormal)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline normals are not yet supported.";
+		switch (textureCount)
+		{
+		case 0:
+			//No textures.
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::UpdatePipeline unsupported texture count " << textureCount;
@@ -757,11 +772,12 @@ void BufferManager::UpdatePipeline(D3DPRIMITIVETYPE type)
 			case D3DDECLUSAGE_BLENDINDICES:
 				break;
 			case D3DDECLUSAGE_NORMAL:
+				mVertexInputAttributeDescription[i].location = hasPosition + hasColor;
 				break;
 			case D3DDECLUSAGE_PSIZE:
 				break;
 			case D3DDECLUSAGE_TEXCOORD:
-				mVertexInputAttributeDescription[i].location = hasPosition + hasColor + textureIndex;
+				mVertexInputAttributeDescription[i].location = hasPosition + hasColor + hasNormal + textureIndex;
 				textureIndex += 1;
 				break;
 			case D3DDECLUSAGE_TANGENT:

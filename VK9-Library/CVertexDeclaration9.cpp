@@ -48,8 +48,11 @@ CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMEN
 		case D3DDECLUSAGE_TEXCOORD:
 			mTextureCount++;
 			break;
+		case D3DDECLUSAGE_NORMAL:
+			mHasNormal = true;
+			break;
 		default:
-			BOOST_LOG_TRIVIAL(fatal) << "CVertexDeclaration9::CVertexDeclaration9 unknown vertex usage " << pVertexElements[i].Usage;
+			BOOST_LOG_TRIVIAL(fatal) << "CVertexDeclaration9::CVertexDeclaration9 unknown vertex usage " << (uint32_t)pVertexElements[i].Usage;
 			break;
 		}
 

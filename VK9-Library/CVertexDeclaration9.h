@@ -39,6 +39,7 @@ public:
 	std::vector<D3DVERTEXELEMENT9> mVertexElements;
 	BOOL mHasPosition;
 	BOOL mHasColor;
+	BOOL mHasNormal;
 	int32_t mTextureCount;
 
 	int mReferenceCount;
