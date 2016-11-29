@@ -257,7 +257,7 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock
 	}
 
 	*ppbData = (char *)mData + OffsetToLock;
-	mLockCount++;
+	InterlockedIncrement(&mLockCount);
 
 	return S_OK;
 }
@@ -268,7 +268,7 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Unlock()
 
 	vkUnmapMemory(mDevice->mDevice, mMemory);
 
-	mLockCount--;
+	InterlockedDecrement(&mLockCount);
 
 	return S_OK;
 }

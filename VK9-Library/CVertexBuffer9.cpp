@@ -303,7 +303,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 	}
 
 	*ppbData = (char *)mData + OffsetToLock;
-	mLockCount++;
+	InterlockedIncrement(&mLockCount);
 
 	return S_OK;	
 }
@@ -314,7 +314,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 
 	vkUnmapMemory(mDevice->mDevice, mMemory);
 
-	mLockCount--;
+	InterlockedDecrement(&mLockCount);
 
 	return S_OK;	
 }

@@ -44,7 +44,7 @@ public:
 	size_t mSize;
 	size_t mCapacity;
 	bool mIsDirty;
-	int mLockCount;
+	uint32_t mLockCount;
 
 	VkMemoryRequirements mMemoryRequirements;
 	VkBuffer mBuffer;
