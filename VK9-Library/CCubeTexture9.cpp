@@ -62,7 +62,7 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::QueryInterface(REFIID riid,void  **ppv)
 		return S_OK;
 	}
 
-	if (IsEqualGUID(riid, IID_IDirect3DTexture9))
+	if (IsEqualGUID(riid, IID_IDirect3DBaseTexture9))
 	{
 		(*ppv) = this;
 		this->AddRef();

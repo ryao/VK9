@@ -188,6 +188,13 @@ HRESULT STDMETHODCALLTYPE CTexture9::QueryInterface(REFIID riid, void  **ppv)
 		return E_POINTER;
 	}
 
+	if (IsEqualGUID(riid, IID_IDirect3DBaseTexture9))
+	{
+		(*ppv) = this;
+		this->AddRef();
+		return S_OK;
+	}
+
 	if (IsEqualGUID(riid, IID_IDirect3DTexture9))
 	{
 		(*ppv) = this;
