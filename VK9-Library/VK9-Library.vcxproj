@@ -161,7 +161,6 @@
     <ClCompile Include="CSwapChain9.cpp" />
     <ClCompile Include="CTexture9.cpp" />
     <ClCompile Include="CTypes.cpp" />
-    <ClCompile Include="CUnknown.cpp" />
     <ClCompile Include="CVertexBuffer9.cpp" />
     <ClCompile Include="CVertexDeclaration9.cpp" />
     <ClCompile Include="CVertexShader9.cpp" />
@@ -197,7 +196,6 @@
     <ClInclude Include="CSwapChain9.h" />
     <ClInclude Include="CTexture9.h" />
     <ClInclude Include="CTypes.h" />
-    <ClInclude Include="CUnknown.h" />
     <ClInclude Include="CVertexBuffer9.h" />
     <ClInclude Include="CVertexDeclaration9.h" />
     <ClInclude Include="CVertexShader9.h" />

@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include <vector>
 #include <unordered_map>
 
-#include "CUnknown.h"
 #include "CVertexDeclaration9.h"
 #include "CSurface9.h"
 

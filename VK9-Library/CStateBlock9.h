@@ -23,7 +23,6 @@ misrepresented as being the original software.
 
 #include "d3d9.h"
 #include <vulkan/vulkan.h>
-#include "CUnknown.h"
 
 class CDevice9;
 
