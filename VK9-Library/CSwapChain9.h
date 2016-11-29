@@ -31,7 +31,7 @@ class CSwapChain9 : public IDirect3DSwapChain9
 private:
 
 public:
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 
 	CDevice9* mDevice;

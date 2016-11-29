@@ -35,7 +35,7 @@ public:
 	CVertexShader9(CDevice9* device, const DWORD* pFunction);
 	~CVertexShader9();
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 public:
 	//IUnknown

@@ -34,7 +34,7 @@ public:
 	CQuery9(CDevice9* device, D3DQUERYTYPE Type);
 	~CQuery9();
 	
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 public:
 	//IUnknown

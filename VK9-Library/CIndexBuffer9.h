@@ -38,7 +38,7 @@ public:
 	CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CIndexBuffer9();
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 	void* mData;
 	size_t mSize;

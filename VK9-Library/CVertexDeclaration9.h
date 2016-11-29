@@ -41,7 +41,7 @@ public:
 	BOOL mHasNormal;
 	int32_t mTextureCount;
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 public:
 	//IUnknown

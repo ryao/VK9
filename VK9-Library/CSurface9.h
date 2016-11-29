@@ -52,7 +52,7 @@ public:
 	D3DPOOL mPool;
 	HANDLE* mSharedHandle;
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 
 	VkFormat mRealFormat;

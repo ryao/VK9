@@ -37,7 +37,7 @@ public:
 	CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type);
 	~CStateBlock9();
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 public:
 

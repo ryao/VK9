@@ -195,7 +195,7 @@ public:
 	VkSwapchainKHR mSwapchain;
 	uint32_t mGraphicsQueueIndex;
 	uint32_t mPresentationQueueIndex;
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkExtent2D mSwapchainExtent;
 	VkColorSpaceKHR mColorSpace;
 	VkSurfaceFormatKHR* mSurfaceFormats;

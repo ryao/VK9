@@ -30,7 +30,7 @@ class CResource9 : public IDirect3DResource9
 {
 private:
 	CDevice9* mDevice;
-	int mReferenceCount;
+	ULONG mReferenceCount;
 public:
 	CResource9();
 	~CResource9();

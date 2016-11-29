@@ -67,9 +67,7 @@ CVertexDeclaration9::~CVertexDeclaration9()
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::AddRef(void)
 {
-	mReferenceCount++;
-
-	return mReferenceCount;
+	return InterlockedIncrement(&mReferenceCount);
 }
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  **ppv)
@@ -105,15 +103,14 @@ HRESULT STDMETHODCALLTYPE CVertexDeclaration9::QueryInterface(REFIID riid,void  
 
 ULONG STDMETHODCALLTYPE CVertexDeclaration9::Release(void)
 {
-	mReferenceCount--;
+	ULONG ref = InterlockedDecrement(&mReferenceCount);
 
-	if (mReferenceCount <= 0)
+	if (ref == 0)
 	{
 		delete this;
-		return 0;
 	}
 
-	return mReferenceCount;
+	return ref;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexDeclaration9::GetDeclaration(D3DVERTEXELEMENT9* pDecl, UINT* pNumElements)
