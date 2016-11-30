@@ -37,7 +37,7 @@ misrepresented as being the original software.
 class C9 : public IDirect3D9
 {
 private:
-	int mReferenceCount;
+	ULONG mReferenceCount;
 public:
 	C9();
 	~C9();

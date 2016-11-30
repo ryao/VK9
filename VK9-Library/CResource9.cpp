@@ -35,9 +35,7 @@ CResource9::~CResource9()
 
 ULONG STDMETHODCALLTYPE CResource9::AddRef(void)
 {
-	mReferenceCount++;
-
-	return mReferenceCount;
+	return InterlockedIncrement(&mReferenceCount);
 }
 
 HRESULT STDMETHODCALLTYPE CResource9::QueryInterface(REFIID riid,void  **ppv)
@@ -66,15 +64,14 @@ HRESULT STDMETHODCALLTYPE CResource9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CResource9::Release(void)
 {
-	mReferenceCount--;
+	ULONG ref = InterlockedDecrement(&mReferenceCount);
 
-	if (mReferenceCount <= 0)
+	if (ref == 0)
 	{
 		delete this;
-		return 0;
 	}
 
-	return mReferenceCount;
+	return ref;
 }
 
 HRESULT STDMETHODCALLTYPE CResource9::FreePrivateData(REFGUID refguid)

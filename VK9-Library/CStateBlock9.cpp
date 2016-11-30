@@ -39,9 +39,7 @@ CStateBlock9::~CStateBlock9()
 
 ULONG STDMETHODCALLTYPE CStateBlock9::AddRef(void)
 {
-	mReferenceCount++;
-
-	return mReferenceCount;
+	return InterlockedIncrement(&mReferenceCount);
 }
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::QueryInterface(REFIID riid, void  **ppv)
@@ -77,15 +75,14 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::QueryInterface(REFIID riid, void  **ppv)
 
 ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 {
-	mReferenceCount--;
+	ULONG ref = InterlockedDecrement(&mReferenceCount);
 
-	if (mReferenceCount <= 0)
+	if (ref == 0)
 	{
 		delete this;
-		return 0;
 	}
 
-	return mReferenceCount;
+	return ref;
 }
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()

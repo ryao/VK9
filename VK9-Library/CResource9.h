@@ -23,7 +23,6 @@ misrepresented as being the original software.
 
 #include "d3d9.h" // Base class: IDirect3DResource9
 #include <vulkan/vulkan.h>
-#include "CUnknown.h"
 
 class CDevice9;
 
@@ -31,7 +30,7 @@ class CResource9 : public IDirect3DResource9
 {
 private:
 	CDevice9* mDevice;
-	int mReferenceCount;
+	ULONG mReferenceCount;
 public:
 	CResource9();
 	~CResource9();

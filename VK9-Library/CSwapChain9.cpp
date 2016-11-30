@@ -16,9 +16,7 @@ CSwapChain9::~CSwapChain9()
 
 ULONG STDMETHODCALLTYPE CSwapChain9::AddRef(void)
 {
-	mReferenceCount++;
-
-	return mReferenceCount;
+	return InterlockedIncrement(&mReferenceCount);
 }
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::QueryInterface(REFIID riid, void  **ppv)
@@ -54,15 +52,14 @@ HRESULT STDMETHODCALLTYPE CSwapChain9::QueryInterface(REFIID riid, void  **ppv)
 
 ULONG STDMETHODCALLTYPE CSwapChain9::Release(void)
 {
-	mReferenceCount--;
+	ULONG ref = InterlockedDecrement(&mReferenceCount);
 
-	if (mReferenceCount <= 0)
+	if (ref == 0)
 	{
 		delete this;
-		return 0;
 	}
 
-	return mReferenceCount;
+	return ref;
 }
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetBackBuffer(UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9  **ppBackBuffer)

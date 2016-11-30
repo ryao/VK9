@@ -43,7 +43,7 @@ public:
 	D3DPOOL mPool;
 	HANDLE* mSharedHandle;
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 	D3DTEXTUREFILTERTYPE mMipFilter;
 	D3DTEXTUREFILTERTYPE mMinFilter;

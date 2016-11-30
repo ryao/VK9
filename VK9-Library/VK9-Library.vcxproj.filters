@@ -60,9 +60,6 @@
     <ClCompile Include="CTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CUnknown.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CVertexBuffer9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -129,9 +126,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CUnknown.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CVertexBuffer9.h">

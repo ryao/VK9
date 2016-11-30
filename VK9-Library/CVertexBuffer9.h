@@ -40,13 +40,13 @@ public:
 	CVertexBuffer9(CDevice9* device,UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CVertexBuffer9();
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 	void* mData;
 	size_t mSize;
 	size_t mCapacity;
 	bool mIsDirty;
-	int mLockCount;
+	uint32_t mLockCount;
 
 	VkMemoryRequirements mMemoryRequirements;
 	VkBuffer mBuffer;

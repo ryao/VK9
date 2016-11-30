@@ -39,9 +39,7 @@ CQuery9::~CQuery9()
 
 ULONG STDMETHODCALLTYPE CQuery9::AddRef(void)
 {
-	mReferenceCount++;
-
-	return mReferenceCount;
+	return InterlockedIncrement(&mReferenceCount);
 }
 
 HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
@@ -77,15 +75,14 @@ HRESULT STDMETHODCALLTYPE CQuery9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE CQuery9::Release(void)
 {
-	mReferenceCount--;
+	ULONG ref = InterlockedDecrement(&mReferenceCount);
 
-	if (mReferenceCount <= 0)
+	if (ref == 0)
 	{
 		delete this;
-		return 0;
 	}
 
-	return mReferenceCount;
+	return ref;
 }
 
 HRESULT STDMETHODCALLTYPE CQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)

@@ -42,7 +42,7 @@ public:
 	CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CVolumeTexture9();
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 public:
 	//IUnknown

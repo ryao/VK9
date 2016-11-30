@@ -23,7 +23,6 @@ misrepresented as being the original software.
 
 #include "d3d9.h" // Base class: IDirect3DVertexDeclaration9
 #include <vulkan/vulkan.h>
-#include "CUnknown.h"
 #include <vector>
 
 class CDevice9;
@@ -42,7 +41,7 @@ public:
 	BOOL mHasNormal;
 	int32_t mTextureCount;
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 public:
 	//IUnknown

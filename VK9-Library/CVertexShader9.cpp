@@ -39,9 +39,7 @@ CVertexShader9::~CVertexShader9()
 
 ULONG STDMETHODCALLTYPE CVertexShader9::AddRef(void)
 {
-	mReferenceCount++;
-
-	return mReferenceCount;
+	return InterlockedIncrement(&mReferenceCount);
 }
 
 HRESULT STDMETHODCALLTYPE CVertexShader9::QueryInterface(REFIID riid,void  **ppv)
@@ -77,15 +75,14 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::QueryInterface(REFIID riid,void  **ppv
 
 ULONG STDMETHODCALLTYPE CVertexShader9::Release(void)
 {
-	mReferenceCount--;
+	ULONG ref = InterlockedDecrement(&mReferenceCount);
 
-	if (mReferenceCount <= 0)
+	if (ref == 0)
 	{
 		delete this;
-		return 0;
 	}
 
-	return mReferenceCount;
+	return ref;
 }
 
 HRESULT STDMETHODCALLTYPE CVertexShader9::FreePrivateData(REFGUID refguid)
