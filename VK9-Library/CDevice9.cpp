@@ -1761,6 +1761,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction,IDi
 
 HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery)
 {
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb174360(v=vs.85).aspx
+	*/
+
+	//If null is passed the call is checking to see if a query type is supported.
+	if (ppQuery==nullptr)
+	{
+		return D3DERR_NOTAVAILABLE;
+	}
+
 	HRESULT result = S_OK;
 
 	CQuery9* obj = new CQuery9(this, Type);
