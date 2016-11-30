@@ -245,9 +245,7 @@ C9::~C9()
 
 ULONG STDMETHODCALLTYPE C9::AddRef(void)
 {
-	mReferenceCount++;
-
-	return mReferenceCount;
+	return InterlockedIncrement(&mReferenceCount);
 }
 
 HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
@@ -271,15 +269,14 @@ HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
 
 ULONG STDMETHODCALLTYPE C9::Release(void)
 {
-	mReferenceCount--;
+	ULONG ref = InterlockedDecrement(&mReferenceCount);
 
-	if (mReferenceCount <= 0)
+	if (ref == 0)
 	{
 		delete this;
-		return 0;
 	}
 
-	return mReferenceCount;
+	return ref;
 }
 
 //IDirect3D9

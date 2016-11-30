@@ -34,7 +34,7 @@ public:
 	CPixelShader9(CDevice9* device,const DWORD* pFunction);
 	~CPixelShader9();
 
-	int mReferenceCount;
+	ULONG mReferenceCount;
 	VkResult mResult;
 public:
 	//IUnknown
