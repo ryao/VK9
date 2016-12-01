@@ -29,7 +29,8 @@ CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMEN
 	mResult(VK_SUCCESS),
 	mHasPosition(0),
 	mHasColor(0),
-	mTextureCount(0)
+	mTextureCount(0),
+	mHasNormal(0)
 {
 	size_t i = 0;
 

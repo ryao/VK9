@@ -351,22 +351,6 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
 
-#ifdef _DEBUG
-	if (mRenderDocApi!=nullptr)
-	{
-		//mRenderDocApi->TriggerCapture();
-		uint32_t pid = mRenderDocApi->LaunchReplayUI(1, nullptr);
-		if (pid==0)
-		{
-			BOOST_LOG_TRIVIAL(warning) << "C9::CreateDevice unable to launch RenderDoc!";
-		}
-	}
-	else
-	{
-		BOOST_LOG_TRIVIAL(warning) << "C9::CreateDevice unable to access RenderDoc API!";
-	}
-#endif // _DEBUG
-
 	return result;	
 }
 
