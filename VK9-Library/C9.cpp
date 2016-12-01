@@ -255,6 +255,13 @@ HRESULT STDMETHODCALLTYPE C9::QueryInterface(REFIID riid,void  **ppv)
 		return E_POINTER;
 	}
 
+	if (IsEqualGUID(riid, IID_IDirect3D9))
+	{
+		(*ppv) = this;
+		this->AddRef();
+		return S_OK;
+	}
+
 	if (IsEqualGUID(riid, IID_IUnknown))
 	{
 		(*ppv) = this;
@@ -414,8 +421,8 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DA
 	(*pIdentifier) = {}; //zero it out.
 
 	strcpy(pIdentifier->DeviceName, deviceProperties.deviceName); //256 to 32 revisit
-	strcpy(pIdentifier->Driver, "");
-	strcpy(pIdentifier->Description, "");
+	strcpy(pIdentifier->Driver, ""); //revisit
+	strcpy(pIdentifier->Description, ""); //revisit
 	pIdentifier->VendorId = deviceProperties.vendorID;
 	pIdentifier->DeviceId = deviceProperties.deviceID;
 	pIdentifier->DriverVersion.QuadPart = deviceProperties.driverVersion;
@@ -424,6 +431,8 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DA
 	//pIdentifier->Revision = 0;
 	//pIdentifier->DeviceIdentifier = 0;
 	//pIdentifier->WHQLLevel = 0;
+
+	this->AddRef(); //Documentation doesn't say it takes a reference but d3d9x method release after using it. (found out hard way)
 
 	return S_OK;	
 }

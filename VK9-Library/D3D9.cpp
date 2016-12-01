@@ -30,6 +30,8 @@ misrepresented as being the original software.
 #include <boost/log/sources/record_ostream.hpp>
 #include "C9.h"
 
+#include "PrivateTypes.h"
+
 IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion)
 {
 	C9* instance = new C9();
