@@ -2222,6 +2222,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDirect3D(IDirect3D9 **ppD3D9)
 {
 	(*ppD3D9) = (IDirect3D9*)mInstance;
 
+	mInstance->AddRef();
+
 	return S_OK;
 }
 
