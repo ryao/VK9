@@ -32,51 +32,12 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
-	: mResult(VK_SUCCESS),
+	: 
 	mInstance(Instance),
 	mAdapter(Adapter),
 	mDeviceType(DeviceType),
 	mFocusWindow(hFocusWindow),
-	mBehaviorFlags(BehaviorFlags),
-	mQueueCount(0),
-	mReferenceCount(1),
-	mDisplays(nullptr),
-	mDisplayCount(0),
-	mGraphicsQueueIndex(UINT32_MAX),
-	mPresentationQueueIndex(UINT32_MAX),
-	mSurfaceFormatCount(0),
-	mSurfaceFormats(nullptr),
-	mSwapchainPresentMode(VK_PRESENT_MODE_FIFO_KHR),
-	mPresentationModeCount(0),
-	mPresentationModes(nullptr),
-	mSwapchainImages(nullptr),
-	mSwapchainBuffers(nullptr),
-	mSwapchainViews(nullptr),
-	mSwapchainImageCount(0),
-	mNullFence(VK_NULL_HANDLE),
-	mFramebuffers(nullptr),
-	mPhysicalDevice(VK_NULL_HANDLE),
-	mDevice(VK_NULL_HANDLE),
-	mSurface(VK_NULL_HANDLE),
-	mSwapchain(VK_NULL_HANDLE),
-	mCommandPool(VK_NULL_HANDLE),
-	mDescriptorPool(VK_NULL_HANDLE),
-	mCommandBuffer(VK_NULL_HANDLE),
-	mQueue(VK_NULL_HANDLE),
-	mPresentCompleteSemaphore(VK_NULL_HANDLE),
-	mRenderPass(VK_NULL_HANDLE),
-	mDepthFormat(VK_FORMAT_UNDEFINED),
-	mDepthImage(VK_NULL_HANDLE),
-	mDepthDeviceMemory(VK_NULL_HANDLE),
-	mDepthView(VK_NULL_HANDLE),
-	mFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE),
-	mFVFHasPosition(0),
-    mFVFHasColor(0),
-	mFVFTextureCount(0),
-	mIsDirty(true),
-	mIsSceneStarted(false),
-	mVertexDeclaration(nullptr),
-	mBufferManager(nullptr)
+	mBehaviorFlags(BehaviorFlags)
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Started.";
 
@@ -179,7 +140,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	device_info.ppEnabledExtensionNames = mExtensionNames.data();
 	device_info.enabledLayerCount = mLayerExtensionNames.size();
 	device_info.ppEnabledLayerNames = mLayerExtensionNames.data();
-	device_info.pEnabledFeatures = nullptr;
+	device_info.pEnabledFeatures = &mDeviceFeatures; //Enable all available because we don't know ahead of time what features will be used.
 
 	mResult = vkCreateDevice(mPhysicalDevice, &device_info, nullptr, &mDevice);
 	if (mResult != VK_SUCCESS)
