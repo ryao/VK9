@@ -39,8 +39,7 @@ out gl_PerVertex
 
 void main() 
 {
-	mat4 matrix = ubo.projection * ubo.view * ubo.model; 
-	gl_Position = matrix * position * vec4(1.0,-1.0,1.0,1.0);
+	gl_Position = position * ubo.projection * ubo.view * ubo.model * vec4(1.0,-1.0,1.0,1.0);
 
 	texcoord = attr;
 }

@@ -263,6 +263,8 @@ public:
 	
 	CVertexDeclaration9* mVertexDeclaration = nullptr;
 
+	PAINTSTRUCT* mPaintInformation = {};
+
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1);
 	void StartScene();
 	void StopScene();

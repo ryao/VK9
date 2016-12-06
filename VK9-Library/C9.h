@@ -37,7 +37,7 @@ misrepresented as being the original software.
 class C9 : public IDirect3D9
 {
 private:
-	ULONG mReferenceCount;
+	ULONG mReferenceCount = 1;
 public:
 	C9();
 	~C9();
@@ -46,16 +46,16 @@ public:
 	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
 #endif // _DEBUG
 
-	VkResult mResult;
-	VkInstance mInstance;
-	VkPhysicalDevice* mPhysicalDevices;
-	VkLayerProperties* mLayerProperties;
-	uint32_t mLayerPropertyCount;
-	uint32_t mGpuCount;
+	VkResult mResult = VK_SUCCESS;
+	VkInstance mInstance = VK_NULL_HANDLE;
+	VkPhysicalDevice* mPhysicalDevices = nullptr;
+	VkLayerProperties* mLayerProperties = nullptr;
+	uint32_t mLayerPropertyCount = 0;
+	uint32_t mGpuCount = 0;
 	std::vector<char*> mExtensionNames;
 	std::vector<char*> mLayerExtensionNames;
 	std::vector<Monitor> mMonitors;
-	bool mValidationPresent;
+	bool mValidationPresent = false;
 
 	boost::program_options::variables_map mOptions;
 	boost::program_options::options_description mOptionDescriptions;

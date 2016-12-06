@@ -29,14 +29,7 @@ misrepresented as being the original software.
 #define APP_SHORT_NAME "VK9"
 
 C9::C9()
-	: mGpuCount(0), 
-	mPhysicalDevices(nullptr),
-	mReferenceCount(1),
-	mInstance(VK_NULL_HANDLE),
-	mLayerProperties(nullptr),
-	mLayerPropertyCount(0),
-	mValidationPresent(false),
-	mResult(VK_SUCCESS),
+	: 
 	mOptionDescriptions("Allowed options"),
 	mMonitors(4)
 {
@@ -94,6 +87,18 @@ C9::C9()
 			BOOST_LOG_TRIVIAL(info) << "C9::C9 vkEnumerateInstanceLayerProperties - layerName: " << mLayerProperties[i].layerName;
 		}		
 	}
+
+	uint32_t extensionCount = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	VkExtensionProperties* extension = new VkExtensionProperties[extensionCount];
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extension);
+
+	for (size_t i = 0; i < extensionCount; i++)
+	{
+		BOOST_LOG_TRIVIAL(info) << "C9::C9 extension available: " << extension[i].extensionName;
+	}
+
+	delete[] extension;
 
 	mExtensionNames.push_back("VK_KHR_surface");
 	mExtensionNames.push_back("VK_KHR_win32_surface");

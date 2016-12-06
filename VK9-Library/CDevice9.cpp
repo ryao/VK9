@@ -119,6 +119,18 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		}
 	}*/
 
+	uint32_t extensionCount=0;
+	vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &extensionCount, nullptr);
+	VkExtensionProperties* extension = new VkExtensionProperties[extensionCount];
+	vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &extensionCount, extension);
+
+	for (size_t i = 0; i < extensionCount; i++)
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 extension available: " << extension[i].extensionName;	
+	}
+
+	delete[] extension;
+
 	mExtensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 #ifdef _DEBUG
 		mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
@@ -3173,6 +3185,8 @@ void CDevice9::StartScene()
 
 	VkResult result; // = VK_SUCCESS
 
+	//BeginPaint(mFocusWindow, mPaintInformation);
+
 	result = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
 	if (result != VK_SUCCESS)
 	{
@@ -3278,6 +3292,10 @@ void CDevice9::StopScene()
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << mResult;
 		return;
 	}
+
+	//EndPaint(mFocusWindow, mPaintInformation);
+
+	//ValidateRect(mFocusWindow, nullptr);
 
 	//result = vkQueueWaitIdle(mQueue);
 	//if (result != VK_SUCCESS)
