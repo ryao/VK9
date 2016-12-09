@@ -288,32 +288,32 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//For the multi-threaded version we'll need seperate descriptor/command pools per thread.
 	VkDescriptorPoolSize descriptorPoolSizes [11] = {};
 	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-	descriptorPoolSizes[0].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[0].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorPoolSizes[1].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[1].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[2].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	descriptorPoolSizes[2].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[2].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	descriptorPoolSizes[3].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[3].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[4].type = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-	descriptorPoolSizes[4].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[4].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-	descriptorPoolSizes[5].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[5].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorPoolSizes[6].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[6].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[7].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	descriptorPoolSizes[7].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[7].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[8].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-	descriptorPoolSizes[8].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[8].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[9].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-	descriptorPoolSizes[9].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[9].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[10].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	descriptorPoolSizes[10].descriptorCount = 16; //Revisit
+	descriptorPoolSizes[10].descriptorCount = 128; //Revisit
 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = NULL;
-	descriptorPoolCreateInfo.maxSets = 16; //Revisit
+	descriptorPoolCreateInfo.maxSets = 128; //Revisit
 	descriptorPoolCreateInfo.poolSizeCount = 11;
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
 	/*
@@ -1565,6 +1565,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 
 	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
 
+	//Clean up pipes.
+	mBufferManager->FlushDrawBufffer();
+
 	return D3D_OK;
 }
 
@@ -1906,31 +1909,17 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 		this->StartScene();
 	}
 
-	/*
-	We have to tell the manager what kind of buffers we're working with so it can build the pipe.
-	*/
-	mBufferManager->UpdatePipeline(Type);
+	DrawContext context;
 
-	if (mBufferManager->mIsDirty)
-	{
-		vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
-
-		/*
-		The buffer manager isn't doing much on this call but it may do more later.
-		*/
-		mBufferManager->BindVertexBuffers(Type);
-		vkCmdBindIndexBuffer(mSwapchainBuffers[mCurrentBuffer], mBufferManager->mIndexBuffer->mBuffer, 0, mBufferManager->mIndexBuffer->mIndexType);
-
-		vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0, nullptr);
-	}
+	mBufferManager->BeginDraw(context, Type);
 
 	/*
 		https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 		https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
-
-	*/
-	
+	*/	
 	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
+
+	mBufferManager->EndDraw(context);
 
 	return S_OK;
 }
@@ -1956,23 +1945,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 		this->StartScene();
 	}
 
-	/*
-	We have to tell the manager what kind of buffers we're working with so it can build the pipe.
-	*/
-	mBufferManager->UpdatePipeline(PrimitiveType);
+	DrawContext context;
 
-	if (mBufferManager->mIsDirty)
-	{
-		vkCmdBindPipeline(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipeline);
-		vkCmdBindDescriptorSets(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, mBufferManager->mPipelineLayout, 0, 1, &mBufferManager->mDescriptorSet, 0, nullptr);
-
-		/*
-		The buffer manager isn't doing much on this call but it may do more later.
-		*/
-		mBufferManager->BindVertexBuffers(PrimitiveType);
-	}
+	mBufferManager->BeginDraw(context, PrimitiveType);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
+
+	mBufferManager->EndDraw(context);
 
 	return S_OK;	
 }
@@ -3292,10 +3271,6 @@ void CDevice9::StopScene()
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << mResult;
 		return;
 	}
-
-	//EndPaint(mFocusWindow, mPaintInformation);
-
-	//ValidateRect(mFocusWindow, nullptr);
 
 	//result = vkQueueWaitIdle(mQueue);
 	//if (result != VK_SUCCESS)

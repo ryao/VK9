@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <unordered_map>
+#include <vector>
 
 #include "CTypes.h"
 #include "CIndexBuffer9.h"
@@ -71,11 +72,11 @@ public:
 	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
 	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
 
-	VkDescriptorSetLayout mDescriptorSetLayout;
-	VkPipelineLayout mPipelineLayout;
+	//VkDescriptorSetLayout mDescriptorSetLayout;
+	//VkPipelineLayout mPipelineLayout;
 	VkPipelineCache mPipelineCache;
-	VkDescriptorSet mDescriptorSet;
-	VkPipeline mPipeline;
+	//VkDescriptorSet mDescriptorSet;
+	//VkPipeline mPipeline;
 	
 	VkShaderModule mVertShaderModule_XYZ_DIFFUSE;
 	VkShaderModule mFragShaderModule_XYZ_DIFFUSE;
@@ -104,8 +105,10 @@ public:
 
 	D3DPRIMITIVETYPE mLastType;
 
-	void BindVertexBuffers(D3DPRIMITIVETYPE type);
-	void UpdatePipeline(D3DPRIMITIVETYPE type);
+	std::vector<DrawContext> mDrawBuffer;
+	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
+	void EndDraw(DrawContext& context);
+	void FlushDrawBufffer();
 
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

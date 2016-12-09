@@ -25,7 +25,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
 
-class CVertexBuffer9 : public IDirect3DVertexBuffer9,CResource9
+class CVertexBuffer9 : public IDirect3DVertexBuffer9
 {
 private:
 	CDevice9* mDevice;

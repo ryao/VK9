@@ -46,9 +46,9 @@ struct Vertex
 };
 
 struct UniformBufferObject {
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 proj;
+	glm::mat4 model = glm::mat4(1.0);
+	glm::mat4 view = glm::mat4(1.0);
+	glm::mat4 proj = glm::mat4(1.0);
 };
 
 class StreamSource
@@ -64,6 +64,14 @@ public:
 	StreamSource(const StreamSource& value);
 	StreamSource(UINT streamNumber, CVertexBuffer9* streamData, VkDeviceSize offsetInBytes, UINT stride);
 	~StreamSource();
+};
+
+struct DrawContext
+{
+	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
+	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
+	VkPipeline Pipeline = VK_NULL_HANDLE;
+	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 };
 
 #endif // CTYPES_H
