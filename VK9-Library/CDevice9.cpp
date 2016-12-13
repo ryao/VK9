@@ -2606,6 +2606,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 		mFVFHasColor = true;
 	}
 
+	if ((mFVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+	{
+		mFVFHasNormal = true;
+	}
+
 	if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
 	{
 		mFVFTextureCount = 1;

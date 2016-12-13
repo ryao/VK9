@@ -256,6 +256,7 @@ public:
 	DWORD mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 	BOOL mFVFHasPosition = 0;
 	BOOL mFVFHasColor = 0;
+	BOOL mFVFHasNormal = 0;
 	int32_t mFVFTextureCount = 0;
 
 	BOOL mIsDirty = true;

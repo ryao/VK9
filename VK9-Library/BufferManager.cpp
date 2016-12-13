@@ -25,73 +25,12 @@ misrepresented as being the original software.
 typedef std::unordered_map<UINT, StreamSource> map_type;
 
 BufferManager::BufferManager()
-	: mDevice(nullptr),
-	mLastType(D3DPT_FORCE_DWORD), //used to help prevent repeating pipe creation.
-	mIsDirty(true),
-	mPipelineCache(VK_NULL_HANDLE),
-
-	mVertShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
-	mFragShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
-
-	mVertShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
-	mFragShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
-
-	mVertShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
-	mFragShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
-
-	mSampler(VK_NULL_HANDLE),
-	mImage(VK_NULL_HANDLE),
-	mImageLayout(VK_IMAGE_LAYOUT_UNDEFINED),
-	mDeviceMemory(VK_NULL_HANDLE),
-	mImageView(VK_NULL_HANDLE),
-	mTextureWidth(0),
-	mTextureHeight(0),
-	mVertexCount(0),
-
-	mUniformStagingBuffer(VK_NULL_HANDLE),
-	mUniformStagingBufferMemory(VK_NULL_HANDLE),
-	mUniformBuffer(VK_NULL_HANDLE),
-	mUniformBufferMemory(VK_NULL_HANDLE),
-
-	mIndexBuffer(nullptr),
-
-	mResult(VK_SUCCESS)
 {
 	//Don't use. This is only here for containers.
 }
 
 BufferManager::BufferManager(CDevice9* device)
-	: mDevice(device),
-	mLastType(D3DPT_FORCE_DWORD), //used to help prevent repeating pipe creation.
-	mIsDirty(true),
-	mPipelineCache(VK_NULL_HANDLE),
-
-	mVertShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
-	mFragShaderModule_XYZ_DIFFUSE(VK_NULL_HANDLE),
-
-	mVertShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
-	mFragShaderModule_XYZ_TEX1(VK_NULL_HANDLE),
-
-	mVertShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
-	mFragShaderModule_XYZ_DIFFUSE_TEX1(VK_NULL_HANDLE),
-
-	mSampler(VK_NULL_HANDLE),
-	mImage(VK_NULL_HANDLE),
-	mImageLayout(VK_IMAGE_LAYOUT_UNDEFINED),
-	mDeviceMemory(VK_NULL_HANDLE),
-	mImageView(VK_NULL_HANDLE),
-	mTextureWidth(0),
-	mTextureHeight(0),
-	mVertexCount(0),
-
-	mUniformStagingBuffer(VK_NULL_HANDLE),
-	mUniformStagingBufferMemory(VK_NULL_HANDLE),
-	mUniformBuffer(VK_NULL_HANDLE),
-	mUniformBufferMemory(VK_NULL_HANDLE),
-
-	mIndexBuffer(nullptr),
-
-	mResult(VK_SUCCESS)
+	: mDevice(device)
 {
 	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
 	//mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);
@@ -104,6 +43,9 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
 	mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
+
+	mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
+	mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
@@ -628,7 +570,8 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		switch (textureCount)
 		{
 		case 0:
-			//No textures.
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
 			break;
 		case 1:
 			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
@@ -646,6 +589,19 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		{
 		case 0:
 			//No textures.
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported texture count " << textureCount;
+			break;
+		}
+	}
+	else if (hasPosition && !hasColor && hasNormal)
+	{
+		switch (textureCount)
+		{
+		case 0:
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported texture count " << textureCount;
@@ -755,6 +711,17 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
 				mVertexInputAttributeDescription[attributeIndex].offset = offset;
 				offset += sizeof(uint32_t);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			if (hasNormal)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += (sizeof(float) * 3);
 				location += 1;
 				attributeIndex += 1;
 			}

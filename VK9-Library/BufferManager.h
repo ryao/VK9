@@ -38,13 +38,13 @@ public:
 	explicit BufferManager(CDevice9* device);
 	~BufferManager();
 
-	VkResult mResult;
+	VkResult mResult = VK_SUCCESS;
 
-	CDevice9* mDevice;
-	bool mIsDirty;
+	CDevice9* mDevice = nullptr;
+	bool mIsDirty = true;
 
 	std::unordered_map<UINT, StreamSource> mStreamSources;
-	CIndexBuffer9* mIndexBuffer;
+	CIndexBuffer9* mIndexBuffer = nullptr;
 
 	VkDynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE] = {};
 	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1] = {};
@@ -74,36 +74,39 @@ public:
 
 	//VkDescriptorSetLayout mDescriptorSetLayout;
 	//VkPipelineLayout mPipelineLayout;
-	VkPipelineCache mPipelineCache;
+	VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
 	//VkDescriptorSet mDescriptorSet;
 	//VkPipeline mPipeline;
 	
-	VkShaderModule mVertShaderModule_XYZ_DIFFUSE;
-	VkShaderModule mFragShaderModule_XYZ_DIFFUSE;
+	VkShaderModule mVertShaderModule_XYZ_DIFFUSE = VK_NULL_HANDLE;
+	VkShaderModule mFragShaderModule_XYZ_DIFFUSE = VK_NULL_HANDLE;
 
-	VkShaderModule mVertShaderModule_XYZ_TEX1;
-	VkShaderModule mFragShaderModule_XYZ_TEX1;
+	VkShaderModule mVertShaderModule_XYZ_TEX1 = VK_NULL_HANDLE;
+	VkShaderModule mFragShaderModule_XYZ_TEX1 = VK_NULL_HANDLE;
 
-	VkShaderModule mVertShaderModule_XYZ_DIFFUSE_TEX1;
-	VkShaderModule mFragShaderModule_XYZ_DIFFUSE_TEX1;
+	VkShaderModule mVertShaderModule_XYZ_DIFFUSE_TEX1 = VK_NULL_HANDLE;
+	VkShaderModule mFragShaderModule_XYZ_DIFFUSE_TEX1 = VK_NULL_HANDLE;
 
-	VkSampler mSampler;
-	VkImage mImage;
-	VkImageLayout mImageLayout;
-	VkDeviceMemory mDeviceMemory;
-	VkImageView mImageView;
-	int32_t mTextureWidth;
-	int32_t mTextureHeight;
+	VkShaderModule mVertShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
+	VkShaderModule mFragShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
+
+	VkSampler mSampler = VK_NULL_HANDLE;
+	VkImage mImage = VK_NULL_HANDLE;
+	VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	VkDeviceMemory mDeviceMemory = VK_NULL_HANDLE;
+	VkImageView mImageView = VK_NULL_HANDLE;
+	int32_t mTextureWidth = 0;
+	int32_t mTextureHeight = 0;
 	VkDescriptorImageInfo mDescriptorImageInfo[16] = {};
 	VkDescriptorBufferInfo mDescriptorBufferInfo = {};
-	uint32_t mVertexCount;
+	uint32_t mVertexCount = 0;
 
-	VkBuffer mUniformStagingBuffer;
-	VkDeviceMemory mUniformStagingBufferMemory;
-	VkBuffer mUniformBuffer;
-	VkDeviceMemory mUniformBufferMemory;
+	VkBuffer mUniformStagingBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory mUniformStagingBufferMemory = VK_NULL_HANDLE;
+	VkBuffer mUniformBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory mUniformBufferMemory = VK_NULL_HANDLE;
 
-	D3DPRIMITIVETYPE mLastType;
+	D3DPRIMITIVETYPE mLastType = D3DPT_FORCE_DWORD;
 
 	std::vector<DrawContext> mDrawBuffer;
 	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
