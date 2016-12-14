@@ -24,13 +24,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMENT9* pVertexElements)
-	: mReferenceCount(1),
-	mDevice(device),
-	mResult(VK_SUCCESS),
-	mHasPosition(0),
-	mHasColor(0),
-	mTextureCount(0),
-	mHasNormal(0)
+	: mDevice(device)
 {
 	size_t i = 0;
 

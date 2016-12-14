@@ -36,13 +36,13 @@ public:
 	~CVertexDeclaration9();
 
 	std::vector<D3DVERTEXELEMENT9> mVertexElements;
-	BOOL mHasPosition;
-	BOOL mHasColor;
-	BOOL mHasNormal;
-	int32_t mTextureCount;
+	BOOL mHasPosition=0;
+	BOOL mHasColor=0;
+	BOOL mHasNormal=0;
+	int32_t mTextureCount=0;
 
-	ULONG mReferenceCount;
-	VkResult mResult;
+	ULONG mReferenceCount=1;
+	VkResult mResult= VK_SUCCESS;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

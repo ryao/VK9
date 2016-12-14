@@ -463,6 +463,18 @@ BufferManager::~BufferManager()
 		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_DIFFUSE_TEX1, NULL);
 		mFragShaderModule_XYZ_DIFFUSE_TEX1 = VK_NULL_HANDLE;
 	}
+
+	if (mVertShaderModule_XYZ_NORMAL != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_NORMAL, NULL);
+		mVertShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
+	}
+
+	if (mFragShaderModule_XYZ_NORMAL != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_NORMAL, NULL);
+		mFragShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
+	}
 }
 
 void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
@@ -537,6 +549,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		attributeCount += mDevice->mFVFHasPosition;
 		attributeCount += mDevice->mFVFTextureCount;
 
+		hasNormal = mDevice->mFVFHasNormal;
 		hasColor = mDevice->mFVFHasColor;
 		hasPosition = mDevice->mFVFHasPosition;
 		textureCount = mDevice->mFVFTextureCount;
@@ -584,7 +597,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	}
 	else if (hasPosition && hasColor && hasNormal)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw normals are not yet supported.";
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw normals are not fully yet supported.";
 		switch (textureCount)
 		{
 		case 0:
