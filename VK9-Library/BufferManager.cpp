@@ -536,7 +536,8 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	{
 		attributeCount += mDevice->mVertexDeclaration->mHasColor;
 		attributeCount += mDevice->mVertexDeclaration->mHasPosition;
-		attributeCount += mDevice->mVertexDeclaration->mTextureCount;
+		attributeCount += mDevice->mVertexDeclaration->mHasNormal;
+		attributeCount += mDevice->mVertexDeclaration->mTextureCount;	
 
 		hasColor = mDevice->mVertexDeclaration->mHasColor;
 		hasPosition = mDevice->mVertexDeclaration->mHasPosition;
@@ -546,6 +547,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	else if (mDevice->mFVF)
 	{
 		attributeCount += mDevice->mFVFHasColor;
+		attributeCount += mDevice->mFVFHasNormal;
 		attributeCount += mDevice->mFVFHasPosition;
 		attributeCount += mDevice->mFVFTextureCount;
 
@@ -824,6 +826,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	mPipelineCache = VK_NULL_HANDLE;
 
 	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);
+	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);
 
 	mVertexCount = 0;
 
@@ -838,7 +841,6 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mIndexBuffer->mBuffer, 0, mIndexBuffer->mIndexType);
 	}
 
-	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);
 }
 
 void BufferManager::EndDraw(DrawContext& context)

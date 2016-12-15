@@ -3283,4 +3283,5 @@ void CDevice9::StopScene()
 	//	BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
 	//	return;
 	//}
+	mBufferManager->FlushDrawBufffer();
 }
