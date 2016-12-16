@@ -109,8 +109,10 @@ public:
 	D3DPRIMITIVETYPE mLastType = D3DPT_FORCE_DWORD;
 
 	std::vector<DrawContext> mDrawBuffer;
+	std::vector<HistoricalUniformBuffer> mHistoricalUniformBuffers;
+
 	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
-	void EndDraw(DrawContext& context);
+	void UpdateUniformBuffer();
 	void FlushDrawBufffer();
 
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory);

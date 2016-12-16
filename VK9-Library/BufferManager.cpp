@@ -789,6 +789,8 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		return;
 	}
 
+	mDescriptorBufferInfo.buffer = mUniformBuffer;
+
 	mWriteDescriptorSet[0].dstSet = context.DescriptorSet;
 	mWriteDescriptorSet[0].descriptorCount = 1;
 	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
@@ -841,23 +843,58 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mIndexBuffer->mBuffer, 0, mIndexBuffer->mIndexType);
 	}
 
+	this->mDrawBuffer.push_back(context);
 }
 
-void BufferManager::EndDraw(DrawContext& context)
+void BufferManager::UpdateUniformBuffer()
 {
-	this->mDrawBuffer.push_back(context);
+	//Move the existing buffer into the list so it can be cleaned up at the end of the render pass.
+	HistoricalUniformBuffer historicalUniformBuffer;
+	historicalUniformBuffer.UniformBuffer = mUniformBuffer;
+	historicalUniformBuffer.UniformBufferMemory = mUniformBufferMemory;
+	mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
+
+	//Create a new buffer and copy the staging data into it.
+	CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
+	CopyBuffer(mUniformStagingBuffer, mUniformBuffer, sizeof(UniformBufferObject));
 }
 
 void BufferManager::FlushDrawBufffer()
 {
 	for (size_t i = 0; i < mDrawBuffer.size(); i++)
 	{
-		vkDestroyPipeline(mDevice->mDevice, mDrawBuffer[i].Pipeline, NULL);
-		vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mDrawBuffer[i].DescriptorSet);
-		vkDestroyPipelineLayout(mDevice->mDevice, mDrawBuffer[i].PipelineLayout, NULL);
-		vkDestroyDescriptorSetLayout(mDevice->mDevice, mDrawBuffer[i].DescriptorSetLayout, NULL);
+		if (mDrawBuffer[i].Pipeline!= VK_NULL_HANDLE)
+		{
+			vkDestroyPipeline(mDevice->mDevice, mDrawBuffer[i].Pipeline, NULL);
+		}
+		if (mDrawBuffer[i].DescriptorSet != VK_NULL_HANDLE)
+		{
+			vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mDrawBuffer[i].DescriptorSet);
+		}
+		if (mDrawBuffer[i].PipelineLayout != VK_NULL_HANDLE)
+		{
+			vkDestroyPipelineLayout(mDevice->mDevice, mDrawBuffer[i].PipelineLayout, NULL);
+		}
+		if (mDrawBuffer[i].DescriptorSetLayout != VK_NULL_HANDLE)
+		{
+			vkDestroyDescriptorSetLayout(mDevice->mDevice, mDrawBuffer[i].DescriptorSetLayout, NULL);
+		}		
 	}
 	mDrawBuffer.clear();
+
+	for (size_t i = 0; i < mHistoricalUniformBuffers.size(); i++)
+	{		
+		if (mHistoricalUniformBuffers[i].UniformBuffer != VK_NULL_HANDLE)
+		{
+			vkDestroyBuffer(mDevice->mDevice, mHistoricalUniformBuffers[i].UniformBuffer, NULL);
+		}
+
+		if (mHistoricalUniformBuffers[i].UniformBufferMemory != VK_NULL_HANDLE)
+		{
+			vkFreeMemory(mDevice->mDevice, mHistoricalUniformBuffers[i].UniformBufferMemory, NULL);
+		}
+	}
+	mHistoricalUniformBuffers.clear();
 }
 
 void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)

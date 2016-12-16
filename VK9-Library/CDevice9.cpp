@@ -1919,8 +1919,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 	*/	
 	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
 
-	mBufferManager->EndDraw(context);
-
 	return S_OK;
 }
 
@@ -1950,8 +1948,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 	mBufferManager->BeginDraw(context, PrimitiveType);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
-
-	mBufferManager->EndDraw(context);
 
 	return S_OK;	
 }
@@ -2880,7 +2876,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 	}
 	memcpy(data, &mUBO, sizeof(UniformBufferObject));
 	vkUnmapMemory(mDevice, mBufferManager->mUniformStagingBufferMemory);
-	mBufferManager->CopyBuffer(mBufferManager->mUniformStagingBuffer, mBufferManager->mUniformBuffer, sizeof(UniformBufferObject));
+
+	mBufferManager->UpdateUniformBuffer();
+
+	//mBufferManager->CopyBuffer(mBufferManager->mUniformStagingBuffer, mBufferManager->mUniformBuffer, sizeof(UniformBufferObject));
 
 	return S_OK;	
 }

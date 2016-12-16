@@ -74,4 +74,10 @@ struct DrawContext
 	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 };
 
+struct HistoricalUniformBuffer
+{
+	VkBuffer UniformBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
+};
+
 #endif // CTYPES_H
