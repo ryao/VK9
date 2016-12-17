@@ -41,7 +41,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Started.";
 
-	mInstance->AddRef();
+	//mInstance->AddRef();
 
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
@@ -1489,7 +1489,9 @@ CDevice9::~CDevice9()
 
 	delete[] mDisplays;
 
-	//mInstance->Release(); //This should be a leak but d3dx messes with the reference count.
+	delete[] mQueueFamilyProperties;
+
+	//mInstance->Release();
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
@@ -1564,6 +1566,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	}
 
 	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
+
+	vkResetCommandBuffer(mSwapchainBuffers[mCurrentBuffer], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 	//Clean up pipes.
 	mBufferManager->FlushDrawBufffer();
@@ -2597,14 +2601,24 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 		mFVFHasPosition = true;
 	}
 
+	if ((mFVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+	{
+		mFVFHasNormal = true;
+	}
+
+	if ((mFVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_PSIZE is not implemented!";
+	}
+
 	if ((mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 	{
 		mFVFHasColor = true;
 	}
 
-	if ((mFVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+	if ((mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 	{
-		mFVFHasNormal = true;
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_SPECULAR is not implemented!";
 	}
 
 	if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
@@ -3282,5 +3296,4 @@ void CDevice9::StopScene()
 	//	BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
 	//	return;
 	//}
-	mBufferManager->FlushDrawBufffer();
 }

@@ -28,6 +28,10 @@ misrepresented as being the original software.
 
 #define APP_SHORT_NAME "VK9"
 
+#ifdef _DEBUG
+	#include <vld.h>
+#endif
+
 C9::C9()
 	: 
 	mOptionDescriptions("Allowed options"),
@@ -230,8 +234,8 @@ C9::~C9()
 {
 	BOOST_LOG_TRIVIAL(info) << "C9::~C9";
 
-	delete[]	 mPhysicalDevices;
-
+	delete[] mPhysicalDevices;
+	delete[] mLayerProperties;
 
 #ifdef _DEBUG
 	if(mCallback != VK_NULL_HANDLE)
@@ -437,7 +441,7 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DA
 	//pIdentifier->DeviceIdentifier = 0;
 	//pIdentifier->WHQLLevel = 0;
 
-	this->AddRef(); //Documentation doesn't say it takes a reference but d3d9x method release after using it. (found out hard way)
+	//this->AddRef();
 
 	return S_OK;	
 }

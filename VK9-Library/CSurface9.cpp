@@ -106,7 +106,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 
 void CSurface9::Init()
 {
-	mDevice->AddRef();
+	//mDevice->AddRef();
 	
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172611(v=vs.85).aspx
@@ -142,7 +142,7 @@ CSurface9::~CSurface9()
 		mStagingDeviceMemory = VK_NULL_HANDLE;
 	}
 
-	mDevice->Release();
+	//mDevice->Release();
 }
 
 ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)

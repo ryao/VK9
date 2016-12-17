@@ -49,7 +49,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mSampler(VK_NULL_HANDLE),
 	mImageView(VK_NULL_HANDLE)
 {
-	mDevice->AddRef();
+	//mDevice->AddRef();
 
 	mRealFormat = ConvertFormat(mFormat);
 
@@ -173,7 +173,7 @@ CTexture9::~CTexture9()
 		mSurfaces[i]->Release();
 	}
 
-	mDevice->Release();
+	//mDevice->Release();
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)

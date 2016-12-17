@@ -141,6 +141,13 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;	
 
+	mResult = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, nullptr, &mPipelineCache);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreatePipelineCache failed with return code of " << mResult;
+		return;
+	}
+
 	/*
 	Setup the texture to be written into the descriptor set.
 	*/
@@ -475,6 +482,12 @@ BufferManager::~BufferManager()
 		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_NORMAL, NULL);
 		mFragShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
 	}
+
+	if (mPipelineCache != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, nullptr);
+		mPipelineCache = VK_NULL_HANDLE;
+	}
 }
 
 void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
@@ -668,12 +681,12 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 			case D3DDECLUSAGE_BLENDINDICES:
 				break;
 			case D3DDECLUSAGE_NORMAL:
-				mVertexInputAttributeDescription[i].location = hasPosition + hasColor;
+				mVertexInputAttributeDescription[i].location = hasPosition;
 				break;
 			case D3DDECLUSAGE_PSIZE:
 				break;
 			case D3DDECLUSAGE_TEXCOORD:
-				mVertexInputAttributeDescription[i].location = hasPosition + hasColor + hasNormal + textureIndex;
+				mVertexInputAttributeDescription[i].location = hasPosition + hasNormal + hasColor + textureIndex;
 				textureIndex += 1;
 				break;
 			case D3DDECLUSAGE_TANGENT:
@@ -685,7 +698,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 			case D3DDECLUSAGE_POSITIONT:
 				break;
 			case D3DDECLUSAGE_COLOR:
-				mVertexInputAttributeDescription[i].location = hasPosition;
+				mVertexInputAttributeDescription[i].location = hasPosition + hasNormal;
 				break;
 			case D3DDECLUSAGE_FOG:
 				break;
@@ -719,6 +732,19 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 				attributeIndex += 1;
 			}
 
+			if (hasNormal)
+			{
+				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].location = location;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
+				mVertexInputAttributeDescription[attributeIndex].offset = offset;
+				offset += (sizeof(float) * 3);
+				location += 1;
+				attributeIndex += 1;
+			}
+
+			//D3DFVF_PSIZE
+
 			if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
@@ -730,13 +756,13 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 				attributeIndex += 1;
 			}
 
-			if (hasNormal)
+			if ((mDevice->mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
-				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
+				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
 				mVertexInputAttributeDescription[attributeIndex].offset = offset;
-				offset += (sizeof(float) * 3);
+				offset += sizeof(uint32_t);
 				location += 1;
 				attributeIndex += 1;
 			}
@@ -810,22 +836,13 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 	mGraphicsPipelineCreateInfo.layout = context.PipelineLayout;
 
-	result = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, nullptr, &mPipelineCache);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreatePipelineCache failed with return code of " << result;
-		return;
-	}
-
 	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
+	//result = vkCreateGraphicsPipelines(mDevice->mDevice, VK_NULL_HANDLE, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreateGraphicsPipelines failed with return code of " << result;
 		//Don't return so we can destroy cache.
 	}
-
-	vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, nullptr);
-	mPipelineCache = VK_NULL_HANDLE;
 
 	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);
 	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);

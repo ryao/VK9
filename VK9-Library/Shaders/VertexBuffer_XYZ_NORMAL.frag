@@ -29,5 +29,5 @@ layout (location = 0) out vec4 uFragColor;
 
 void main() 
 {
-   uFragColor = vec4(1.0,1.0,1.0,1.0) * normal;
+   uFragColor = normal;
 }
