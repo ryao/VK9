@@ -836,6 +836,9 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 	mGraphicsPipelineCreateInfo.layout = context.PipelineLayout;
 
+	/*
+	Pipeline creation is expensive I need to find a way to reuse these.
+	*/
 	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
 	//result = vkCreateGraphicsPipelines(mDevice->mDevice, VK_NULL_HANDLE, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
 	if (result != VK_SUCCESS)
