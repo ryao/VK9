@@ -33,31 +33,31 @@ public:
 	CTexture9(CDevice9* device,UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CTexture9();
 
-	CDevice9* mDevice;
-	UINT mWidth;
-	UINT mHeight;
-	UINT mDepth;
-	UINT mLevels;
-	DWORD mUsage;
-	D3DFORMAT mFormat;
-	D3DPOOL mPool;
-	HANDLE* mSharedHandle;
+	CDevice9* mDevice = nullptr;
+	UINT mWidth = 0;
+	UINT mHeight = 0;
+	UINT mDepth = 0;
+	UINT mLevels = 0;
+	DWORD mUsage = D3DUSAGE_RENDERTARGET;
+	D3DFORMAT mFormat = D3DFMT_UNKNOWN;
+	D3DPOOL mPool = D3DPOOL_DEFAULT;
+	HANDLE* mSharedHandle = nullptr;
 
-	ULONG mReferenceCount;
-	VkResult mResult;
-	D3DTEXTUREFILTERTYPE mMipFilter;
-	D3DTEXTUREFILTERTYPE mMinFilter;
-	D3DTEXTUREFILTERTYPE mMagFilter;
+	ULONG mReferenceCount = 1;
+	VkResult mResult = VK_SUCCESS;
+	D3DTEXTUREFILTERTYPE mMipFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
 
-	VkFormat mRealFormat;
+	VkFormat mRealFormat = VK_FORMAT_UNDEFINED;
 
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
 	
-	VkImage mImage;
-	VkDeviceMemory mDeviceMemory;
+	VkImage mImage = VK_NULL_HANDLE;
+	VkDeviceMemory mDeviceMemory = VK_NULL_HANDLE;
 
-	VkSampler mSampler;
-	VkImageView mImageView;
+	VkSampler mSampler = VK_NULL_HANDLE;
+	VkImageView mImageView = VK_NULL_HANDLE;
 
 	std::vector<CSurface9*> mSurfaces;
 

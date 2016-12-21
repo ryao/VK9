@@ -30,39 +30,39 @@ class CTexture9;
 class CSurface9 : public IDirect3DSurface9,CResource9
 {
 private:
-	void* mData;
-	VkImage mStagingImage;
-	VkDeviceMemory mStagingDeviceMemory;
+	void* mData = nullptr;
+	VkImage mStagingImage = VK_NULL_HANDLE;
+	VkDeviceMemory mStagingDeviceMemory = VK_NULL_HANDLE;
 public:
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CSurface9();
 
-	CDevice9* mDevice;
-	CTexture9* mTexture;
-	UINT mWidth;
-	UINT mHeight;
-	DWORD mUsage;
-	D3DFORMAT mFormat;
-	D3DMULTISAMPLE_TYPE mMultiSample;
-	DWORD mMultisampleQuality;
-	BOOL mDiscard;
-	BOOL mLockable;
-	D3DPOOL mPool;
-	HANDLE* mSharedHandle;
+	CDevice9* mDevice = nullptr;
+	CTexture9* mTexture = nullptr;
+	UINT mWidth = 0;
+	UINT mHeight = 0;
+	DWORD mUsage = D3DUSAGE_RENDERTARGET;
+	D3DFORMAT mFormat = D3DFMT_UNKNOWN;
+	D3DMULTISAMPLE_TYPE mMultiSample = D3DMULTISAMPLE_NONE;
+	DWORD mMultisampleQuality = 0;
+	BOOL mDiscard = 0;
+	BOOL mLockable = 0;
+	D3DPOOL mPool = D3DPOOL_DEFAULT;
+	HANDLE* mSharedHandle = nullptr;
 
-	ULONG mReferenceCount;
-	VkResult mResult;
+	ULONG mReferenceCount = 1;
+	VkResult mResult = VK_SUCCESS;
 
-	VkFormat mRealFormat;
+	VkFormat mRealFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
-	VkImageLayout mImageLayout;
+	VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	VkSubresourceLayout mLayout = {};
 	VkImageSubresource mSubresource = {};
 
-	uint32_t mMipIndex;
+	uint32_t mMipIndex = 0;
 
 	void Init();
 

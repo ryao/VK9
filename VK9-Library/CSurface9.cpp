@@ -28,24 +28,11 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture,UINT Width, UINT Heigh
 	mTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
-	mUsage(D3DUSAGE_RENDERTARGET),
 	mFormat(Format),
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
 	mDiscard(Discard),
-	mLockable(0),
-	mPool(D3DPOOL_DEFAULT),
-	mSharedHandle(pSharedHandle),
-	mReferenceCount(1),
-	mResult(VK_SUCCESS),
-
-	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
-
-	mMipIndex(0),
-	mStagingImage(VK_NULL_HANDLE),
-	mStagingDeviceMemory(VK_NULL_HANDLE),
-
-	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
+	mSharedHandle(pSharedHandle)
 {
 	Init();
 }
@@ -55,24 +42,11 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
-	mUsage(D3DUSAGE_RENDERTARGET),
 	mFormat(Format),
 	mMultiSample(MultiSample),
 	mMultisampleQuality(MultisampleQuality),
-	mDiscard(0),
 	mLockable(Lockable),
-	mPool(D3DPOOL_DEFAULT),
-	mSharedHandle(pSharedHandle),
-	mReferenceCount(1),
-	mResult(VK_SUCCESS),
-
-	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
-
-	mMipIndex(0),
-	mStagingImage(VK_NULL_HANDLE),
-	mStagingDeviceMemory(VK_NULL_HANDLE),
-
-	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
+	mSharedHandle(pSharedHandle)
 {
 	Init();
 }
@@ -84,22 +58,8 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mHeight(Height),
 	mUsage(Usage),
 	mFormat(Format),
-	mMultiSample(D3DMULTISAMPLE_NONE),
-	mMultisampleQuality(0),
-	mDiscard(0),
-	mLockable(0),
 	mPool(Pool),
-	mSharedHandle(pSharedHandle),
-	mReferenceCount(1),
-	mResult(VK_SUCCESS),
-
-	mImageLayout(VK_IMAGE_LAYOUT_GENERAL),
-
-	mMipIndex(0),
-	mStagingImage(VK_NULL_HANDLE),
-	mStagingDeviceMemory(VK_NULL_HANDLE),
-
-	mRealFormat(VK_FORMAT_R8G8B8A8_UNORM)
+	mSharedHandle(pSharedHandle)
 {	
 	Init();
 }
@@ -223,12 +183,6 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetPrivateData(REFGUID refguid, void* pData
 D3DRESOURCETYPE STDMETHODCALLTYPE CSurface9::GetType()
 {
 	return D3DRTYPE_SURFACE;
-	//return D3DRTYPE_VOLUME;
-	//return D3DRTYPE_TEXTURE;
-	//return D3DRTYPE_VOLUMETEXTURE;
-	//return D3DRTYPE_CUBETEXTURE;
-	//return D3DRTYPE_VERTEXBUFFER;
-	//return D3DRTYPE_INDEXBUFFER;
 }
 
 void STDMETHODCALLTYPE CSurface9::PreLoad()

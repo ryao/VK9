@@ -27,27 +27,14 @@ misrepresented as being the original software.
 #include <algorithm>
 
 CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
-	: mReferenceCount(1),
-	mDevice(device),
+	: mDevice(device),
 	mWidth(Width),
 	mHeight(Height),
-	mDepth(0),
 	mLevels(Levels),
 	mUsage(Usage),
 	mFormat(Format),
 	mPool(Pool),
-	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS),
-
-	mMipFilter(D3DTEXF_NONE),
-	mMinFilter(D3DTEXF_NONE),
-	mMagFilter(D3DTEXF_NONE),
-	
-	mImage(VK_NULL_HANDLE),
-	mDeviceMemory(VK_NULL_HANDLE),
-
-	mSampler(VK_NULL_HANDLE),
-	mImageView(VK_NULL_HANDLE)
+	mSharedHandle(pSharedHandle)
 {
 	//mDevice->AddRef();
 
