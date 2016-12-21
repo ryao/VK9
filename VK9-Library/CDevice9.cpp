@@ -2054,11 +2054,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetClipStatus(D3DCLIPSTATUS9 *pClipStatus)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS *pParameters)
 {
-	//TODO: Implement.
+	pParameters->AdapterOrdinal = this->mAdapter;
+	pParameters->DeviceType = this->mDeviceType;
+	pParameters->hFocusWindow = this->mFocusWindow;
+	pParameters->BehaviorFlags = this->mBehaviorFlags;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetCreationParameters is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetCurrentTexturePalette(UINT *pPaletteNumber)
