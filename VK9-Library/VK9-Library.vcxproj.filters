@@ -87,6 +87,9 @@
     <ClCompile Include="CSwapChain9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CRenderTargetSurface9.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -159,6 +162,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CSwapChain9.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRenderTargetSurface9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

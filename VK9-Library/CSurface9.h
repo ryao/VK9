@@ -27,7 +27,7 @@ misrepresented as being the original software.
 
 class CTexture9;
 
-class CSurface9 : public IDirect3DSurface9,CResource9
+class CSurface9 : public IDirect3DSurface9
 {
 private:
 	void* mData = nullptr;

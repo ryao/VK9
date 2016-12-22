@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "CQuery9.h"
 #include "CBaseTexture9.h"
 #include "CSwapChain9.h"
+#include "CRenderTargetSurface9.h"
 
 #include "BufferManager.h"
 
@@ -252,6 +253,7 @@ public:
 
 	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
 	std::vector<CSwapChain9*> mSwapChains;
+	std::vector<CRenderTargetSurface9*> mRenderTargets;
 
 	DWORD mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 	BOOL mFVFHasPosition = 0;

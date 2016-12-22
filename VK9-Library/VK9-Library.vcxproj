@@ -159,6 +159,7 @@
     <ClCompile Include="CIndexBuffer9.cpp" />
     <ClCompile Include="CPixelShader9.cpp" />
     <ClCompile Include="CQuery9.cpp" />
+    <ClCompile Include="CRenderTargetSurface9.cpp" />
     <ClCompile Include="CResource9.cpp" />
     <ClCompile Include="CStateBlock9.cpp" />
     <ClCompile Include="CSurface9.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="CIndexBuffer9.h" />
     <ClInclude Include="CPixelShader9.h" />
     <ClInclude Include="CQuery9.h" />
+    <ClInclude Include="CRenderTargetSurface9.h" />
     <ClInclude Include="CResource9.h" />
     <ClInclude Include="CStateBlock9.h" />
     <ClInclude Include="CSurface9.h" />

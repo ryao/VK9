@@ -1381,6 +1381,9 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	CSwapChain9* ptr = new CSwapChain9(pPresentationParameters);
 	mSwapChains.push_back(ptr);
 
+	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mSwapchainExtent.width, mSwapchainExtent.height, ConvertFormat(mFormat));
+	mRenderTargets.push_back(ptr2);
+
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
 } 
 
@@ -1769,7 +1772,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width,UINT Height,D3
 	HRESULT result = S_OK;
 
 	//I added an extra int at the end so the signature would be different for this version. Locakable/Discard are both BOOL.
-	CSurface9* obj = new CSurface9(this, nullptr, Width, Height, Format, MultiSample, MultisampleQuality, Lockable, pSharedHandle,0);
+	CRenderTargetSurface9* obj = new CRenderTargetSurface9(this, Width, Height, Format);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -2345,9 +2348,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State,DWOR
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 **ppRenderTarget)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetRenderTarget is not implemented!";
+	(*ppRenderTarget) = mRenderTargets[RenderTargetIndex];
 
 	return S_OK;	
 }
@@ -2760,9 +2761,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWOR
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 *pRenderTarget)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetRenderTarget is not implemented!";
+	mRenderTargets[RenderTargetIndex] = (CRenderTargetSurface9*)pRenderTarget;
 
 	return S_OK;
 }
