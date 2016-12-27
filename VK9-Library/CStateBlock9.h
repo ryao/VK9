@@ -24,6 +24,8 @@ misrepresented as being the original software.
 #include "d3d9.h"
 #include <vulkan/vulkan.h>
 
+#include "CTypes.h"
+
 class CDevice9;
 
 class CStateBlock9 : public IDirect3DStateBlock9
@@ -39,6 +41,10 @@ public:
 
 	ULONG mReferenceCount;
 	VkResult mResult;
+
+	//Device State
+	DeviceState mDeviceState = {};
+
 public:
 
 	//IUnknown

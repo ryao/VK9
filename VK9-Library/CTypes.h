@@ -30,8 +30,11 @@ misrepresented as being the original software.
 #include <vulkan/vk_sdk_platform.h>
 
 #include <vector>
+#include <unordered_map>
 
 class CVertexBuffer9;
+class CVertexDeclaration9;
+class CIndexBuffer9;
 
 struct Monitor
 {
@@ -78,6 +81,65 @@ struct HistoricalUniformBuffer
 {
 	VkBuffer UniformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
+};
+
+struct DeviceState
+{
+	//IDirect3DDevice9::LightEnable
+	std::unordered_map<DWORD, BOOL> mLightSettings;
+
+	//IDirect3DDevice9::SetClipPlane
+	//IDirect3DDevice9::SetCurrentTexturePalette
+	//IDirect3DDevice9::SetFVF
+	DWORD mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
+	BOOL mFVFHasPosition = 0;
+	BOOL mFVFHasColor = 0;
+	BOOL mFVFHasNormal = 0;
+	int32_t mFVFTextureCount = 0;
+
+	//IDirect3DDevice9::SetIndices
+	CIndexBuffer9* mIndexBuffer = nullptr;
+
+	//IDirect3DDevice9::SetLight
+	//IDirect3DDevice9::SetMaterial
+	//IDirect3DDevice9::SetNPatchMode
+	//IDirect3DDevice9::SetPixelShader
+	//IDirect3DDevice9::SetPixelShaderConstantB
+	//IDirect3DDevice9::SetPixelShaderConstantF
+	//IDirect3DDevice9::SetPixelShaderConstantI
+	//IDirect3DDevice9::SetRenderState
+	std::unordered_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
+
+	//IDirect3DDevice9::SetSamplerState
+	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
+
+	//IDirect3DDevice9::SetScissorRect
+	RECT m9Scissor = {};
+	VkRect2D mScissor = {};
+
+	//IDirect3DDevice9::SetStreamSource
+	std::unordered_map<UINT, StreamSource> mStreamSources;
+
+	//IDirect3DDevice9::SetStreamSourceFreq
+	//IDirect3DDevice9::SetTexture
+	VkDescriptorImageInfo mDescriptorImageInfo[16] = {};
+
+	//IDirect3DDevice9::SetTextureStageState
+	//IDirect3DDevice9::SetTransform
+	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+
+	//IDirect3DDevice9::SetViewport
+	D3DVIEWPORT9 m9Viewport = {};
+	VkViewport mViewport = {};
+
+	//IDirect3DDevice9::SetVertexDeclaration
+	CVertexDeclaration9* mVertexDeclaration = nullptr;
+
+	//IDirect3DDevice9::SetVertexShader
+	//IDirect3DDevice9::SetVertexShaderConstantB
+	//IDirect3DDevice9::SetVertexShaderConstantF
+	//IDirect3DDevice9::SetVertexShaderConstantI
+
 };
 
 #endif // CTYPES_H

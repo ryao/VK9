@@ -358,25 +358,25 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 the height/width of the surfaces are " << mPresentationParameters.BackBufferHeight << "/" << mPresentationParameters.BackBufferWidth;
 
 	//initialize vulkan/d3d9 viewport and scissor structures.
-	mViewport.width = (float)mPresentationParameters.BackBufferWidth;
-	mViewport.height = (float)mPresentationParameters.BackBufferHeight;
-	mViewport.minDepth = (float)0.0f;
-	mViewport.maxDepth = (float)1.0f;
+	mDeviceState.mViewport.width = (float)mPresentationParameters.BackBufferWidth;
+	mDeviceState.mViewport.height = (float)mPresentationParameters.BackBufferHeight;
+	mDeviceState.mViewport.minDepth = (float)0.0f;
+	mDeviceState.mViewport.maxDepth = (float)1.0f;
 
-	m9Viewport.Width = mViewport.width;
-	m9Viewport.Height = mViewport.height;
-	m9Viewport.MinZ = mViewport.minDepth;
-	m9Viewport.MaxZ = mViewport.maxDepth;
+	mDeviceState.m9Viewport.Width = mDeviceState.mViewport.width;
+	mDeviceState.m9Viewport.Height = mDeviceState.mViewport.height;
+	mDeviceState.m9Viewport.MinZ = mDeviceState.mViewport.minDepth;
+	mDeviceState.m9Viewport.MaxZ = mDeviceState.mViewport.maxDepth;
 
-	mScissor.extent.width = mPresentationParameters.BackBufferWidth;
-	mScissor.extent.height = mPresentationParameters.BackBufferHeight;
-	mScissor.offset.x = 0; //Do I really need this if I initialize to zero?
-	mScissor.offset.y = 0; //Do I really need this if I initialize to zero?
+	mDeviceState.mScissor.extent.width = mPresentationParameters.BackBufferWidth;
+	mDeviceState.mScissor.extent.height = mPresentationParameters.BackBufferHeight;
+	mDeviceState.mScissor.offset.x = 0; //Do I really need this if I initialize to zero?
+	mDeviceState.mScissor.offset.y = 0; //Do I really need this if I initialize to zero?
 
-	m9Scissor.right = mScissor.extent.width;
-	m9Scissor.bottom = mScissor.extent.height;
-	m9Scissor.left = 0;
-	m9Scissor.top = 0;
+	mDeviceState.m9Scissor.right = mDeviceState.mScissor.extent.width;
+	mDeviceState.m9Scissor.bottom = mDeviceState.mScissor.extent.height;
+	mDeviceState.m9Scissor.left = 0;
+	mDeviceState.m9Scissor.top = 0;
 
 	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, nullptr);
 	if (mResult != VK_SUCCESS)
@@ -1360,19 +1360,19 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	for (size_t i = 0; i < 16; i++)
 	{
-		mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
-		mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
-		mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
-		mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
-		mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
-		mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
-		mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
-		mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
-		mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
-		mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
-		mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
-		mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
-		mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
+		mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
+		mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
+		mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
+		mDeviceState.mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
+		mDeviceState.mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
+		mDeviceState.mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
+		mDeviceState.mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+		mDeviceState.mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
+		mDeviceState.mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
+		mDeviceState.mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
+		mDeviceState.mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
+		mDeviceState.mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
+		mDeviceState.mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
 	}
 
 	mBufferManager = new BufferManager(this);
@@ -1905,7 +1905,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
 {
-	if (mBufferManager->mIndexBuffer == nullptr)
+	if (mDeviceState.mIndexBuffer == nullptr)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive called with null index buffer.";
 		return D3DERR_INVALIDCALL;
@@ -1924,7 +1924,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 		https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 		https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
 	*/	
-	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
+	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
 
 	return S_OK;
 }
@@ -2217,7 +2217,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetFrontBufferData(UINT  iSwapChain,IDirect3
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetFVF(DWORD *pFVF)
 {
-	(*pFVF) = mFVF;
+	(*pFVF) = mDeviceState.mFVF;
 
 	return S_OK;	
 }
@@ -2341,7 +2341,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain,D3DRASTER_S
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State,DWORD *pValue)
 {
-	(*pValue) = mRenderStates[State];
+	(*pValue) = mDeviceState.mRenderStates[State];
 
 	return S_OK;
 }
@@ -2364,14 +2364,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTargetData(IDirect3DSurface9 *pRend
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD *pValue)
 {
-	(*pValue) = mSamplerStates[Sampler][Type];
+	(*pValue) = mDeviceState.mSamplerStates[Sampler][Type];
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetScissorRect(RECT *pRect)
 {
-	(*pRect) = m9Scissor;
+	(*pRect) = mDeviceState.m9Scissor;
 
 	return S_OK;
 }
@@ -2387,7 +2387,7 @@ BOOL STDMETHODCALLTYPE CDevice9::GetSoftwareVertexProcessing()
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride)
 {
-	StreamSource& value = mBufferManager->mStreamSources[StreamNumber];
+	StreamSource& value = mDeviceState.mStreamSources[StreamNumber];
 
 	(*ppStreamData) = (IDirect3DVertexBuffer9*)value.StreamData;
 	/*
@@ -2436,7 +2436,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage,D3DTEXTURES
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX* pMatrix)
 {
-	(*pMatrix) = mTransforms[State];
+	(*pMatrix) = mDeviceState.mTransforms[State];
 
 	return S_OK;
 }
@@ -2488,7 +2488,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
 {
-	(*pViewport) = m9Viewport;
+	(*pViewport) = mDeviceState.m9Viewport;
 
 	return S_OK;		
 }
@@ -2594,73 +2594,73 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
-	mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
+	mDeviceState.mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
 
 	mBufferManager->mLastType = D3DPT_FORCE_DWORD; //force pipe to reset if it's been built.
 
-	if ((mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+	if ((mDeviceState.mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 	{
-		mFVFHasPosition = true;
+		mDeviceState.mFVFHasPosition = true;
 	}
 
-	if ((mFVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+	if ((mDeviceState.mFVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
 	{
-		mFVFHasNormal = true;
+		mDeviceState.mFVFHasNormal = true;
 	}
 
-	if ((mFVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
+	if ((mDeviceState.mFVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_PSIZE is not implemented!";
 	}
 
-	if ((mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+	if ((mDeviceState.mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 	{
-		mFVFHasColor = true;
+		mDeviceState.mFVFHasColor = true;
 	}
 
-	if ((mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+	if ((mDeviceState.mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_SPECULAR is not implemented!";
 	}
 
-	if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
+	if ((mDeviceState.mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
 	{
-		mFVFTextureCount = 1;
+		mDeviceState.mFVFTextureCount = 1;
 	}
 
-	if ((mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+	if ((mDeviceState.mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
 	{
-		mFVFTextureCount = 2;
+		mDeviceState.mFVFTextureCount = 2;
 	}
 
-	if ((mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
+	if ((mDeviceState.mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
 	{
-		mFVFTextureCount = 3;
+		mDeviceState.mFVFTextureCount = 3;
 	}
 
-	if ((mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
+	if ((mDeviceState.mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
 	{
-		mFVFTextureCount = 4;
+		mDeviceState.mFVFTextureCount = 4;
 	}
 
-	if ((mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
+	if ((mDeviceState.mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
 	{
-		mFVFTextureCount = 5;
+		mDeviceState.mFVFTextureCount = 5;
 	}
 
-	if ((mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
+	if ((mDeviceState.mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
 	{
-		mFVFTextureCount = 6;
+		mDeviceState.mFVFTextureCount = 6;
 	}
 
-	if ((mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
+	if ((mDeviceState.mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
 	{
-		mFVFTextureCount = 7;
+		mDeviceState.mFVFTextureCount = 7;
 	}
 
-	if ((mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
+	if ((mDeviceState.mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
 	{
-		mFVFTextureCount = 8;
+		mDeviceState.mFVFTextureCount = 8;
 	}
 
 	return S_OK;	
@@ -2675,7 +2675,7 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 {
-	mBufferManager->mIndexBuffer = (CIndexBuffer9*)pIndexData;
+	mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
 
 	return S_OK;
 }
@@ -2754,7 +2754,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister,c
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 {
-	mRenderStates[State] = Value;
+	mDeviceState.mRenderStates[State] = Value;
 
 	return S_OK;	
 }
@@ -2768,19 +2768,19 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDir
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value)
 {
-	mSamplerStates[Sampler][Type] = Value;
+	mDeviceState.mSamplerStates[Sampler][Type] = Value;
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT *pRect)
 {
-	m9Scissor = (*pRect);
+	mDeviceState.m9Scissor = (*pRect);
 
-	mScissor.extent.width = m9Scissor.right;
-	mScissor.extent.height = m9Scissor.bottom;
-	mScissor.offset.x = m9Scissor.left;
-	mScissor.offset.y = m9Scissor.top;
+	mDeviceState.mScissor.extent.width = mDeviceState.m9Scissor.right;
+	mDeviceState.mScissor.extent.height = mDeviceState.m9Scissor.bottom;
+	mDeviceState.mScissor.offset.x = mDeviceState.m9Scissor.left;
+	mDeviceState.mScissor.offset.y = mDeviceState.m9Scissor.top;
 
 	return S_OK;	
 }
@@ -2798,7 +2798,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DV
 {	
 	CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
 
-	mBufferManager->mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
+	mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
 
 	return S_OK;
 }
@@ -2815,7 +2815,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
 	auto texture = (CTexture9*)pTexture;
-	VkDescriptorImageInfo& sampler = mBufferManager->mDescriptorImageInfo[Sampler];
+	VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
 
 	if (pTexture==nullptr)
 	{
@@ -2846,7 +2846,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 	VkResult result;
 	void* data=nullptr;
 
-	mTransforms[State] = (*pMatrix);
+	mDeviceState.mTransforms[State] = (*pMatrix);
 
 	switch (State)
 	{
@@ -2900,7 +2900,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
 {
-	mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+	mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
 
 	return S_OK;	
 }
@@ -2943,12 +2943,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 {
-	m9Viewport = (*pViewport);
+	mDeviceState.m9Viewport = (*pViewport);
 
-	mViewport.width = m9Viewport.Width;
-	mViewport.height = m9Viewport.Height;
-	mViewport.minDepth = m9Viewport.MinZ;
-	mViewport.maxDepth = m9Viewport.MaxZ;
+	mDeviceState.mViewport.width = mDeviceState.m9Viewport.Width;
+	mDeviceState.mViewport.height = mDeviceState.m9Viewport.Height;
+	mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
+	mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 
 	return S_OK;	
 }
@@ -3237,8 +3237,8 @@ void CDevice9::StartScene()
 
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
 
-	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mViewport);
-	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mScissor);
+	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mViewport);
+	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mScissor);
 
 	this->mBufferManager->mLastType = D3DPT_FORCE_DWORD;
 }

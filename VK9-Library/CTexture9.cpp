@@ -343,7 +343,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	//imageMemoryBarrier.subresourceRange = mipSubRange;
 	//vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-	for (int32_t i = 1; i < mLevels; i++)
+	for (UINT i = 1; i < mLevels; i++) //Changed to match mLevels datatype
 	{
 		VkImageBlit imageBlit{};
 
@@ -626,17 +626,17 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 	VkSamplerCreateInfo samplerCreateInfo = {};
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerCreateInfo.pNext = NULL;
-	samplerCreateInfo.magFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER]);
-	samplerCreateInfo.minFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIndex][D3DSAMP_MINFILTER]);
-	samplerCreateInfo.addressModeU = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU]);
-	samplerCreateInfo.addressModeV = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV]);
-	samplerCreateInfo.addressModeW = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW]);
+	samplerCreateInfo.magFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER]);
+	samplerCreateInfo.minFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MINFILTER]);
+	samplerCreateInfo.addressModeU = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU]);
+	samplerCreateInfo.addressModeV = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV]);
+	samplerCreateInfo.addressModeW = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW]);
 	samplerCreateInfo.anisotropyEnable = VK_FALSE;
-	samplerCreateInfo.maxAnisotropy = mDevice->mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];  //16 D3DSAMP_MAXANISOTROPY
+	samplerCreateInfo.maxAnisotropy = mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];  //16 D3DSAMP_MAXANISOTROPY
 	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; // VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
 	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerCreateInfo.mipmapMode = ConvertMipmapMode((D3DTEXTUREFILTERTYPE)mDevice->mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER]); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.mipmapMode = ConvertMipmapMode((D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER]); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.mipLodBias = 0.0f;
 	samplerCreateInfo.minLod = 0.0f;
 	//samplerCreateInfo.maxLod = (float)mLevels;

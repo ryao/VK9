@@ -289,69 +289,69 @@ BufferManager::BufferManager(CDevice9* device)
 		return;
 	}
 
-	mDescriptorImageInfo[0].sampler = mSampler;
-	mDescriptorImageInfo[0].imageView = mImageView;
-	mDescriptorImageInfo[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[0].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[0].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[1].sampler = mSampler;
-	mDescriptorImageInfo[1].imageView = mImageView;
-	mDescriptorImageInfo[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[1].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[1].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[2].sampler = mSampler;
-	mDescriptorImageInfo[2].imageView = mImageView;
-	mDescriptorImageInfo[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[2].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[2].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[3].sampler = mSampler;
-	mDescriptorImageInfo[3].imageView = mImageView;
-	mDescriptorImageInfo[3].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[3].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[3].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[3].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[4].sampler = mSampler;
-	mDescriptorImageInfo[4].imageView = mImageView;
-	mDescriptorImageInfo[4].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[4].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[4].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[4].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[5].sampler = mSampler;
-	mDescriptorImageInfo[5].imageView = mImageView;
-	mDescriptorImageInfo[5].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[5].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[5].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[5].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[6].sampler = mSampler;
-	mDescriptorImageInfo[6].imageView = mImageView;
-	mDescriptorImageInfo[6].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[6].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[6].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[6].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[7].sampler = mSampler;
-	mDescriptorImageInfo[7].imageView = mImageView;
-	mDescriptorImageInfo[7].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[7].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[7].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[7].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[8].sampler = mSampler;
-	mDescriptorImageInfo[8].imageView = mImageView;
-	mDescriptorImageInfo[8].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[8].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[8].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[8].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[9].sampler = mSampler;
-	mDescriptorImageInfo[9].imageView = mImageView;
-	mDescriptorImageInfo[9].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[9].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[9].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[9].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[10].sampler = mSampler;
-	mDescriptorImageInfo[10].imageView = mImageView;
-	mDescriptorImageInfo[10].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[10].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[10].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[10].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[11].sampler = mSampler;
-	mDescriptorImageInfo[11].imageView = mImageView;
-	mDescriptorImageInfo[11].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[11].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[11].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[11].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[12].sampler = mSampler;
-	mDescriptorImageInfo[12].imageView = mImageView;
-	mDescriptorImageInfo[12].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[12].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[12].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[12].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[13].sampler = mSampler;
-	mDescriptorImageInfo[13].imageView = mImageView;
-	mDescriptorImageInfo[13].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[13].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[13].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[13].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[14].sampler = mSampler;
-	mDescriptorImageInfo[14].imageView = mImageView;
-	mDescriptorImageInfo[14].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[14].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[14].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[14].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	mDescriptorImageInfo[15].sampler = mSampler;
-	mDescriptorImageInfo[15].imageView = mImageView;
-	mDescriptorImageInfo[15].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	mDevice->mDeviceState.mDescriptorImageInfo[15].sampler = mSampler;
+	mDevice->mDeviceState.mDescriptorImageInfo[15].imageView = mImageView;
+	mDevice->mDeviceState.mDescriptorImageInfo[15].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -382,7 +382,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mWriteDescriptorSet[1].dstArrayElement = 0;
 	mWriteDescriptorSet[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	mWriteDescriptorSet[1].descriptorCount = 1;
-	mWriteDescriptorSet[1].pImageInfo = mDescriptorImageInfo;
+	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
 } 
 
 BufferManager::~BufferManager()
@@ -498,14 +498,14 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	/**********************************************
 	* Update Pipe Creation Information
 	**********************************************/
-	searchResult = mDevice->mRenderStates.find(D3DRS_FILLMODE);
-	if (searchResult != mDevice->mRenderStates.end())
+	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_FILLMODE);
+	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
-		mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)mDevice->mRenderStates[D3DRS_FILLMODE]);
+		mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)mDevice->mDeviceState.mRenderStates[D3DRS_FILLMODE]);
 	}
 
-	searchResult = mDevice->mRenderStates.find(D3DRS_CULLMODE);
-	if (searchResult != mDevice->mRenderStates.end())
+	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_CULLMODE);
+	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
 		SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)searchResult->second);
 	}
@@ -545,29 +545,29 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
 
-	if (mDevice->mVertexDeclaration != nullptr)
+	if (mDevice->mDeviceState.mVertexDeclaration != nullptr)
 	{
-		attributeCount += mDevice->mVertexDeclaration->mHasColor;
-		attributeCount += mDevice->mVertexDeclaration->mHasPosition;
-		attributeCount += mDevice->mVertexDeclaration->mHasNormal;
-		attributeCount += mDevice->mVertexDeclaration->mTextureCount;	
+		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mHasColor;
+		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mHasPosition;
+		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mHasNormal;
+		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mTextureCount;
 
-		hasColor = mDevice->mVertexDeclaration->mHasColor;
-		hasPosition = mDevice->mVertexDeclaration->mHasPosition;
-		hasNormal = mDevice->mVertexDeclaration->mHasNormal;
-		textureCount = mDevice->mVertexDeclaration->mTextureCount;
+		hasColor = mDevice->mDeviceState.mVertexDeclaration->mHasColor;
+		hasPosition = mDevice->mDeviceState.mVertexDeclaration->mHasPosition;
+		hasNormal = mDevice->mDeviceState.mVertexDeclaration->mHasNormal;
+		textureCount = mDevice->mDeviceState.mVertexDeclaration->mTextureCount;
 	}
-	else if (mDevice->mFVF)
+	else if (mDevice->mDeviceState.mFVF)
 	{
-		attributeCount += mDevice->mFVFHasColor;
-		attributeCount += mDevice->mFVFHasNormal;
-		attributeCount += mDevice->mFVFHasPosition;
-		attributeCount += mDevice->mFVFTextureCount;
+		attributeCount += mDevice->mDeviceState.mFVFHasColor;
+		attributeCount += mDevice->mDeviceState.mFVFHasNormal;
+		attributeCount += mDevice->mDeviceState.mFVFHasPosition;
+		attributeCount += mDevice->mDeviceState.mFVFTextureCount;
 
-		hasNormal = mDevice->mFVFHasNormal;
-		hasColor = mDevice->mFVFHasColor;
-		hasPosition = mDevice->mFVFHasPosition;
-		textureCount = mDevice->mFVFTextureCount;
+		hasNormal = mDevice->mDeviceState.mFVFHasNormal;
+		hasColor = mDevice->mDeviceState.mFVFHasColor;
+		hasPosition = mDevice->mDeviceState.mFVFHasPosition;
+		textureCount = mDevice->mDeviceState.mFVFTextureCount;
 	}
 	else
 	{
@@ -645,7 +645,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	* Setup bindings
 	**********************************************/
 	int i = 0;
-	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
 	{
 		mVertexInputBindingDescription[i].binding = source.first;
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
@@ -654,15 +654,15 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		i++;
 	}
 
-	if (mDevice->mVertexDeclaration != nullptr)
+	if (mDevice->mDeviceState.mVertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
-		attributeCount = mDevice->mVertexDeclaration->mVertexElements.size();
+		attributeCount = mDevice->mDeviceState.mVertexDeclaration->mVertexElements.size();
 
 		for (size_t i = 0; i < attributeCount; i++)
 		{
-			D3DVERTEXELEMENT9& element = mDevice->mVertexDeclaration->mVertexElements[i];
+			D3DVERTEXELEMENT9& element = mDevice->mDeviceState.mVertexDeclaration->mVertexElements[i];
 
 			int t = D3DDECLTYPE_FLOAT3;
 
@@ -711,11 +711,11 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 			}
 		}
 	}
-	else if (mDevice->mFVF)
+	else if (mDevice->mDeviceState.mFVF)
 	{
 		//revisit - make sure multiple sources is valid for FVF.
 		i = 0;
-		BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+		BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
 		{
 			int attributeIndex = i * attributeCount;
 			uint32_t offset = 0;
@@ -745,7 +745,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 			//D3DFVF_PSIZE
 
-			if ((mDevice->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+			if ((mDevice->mDeviceState.mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
@@ -756,7 +756,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 				attributeIndex += 1;
 			}
 
-			if ((mDevice->mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+			if ((mDevice->mDeviceState.mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
@@ -786,13 +786,13 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.
 
 	mDescriptorSetAllocateInfo.pSetLayouts = &context.DescriptorSetLayout;
-	mDescriptorSetAllocateInfo.descriptorSetCount = 1; //mStreamSources.size(); //determines the number of descriptor sets to be allocated from the pool.
+	mDescriptorSetAllocateInfo.descriptorSetCount = 1; //mDevice->mDeviceState.mStreamSources.size(); //determines the number of descriptor sets to be allocated from the pool.
 
 	mPipelineLayoutCreateInfo.pSetLayouts = &context.DescriptorSetLayout;
-	mPipelineLayoutCreateInfo.setLayoutCount = 1; // mStreamSources.size(); // The number of descriptor sets included in the pipeline layout.
+	mPipelineLayoutCreateInfo.setLayoutCount = 1; // mDevice->mDeviceState.mStreamSources.size(); // The number of descriptor sets included in the pipeline layout.
 
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mStreamSources.size();
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount; //mStreamSources.size() *
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mDevice->mDeviceState.mStreamSources.size();
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount; //mDevice->mDeviceState.mStreamSources.size() *
 
 
 
@@ -823,7 +823,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 	mWriteDescriptorSet[1].dstSet = context.DescriptorSet;
 	mWriteDescriptorSet[1].descriptorCount = 16;
-	mWriteDescriptorSet[1].pImageInfo = mDescriptorImageInfo;
+	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
 
 	vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
 
@@ -852,15 +852,15 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 	mVertexCount = 0;
 
-	BOOST_FOREACH(map_type::value_type& source, mStreamSources)
+	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
 	{
 		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
 		mVertexCount += source.second.StreamData->mSize;
 	}
 
-	if (mIndexBuffer != nullptr)
+	if (mDevice->mDeviceState.mIndexBuffer != nullptr)
 	{
-		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mIndexBuffer->mBuffer, 0, mIndexBuffer->mIndexType);
+		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
 	}
 
 	this->mDrawBuffer.push_back(context);

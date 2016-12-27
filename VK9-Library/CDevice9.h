@@ -229,8 +229,8 @@ public:
 	VkDeviceMemory mDepthDeviceMemory = VK_NULL_HANDLE;
 	VkImageView mDepthView = VK_NULL_HANDLE;
 	
-	VkViewport mViewport = {};
-	VkRect2D mScissor = {};
+	
+	
 	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
 	VkCommandBufferInheritanceInfo mCommandBufferInheritanceInfo = {};
 	VkCommandBufferBeginInfo mCommandBufferBeginInfo = {};
@@ -244,27 +244,24 @@ public:
 	
 	UniformBufferObject mUBO = {};
 
-	RECT m9Scissor = {};
-	D3DVIEWPORT9 m9Viewport = {};
+	
+	
+
+	//Device State
+	DeviceState mDeviceState = {};
 
 	BufferManager* mBufferManager = nullptr;
-	std::unordered_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
-	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+	
+	
 
-	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
+	
 	std::vector<CSwapChain9*> mSwapChains;
 	std::vector<CRenderTargetSurface9*> mRenderTargets;
-
-	DWORD mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-	BOOL mFVFHasPosition = 0;
-	BOOL mFVFHasColor = 0;
-	BOOL mFVFHasNormal = 0;
-	int32_t mFVFTextureCount = 0;
 
 	BOOL mIsDirty = true;
 	BOOL mIsSceneStarted = false;
 	
-	CVertexDeclaration9* mVertexDeclaration = nullptr;
+	
 
 	PAINTSTRUCT* mPaintInformation = {};
 

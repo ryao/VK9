@@ -43,9 +43,6 @@ public:
 	CDevice9* mDevice = nullptr;
 	bool mIsDirty = true;
 
-	std::unordered_map<UINT, StreamSource> mStreamSources;
-	CIndexBuffer9* mIndexBuffer = nullptr;
-
 	VkDynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE] = {};
 	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1] = {};
 
@@ -97,7 +94,7 @@ public:
 	VkImageView mImageView = VK_NULL_HANDLE;
 	int32_t mTextureWidth = 0;
 	int32_t mTextureHeight = 0;
-	VkDescriptorImageInfo mDescriptorImageInfo[16] = {};
+	
 	VkDescriptorBufferInfo mDescriptorBufferInfo = {};
 	uint32_t mVertexCount = 0;
 
