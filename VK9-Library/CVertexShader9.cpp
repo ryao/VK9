@@ -24,10 +24,8 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
-	: mReferenceCount(1),
-	mDevice(device),
-	mFunction((DWORD*)pFunction),
-	mResult(VK_SUCCESS)
+	: mDevice(device),
+	mFunction((DWORD*)pFunction)
 {
 
 }
@@ -155,9 +153,14 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::SetPrivateData(REFGUID refguid, const 
 
 HRESULT STDMETHODCALLTYPE CVertexShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
-	//TODO: Implement.
+	(*pSizeOfData) = mSize;
 
-	BOOST_LOG_TRIVIAL(warning) << "CVertexShader9::GetFunction is not implemented!";
+	if (pData==nullptr)
+	{
+		return S_OK;
+	}
 
-	return E_NOTIMPL;
+	memcpy(pData, mFunction, mSize);
+
+	return S_OK;
 }

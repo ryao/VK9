@@ -24,10 +24,8 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
-	: mReferenceCount(1),
-	mDevice(device),
-	mFunction((DWORD*)pFunction),
-	mResult(VK_SUCCESS)
+	: mDevice(device),
+	mFunction((DWORD*)pFunction)
 {
 
 }
@@ -150,9 +148,14 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::SetPrivateData(REFGUID refguid, const v
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
-	//TODO: Implement.
+	(*pSizeOfData) = mSize;
 
-	BOOST_LOG_TRIVIAL(warning) << "CPixelShader9::GetFunction is not implemented!";
+	if (pData == nullptr)
+	{
+		return S_OK;
+	}
 
-	return E_NOTIMPL;
+	memcpy(pData, mFunction, mSize);
+
+	return S_OK;
 }

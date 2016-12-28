@@ -25,17 +25,19 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
 
-class CPixelShader9 : public IDirect3DPixelShader9,CResource9
+class CPixelShader9 : public IDirect3DPixelShader9
 {
-private:
-	CDevice9* mDevice;
-	DWORD* mFunction;
 public:
 	CPixelShader9(CDevice9* device,const DWORD* pFunction);
 	~CPixelShader9();
 
-	ULONG mReferenceCount;
-	VkResult mResult;
+	CDevice9* mDevice = nullptr;
+	DWORD* mFunction = nullptr;
+	UINT mSize = 0;
+	VkShaderModule mShaderModule = VK_NULL_HANDLE;
+
+	ULONG mReferenceCount = 1;
+	VkResult mResult = VK_SUCCESS;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

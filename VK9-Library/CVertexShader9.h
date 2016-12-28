@@ -25,18 +25,19 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
 
-class CVertexShader9 : public IDirect3DVertexShader9,CResource9
+class CVertexShader9 : public IDirect3DVertexShader9
 {
-private:
-	CDevice9* mDevice;
-	DWORD* mFunction;
-
 public:
 	CVertexShader9(CDevice9* device, const DWORD* pFunction);
 	~CVertexShader9();
 
-	ULONG mReferenceCount;
-	VkResult mResult;
+	CDevice9* mDevice = nullptr;
+	DWORD* mFunction = nullptr;
+	UINT mSize = 0;
+	VkShaderModule mShaderModule = VK_NULL_HANDLE;
+
+	ULONG mReferenceCount = 1;
+	VkResult mResult = VK_SUCCESS;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

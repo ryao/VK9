@@ -132,6 +132,11 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	this->mDevice->mDeviceState.mNSegments = mDeviceState.mNSegments; //Doesn't matter anyway.
 
 	//IDirect3DDevice9::SetPixelShader
+	if (mDeviceState.mPixelShader != nullptr)
+	{
+		this->mDevice->mDeviceState.mPixelShader = mDeviceState.mPixelShader;
+	}
+
 	//IDirect3DDevice9::SetPixelShaderConstantB
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
@@ -219,6 +224,11 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	}
 
 	//IDirect3DDevice9::SetVertexShader
+	if (mDeviceState.mVertexShader != nullptr)
+	{
+		this->mDevice->mDeviceState.mVertexShader = mDeviceState.mVertexShader;
+	}
+
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI

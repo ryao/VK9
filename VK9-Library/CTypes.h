@@ -35,6 +35,8 @@ misrepresented as being the original software.
 class CVertexBuffer9;
 class CVertexDeclaration9;
 class CIndexBuffer9;
+class CPixelShader9;
+class CVertexShader9;
 
 struct Monitor
 {
@@ -106,6 +108,8 @@ struct DeviceState
 	float mNSegments = 0.0f;
 
 	//IDirect3DDevice9::SetPixelShader
+	CPixelShader9* mPixelShader = nullptr;
+
 	//IDirect3DDevice9::SetPixelShaderConstantB
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
@@ -140,6 +144,8 @@ struct DeviceState
 	CVertexDeclaration9* mVertexDeclaration = nullptr;
 
 	//IDirect3DDevice9::SetVertexShader
+	CVertexShader9* mVertexShader = nullptr;
+
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI

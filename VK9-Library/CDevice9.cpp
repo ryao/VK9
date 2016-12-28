@@ -2196,10 +2196,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMO
 		pMode->Format = ConvertFormat(this->mFormat);
 	}
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Height: " << pMode->Height;
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Width: " << pMode->Width;
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode RefreshRate: " << pMode->RefreshRate;
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Format: " << pMode->Format;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Height: " << pMode->Height;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Width: " << pMode->Width;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode RefreshRate: " << pMode->RefreshRate;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Format: " << pMode->Format;
 
 	return S_OK;
 }
@@ -2290,11 +2290,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPaletteEntries(UINT PaletteNumber,PALETTE
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppShader)
 {
-	//TODO: Implement.
+	(*ppShader) = (IDirect3DPixelShader9*)mDeviceState.mPixelShader;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetPixelShader is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount)
@@ -2444,11 +2442,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclarat
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9 **ppShader)
 {
-	//TODO: Implement.
+	(*ppShader) = (IDirect3DVertexShader9*)mDeviceState.mVertexShader;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetVertexShader is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount)
@@ -2732,9 +2728,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber,const P
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShader)
 {
-	//TODO: Implement.
+	mDeviceState.mPixelShader = (CPixelShader9*)pShader;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetPixelShader is not implemented!";
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mPixelShader = mDeviceState.mPixelShader;
+	}
 
 	return S_OK;	
 }
@@ -2946,9 +2945,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclarat
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pShader)
 {
-	//TODO: Implement.
+	mDeviceState.mVertexShader = (CVertexShader9*)pShader;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetVertexShader is not implemented!";
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mVertexShader = mDeviceState.mVertexShader;
+	}
 
 	return S_OK;
 }
