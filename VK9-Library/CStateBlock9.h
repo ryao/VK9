@@ -32,15 +32,16 @@ class CStateBlock9 : public IDirect3DStateBlock9
 
 {
 private:
-	CDevice9* mDevice;
-	D3DSTATEBLOCKTYPE mType;
+	CDevice9* mDevice = nullptr;
+	D3DSTATEBLOCKTYPE mType = D3DSBT_ALL;
 
 public:
 	CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type);
+	CStateBlock9(CDevice9* device);
 	~CStateBlock9();
 
-	ULONG mReferenceCount;
-	VkResult mResult;
+	ULONG mReferenceCount = 1;
+	VkResult mResult = VK_SUCCESS;
 
 	//Device State
 	DeviceState mDeviceState = {};

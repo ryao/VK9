@@ -1622,11 +1622,9 @@ ULONG STDMETHODCALLTYPE CDevice9::Release(void)
 	
 HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
-	//TODO: Implement.
+	this->mCurrentStateRecording = new CStateBlock9(this);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::BeginStateBlock is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 
@@ -2003,11 +2001,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle,const float *pNumSe
 	
 HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
 {
-	//TODO: Implement.
+	(*ppSB) = this->mCurrentStateRecording;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::EndStateBlock is not implemented!";
+	this->mCurrentStateRecording = nullptr;
 
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::EvictManagedResources()
@@ -2269,11 +2267,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetMaterial(D3DMATERIAL9 *pMaterial)
 
 FLOAT STDMETHODCALLTYPE CDevice9::GetNPatchMode()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetNPatchMode is not implemented!";
-
-	return 0;
+	return mDeviceState.mNSegments;
 }
 
 UINT STDMETHODCALLTYPE CDevice9::GetNumberOfSwapChains()
@@ -2427,11 +2421,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTexture(DWORD Stage,IDirect3DBaseTexture9
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD *pValue)
 {
-	//TODO: Implement.
+	(*pValue) = mDeviceState.mTextureStageStates[Stage][Type];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetTextureStageState is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX* pMatrix)
@@ -2663,6 +2655,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 		mDeviceState.mFVFTextureCount = 8;
 	}
 
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mFVF = mDeviceState.mFVF;
+		this->mCurrentStateRecording->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
+		this->mCurrentStateRecording->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
+		this->mCurrentStateRecording->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
+		this->mCurrentStateRecording->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
+	}
+
 	return S_OK;	
 }
 
@@ -2676,6 +2677,11 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 {
 	mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
+
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mIndexBuffer = mDeviceState.mIndexBuffer;
+	}
 
 	return S_OK;
 }
@@ -2700,11 +2706,19 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 {
-	//TODO: Implement.
+	mDeviceState.mNSegments = nSegments;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetNPatchMode is not implemented!";
+	if (nSegments>0.0f)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetNPatchMode nPatch greater than zero not supported.";
+	}
 
-	return E_NOTIMPL;
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mNSegments = mDeviceState.mNSegments;
+	}
+
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber,const PALETTEENTRY *pEntries)
@@ -2756,6 +2770,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWOR
 {
 	mDeviceState.mRenderStates[State] = Value;
 
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mRenderStates[State] = Value;
+	}
+
 	return S_OK;	
 }
 
@@ -2770,6 +2789,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTAT
 {
 	mDeviceState.mSamplerStates[Sampler][Type] = Value;
 
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mSamplerStates[Sampler][Type] = Value;
+	}
+
 	return S_OK;
 }
 
@@ -2781,6 +2805,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT *pRect)
 	mDeviceState.mScissor.extent.height = mDeviceState.m9Scissor.bottom;
 	mDeviceState.mScissor.offset.x = mDeviceState.m9Scissor.left;
 	mDeviceState.mScissor.offset.y = mDeviceState.m9Scissor.top;
+
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.m9Scissor = mDeviceState.m9Scissor;
+		this->mCurrentStateRecording->mDeviceState.mScissor = mDeviceState.mScissor;
+	}
 
 	return S_OK;	
 }
@@ -2799,6 +2829,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DV
 	CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
 
 	mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
+
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mStreamSources[StreamNumber] = mDeviceState.mStreamSources[StreamNumber];
+	}
 
 	return S_OK;
 }
@@ -2829,14 +2864,22 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 		sampler.imageView = texture->mImageView;
 	}
 
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler] = mDeviceState.mDescriptorImageInfo[Sampler];
+	}
+
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value)
 {
-	//TODO: Implement.
+	mDeviceState.mTextureStageStates[Stage][Type] = Value;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetTextureStageState is not implemented!";
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mTextureStageStates[Stage][Type] = Value;
+	}
 
 	return S_OK;	
 }
@@ -2893,6 +2936,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 
 	mBufferManager->UpdateUniformBuffer();
 
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = mDeviceState.mTransforms[State];
+	}
+
 	//mBufferManager->CopyBuffer(mBufferManager->mUniformStagingBuffer, mBufferManager->mUniformBuffer, sizeof(UniformBufferObject));
 
 	return S_OK;	
@@ -2901,6 +2949,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
 {
 	mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = mDeviceState.mVertexDeclaration;
+	}
 
 	return S_OK;	
 }
@@ -2949,6 +3002,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 	mDeviceState.mViewport.height = mDeviceState.m9Viewport.Height;
 	mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
 	mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
+
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.m9Viewport = mDeviceState.m9Viewport;
+		this->mCurrentStateRecording->mDeviceState.mViewport = mDeviceState.mViewport;
+	}
 
 	return S_OK;	
 }

@@ -24,10 +24,14 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
-	: mReferenceCount(1),
-	mDevice(device),
-	mType(Type),
-	mResult(VK_SUCCESS)
+	: mDevice(device),
+	mType(Type)
+{
+	this->Capture();
+}
+
+CStateBlock9::CStateBlock9(CDevice9* device)
+	: mDevice(device)
 {
 
 }
@@ -87,11 +91,18 @@ ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
-	//TODO: Implement.
+	switch (mType)
+	{
+	case D3DSBT_ALL:
+		this->mDeviceState = mDevice->mDeviceState;
+		break;
+	default:
+		//TODO: copy state based on type.
+		BOOST_LOG_TRIVIAL(warning) << "CStateBlock9::CStateBlock9 unsupported block type " << mType;
+		break;
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CStateBlock9::Capture is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()

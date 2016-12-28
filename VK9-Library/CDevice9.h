@@ -31,7 +31,6 @@ misrepresented as being the original software.
 
 #include "CVertexDeclaration9.h"
 #include "CSurface9.h"
-
 #include "CPixelShader9.h"
 #include "CVertexShader9.h"
 #include "CVertexBuffer9.h"
@@ -40,6 +39,7 @@ misrepresented as being the original software.
 #include "CBaseTexture9.h"
 #include "CSwapChain9.h"
 #include "CRenderTargetSurface9.h"
+#include "CStateBlock9.h"
 
 #include "BufferManager.h"
 
@@ -175,62 +175,78 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE ValidateDevice(DWORD *pNumPasses);
 	
 public:
-	VkResult mResult = VK_SUCCESS;
-	VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-	VkPhysicalDeviceProperties mDeviceProperties = {};
-	VkPhysicalDeviceFeatures mDeviceFeatures = {};
-	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties = {};
-	VkDevice mDevice = VK_NULL_HANDLE;
-	VkQueueFamilyProperties* mQueueFamilyProperties = nullptr;
-	VkSurfaceCapabilitiesKHR mSurfaceCapabilities = {};
-	VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	//Creation Parameters
 	C9* mInstance = nullptr;
 	UINT mAdapter = 0;
 	D3DDEVTYPE mDeviceType = D3DDEVTYPE_HAL;
 	HWND mFocusWindow = 0;
 	DWORD mBehaviorFlags = 0;
 	D3DPRESENT_PARAMETERS mPresentationParameters = {};
-	uint32_t mQueueCount = 0;
-	VkDisplayKHR* mDisplays = nullptr;
-	uint32_t mDisplayCount = 0;
+
+	//Managers
+	BufferManager* mBufferManager = nullptr;
+
+	//Device Vulkan Handles
+	VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
+	VkDevice mDevice = VK_NULL_HANDLE;
+
+	//Device State
+	DeviceState mDeviceState = {};
+	UniformBufferObject mUBO = {};
+	CStateBlock9* mCurrentStateRecording = nullptr;
+
+	//Device Information
+	VkPhysicalDeviceProperties mDeviceProperties = {};
+	VkPhysicalDeviceFeatures mDeviceFeatures = {};
+	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties = {};
+	VkQueueFamilyProperties* mQueueFamilyProperties = nullptr;
+
+	//Swapchain / surface / display
+	VkSurfaceCapabilitiesKHR mSurfaceCapabilities = {};
+	VkSurfaceKHR mSurface = VK_NULL_HANDLE;
 	VkSwapchainKHR mSwapchain = VK_NULL_HANDLE;
-	uint32_t mGraphicsQueueIndex = UINT32_MAX;
-	uint32_t mPresentationQueueIndex = UINT32_MAX;
-	ULONG mReferenceCount = 1;
 	VkExtent2D mSwapchainExtent = {};
 	VkColorSpaceKHR mColorSpace = {};
 	VkSurfaceFormatKHR* mSurfaceFormats = nullptr;
+	VkDisplayKHR* mDisplays = nullptr;
 	uint32_t mSurfaceFormatCount = 0;
-	VkFormat mFormat = VK_FORMAT_UNDEFINED;
-	VkSurfaceTransformFlagBitsKHR mTransformFlags;
 	VkPresentModeKHR mSwapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
 	VkPresentModeKHR* mPresentationModes = nullptr;
 	uint32_t mPresentationModeCount = 0;
-	std::vector<char*> mExtensionNames;
-	std::vector<char*> mLayerExtensionNames;
-	uint32_t mCurrentBuffer = 0;
-	VkCommandPool mCommandPool = VK_NULL_HANDLE;
-	VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 	VkImage* mSwapchainImages = nullptr;
 	VkCommandBuffer* mSwapchainBuffers = nullptr;
 	VkImageView* mSwapchainViews = nullptr;
 	uint32_t mSwapchainImageCount = 0;
-	VkCommandBuffer mCommandBuffer = VK_NULL_HANDLE;
-	VkQueue mQueue = VK_NULL_HANDLE;
-	VkSemaphore mPresentCompleteSemaphore = VK_NULL_HANDLE;
-	VkFence mNullFence = VK_NULL_HANDLE;
-	VkRenderPass mRenderPass = VK_NULL_HANDLE;
+	VkFormat mFormat = VK_FORMAT_UNDEFINED;
+	VkSurfaceTransformFlagBitsKHR mTransformFlags;
+	uint32_t mDisplayCount = 0;
 	VkFramebuffer* mFramebuffers = nullptr;
-	VkClearColorValue mClearColorValue = {};
+	std::vector<CSwapChain9*> mSwapChains;
 
+	//Depth
 	VkFormat mDepthFormat = VK_FORMAT_UNDEFINED;
 	VkMemoryAllocateInfo mDepthMemoryAllocateInfo;
 	VkImage mDepthImage = VK_NULL_HANDLE;
 	VkDeviceMemory mDepthDeviceMemory = VK_NULL_HANDLE;
 	VkImageView mDepthView = VK_NULL_HANDLE;
-	
-	
-	
+
+	//Misc
+	VkResult mResult = VK_SUCCESS;		
+	uint32_t mQueueCount = 0;
+	uint32_t mGraphicsQueueIndex = UINT32_MAX;
+	uint32_t mPresentationQueueIndex = UINT32_MAX;
+	ULONG mReferenceCount = 1;
+	std::vector<char*> mExtensionNames;
+	std::vector<char*> mLayerExtensionNames;
+	uint32_t mCurrentBuffer = 0;
+	VkCommandPool mCommandPool = VK_NULL_HANDLE;
+	VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
+	VkCommandBuffer mCommandBuffer = VK_NULL_HANDLE;
+	VkQueue mQueue = VK_NULL_HANDLE;
+	VkSemaphore mPresentCompleteSemaphore = VK_NULL_HANDLE;
+	VkFence mNullFence = VK_NULL_HANDLE;
+	VkRenderPass mRenderPass = VK_NULL_HANDLE;	
+	VkClearColorValue mClearColorValue = {};	
 	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
 	VkCommandBufferInheritanceInfo mCommandBufferInheritanceInfo = {};
 	VkCommandBufferBeginInfo mCommandBufferBeginInfo = {};
@@ -242,27 +258,11 @@ public:
 	VkPresentInfoKHR mPresentInfo = {};
 	VkPushConstantRange mPushConstants[1] = {};
 	
-	UniformBufferObject mUBO = {};
-
-	
-	
-
-	//Device State
-	DeviceState mDeviceState = {};
-
-	BufferManager* mBufferManager = nullptr;
-	
-	
-
-	
-	std::vector<CSwapChain9*> mSwapChains;
 	std::vector<CRenderTargetSurface9*> mRenderTargets;
 
 	BOOL mIsDirty = true;
 	BOOL mIsSceneStarted = false;
 	
-	
-
 	PAINTSTRUCT* mPaintInformation = {};
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1);

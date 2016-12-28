@@ -103,6 +103,8 @@ struct DeviceState
 	//IDirect3DDevice9::SetLight
 	//IDirect3DDevice9::SetMaterial
 	//IDirect3DDevice9::SetNPatchMode
+	float mNSegments = 0.0f;
+
 	//IDirect3DDevice9::SetPixelShader
 	//IDirect3DDevice9::SetPixelShaderConstantB
 	//IDirect3DDevice9::SetPixelShaderConstantF
@@ -125,6 +127,8 @@ struct DeviceState
 	VkDescriptorImageInfo mDescriptorImageInfo[16] = {};
 
 	//IDirect3DDevice9::SetTextureStageState
+	std::unordered_map<DWORD, std::unordered_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;
+
 	//IDirect3DDevice9::SetTransform
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
 
