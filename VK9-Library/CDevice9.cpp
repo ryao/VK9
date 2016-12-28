@@ -2886,9 +2886,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURES
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
 {
-	VkResult result;
-	void* data=nullptr;
-
 	mDeviceState.mTransforms[State] = (*pMatrix);
 
 	switch (State)
@@ -2898,7 +2895,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 		{
 			for (size_t j = 0; j < 4; j++)
 			{
-				mUBO.model[i][j] = pMatrix->m[i][j];
+				mBufferManager->mUBO.model[i][j] = pMatrix->m[i][j];
 			}
 		}	
 		break;
@@ -2907,7 +2904,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 		{
 			for (size_t j = 0; j < 4; j++)
 			{
-				mUBO.view[i][j] = pMatrix->m[i][j];
+				mBufferManager->mUBO.view[i][j] = pMatrix->m[i][j];
 			}
 		}
 		break;
@@ -2916,7 +2913,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 		{
 			for (size_t j = 0; j < 4; j++)
 			{
-				mUBO.proj[i][j] = pMatrix->m[i][j];
+				mBufferManager->mUBO.proj[i][j] = pMatrix->m[i][j];
 			}
 		}
 		break;
@@ -2925,23 +2922,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 		break;
 	}
 
-	result = vkMapMemory(mDevice, mBufferManager->mUniformStagingBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetTransform vkMapMemory failed with return code of " << result;
-		return D3DERR_INVALIDCALL;
-	}
-	memcpy(data, &mUBO, sizeof(UniformBufferObject));
-	vkUnmapMemory(mDevice, mBufferManager->mUniformStagingBufferMemory);
-
 	mBufferManager->UpdateUniformBuffer();
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = mDeviceState.mTransforms[State];
 	}
-
-	//mBufferManager->CopyBuffer(mBufferManager->mUniformStagingBuffer, mBufferManager->mUniformBuffer, sizeof(UniformBufferObject));
 
 	return S_OK;	
 }

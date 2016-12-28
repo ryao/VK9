@@ -868,6 +868,19 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 void BufferManager::UpdateUniformBuffer()
 {
+	VkResult result;
+	void* data = nullptr;
+
+	//Copy current UBO into staging memory buffer.
+	result = vkMapMemory(mDevice->mDevice, mUniformStagingBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetTransform vkMapMemory failed with return code of " << result;
+		return;
+	}
+	memcpy(data, &mUBO, sizeof(UniformBufferObject));
+	vkUnmapMemory(mDevice->mDevice, mUniformStagingBufferMemory);
+
 	//Move the existing buffer into the list so it can be cleaned up at the end of the render pass.
 	HistoricalUniformBuffer historicalUniformBuffer;
 	historicalUniformBuffer.UniformBuffer = mUniformBuffer;

@@ -107,9 +107,121 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
-	//TODO: Implement.
+	//IDirect3DDevice9::LightEnable
+	//IDirect3DDevice9::SetClipPlane
+	//IDirect3DDevice9::SetCurrentTexturePalette
+	//IDirect3DDevice9::SetFVF
+	if (mDeviceState.mFVF != 0)
+	{
+		this->mDevice->mDeviceState.mFVF = mDeviceState.mFVF;
+		this->mDevice->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
+		this->mDevice->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
+		this->mDevice->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
+		this->mDevice->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CStateBlock9::Apply is not implemented!";
+	//IDirect3DDevice9::SetIndices
+	if (mDeviceState.mIndexBuffer != nullptr)
+	{
+		this->mDevice->mDeviceState.mIndexBuffer = mDeviceState.mIndexBuffer;
+	}
 
-	return E_NOTIMPL;
+	//IDirect3DDevice9::SetLight
+	//IDirect3DDevice9::SetMaterial
+	//IDirect3DDevice9::SetNPatchMode
+	this->mDevice->mDeviceState.mNSegments = mDeviceState.mNSegments; //Doesn't matter anyway.
+
+	//IDirect3DDevice9::SetPixelShader
+	//IDirect3DDevice9::SetPixelShaderConstantB
+	//IDirect3DDevice9::SetPixelShaderConstantF
+	//IDirect3DDevice9::SetPixelShaderConstantI
+	//IDirect3DDevice9::SetRenderState
+	if (mDeviceState.mRenderStates.size())
+	{
+		BOOST_FOREACH(const auto& pair1, mDeviceState.mRenderStates)
+		{
+			this->mDevice->mDeviceState.mRenderStates[pair1.first] = pair1.second;
+		}
+	}
+
+	//IDirect3DDevice9::SetSamplerState
+	if (mDeviceState.mSamplerStates.size())
+	{
+		BOOST_FOREACH(const auto& pair1, mDeviceState.mSamplerStates)
+		{
+			BOOST_FOREACH(const auto& pair2, pair1.second)
+			{
+				this->mDevice->mDeviceState.mSamplerStates[pair1.first][pair2.first] = pair2.second;
+			}
+		}
+	}
+
+	//IDirect3DDevice9::SetScissorRect
+	if (mDeviceState.m9Scissor.right != 0 || mDeviceState.m9Scissor.left != 0)
+	{
+		this->mDevice->mDeviceState.m9Scissor = mDeviceState.m9Scissor;
+		this->mDevice->mDeviceState.mScissor = mDeviceState.mScissor;
+	}
+
+	//IDirect3DDevice9::SetStreamSource
+	if (mDeviceState.mStreamSources.size())
+	{
+		BOOST_FOREACH(const auto& pair1, mDeviceState.mStreamSources)
+		{
+			this->mDevice->mDeviceState.mStreamSources[pair1.first] = pair1.second;
+		}
+	}
+
+	//IDirect3DDevice9::SetStreamSourceFreq
+	//IDirect3DDevice9::SetTexture
+	for (size_t i = 0; i < 16; i++)
+	{
+		if (mDeviceState.mDescriptorImageInfo[i].sampler != VK_NULL_HANDLE)
+		{
+			this->mDevice->mDeviceState.mDescriptorImageInfo[i] = mDeviceState.mDescriptorImageInfo[i];
+		}
+	}
+
+	//IDirect3DDevice9::SetTextureStageState
+	if (mDeviceState.mTextureStageStates.size())
+	{
+		BOOST_FOREACH(const auto& pair1, mDeviceState.mTextureStageStates)
+		{
+			BOOST_FOREACH(const auto& pair2, pair1.second)
+			{
+				this->mDevice->mDeviceState.mTextureStageStates[pair1.first][pair2.first] = pair2.second;
+			}
+		}		
+	}
+
+	//IDirect3DDevice9::SetTransform
+	if (mDeviceState.mTransforms.size())
+	{
+		BOOST_FOREACH(const auto& pair1, mDeviceState.mTransforms)
+		{
+			this->mDevice->mDeviceState.mTransforms[pair1.first] = pair1.second;
+		}
+
+		this->mDevice->mBufferManager->UpdateUniformBuffer(); //Have to push the updated UBO into memory buffer.
+	}
+
+	//IDirect3DDevice9::SetViewport
+	if (mDeviceState.m9Viewport.Width != 0)
+	{
+		this->mDevice->mDeviceState.m9Viewport = mDeviceState.m9Viewport;
+		this->mDevice->mDeviceState.mViewport = mDeviceState.mViewport;
+	}
+
+	//IDirect3DDevice9::SetVertexDeclaration
+	if (mDeviceState.mVertexDeclaration != nullptr)
+	{
+		this->mDevice->mDeviceState.mVertexDeclaration = mDeviceState.mVertexDeclaration;
+	}
+
+	//IDirect3DDevice9::SetVertexShader
+	//IDirect3DDevice9::SetVertexShaderConstantB
+	//IDirect3DDevice9::SetVertexShaderConstantF
+	//IDirect3DDevice9::SetVertexShaderConstantI
+
+	return S_OK;
 }

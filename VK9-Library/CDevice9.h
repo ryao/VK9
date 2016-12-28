@@ -192,7 +192,6 @@ public:
 
 	//Device State
 	DeviceState mDeviceState = {};
-	UniformBufferObject mUBO = {};
 	CStateBlock9* mCurrentStateRecording = nullptr;
 
 	//Device Information

@@ -108,6 +108,8 @@ public:
 	std::vector<DrawContext> mDrawBuffer;
 	std::vector<HistoricalUniformBuffer> mHistoricalUniformBuffers;
 
+	UniformBufferObject mUBO = {};
+
 	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
 	void UpdateUniformBuffer();
 	void FlushDrawBufffer();
