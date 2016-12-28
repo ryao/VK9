@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3DVertexShader9
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
+#include "ShaderConverter.h"
 
 class CVertexShader9 : public IDirect3DVertexShader9
 {
@@ -35,6 +36,8 @@ public:
 	DWORD* mFunction = nullptr;
 	UINT mSize = 0;
 	VkShaderModule mShaderModule = VK_NULL_HANDLE;
+
+	ShaderConverter mShaderConverter;
 
 	ULONG mReferenceCount = 1;
 	VkResult mResult = VK_SUCCESS;
