@@ -19,4 +19,57 @@ misrepresented as being the original software.
 */
 
 #include "ShaderConverter.h"
+#include "Utilities.h"
 
+ConvertedShader ShaderConverter::Convert(DWORD* shader)
+{
+	/*
+	http://timjones.io/blog/archive/2015/09/02/parsing-direct3d-shader-bytecode
+	https://msdn.microsoft.com/en-us/library/bb219840(VS.85).aspx#Shader_Binary_Format
+	http://stackoverflow.com/questions/2545704/format-of-compiled-directx9-shader-files
+	https://msdn.microsoft.com/en-us/library/windows/hardware/ff552891(v=vs.85).aspx
+	*/
+
+	ConvertedShader output;
+	DWORD token;
+	VersionToken versionToken;
+	size_t size = sizeof(VersionToken);
+
+	versionToken = (*(VersionToken*)shader);
+	shader += 1;
+	token = (*shader);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader version: " << versionToken.MajorVersion << "." << versionToken.MinorVersion;
+
+	switch (versionToken.ShaderType)
+	{
+	case mShaderTypePixel:
+		BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader type: Pixel";
+		break;
+	case mShaderTypeVertex:
+		BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader type: Vertex";
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader type: Unknown";
+		break;
+	}
+
+	while (token != mEndToken)
+	{
+		uint16_t opcode = (*(uint16_t*)shader);
+
+		switch (opcode)
+		{
+
+		default:
+			BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Convert OP code " << opcode;
+			break;
+		}
+
+		shader += 1;
+		token = (*shader);
+		size += 1;
+	}
+
+	return output; //Return value optimization don't fail me now.
+}

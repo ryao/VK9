@@ -26,8 +26,31 @@ misrepresented as being the original software.
 #include <vulkan/vk_sdk_platform.h>
 #include "d3d9types.h"
 
+const uint32_t mEndToken = 0x0000FFFF;
+const uint16_t mShaderTypePixel = 0xFFFF;
+const uint16_t mShaderTypeVertex = 0xFFFE;
+
+struct ConvertedShader
+{
+	UINT Size = 0;
+	VkShaderModule ShaderModule = VK_NULL_HANDLE;
+};
+
+struct VersionToken
+{
+	char MinorVersion=0;
+	char MajorVersion=0;
+	uint16_t ShaderType; //Pixel 0xFFFF & Vertex 0xFFFE
+};
+
+
+
 class ShaderConverter
 {
+
+public:
+	ConvertedShader Convert(DWORD* shader);
+private:
 
 };
 

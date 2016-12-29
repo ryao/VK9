@@ -27,12 +27,19 @@ CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
 	: mDevice(device),
 	mFunction((DWORD*)pFunction)
 {
-
+	BOOST_LOG_TRIVIAL(info) << "CVertexShader9::CVertexShader9";
+	mConvertedShader = mShaderConverter.Convert(mFunction);
 }
 
 CVertexShader9::~CVertexShader9()
 {
+	BOOST_LOG_TRIVIAL(info) << "CVertexShader9::~CVertexShader9";
 
+	if (mConvertedShader.ShaderModule != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mConvertedShader.ShaderModule, NULL);
+		mConvertedShader.ShaderModule = VK_NULL_HANDLE;
+	}
 }
 
 ULONG STDMETHODCALLTYPE CVertexShader9::AddRef(void)
@@ -153,14 +160,14 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::SetPrivateData(REFGUID refguid, const 
 
 HRESULT STDMETHODCALLTYPE CVertexShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
-	(*pSizeOfData) = mSize;
+	(*pSizeOfData) = mConvertedShader.Size;
 
 	if (pData==nullptr)
 	{
 		return S_OK;
 	}
 
-	memcpy(pData, mFunction, mSize);
+	memcpy(pData, mFunction, mConvertedShader.Size);
 
 	return S_OK;
 }

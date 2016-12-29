@@ -34,10 +34,9 @@ public:
 
 	CDevice9* mDevice = nullptr;
 	DWORD* mFunction = nullptr;
-	UINT mSize = 0;
-	VkShaderModule mShaderModule = VK_NULL_HANDLE;
 
 	ShaderConverter mShaderConverter;
+	ConvertedShader mConvertedShader;
 
 	ULONG mReferenceCount = 1;
 	VkResult mResult = VK_SUCCESS;
