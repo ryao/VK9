@@ -111,14 +111,30 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
-	if (mDeviceState.mFVF != 0)
+	if (mDeviceState.mFVF != -1)
 	{
 		this->mDevice->mDeviceState.mFVF = mDeviceState.mFVF;
-		this->mDevice->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
-		this->mDevice->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
-		this->mDevice->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
-		this->mDevice->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
 	}
+
+	if (mDeviceState.mFVFHasPosition != -1)
+	{
+		this->mDevice->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
+	}
+
+	if (mDeviceState.mFVFHasNormal != -1)
+	{
+		this->mDevice->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
+	}
+
+	if (mDeviceState.mFVFHasColor != -1)
+	{
+		this->mDevice->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
+	}
+
+	if (mDeviceState.mFVFTextureCount != -1)
+	{
+		this->mDevice->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
+	}	
 
 	//IDirect3DDevice9::SetIndices
 	if (mDeviceState.mIndexBuffer != nullptr)
@@ -129,7 +145,10 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	//IDirect3DDevice9::SetLight
 	//IDirect3DDevice9::SetMaterial
 	//IDirect3DDevice9::SetNPatchMode
-	this->mDevice->mDeviceState.mNSegments = mDeviceState.mNSegments; //Doesn't matter anyway.
+	if (mDeviceState.mNSegments!= -1)
+	{
+		this->mDevice->mDeviceState.mNSegments = mDeviceState.mNSegments; //Doesn't matter anyway.
+	}	
 
 	//IDirect3DDevice9::SetPixelShader
 	if (mDeviceState.mPixelShader != nullptr)

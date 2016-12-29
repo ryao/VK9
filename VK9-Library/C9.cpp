@@ -337,13 +337,19 @@ HRESULT STDMETHODCALLTYPE C9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE Dev
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,DWORD Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat)
 {
-	HRESULT result = S_OK;
-	
 	//TODO: Implement.
 	
-	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceFormat is not implemented!";
+	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceFormat is not implemented!" << AdapterFormat << " " << CheckFormat;
 
-	return result;	
+	if (AdapterFormat == D3DFMT_R8G8B8 || AdapterFormat == D3DFMT_A8R8G8B8 || AdapterFormat == D3DFMT_X8R8G8B8)
+	{
+		if (CheckFormat == D3DFMT_R8G8B8 || CheckFormat == D3DFMT_A8R8G8B8 || CheckFormat == D3DFMT_X8R8G8B8)
+		{
+			return S_OK;
+		}
+	}
+
+	return D3DERR_NOTAVAILABLE;
 }
 
 
@@ -415,45 +421,15 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 {
 	Monitor& monitor = mMonitors[Adapter];
 
-	if (vkGetDisplayModePropertiesKHR != nullptr)
-	{
-		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode vkGetDisplayModePropertiesKHR was available.";
-
-		uint32_t count = 0;
-		VkDisplayModePropertiesKHR* modes = nullptr;
-		vkGetDisplayModePropertiesKHR(mPhysicalDevices[0], mDisplayProperties[Adapter].display, &count, nullptr);
-		modes = new VkDisplayModePropertiesKHR[count];
-		vkGetDisplayModePropertiesKHR(mPhysicalDevices[0], mDisplayProperties[Adapter].display, &count, modes);
-
-		pMode->Height = mDisplayProperties[Adapter].physicalResolution.height;
-		pMode->Width = mDisplayProperties[Adapter].physicalResolution.width;
-
-		delete[] modes;
-	}
-	else
-	{
-		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode vkGetDisplayModePropertiesKHR was not available.";
-
-		pMode->Height = monitor.Height;
-		pMode->Width = monitor.Width;
-	}
-
+	pMode->Height = monitor.Height;
+	pMode->Width = monitor.Width;
 	pMode->RefreshRate = monitor.RefreshRate;
+	pMode->Format = D3DFMT_X8R8G8B8;
 
-	if (monitor.PixelBits == 32)
-	{
-		pMode->Format = D3DFMT_X8R8G8B8;  //ConvertFormat(VK_FORMAT_B8G8R8A8_UNORM);
-	}
-	else
+	if (monitor.PixelBits != 32)
 	{
 		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Unknown pixel bit format : " << monitor.PixelBits; //Revisit
 	}
-
-	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Adapter: " << Adapter;
-	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Height: " << pMode->Height;
-	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Width: " << pMode->Width;
-	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode RefreshRate: " << pMode->RefreshRate;
-	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Format: " << pMode->Format;
 
 	return S_OK;	
 }

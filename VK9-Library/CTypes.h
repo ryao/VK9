@@ -99,11 +99,11 @@ struct DeviceState
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
-	DWORD mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-	BOOL mFVFHasPosition = 0;
-	BOOL mFVFHasColor = 0;
-	BOOL mFVFHasNormal = 0;
-	int32_t mFVFTextureCount = 0;
+	DWORD mFVF = -1;
+	BOOL mFVFHasPosition = -1;
+	BOOL mFVFHasColor = -1;
+	BOOL mFVFHasNormal = -1;
+	int32_t mFVFTextureCount = -1;
 
 	//IDirect3DDevice9::SetIndices
 	CIndexBuffer9* mIndexBuffer = nullptr;
@@ -111,7 +111,7 @@ struct DeviceState
 	//IDirect3DDevice9::SetLight
 	//IDirect3DDevice9::SetMaterial
 	//IDirect3DDevice9::SetNPatchMode
-	float mNSegments = 0.0f;
+	float mNSegments = -1;
 
 	//IDirect3DDevice9::SetPixelShader
 	CPixelShader9* mPixelShader = nullptr;
