@@ -48,10 +48,16 @@ public:
 
 	VkResult mResult = VK_SUCCESS;
 	VkInstance mInstance = VK_NULL_HANDLE;
+
 	VkPhysicalDevice* mPhysicalDevices = nullptr;
+	uint32_t mGpuCount = 0;
+
+	VkDisplayPropertiesKHR* mDisplayProperties = nullptr;
+	uint32_t mDisplayCount = 0;
+
 	VkLayerProperties* mLayerProperties = nullptr;
 	uint32_t mLayerPropertyCount = 0;
-	uint32_t mGpuCount = 0;
+	
 	std::vector<char*> mExtensionNames;
 	std::vector<char*> mLayerExtensionNames;
 	std::vector<Monitor> mMonitors;
@@ -68,6 +74,9 @@ public:
 	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 	VkDebugReportCallbackEXT mCallback;
 #endif
+
+	PFN_vkGetDisplayModePropertiesKHR vkGetDisplayModePropertiesKHR;
+	PFN_vkGetPhysicalDeviceDisplayPropertiesKHR vkGetPhysicalDeviceDisplayPropertiesKHR;
 
 public:
 	//IUnknown

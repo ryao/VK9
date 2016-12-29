@@ -100,12 +100,16 @@ C9::C9()
 	for (size_t i = 0; i < extensionCount; i++)
 	{
 		BOOST_LOG_TRIVIAL(info) << "C9::C9 extension available: " << extension[i].extensionName;
+		if (strcmp(extension[i].extensionName, "VK_KHR_display")==0)
+		{
+			mExtensionNames.push_back("VK_KHR_display");
+		}
 	}
 
 	delete[] extension;
 
 	mExtensionNames.push_back("VK_KHR_surface");
-	mExtensionNames.push_back("VK_KHR_win32_surface");
+	mExtensionNames.push_back("VK_KHR_win32_surface");	
 #ifdef _DEBUG
 	mExtensionNames.push_back("VK_EXT_debug_report");
 	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
@@ -165,6 +169,9 @@ C9::C9()
 	//Get an instance handle.
 	if (VK_SUCCESS == vkCreateInstance(&inst_info, NULL, &mInstance))
 	{
+		vkGetPhysicalDeviceDisplayPropertiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceDisplayPropertiesKHR>(vkGetInstanceProcAddr(mInstance, "vkGetPhysicalDeviceDisplayPropertiesKHR"));
+		vkGetDisplayModePropertiesKHR = reinterpret_cast<PFN_vkGetDisplayModePropertiesKHR>(vkGetInstanceProcAddr(mInstance, "vkGetDisplayModePropertiesKHR"));
+
 #ifdef _DEBUG
 		/* Load VK_EXT_debug_report entry points in debug builds */
 		vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(mInstance, "vkCreateDebugReportCallbackEXT"));
@@ -212,6 +219,25 @@ C9::C9()
 				BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices failed with return code of " << mResult;
 				return;
 			}
+
+			if (vkGetPhysicalDeviceDisplayPropertiesKHR!=nullptr)
+			{
+				mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, nullptr);
+				if (mResult != VK_SUCCESS)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << mResult;
+					return;
+				}
+
+				mDisplayProperties = new VkDisplayPropertiesKHR[mDisplayCount]();
+
+				mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, mDisplayProperties);
+				if (mResult != VK_SUCCESS)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << mResult;
+					return;
+				}
+			}
 		}
 		else
 		{
@@ -225,7 +251,7 @@ C9::C9()
 	}
 
 	//WINAPI to get monitor info
-	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)&mMonitors);
+	EnumDisplayMonitors(GetDC(NULL), NULL, MonitorEnumProc, (LPARAM)&mMonitors);
 
 	BOOST_LOG_TRIVIAL(info) << "C9::C9 Finished.";
 }
@@ -234,6 +260,7 @@ C9::~C9()
 {
 	BOOST_LOG_TRIVIAL(info) << "C9::~C9";
 
+	delete[] mDisplayProperties;
 	delete[] mPhysicalDevices;
 	delete[] mLayerProperties;
 
@@ -386,38 +413,47 @@ UINT STDMETHODCALLTYPE C9::GetAdapterCount()
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
 {
-	Monitor monitor = mMonitors[Adapter];
+	Monitor& monitor = mMonitors[Adapter];
 
-	pMode->Height = ::GetDeviceCaps(monitor.hdcMonitor, HORZRES);
-	pMode->Width = ::GetDeviceCaps(monitor.hdcMonitor, VERTRES);
-	pMode->RefreshRate = ::GetDeviceCaps(monitor.hdcMonitor, VREFRESH);
+	if (vkGetDisplayModePropertiesKHR != nullptr)
+	{
+		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode vkGetDisplayModePropertiesKHR was available.";
 
-	if (pMode->RefreshRate == 0 || pMode->RefreshRate == 1)
-	{ //This is actually in the spec
-		pMode->RefreshRate = 60;
+		uint32_t count = 0;
+		VkDisplayModePropertiesKHR* modes = nullptr;
+		vkGetDisplayModePropertiesKHR(mPhysicalDevices[0], mDisplayProperties[Adapter].display, &count, nullptr);
+		modes = new VkDisplayModePropertiesKHR[count];
+		vkGetDisplayModePropertiesKHR(mPhysicalDevices[0], mDisplayProperties[Adapter].display, &count, modes);
+
+		pMode->Height = mDisplayProperties[Adapter].physicalResolution.height;
+		pMode->Width = mDisplayProperties[Adapter].physicalResolution.width;
+
+		delete[] modes;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode vkGetDisplayModePropertiesKHR was not available.";
+
+		pMode->Height = monitor.Height;
+		pMode->Width = monitor.Width;
 	}
 
-	if (pMode->Height == 0)
-	{ //Sometimes the WINAPI returns 0.
-		pMode->Height = 1080;
-		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode The height was defaulted.";
+	pMode->RefreshRate = monitor.RefreshRate;
+
+	if (monitor.PixelBits == 32)
+	{
+		pMode->Format = D3DFMT_X8R8G8B8;  //ConvertFormat(VK_FORMAT_B8G8R8A8_UNORM);
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Unknown pixel bit format : " << monitor.PixelBits; //Revisit
 	}
 
-	if (pMode->Width == 0)
-	{ //Sometimes the WINAPI returns 0.
-		pMode->Width = 1920;
-		BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode The width was defaulted.";
-	}
-
-	//Fake it till you make it.
-	pMode->Format = D3DFMT_R8G8B8; //revisit.
-	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode The format was defaulted.";
-
-	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Adapter: " << Adapter;
-	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Height: " << pMode->Height;
-	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Width: " << pMode->Width;
-	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode RefreshRate: " << pMode->RefreshRate;
-	BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Format: " << pMode->Format;
+	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Adapter: " << Adapter;
+	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Height: " << pMode->Height;
+	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Width: " << pMode->Width;
+	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode RefreshRate: " << pMode->RefreshRate;
+	//BOOST_LOG_TRIVIAL(info) << "C9::GetAdapterDisplayMode Format: " << pMode->Format;
 
 	return S_OK;	
 }
@@ -608,15 +644,13 @@ BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMoni
 	Monitor monitor;
 	
 	monitor.hMonitor = hMonitor;
-	
-	if (hdcMonitor == NULL)
-	{
-		monitor.hdcMonitor = GetWindowDC(NULL);
-	}
-	else
-	{
-		monitor.hdcMonitor = hdcMonitor;
-	}
+	monitor.hdcMonitor = hdcMonitor;
+
+	monitor.Height = ::GetDeviceCaps(monitor.hdcMonitor, HORZRES);
+	monitor.Width = ::GetDeviceCaps(monitor.hdcMonitor, VERTRES);
+	monitor.RefreshRate = ::GetDeviceCaps(monitor.hdcMonitor, VREFRESH);
+	monitor.PixelBits = ::GetDeviceCaps(monitor.hdcMonitor, BITSPIXEL);
+	monitor.ColorPlanes = ::GetDeviceCaps(monitor.hdcMonitor, PLANES);
 
 	if (dwData != NULL)
 	{
@@ -624,8 +658,15 @@ BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMoni
 		monitors = (std::vector<Monitor>*)dwData;
 		monitors->push_back(monitor);
 
-		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc HMONITOR: " << hMonitor;
-		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc HDC: " << hdcMonitor;
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc HMONITOR: " << monitor.hMonitor;
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc HDC: " << monitor.hdcMonitor;
+
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc Height: " << monitor.Height;
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc Width: " << monitor.Width;
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc RefreshRate: " << monitor.RefreshRate;
+
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc PixelBits: " << monitor.PixelBits;
+		BOOST_LOG_TRIVIAL(info) << "MonitorEnumProc ColorPlanes: " << monitor.ColorPlanes;
 
 		return true;
 	}

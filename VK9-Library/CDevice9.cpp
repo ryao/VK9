@@ -2728,8 +2728,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber,const P
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShader)
 {
-	pShader->AddRef();
-
+	if (pShader!=nullptr)
+	{
+		pShader->AddRef();
+	}
+	
 	if (mDeviceState.mPixelShader != nullptr)
 	{
 		mDeviceState.mPixelShader->Release();
@@ -2952,7 +2955,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclarat
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pShader)
 {
-	pShader->AddRef();
+	if (pShader != nullptr)
+	{
+		pShader->AddRef();
+	}
 
 	if (mDeviceState.mVertexShader != nullptr)
 	{

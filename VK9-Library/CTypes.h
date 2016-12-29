@@ -42,6 +42,12 @@ struct Monitor
 {
 	HMONITOR hMonitor = NULL;
 	HDC hdcMonitor = NULL;
+	uint32_t Height = 0;
+	uint32_t Width = 0;
+	uint32_t RefreshRate = 0;
+	uint32_t PixelBits = 0;
+	uint32_t ColorPlanes = 0;
+
 };
 
 struct Vertex
