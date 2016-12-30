@@ -27,13 +27,14 @@ CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 	: mDevice(device),
 	mType(Type)
 {
+	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)";
 	this->Capture();
 }
 
 CStateBlock9::CStateBlock9(CDevice9* device)
 	: mDevice(device)
 {
-
+	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device)";
 }
 
 CStateBlock9::~CStateBlock9()
@@ -91,6 +92,9 @@ ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
+	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture";
+	Print(mDeviceState);
+
 	switch (mType)
 	{
 	case D3DSBT_ALL:
@@ -107,6 +111,9 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
+	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply";
+	Print(mDeviceState);
+
 	//IDirect3DDevice9::LightEnable
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
@@ -114,30 +121,15 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	if (mDeviceState.mFVF != -1)
 	{
 		this->mDevice->mDeviceState.mFVF = mDeviceState.mFVF;
-	}
 
-	if (mDeviceState.mFVFHasPosition != -1)
-	{
 		this->mDevice->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
-	}
-
-	if (mDeviceState.mFVFHasNormal != -1)
-	{
 		this->mDevice->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
-	}
-
-	if (mDeviceState.mFVFHasColor != -1)
-	{
 		this->mDevice->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
-	}
-
-	if (mDeviceState.mFVFTextureCount != -1)
-	{
 		this->mDevice->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
 	}	
 
 	//IDirect3DDevice9::SetIndices
-	if (mDeviceState.mIndexBuffer != nullptr)
+	if (mDeviceState.mHasIndexBuffer)
 	{
 		this->mDevice->mDeviceState.mIndexBuffer = mDeviceState.mIndexBuffer;
 	}
@@ -151,8 +143,9 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	}	
 
 	//IDirect3DDevice9::SetPixelShader
-	if (mDeviceState.mPixelShader != nullptr)
+	if (mDeviceState.mHasPixelShader)
 	{
+		//TODO: may leak
 		this->mDevice->mDeviceState.mPixelShader = mDeviceState.mPixelShader;
 	}
 
@@ -200,9 +193,14 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	//IDirect3DDevice9::SetTexture
 	for (size_t i = 0; i < 16; i++)
 	{
-		if (mDeviceState.mDescriptorImageInfo[i].sampler != VK_NULL_HANDLE)
-		{
-			this->mDevice->mDeviceState.mDescriptorImageInfo[i] = mDeviceState.mDescriptorImageInfo[i];
+		VkDescriptorImageInfo& sourceSampler = mDeviceState.mDescriptorImageInfo[i];
+		if (sourceSampler.sampler != VK_NULL_HANDLE)
+		{		
+			VkDescriptorImageInfo& targetSampler = this->mDevice->mDeviceState.mDescriptorImageInfo[i];
+
+			targetSampler.imageLayout = sourceSampler.imageLayout;
+			targetSampler.imageView = sourceSampler.imageView;
+			targetSampler.sampler = sourceSampler.sampler;
 		}
 	}
 
@@ -226,7 +224,7 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 			this->mDevice->mDeviceState.mTransforms[pair1.first] = pair1.second;
 		}
 
-		this->mDevice->mBufferManager->UpdateUniformBuffer(); //Have to push the updated UBO into memory buffer.
+		this->mDevice->mBufferManager->UpdateUniformBuffer(true); //Have to push the updated UBO into memory buffer.
 	}
 
 	//IDirect3DDevice9::SetViewport
@@ -237,13 +235,13 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	}
 
 	//IDirect3DDevice9::SetVertexDeclaration
-	if (mDeviceState.mVertexDeclaration != nullptr)
+	if (mDeviceState.mHasVertexDeclaration)
 	{
 		this->mDevice->mDeviceState.mVertexDeclaration = mDeviceState.mVertexDeclaration;
 	}
 
 	//IDirect3DDevice9::SetVertexShader
-	if (mDeviceState.mVertexShader != nullptr)
+	if (mDeviceState.mHasVertexShader)
 	{
 		this->mDevice->mDeviceState.mVertexShader = mDeviceState.mVertexShader;
 	}

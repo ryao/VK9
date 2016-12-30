@@ -100,13 +100,14 @@ struct DeviceState
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
 	DWORD mFVF = -1;
-	BOOL mFVFHasPosition = -1;
-	BOOL mFVFHasColor = -1;
-	BOOL mFVFHasNormal = -1;
-	int32_t mFVFTextureCount = -1;
+	BOOL mFVFHasPosition = 0;
+	BOOL mFVFHasColor = 0;
+	BOOL mFVFHasNormal = 0;
+	int32_t mFVFTextureCount = 0;
 
 	//IDirect3DDevice9::SetIndices
 	CIndexBuffer9* mIndexBuffer = nullptr;
+	BOOL mHasIndexBuffer = 0;
 
 	//IDirect3DDevice9::SetLight
 	//IDirect3DDevice9::SetMaterial
@@ -115,6 +116,7 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetPixelShader
 	CPixelShader9* mPixelShader = nullptr;
+	BOOL mHasPixelShader = 0;
 
 	//IDirect3DDevice9::SetPixelShaderConstantB
 	//IDirect3DDevice9::SetPixelShaderConstantF
@@ -148,9 +150,11 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetVertexDeclaration
 	CVertexDeclaration9* mVertexDeclaration = nullptr;
+	BOOL mHasVertexDeclaration = 0;
 
 	//IDirect3DDevice9::SetVertexShader
 	CVertexShader9* mVertexShader = nullptr;
+	BOOL mHasVertexShader = 0;
 
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF

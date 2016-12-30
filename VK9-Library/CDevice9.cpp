@@ -2440,11 +2440,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State,D3D
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl)
 {
-	//TODO: Implement.
+	(*ppDecl) = (IDirect3DVertexDeclaration9*)this->mDeviceState.mVertexDeclaration;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetVertexDeclaration is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9 **ppShader)
@@ -2590,6 +2588,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
 HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
 	mDeviceState.mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
+	mDeviceState.mVertexDeclaration = nullptr;
 
 	//Reset flags so values don't stick.
 	mDeviceState.mFVFHasPosition = false;
@@ -2664,13 +2663,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded FVF";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded FVF";
 
 		this->mCurrentStateRecording->mDeviceState.mFVF = mDeviceState.mFVF;
 		this->mCurrentStateRecording->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
 		this->mCurrentStateRecording->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
 		this->mCurrentStateRecording->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
 		this->mCurrentStateRecording->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
+
+		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = nullptr;
+		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
 	}
 
 	mBufferManager->mLastType = D3DPT_FORCE_DWORD; //force pipe to reset if it's been built.
@@ -2691,8 +2693,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded IndexBuffer";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded IndexBuffer";
 		this->mCurrentStateRecording->mDeviceState.mIndexBuffer = mDeviceState.mIndexBuffer;
+		this->mCurrentStateRecording->mDeviceState.mHasIndexBuffer = true;
 	}
 
 	return S_OK;
@@ -2727,7 +2730,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded NSegments";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded NSegments";
 		this->mCurrentStateRecording->mDeviceState.mNSegments = mDeviceState.mNSegments;
 	}
 
@@ -2759,8 +2762,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShade
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded PixelShader";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded PixelShader";
 		this->mCurrentStateRecording->mDeviceState.mPixelShader = mDeviceState.mPixelShader;
+		this->mCurrentStateRecording->mDeviceState.mHasPixelShader = true;
 	}
 
 	return S_OK;	
@@ -2799,7 +2803,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWOR
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded RenderStates " << State;
+		//BOOST_LOG_TRIVIAL(info) << "Recorded RenderStates " << State;
 		this->mCurrentStateRecording->mDeviceState.mRenderStates[State] = Value;
 	}
 
@@ -2819,7 +2823,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTAT
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded SamplerStates " << Sampler << " " << Type;
+		//BOOST_LOG_TRIVIAL(info) << "Recorded SamplerStates " << Sampler << " " << Type;
 		this->mCurrentStateRecording->mDeviceState.mSamplerStates[Sampler][Type] = Value;
 	}
 
@@ -2837,7 +2841,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT *pRect)
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded Scissor";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded Scissor";
 		this->mCurrentStateRecording->mDeviceState.m9Scissor = mDeviceState.m9Scissor;
 		this->mCurrentStateRecording->mDeviceState.mScissor = mDeviceState.mScissor;
 	}
@@ -2862,7 +2866,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DV
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded StreamSources " << StreamNumber;
+		//BOOST_LOG_TRIVIAL(info) << "Recorded StreamSources " << StreamNumber;
 		this->mCurrentStateRecording->mDeviceState.mStreamSources[StreamNumber] = mDeviceState.mStreamSources[StreamNumber];
 	}
 
@@ -2897,8 +2901,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded ImageInfo " << Sampler;
-		this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler] = mDeviceState.mDescriptorImageInfo[Sampler];
+		//BOOST_LOG_TRIVIAL(info) << "Recorded ImageInfo " << Sampler;
+
+		VkDescriptorImageInfo& targetSampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
+
+		targetSampler.imageLayout = sampler.imageLayout;
+		targetSampler.imageView = sampler.imageView;
+		targetSampler.sampler = sampler.sampler;
 	}
 
 	return S_OK;	
@@ -2910,7 +2919,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURES
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded TextureStageState " << Stage << " " << Type;
+		//BOOST_LOG_TRIVIAL(info) << "Recorded TextureStageState " << Stage << " " << Type;
 		this->mCurrentStateRecording->mDeviceState.mTextureStageStates[Stage][Type] = Value;
 	}
 
@@ -2959,7 +2968,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded Transforms " << State;
+		//BOOST_LOG_TRIVIAL(info) << "Recorded Transforms " << State;
 		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = mDeviceState.mTransforms[State];
 	}
 
@@ -2972,8 +2981,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclarat
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded VertexDeclaration";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded VertexDeclaration";
 		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = mDeviceState.mVertexDeclaration;
+		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
 	}
 
 	return S_OK;	
@@ -2995,8 +3005,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pSha
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded VertexShader";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded VertexShader";
 		this->mCurrentStateRecording->mDeviceState.mVertexShader = mDeviceState.mVertexShader;
+		this->mCurrentStateRecording->mDeviceState.mHasVertexShader = true;
 	}
 
 	return S_OK;
@@ -3040,7 +3051,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(info) << "Recorded Viewport";
+		//BOOST_LOG_TRIVIAL(info) << "Recorded Viewport";
 		this->mCurrentStateRecording->mDeviceState.m9Viewport = mDeviceState.m9Viewport;
 		this->mCurrentStateRecording->mDeviceState.mViewport = mDeviceState.mViewport;
 	}

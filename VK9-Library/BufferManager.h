@@ -111,7 +111,7 @@ public:
 	UniformBufferObject mUBO = {};
 
 	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
-	void UpdateUniformBuffer();
+	void UpdateUniformBuffer(BOOL recalculateMatrices = 0);
 	void FlushDrawBufffer();
 
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory);

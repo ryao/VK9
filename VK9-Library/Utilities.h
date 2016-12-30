@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #define UTILITIES_H
 
 #include "resource.h"
+#include "CTypes.h"
 #include "d3d9.h" // Base class: IDirect3DDevice9
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
@@ -577,6 +578,106 @@ inline D3DFORMAT ConvertFormat(VkFormat format)
 	default:
 		return D3DFMT_UNKNOWN;
 	}
+}
+
+inline void Print(DeviceState& deviceState)
+{
+	//IDirect3DDevice9::LightEnable
+	//IDirect3DDevice9::SetClipPlane
+	//IDirect3DDevice9::SetCurrentTexturePalette
+	//IDirect3DDevice9::SetFVF
+	BOOST_LOG_TRIVIAL(info) << "FVF: " << deviceState.mFVF;
+	BOOST_LOG_TRIVIAL(info) << "FVFHasPosition: " << deviceState.mFVFHasPosition;
+	BOOST_LOG_TRIVIAL(info) << "FVFHasNormal: " << deviceState.mFVFHasNormal;
+	BOOST_LOG_TRIVIAL(info) << "FVFHasColor: " << deviceState.mFVFHasColor;
+	BOOST_LOG_TRIVIAL(info) << "FVFTextureCount: " << deviceState.mFVFTextureCount;
+
+	//IDirect3DDevice9::SetIndices
+	BOOST_LOG_TRIVIAL(info) << "IndexBuffer: " << deviceState.mIndexBuffer;
+
+	//IDirect3DDevice9::SetLight
+	//IDirect3DDevice9::SetMaterial
+	//IDirect3DDevice9::SetNPatchMode
+	BOOST_LOG_TRIVIAL(info) << "NSegments: " << deviceState.mNSegments;
+
+	//IDirect3DDevice9::SetPixelShader
+	BOOST_LOG_TRIVIAL(info) << "PixelShader: " << deviceState.mPixelShader;
+
+	//IDirect3DDevice9::SetPixelShaderConstantB
+	//IDirect3DDevice9::SetPixelShaderConstantF
+	//IDirect3DDevice9::SetPixelShaderConstantI
+	//IDirect3DDevice9::SetRenderState
+	BOOST_FOREACH(const auto& pair1, deviceState.mRenderStates)
+	{
+		BOOST_LOG_TRIVIAL(info) << "RenderState: " << pair1.first << " " << pair1.second;
+	}
+
+	//IDirect3DDevice9::SetSamplerState
+	BOOST_FOREACH(const auto& pair1, deviceState.mSamplerStates)
+	{
+		BOOST_FOREACH(const auto& pair2, pair1.second)
+		{
+			BOOST_LOG_TRIVIAL(info) << "SamplerState: " << pair1.first << " " << pair2.first << " " << pair2.second;
+		}
+	}
+
+	//IDirect3DDevice9::SetScissorRect
+	BOOST_LOG_TRIVIAL(info) << "Scissor X: " << deviceState.mScissor.offset.x;
+	BOOST_LOG_TRIVIAL(info) << "Scissor Y: " << deviceState.mScissor.offset.y;
+	BOOST_LOG_TRIVIAL(info) << "Scissor Width: " << deviceState.mScissor.extent.width;
+	BOOST_LOG_TRIVIAL(info) << "Scissor Height: " << deviceState.mScissor.extent.height;
+
+	//IDirect3DDevice9::SetStreamSource
+	BOOST_FOREACH(const auto& pair1, deviceState.mStreamSources)
+	{
+		const StreamSource& streamSource = pair1.second;
+		BOOST_LOG_TRIVIAL(info) << "StreamSource: {StreamNumber: " << streamSource.StreamNumber << ", Stride: " << streamSource.Stride << ", StreamData: " << streamSource.StreamData << ", OffsetInBytes: " << streamSource.OffsetInBytes << "}";
+	}
+
+	//IDirect3DDevice9::SetStreamSourceFreq
+	//IDirect3DDevice9::SetTexture
+	for (size_t i = 0; i < 16; i++)
+	{
+		VkDescriptorImageInfo& sampler = deviceState.mDescriptorImageInfo[i];
+
+		BOOST_LOG_TRIVIAL(info) << "Sampler: {imageLayout: " << sampler.imageLayout << ", imageView: " << sampler.imageView << ", sampler: " << sampler.sampler << "}";
+	}
+
+	//IDirect3DDevice9::SetTextureStageState
+	BOOST_FOREACH(const auto& pair1, deviceState.mTextureStageStates)
+	{
+		BOOST_FOREACH(const auto& pair2, pair1.second)
+		{
+			BOOST_LOG_TRIVIAL(info) << "TextureStageState: " << pair1.first << " " << pair2.first << " " << pair2.second;
+		}
+	}
+
+	//IDirect3DDevice9::SetTransform
+	BOOST_FOREACH(const auto& pair1, deviceState.mTransforms)
+	{
+		BOOST_LOG_TRIVIAL(info) << pair1.first;
+		BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._11 << "," << pair1.second._12 << "," << pair1.second._13 << "," << pair1.second._14 << "}";
+		BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._21 << "," << pair1.second._22 << "," << pair1.second._23 << "," << pair1.second._24 << "}";
+		BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._31 << "," << pair1.second._32 << "," << pair1.second._33 << "," << pair1.second._34 << "}";
+		BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._41 << "," << pair1.second._42 << "," << pair1.second._43 << "," << pair1.second._44 << "}";
+		BOOST_LOG_TRIVIAL(info) << "";
+	}
+
+	//IDirect3DDevice9::SetViewport
+	BOOST_LOG_TRIVIAL(info) << "Viewport X: " << deviceState.mViewport.x;
+	BOOST_LOG_TRIVIAL(info) << "Viewport Y: " << deviceState.mViewport.y;
+	BOOST_LOG_TRIVIAL(info) << "Viewport Width: " << deviceState.mViewport.width;
+	BOOST_LOG_TRIVIAL(info) << "Viewport Height: " << deviceState.mViewport.height;
+
+	//IDirect3DDevice9::SetVertexDeclaration
+	BOOST_LOG_TRIVIAL(info) << "VertexDeclaration: " << deviceState.mVertexDeclaration;
+
+	//IDirect3DDevice9::SetVertexShader
+	BOOST_LOG_TRIVIAL(info) << "VertexShader: " << deviceState.mVertexShader;
+
+	//IDirect3DDevice9::SetVertexShaderConstantB
+	//IDirect3DDevice9::SetVertexShaderConstantF
+	//IDirect3DDevice9::SetVertexShaderConstantI
 }
 
 #endif // UTILITIES_H
