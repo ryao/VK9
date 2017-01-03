@@ -1582,6 +1582,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	//Clean up pipes.
 	mBufferManager->FlushDrawBufffer();
 
+	//Print(mDeviceState);
+
 	return D3D_OK;
 }
 
@@ -1960,6 +1962,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 	mBufferManager->BeginDraw(context, PrimitiveType);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
+
+	Print(mDeviceState);
 
 	return S_OK;	
 }
@@ -2589,6 +2593,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
 	mDeviceState.mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
 	mDeviceState.mVertexDeclaration = nullptr;
+	mDeviceState.mHasVertexDeclaration = true;
 
 	//Reset flags so values don't stick.
 	mDeviceState.mFVFHasPosition = false;
@@ -2690,6 +2695,7 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 {
 	mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
+	mDeviceState.mHasIndexBuffer = true;
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
@@ -2759,6 +2765,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShade
 	}
 
 	mDeviceState.mPixelShader = (CPixelShader9*)pShader;
+	mDeviceState.mHasPixelShader = true;
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
@@ -2978,6 +2985,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
 {
 	mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+	mDeviceState.mHasVertexDeclaration = true;
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
@@ -3002,6 +3010,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pSha
 	}
 
 	mDeviceState.mVertexShader = (CVertexShader9*)pShader;
+	mDeviceState.mHasVertexShader = true;
 
 	if (this->mCurrentStateRecording != nullptr)
 	{

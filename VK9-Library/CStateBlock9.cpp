@@ -93,18 +93,9 @@ ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
 	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture";
-	Print(mDeviceState);
+	//Print(this->mDevice->mDeviceState);
 
-	switch (mType)
-	{
-	case D3DSBT_ALL:
-		this->mDeviceState = mDevice->mDeviceState;
-		break;
-	default:
-		//TODO: copy state based on type.
-		BOOST_LOG_TRIVIAL(warning) << "CStateBlock9::CStateBlock9 unsupported block type " << mType;
-		break;
-	}
+	MergeState(this->mDevice->mDeviceState, mDeviceState, mType);
 
 	return S_OK;
 }
@@ -112,80 +103,104 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
 	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply";
-	Print(mDeviceState);
+
+	MergeState(mDeviceState, this->mDevice->mDeviceState,mType);
+
+	if (mDeviceState.mTransforms.size())
+	{
+		this->mDevice->mBufferManager->UpdateUniformBuffer(true); //Have to push the updated UBO into memory buffer.
+	}
+
+	//Print(this->mDevice->mDeviceState);
+
+	return S_OK;
+}
+
+void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTATEBLOCKTYPE type)
+{
+	if (type != D3DSBT_ALL)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "MergeState unsupported block type " << type;
+	}
 
 	//IDirect3DDevice9::LightEnable
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
-	if (mDeviceState.mFVF != -1)
+	if (sourceState.mFVF != -1)
 	{
-		this->mDevice->mDeviceState.mFVF = mDeviceState.mFVF;
+		targetState.mFVF = sourceState.mFVF;
 
-		this->mDevice->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
-		this->mDevice->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
-		this->mDevice->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
-		this->mDevice->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
-	}	
+		targetState.mFVFHasPosition = sourceState.mFVFHasPosition;
+		targetState.mFVFHasNormal = sourceState.mFVFHasNormal;
+		targetState.mFVFHasColor = sourceState.mFVFHasColor;
+		targetState.mFVFTextureCount = sourceState.mFVFTextureCount;
+
+		//If this is set it will be reset later.
+		targetState.mVertexDeclaration = nullptr;
+		targetState.mHasVertexDeclaration = true;
+	}
 
 	//IDirect3DDevice9::SetIndices
-	if (mDeviceState.mHasIndexBuffer)
+	if (sourceState.mHasIndexBuffer)
 	{
-		this->mDevice->mDeviceState.mIndexBuffer = mDeviceState.mIndexBuffer;
+		targetState.mIndexBuffer = sourceState.mIndexBuffer;
+		targetState.mHasIndexBuffer = true;
 	}
 
 	//IDirect3DDevice9::SetLight
 	//IDirect3DDevice9::SetMaterial
 	//IDirect3DDevice9::SetNPatchMode
-	if (mDeviceState.mNSegments!= -1)
+	if (sourceState.mNSegments != -1)
 	{
-		this->mDevice->mDeviceState.mNSegments = mDeviceState.mNSegments; //Doesn't matter anyway.
-	}	
+		targetState.mNSegments = sourceState.mNSegments; //Doesn't matter anyway.
+	}
 
 	//IDirect3DDevice9::SetPixelShader
-	if (mDeviceState.mHasPixelShader)
+	if (sourceState.mHasPixelShader)
 	{
 		//TODO: may leak
-		this->mDevice->mDeviceState.mPixelShader = mDeviceState.mPixelShader;
+		targetState.mPixelShader = sourceState.mPixelShader;
+		targetState.mHasPixelShader = true;
 	}
 
 	//IDirect3DDevice9::SetPixelShaderConstantB
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
 	//IDirect3DDevice9::SetRenderState
-	if (mDeviceState.mRenderStates.size())
+	if (sourceState.mRenderStates.size())
 	{
-		BOOST_FOREACH(const auto& pair1, mDeviceState.mRenderStates)
+		BOOST_FOREACH(const auto& pair1, sourceState.mRenderStates)
 		{
-			this->mDevice->mDeviceState.mRenderStates[pair1.first] = pair1.second;
+			targetState.mRenderStates[pair1.first] = pair1.second;
 		}
 	}
 
 	//IDirect3DDevice9::SetSamplerState
-	if (mDeviceState.mSamplerStates.size())
+	if (sourceState.mSamplerStates.size())
 	{
-		BOOST_FOREACH(const auto& pair1, mDeviceState.mSamplerStates)
+		BOOST_FOREACH(const auto& pair1, sourceState.mSamplerStates)
 		{
 			BOOST_FOREACH(const auto& pair2, pair1.second)
 			{
-				this->mDevice->mDeviceState.mSamplerStates[pair1.first][pair2.first] = pair2.second;
+				targetState.mSamplerStates[pair1.first][pair2.first] = pair2.second;
 			}
 		}
 	}
 
 	//IDirect3DDevice9::SetScissorRect
-	if (mDeviceState.m9Scissor.right != 0 || mDeviceState.m9Scissor.left != 0)
+	if (sourceState.m9Scissor.right != 0 || sourceState.m9Scissor.left != 0)
 	{
-		this->mDevice->mDeviceState.m9Scissor = mDeviceState.m9Scissor;
-		this->mDevice->mDeviceState.mScissor = mDeviceState.mScissor;
+		targetState.m9Scissor = sourceState.m9Scissor;
+		targetState.mScissor = sourceState.mScissor;
 	}
 
 	//IDirect3DDevice9::SetStreamSource
-	if (mDeviceState.mStreamSources.size())
+	if (sourceState.mStreamSources.size())
 	{
-		BOOST_FOREACH(const auto& pair1, mDeviceState.mStreamSources)
+		BOOST_FOREACH(const auto& pair1, sourceState.mStreamSources)
 		{
-			this->mDevice->mDeviceState.mStreamSources[pair1.first] = pair1.second;
+			targetState.mStreamSources[pair1.first] = pair1.second;
 		}
 	}
 
@@ -193,10 +208,10 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	//IDirect3DDevice9::SetTexture
 	for (size_t i = 0; i < 16; i++)
 	{
-		VkDescriptorImageInfo& sourceSampler = mDeviceState.mDescriptorImageInfo[i];
+		const VkDescriptorImageInfo& sourceSampler = sourceState.mDescriptorImageInfo[i];
 		if (sourceSampler.sampler != VK_NULL_HANDLE)
-		{		
-			VkDescriptorImageInfo& targetSampler = this->mDevice->mDeviceState.mDescriptorImageInfo[i];
+		{
+			VkDescriptorImageInfo& targetSampler = targetState.mDescriptorImageInfo[i];
 
 			targetSampler.imageLayout = sourceSampler.imageLayout;
 			targetSampler.imageView = sourceSampler.imageView;
@@ -205,50 +220,48 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	}
 
 	//IDirect3DDevice9::SetTextureStageState
-	if (mDeviceState.mTextureStageStates.size())
+	if (sourceState.mTextureStageStates.size())
 	{
-		BOOST_FOREACH(const auto& pair1, mDeviceState.mTextureStageStates)
+		BOOST_FOREACH(const auto& pair1, sourceState.mTextureStageStates)
 		{
 			BOOST_FOREACH(const auto& pair2, pair1.second)
 			{
-				this->mDevice->mDeviceState.mTextureStageStates[pair1.first][pair2.first] = pair2.second;
+				targetState.mTextureStageStates[pair1.first][pair2.first] = pair2.second;
 			}
-		}		
+		}
 	}
 
 	//IDirect3DDevice9::SetTransform
-	if (mDeviceState.mTransforms.size())
+	if (sourceState.mTransforms.size())
 	{
-		BOOST_FOREACH(const auto& pair1, mDeviceState.mTransforms)
+		BOOST_FOREACH(const auto& pair1, sourceState.mTransforms)
 		{
-			this->mDevice->mDeviceState.mTransforms[pair1.first] = pair1.second;
+			targetState.mTransforms[pair1.first] = pair1.second;
 		}
-
-		this->mDevice->mBufferManager->UpdateUniformBuffer(true); //Have to push the updated UBO into memory buffer.
 	}
 
 	//IDirect3DDevice9::SetViewport
-	if (mDeviceState.m9Viewport.Width != 0)
+	if (sourceState.m9Viewport.Width != 0)
 	{
-		this->mDevice->mDeviceState.m9Viewport = mDeviceState.m9Viewport;
-		this->mDevice->mDeviceState.mViewport = mDeviceState.mViewport;
+		targetState.m9Viewport = sourceState.m9Viewport;
+		targetState.mViewport = sourceState.mViewport;
 	}
 
 	//IDirect3DDevice9::SetVertexDeclaration
-	if (mDeviceState.mHasVertexDeclaration)
+	if (sourceState.mHasVertexDeclaration)
 	{
-		this->mDevice->mDeviceState.mVertexDeclaration = mDeviceState.mVertexDeclaration;
+		targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
+		targetState.mHasVertexDeclaration = true;
 	}
 
 	//IDirect3DDevice9::SetVertexShader
-	if (mDeviceState.mHasVertexShader)
+	if (sourceState.mHasVertexShader)
 	{
-		this->mDevice->mDeviceState.mVertexShader = mDeviceState.mVertexShader;
+		targetState.mVertexShader = sourceState.mVertexShader;
+		targetState.mHasVertexShader = true;
 	}
 
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI
-
-	return S_OK;
 }
