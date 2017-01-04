@@ -28,7 +28,7 @@ misrepresented as being the original software.
 
 class CDevice9;
 
-void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTATEBLOCKTYPE type);
+void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTATEBLOCKTYPE type = D3DSBT_ALL, BOOL onlyIfExists = false);
 
 class CStateBlock9 : public IDirect3DStateBlock9
 

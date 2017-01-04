@@ -93,9 +93,11 @@ ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
 	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture";
-	//Print(this->mDevice->mDeviceState);
-
-	MergeState(this->mDevice->mDeviceState, mDeviceState, mType);
+	/*
+	Capture only captures the current state of state that has already been recorded (eg update not insert)
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205890(v=vs.85).aspx
+	*/
+	MergeState(this->mDevice->mDeviceState, mDeviceState, mType, true);
 
 	return S_OK;
 }
@@ -111,23 +113,22 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 		this->mDevice->mBufferManager->UpdateUniformBuffer(true); //Have to push the updated UBO into memory buffer.
 	}
 
-	//Print(this->mDevice->mDeviceState);
-
 	return S_OK;
 }
 
-void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTATEBLOCKTYPE type)
+void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTATEBLOCKTYPE type, BOOL onlyIfExists)
 {
-	if (type != D3DSBT_ALL)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "MergeState unsupported block type " << type;
-	}
+	/*
+	Pixel https://msdn.microsoft.com/en-us/library/windows/desktop/bb147351(v=vs.85).aspx
+	Vertex https://msdn.microsoft.com/en-us/library/windows/desktop/bb147353(v=vs.85).aspx#Vertex_Pipeline_Render_State
+	All https://msdn.microsoft.com/en-us/library/windows/desktop/bb147350(v=vs.85).aspx
+	*/
 
 	//IDirect3DDevice9::LightEnable
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
-	if (sourceState.mFVF != -1)
+	if (sourceState.mFVF != -1 && (!onlyIfExists || targetState.mFVF != -1) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
 		targetState.mFVF = sourceState.mFVF;
 
@@ -142,7 +143,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	}
 
 	//IDirect3DDevice9::SetIndices
-	if (sourceState.mHasIndexBuffer)
+	if (sourceState.mHasIndexBuffer && (!onlyIfExists || targetState.mHasIndexBuffer) && (type == D3DSBT_ALL))
 	{
 		targetState.mIndexBuffer = sourceState.mIndexBuffer;
 		targetState.mHasIndexBuffer = true;
@@ -151,13 +152,13 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetLight
 	//IDirect3DDevice9::SetMaterial
 	//IDirect3DDevice9::SetNPatchMode
-	if (sourceState.mNSegments != -1)
+	if (sourceState.mNSegments != -1 && (!onlyIfExists || targetState.mNSegments != -1) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
 		targetState.mNSegments = sourceState.mNSegments; //Doesn't matter anyway.
 	}
 
 	//IDirect3DDevice9::SetPixelShader
-	if (sourceState.mHasPixelShader)
+	if (sourceState.mHasPixelShader && (!onlyIfExists || targetState.mHasPixelShader) && (type == D3DSBT_ALL || type == D3DSBT_PIXELSTATE))
 	{
 		//TODO: may leak
 		targetState.mPixelShader = sourceState.mPixelShader;
@@ -172,7 +173,130 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	{
 		BOOST_FOREACH(const auto& pair1, sourceState.mRenderStates)
 		{
-			targetState.mRenderStates[pair1.first] = pair1.second;
+			if (!onlyIfExists || targetState.mRenderStates.count(pair1.first) > 0)
+			{
+				if 
+				(
+					(type == D3DSBT_ALL) || 
+					(type == D3DSBT_VERTEXSTATE && 
+						(
+							pair1.first == D3DRS_CULLMODE || 
+							pair1.first == D3DRS_FOGCOLOR || 
+							pair1.first == D3DRS_FOGTABLEMODE ||
+							pair1.first == D3DRS_FOGSTART ||
+							pair1.first == D3DRS_FOGEND ||
+							pair1.first == D3DRS_FOGDENSITY ||
+							pair1.first == D3DRS_RANGEFOGENABLE ||
+							pair1.first == D3DRS_AMBIENT ||
+							pair1.first == D3DRS_COLORVERTEX ||
+							pair1.first == D3DRS_FOGVERTEXMODE ||
+							pair1.first == D3DRS_CLIPPING ||
+							pair1.first == D3DRS_LIGHTING ||
+							pair1.first == D3DRS_LOCALVIEWER ||
+							pair1.first == D3DRS_EMISSIVEMATERIALSOURCE ||
+							pair1.first == D3DRS_AMBIENTMATERIALSOURCE ||
+							pair1.first == D3DRS_DIFFUSEMATERIALSOURCE ||
+							pair1.first == D3DRS_SPECULARMATERIALSOURCE ||
+							pair1.first == D3DRS_VERTEXBLEND ||
+							pair1.first == D3DRS_CLIPPLANEENABLE ||
+							pair1.first == D3DRS_POINTSIZE ||
+							pair1.first == D3DRS_POINTSIZE_MIN ||
+							pair1.first == D3DRS_POINTSPRITEENABLE ||
+							pair1.first == D3DRS_POINTSCALEENABLE ||
+							pair1.first == D3DRS_POINTSCALE_A ||
+							pair1.first == D3DRS_POINTSCALE_B ||
+							pair1.first == D3DRS_POINTSCALE_C ||
+							pair1.first == D3DRS_MULTISAMPLEANTIALIAS ||
+							pair1.first == D3DRS_MULTISAMPLEMASK ||
+							pair1.first == D3DRS_PATCHEDGESTYLE ||
+							pair1.first == D3DRS_POINTSIZE_MAX ||
+							pair1.first == D3DRS_INDEXEDVERTEXBLENDENABLE ||
+							pair1.first == D3DRS_TWEENFACTOR ||
+							pair1.first == D3DRS_POSITIONDEGREE ||
+							pair1.first == D3DRS_NORMALDEGREE ||
+							pair1.first == D3DRS_MINTESSELLATIONLEVEL ||
+							pair1.first == D3DRS_MAXTESSELLATIONLEVEL ||
+							pair1.first == D3DRS_ADAPTIVETESS_X ||
+							pair1.first == D3DRS_ADAPTIVETESS_Y ||
+							pair1.first == D3DRS_ADAPTIVETESS_Z ||
+							pair1.first == D3DRS_ADAPTIVETESS_W ||
+							pair1.first == D3DRS_ENABLEADAPTIVETESSELLATION
+						)) ||
+					(type == D3DSBT_PIXELSTATE && 
+						(
+							pair1.first == D3DRS_ZENABLE ||
+							pair1.first == D3DRS_SPECULARENABLE ||
+							//pair1.first == D3DFILLMODE ||
+							//pair1.first == D3DSHADEMODE ||
+							pair1.first == D3DRS_ZWRITEENABLE ||
+							pair1.first == D3DRS_ALPHATESTENABLE ||
+							pair1.first == D3DRS_LASTPIXEL ||
+							pair1.first == D3DRS_SRCBLEND ||
+							pair1.first == D3DRS_DESTBLEND ||
+							pair1.first == D3DRS_ZFUNC ||
+							pair1.first == D3DRS_ALPHAREF ||
+							pair1.first == D3DRS_ALPHAFUNC ||
+							pair1.first == D3DRS_DITHERENABLE ||
+							pair1.first == D3DRS_FOGSTART ||
+							pair1.first == D3DRS_FOGEND ||
+							pair1.first == D3DRS_FOGDENSITY ||
+							pair1.first == D3DRS_ALPHABLENDENABLE ||
+							pair1.first == D3DRS_DEPTHBIAS ||
+							pair1.first == D3DRS_STENCILENABLE ||
+							pair1.first == D3DRS_STENCILFAIL ||
+							pair1.first == D3DRS_STENCILZFAIL ||
+							pair1.first == D3DRS_STENCILPASS ||
+							pair1.first == D3DRS_STENCILFUNC ||
+							pair1.first == D3DRS_STENCILREF ||
+							pair1.first == D3DRS_STENCILMASK ||
+							pair1.first == D3DRS_STENCILWRITEMASK ||
+							pair1.first == D3DRS_TEXTUREFACTOR ||
+							pair1.first == D3DRS_WRAP0 ||
+							pair1.first == D3DRS_WRAP1 ||
+							pair1.first == D3DRS_WRAP2 ||
+							pair1.first == D3DRS_WRAP3 ||
+							pair1.first == D3DRS_WRAP4 ||
+							pair1.first == D3DRS_WRAP5 ||
+							pair1.first == D3DRS_WRAP6 ||
+							pair1.first == D3DRS_WRAP7 ||
+							pair1.first == D3DRS_WRAP8 ||
+							pair1.first == D3DRS_WRAP9 ||
+							pair1.first == D3DRS_WRAP10 ||
+							pair1.first == D3DRS_WRAP11 ||
+							pair1.first == D3DRS_WRAP12 ||
+							pair1.first == D3DRS_WRAP13 ||
+							pair1.first == D3DRS_WRAP14 ||
+							pair1.first == D3DRS_WRAP15 ||
+							pair1.first == D3DRS_LOCALVIEWER ||
+							pair1.first == D3DRS_EMISSIVEMATERIALSOURCE ||
+							pair1.first == D3DRS_AMBIENTMATERIALSOURCE ||
+							pair1.first == D3DRS_DIFFUSEMATERIALSOURCE ||
+							pair1.first == D3DRS_SPECULARMATERIALSOURCE ||
+							pair1.first == D3DRS_COLORWRITEENABLE ||
+							//pair1.first == D3DBLENDOP ||
+							pair1.first == D3DRS_SCISSORTESTENABLE ||
+							pair1.first == D3DRS_SLOPESCALEDEPTHBIAS ||
+							pair1.first == D3DRS_ANTIALIASEDLINEENABLE ||
+							pair1.first == D3DRS_TWOSIDEDSTENCILMODE ||
+							pair1.first == D3DRS_CCW_STENCILFAIL ||
+							pair1.first == D3DRS_CCW_STENCILZFAIL ||
+							pair1.first == D3DRS_CCW_STENCILPASS ||
+							pair1.first == D3DRS_CCW_STENCILFUNC ||
+							pair1.first == D3DRS_COLORWRITEENABLE1 ||
+							pair1.first == D3DRS_COLORWRITEENABLE2 ||
+							pair1.first == D3DRS_COLORWRITEENABLE3 ||
+							pair1.first == D3DRS_BLENDFACTOR ||
+							pair1.first == D3DRS_SRGBWRITEENABLE ||
+							pair1.first == D3DRS_SEPARATEALPHABLENDENABLE ||
+							pair1.first == D3DRS_SRCBLENDALPHA ||
+							pair1.first == D3DRS_DESTBLENDALPHA ||
+							pair1.first == D3DRS_BLENDOPALPHA
+						))
+				)
+				{
+					targetState.mRenderStates[pair1.first] = pair1.second;
+				}
+			}	
 		}
 	}
 
@@ -232,6 +356,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	}
 
 	//IDirect3DDevice9::SetTransform
+	targetState.mTransforms.clear();
 	if (sourceState.mTransforms.size())
 	{
 		BOOST_FOREACH(const auto& pair1, sourceState.mTransforms)
