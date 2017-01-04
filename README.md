@@ -1,4 +1,8 @@
 VK9 (Formerly SchaeferGL)
 ==========
 
-Direct3D 9 compatibility layer using Vulkan.
+Runs Direct3D 9 applications on Windows or Linux (/w Wine) over Vulkan.
+
+Please refer to the Github wiki for current state and details about the project.
+
+VK9 is released under a zlib style license refer to the LICENSE.md file for more information.
