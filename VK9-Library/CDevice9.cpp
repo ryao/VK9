@@ -1633,6 +1633,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
 	this->mCurrentStateRecording = new CStateBlock9(this);
 
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
+
 	return S_OK;
 }
 
@@ -1807,6 +1809,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDir
 	}
 
 	(*ppSB) = (IDirect3DStateBlock9*)obj;
+
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateStateBlock " << obj;
 
 	return result;
 }
@@ -2013,6 +2017,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle,const float *pNumSe
 HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
 {
 	(*ppSB) = this->mCurrentStateRecording;
+
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
 
 	this->mCurrentStateRecording = nullptr;
 
@@ -2978,6 +2984,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 		//BOOST_LOG_TRIVIAL(info) << "Recorded Transforms " << State;
 		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = mDeviceState.mTransforms[State];
 	}
+
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTransform State:" << State;
 
 	return S_OK;	
 }

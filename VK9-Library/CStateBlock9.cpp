@@ -27,14 +27,15 @@ CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 	: mDevice(device),
 	mType(Type)
 {
-	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)";
-	this->Capture();
+	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)";
+	
+	MergeState(this->mDevice->mDeviceState, mDeviceState, mType, false);
 }
 
 CStateBlock9::CStateBlock9(CDevice9* device)
 	: mDevice(device)
 {
-	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device)";
+	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device)";
 }
 
 CStateBlock9::~CStateBlock9()
@@ -92,7 +93,7 @@ ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
-	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture";
+	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture " << this;
 	/*
 	Capture only captures the current state of state that has already been recorded (eg update not insert)
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205890(v=vs.85).aspx
@@ -104,13 +105,16 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
-	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply";
+	BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply " << this;
 
 	MergeState(mDeviceState, this->mDevice->mDeviceState,mType);
 
 	if (mDeviceState.mTransforms.size())
 	{
-		this->mDevice->mBufferManager->UpdateUniformBuffer(true); //Have to push the updated UBO into memory buffer.
+		if (mType == D3DSBT_ALL)
+		{
+			this->mDevice->mBufferManager->UpdateUniformBuffer(true); //Have to push the updated UBO into memory buffer.
+		}
 	}
 
 	return S_OK;
@@ -307,13 +311,42 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		{
 			BOOST_FOREACH(const auto& pair2, pair1.second)
 			{
-				targetState.mSamplerStates[pair1.first][pair2.first] = pair2.second;
+				if (!onlyIfExists || (targetState.mSamplerStates.count(pair1.first) > 0 && targetState.mSamplerStates[pair1.first].count(pair2.first) > 0))
+				{
+					if
+						(
+						(type == D3DSBT_ALL) ||
+							(type == D3DSBT_VERTEXSTATE &&
+							(
+								pair2.first == D3DSAMP_DMAPOFFSET
+
+								)) ||
+								(type == D3DSBT_PIXELSTATE &&
+							(
+								pair2.first == D3DSAMP_ADDRESSU ||
+								pair2.first == D3DSAMP_ADDRESSV ||
+								pair2.first == D3DSAMP_ADDRESSW ||
+								pair2.first == D3DSAMP_BORDERCOLOR ||
+								pair2.first == D3DSAMP_MAGFILTER ||
+								pair2.first == D3DSAMP_MINFILTER ||
+								pair2.first == D3DSAMP_MIPFILTER ||
+								pair2.first == D3DSAMP_MIPMAPLODBIAS ||
+								pair2.first == D3DSAMP_MAXMIPLEVEL ||
+								pair2.first == D3DSAMP_MAXANISOTROPY ||
+								pair2.first == D3DSAMP_SRGBTEXTURE ||
+								pair2.first == D3DSAMP_ELEMENTINDEX
+								))
+							)
+					{
+						targetState.mSamplerStates[pair1.first][pair2.first] = pair2.second;
+					}
+				}
 			}
 		}
 	}
 
 	//IDirect3DDevice9::SetScissorRect
-	if (sourceState.m9Scissor.right != 0 || sourceState.m9Scissor.left != 0)
+	if ((sourceState.m9Scissor.right != 0 || sourceState.m9Scissor.left != 0) && (!onlyIfExists || targetState.mHasIndexBuffer) && (type == D3DSBT_ALL))
 	{
 		targetState.m9Scissor = sourceState.m9Scissor;
 		targetState.mScissor = sourceState.mScissor;
@@ -324,7 +357,10 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	{
 		BOOST_FOREACH(const auto& pair1, sourceState.mStreamSources)
 		{
-			targetState.mStreamSources[pair1.first] = pair1.second;
+			if (type == D3DSBT_ALL && (!onlyIfExists || targetState.mStreamSources.count(pair1.first) > 0))
+			{
+				targetState.mStreamSources[pair1.first] = pair1.second;
+			}
 		}
 	}
 
@@ -336,10 +372,12 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceSampler.sampler != VK_NULL_HANDLE)
 		{
 			VkDescriptorImageInfo& targetSampler = targetState.mDescriptorImageInfo[i];
-
-			targetSampler.imageLayout = sourceSampler.imageLayout;
-			targetSampler.imageView = sourceSampler.imageView;
-			targetSampler.sampler = sourceSampler.sampler;
+			if ((!onlyIfExists || targetSampler.sampler != VK_NULL_HANDLE) && (type == D3DSBT_ALL))
+			{
+				targetSampler.imageLayout = sourceSampler.imageLayout;
+				targetSampler.imageView = sourceSampler.imageView;
+				targetSampler.sampler = sourceSampler.sampler;
+			}
 		}
 	}
 
@@ -350,37 +388,74 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		{
 			BOOST_FOREACH(const auto& pair2, pair1.second)
 			{
-				targetState.mTextureStageStates[pair1.first][pair2.first] = pair2.second;
+				if (!onlyIfExists || (targetState.mTextureStageStates.count(pair1.first) > 0 && targetState.mTextureStageStates[pair1.first].count(pair2.first) > 0))
+				{
+					if
+						(
+						(type == D3DSBT_ALL) ||
+							(type == D3DSBT_VERTEXSTATE &&
+							(
+								pair2.first == D3DTSS_TEXCOORDINDEX ||
+								pair2.first == D3DTSS_TEXTURETRANSFORMFLAGS
+
+								)) ||
+								(type == D3DSBT_PIXELSTATE &&
+							(
+								pair2.first == D3DTSS_COLOROP ||
+								pair2.first == D3DTSS_COLORARG1 ||
+								pair2.first == D3DTSS_COLORARG2 ||
+								pair2.first == D3DTSS_ALPHAOP ||
+								pair2.first == D3DTSS_ALPHAARG1 ||
+								pair2.first == D3DTSS_ALPHAARG2 ||
+								pair2.first == D3DTSS_BUMPENVMAT00 ||
+								pair2.first == D3DTSS_BUMPENVMAT01 ||
+								pair2.first == D3DTSS_BUMPENVMAT10 ||
+								pair2.first == D3DTSS_BUMPENVMAT11 ||
+								pair2.first == D3DTSS_TEXCOORDINDEX ||
+								pair2.first == D3DTSS_BUMPENVLSCALE ||
+								pair2.first == D3DTSS_BUMPENVLOFFSET ||
+								pair2.first == D3DTSS_TEXTURETRANSFORMFLAGS ||
+								pair2.first == D3DTSS_COLORARG0 ||
+								pair2.first == D3DTSS_ALPHAARG0 ||
+								pair2.first == D3DTSS_RESULTARG
+								))
+							)
+					{
+						targetState.mTextureStageStates[pair1.first][pair2.first] = pair2.second;
+					}
+				}		
 			}
 		}
 	}
 
 	//IDirect3DDevice9::SetTransform
-	targetState.mTransforms.clear();
 	if (sourceState.mTransforms.size())
 	{
 		BOOST_FOREACH(const auto& pair1, sourceState.mTransforms)
 		{
-			targetState.mTransforms[pair1.first] = pair1.second;
+			if (type == D3DSBT_ALL && (!onlyIfExists || targetState.mTransforms.count(pair1.first) > 0)) //
+			{
+				targetState.mTransforms[pair1.first] = pair1.second;
+			}
 		}
 	}
 
 	//IDirect3DDevice9::SetViewport
-	if (sourceState.m9Viewport.Width != 0)
+	if ((sourceState.m9Viewport.Width != 0) && (!onlyIfExists || targetState.m9Viewport.Width != 0) && (type == D3DSBT_ALL))
 	{
 		targetState.m9Viewport = sourceState.m9Viewport;
 		targetState.mViewport = sourceState.mViewport;
 	}
 
 	//IDirect3DDevice9::SetVertexDeclaration
-	if (sourceState.mHasVertexDeclaration)
+	if (sourceState.mHasVertexDeclaration && (!onlyIfExists || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
 		targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
 		targetState.mHasVertexDeclaration = true;
 	}
 
 	//IDirect3DDevice9::SetVertexShader
-	if (sourceState.mHasVertexShader)
+	if (sourceState.mHasVertexShader && (!onlyIfExists || targetState.mHasVertexShader) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
 		targetState.mVertexShader = sourceState.mVertexShader;
 		targetState.mHasVertexShader = true;
