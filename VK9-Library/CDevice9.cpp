@@ -1582,7 +1582,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	//Clean up pipes.
 	mBufferManager->FlushDrawBufffer();
 
-	//Print(mDeviceState);
+	//Print(mDeviceState.mTransforms);
 
 	return D3D_OK;
 }
@@ -1633,7 +1633,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
 	this->mCurrentStateRecording = new CStateBlock9(this);
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
 
 	return S_OK;
 }
@@ -1810,7 +1810,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDir
 
 	(*ppSB) = (IDirect3DStateBlock9*)obj;
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateStateBlock " << obj;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateStateBlock " << obj;
 
 	return result;
 }
@@ -1967,7 +1967,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
 
-	Print(mDeviceState);
+	//Print(mDeviceState.mTransforms);
 
 	return S_OK;	
 }
@@ -2018,7 +2018,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
 {
 	(*ppSB) = this->mCurrentStateRecording;
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
 
 	this->mCurrentStateRecording = nullptr;
 
@@ -2941,51 +2941,54 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURES
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
 {
-	mDeviceState.mTransforms[State] = (*pMatrix);
-
-	switch (State)
-	{
-	case D3DTS_WORLD:
-		for (size_t i = 0; i < 4; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				mBufferManager->mUBO.model[i][j] = pMatrix->m[i][j];
-			}
-		}	
-		break;
-	case D3DTS_VIEW:
-		for (size_t i = 0; i < 4; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				mBufferManager->mUBO.view[i][j] = pMatrix->m[i][j];
-			}
-		}
-		break;
-	case D3DTS_PROJECTION:
-		for (size_t i = 0; i < 4; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				mBufferManager->mUBO.proj[i][j] = pMatrix->m[i][j];
-			}
-		}
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetTransform The following state type was ignored. " << State;
-		break;
-	}
-
-	mBufferManager->UpdateUniformBuffer();
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		//BOOST_LOG_TRIVIAL(info) << "Recorded Transforms " << State;
-		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = mDeviceState.mTransforms[State];
+		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
+	}
+	else
+	{
+		mDeviceState.mTransforms[State] = (*pMatrix);
+
+		switch (State)
+		{
+		case D3DTS_WORLD:
+			for (size_t i = 0; i < 4; i++)
+			{
+				for (size_t j = 0; j < 4; j++)
+				{
+					mBufferManager->mUBO.model[i][j] = pMatrix->m[i][j];
+				}
+			}
+			break;
+		case D3DTS_VIEW:
+			for (size_t i = 0; i < 4; i++)
+			{
+				for (size_t j = 0; j < 4; j++)
+				{
+					mBufferManager->mUBO.view[i][j] = pMatrix->m[i][j];
+				}
+			}
+			break;
+		case D3DTS_PROJECTION:
+			for (size_t i = 0; i < 4; i++)
+			{
+				for (size_t j = 0; j < 4; j++)
+				{
+					mBufferManager->mUBO.proj[i][j] = pMatrix->m[i][j];
+				}
+			}
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetTransform The following state type was ignored. " << State;
+			break;
+		}
+
+		mBufferManager->UpdateUniformBuffer();
 	}
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTransform State:" << State;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTransform State:" << State;
+	//Print(mDeviceState.mTransforms);
 
 	return S_OK;	
 }
