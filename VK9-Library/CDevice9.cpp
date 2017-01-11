@@ -2597,93 +2597,97 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
-	mDeviceState.mFVF = FVF; //uses D3DFVF_XYZ | D3DFVF_DIFFUSE by default.
-	mDeviceState.mVertexDeclaration = nullptr;
-	mDeviceState.mHasVertexDeclaration = true;
+	BOOL _FVFHasPosition = false;
+	BOOL _FVFHasNormal = false;
+	BOOL _FVFHasColor = false;
+	int32_t _FVFTextureCount = 0;
 
-	//Reset flags so values don't stick.
-	mDeviceState.mFVFHasPosition = false;
-	mDeviceState.mFVFHasNormal = false;
-	mDeviceState.mFVFHasColor = false;
-	mDeviceState.mFVFTextureCount = 0;
-
-	if ((mDeviceState.mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+	if ((FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 	{
-		mDeviceState.mFVFHasPosition = true;
+		_FVFHasPosition = true;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+	if ((FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
 	{
-		mDeviceState.mFVFHasNormal = true;
+		_FVFHasNormal = true;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
+	if ((FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_PSIZE is not implemented!";
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+	if ((FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 	{
-		mDeviceState.mFVFHasColor = true;
+		_FVFHasColor = true;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+	if ((FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_SPECULAR is not implemented!";
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
+	if ((FVF & D3DFVF_TEX1) == D3DFVF_TEX1)
 	{
-		mDeviceState.mFVFTextureCount = 1;
+		_FVFTextureCount = 1;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+	if ((FVF & D3DFVF_TEX2) == D3DFVF_TEX2)
 	{
-		mDeviceState.mFVFTextureCount = 2;
+		_FVFTextureCount = 2;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
+	if ((FVF & D3DFVF_TEX3) == D3DFVF_TEX3)
 	{
-		mDeviceState.mFVFTextureCount = 3;
+		_FVFTextureCount = 3;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
+	if ((FVF & D3DFVF_TEX4) == D3DFVF_TEX4)
 	{
-		mDeviceState.mFVFTextureCount = 4;
+		_FVFTextureCount = 4;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
+	if ((FVF & D3DFVF_TEX5) == D3DFVF_TEX5)
 	{
-		mDeviceState.mFVFTextureCount = 5;
+		_FVFTextureCount = 5;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
+	if ((FVF & D3DFVF_TEX6) == D3DFVF_TEX6)
 	{
-		mDeviceState.mFVFTextureCount = 6;
+		_FVFTextureCount = 6;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
+	if ((FVF & D3DFVF_TEX7) == D3DFVF_TEX7)
 	{
-		mDeviceState.mFVFTextureCount = 7;
+		_FVFTextureCount = 7;
 	}
 
-	if ((mDeviceState.mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
+	if ((FVF & D3DFVF_TEX8) == D3DFVF_TEX8)
 	{
-		mDeviceState.mFVFTextureCount = 8;
+		_FVFTextureCount = 8;
 	}
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded FVF";
-
-		this->mCurrentStateRecording->mDeviceState.mFVF = mDeviceState.mFVF;
-		this->mCurrentStateRecording->mDeviceState.mFVFHasPosition = mDeviceState.mFVFHasPosition;
-		this->mCurrentStateRecording->mDeviceState.mFVFHasNormal = mDeviceState.mFVFHasNormal;
-		this->mCurrentStateRecording->mDeviceState.mFVFHasColor = mDeviceState.mFVFHasColor;
-		this->mCurrentStateRecording->mDeviceState.mFVFTextureCount = mDeviceState.mFVFTextureCount;
+		this->mCurrentStateRecording->mDeviceState.mFVF = FVF;
+		this->mCurrentStateRecording->mDeviceState.mFVFHasPosition = _FVFHasPosition;
+		this->mCurrentStateRecording->mDeviceState.mFVFHasNormal = _FVFHasNormal;
+		this->mCurrentStateRecording->mDeviceState.mFVFHasColor = _FVFHasColor;
+		this->mCurrentStateRecording->mDeviceState.mFVFTextureCount = _FVFTextureCount;
 
 		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = nullptr;
 		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
+	}
+	else
+	{
+		mDeviceState.mFVF = FVF;
+		mDeviceState.mFVFHasPosition = _FVFHasPosition;
+		mDeviceState.mFVFHasNormal = _FVFHasNormal;
+		mDeviceState.mFVFHasColor = _FVFHasColor;
+		mDeviceState.mFVFTextureCount = _FVFTextureCount;
+
+		this->mDeviceState.mVertexDeclaration = nullptr;
+		this->mDeviceState.mHasVertexDeclaration = true;	
 	}
 
 	mBufferManager->mLastType = D3DPT_FORCE_DWORD; //force pipe to reset if it's been built.
