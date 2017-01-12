@@ -184,6 +184,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetPixelShader
 	if (sourceState.mHasPixelShader && (!onlyIfExists || targetState.mHasPixelShader) && (type == D3DSBT_ALL || type == D3DSBT_PIXELSTATE))
 	{
+		if (targetState.mPixelShader != nullptr)
+		{
+			targetState.mPixelShader->Release();
+		}
+
 		//TODO: may leak
 		targetState.mPixelShader = sourceState.mPixelShader;
 		targetState.mHasPixelShader = true;
@@ -477,6 +482,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetVertexShader
 	if (sourceState.mHasVertexShader && (!onlyIfExists || targetState.mHasVertexShader) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
+		if (targetState.mVertexShader != nullptr)
+		{
+			targetState.mVertexShader->Release();
+		}
+
 		targetState.mVertexShader = sourceState.mVertexShader;
 		targetState.mHasVertexShader = true;
 	}

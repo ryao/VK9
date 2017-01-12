@@ -875,30 +875,40 @@ void BufferManager::UpdateUniformBuffer(BOOL recalculateMatrices)
 	{
 		DeviceState&  deviceState = mDevice->mDeviceState;
 
-		D3DMATRIX& world = deviceState.mTransforms[D3DTS_WORLD];
-		for (size_t i = 0; i < 4; i++)
+		BOOST_FOREACH(const auto& pair1, deviceState.mTransforms)
 		{
-			for (size_t j = 0; j < 4; j++)
+			switch (pair1.first)
 			{
-				mUBO.model[i][j] = world.m[i][j];
-			}
-		}
-
-		D3DMATRIX& view = deviceState.mTransforms[D3DTS_VIEW];
-		for (size_t i = 0; i < 4; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				mUBO.view[i][j] = view.m[i][j];
-			}
-		}
-
-		D3DMATRIX& projection = deviceState.mTransforms[D3DTS_PROJECTION];
-		for (size_t i = 0; i < 4; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				mUBO.proj[i][j] = projection.m[i][j];
+			case D3DTS_WORLD:
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mUBO.model[i][j] = pair1.second.m[i][j];
+					}
+				}
+				break;
+			case D3DTS_VIEW:
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mUBO.view[i][j] = pair1.second.m[i][j];
+					}
+				}
+				break;
+			case D3DTS_PROJECTION:
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mUBO.proj[i][j] = pair1.second.m[i][j];
+					}
+				}
+				break;
+			default:
+				BOOST_LOG_TRIVIAL(warning) << "BufferManager::UpdateUniformBuffer The following state type was ignored. " << pair1.first;
+				break;
 			}
 		}
 	}

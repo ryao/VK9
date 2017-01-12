@@ -2704,14 +2704,15 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 {
-	mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
-	mDeviceState.mHasIndexBuffer = true;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded IndexBuffer";
-		this->mCurrentStateRecording->mDeviceState.mIndexBuffer = mDeviceState.mIndexBuffer;
+		this->mCurrentStateRecording->mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
 		this->mCurrentStateRecording->mDeviceState.mHasIndexBuffer = true;
+	}
+	else
+	{
+		mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
+		mDeviceState.mHasIndexBuffer = true;
 	}
 
 	return S_OK;
@@ -2737,8 +2738,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 {
-	mDeviceState.mNSegments = nSegments;
-
 	if (nSegments>0.0f)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetNPatchMode nPatch greater than zero not supported.";
@@ -2747,7 +2746,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		//BOOST_LOG_TRIVIAL(info) << "Recorded NSegments";
-		this->mCurrentStateRecording->mDeviceState.mNSegments = mDeviceState.mNSegments;
+		this->mCurrentStateRecording->mDeviceState.mNSegments = nSegments;
+	}
+	else
+	{
+		mDeviceState.mNSegments = nSegments;
 	}
 
 	return S_OK;
@@ -2769,19 +2772,20 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShade
 		pShader->AddRef();
 	}
 	
-	if (mDeviceState.mPixelShader != nullptr)
-	{
-		mDeviceState.mPixelShader->Release();
-	}
-
-	mDeviceState.mPixelShader = (CPixelShader9*)pShader;
-	mDeviceState.mHasPixelShader = true;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded PixelShader";
-		this->mCurrentStateRecording->mDeviceState.mPixelShader = mDeviceState.mPixelShader;
+		this->mCurrentStateRecording->mDeviceState.mPixelShader = (CPixelShader9*)pShader;
 		this->mCurrentStateRecording->mDeviceState.mHasPixelShader = true;
+	}
+	else
+	{
+		if (mDeviceState.mPixelShader != nullptr)
+		{
+			mDeviceState.mPixelShader->Release();
+		}
+
+		mDeviceState.mPixelShader = (CPixelShader9*)pShader;
+		mDeviceState.mHasPixelShader = true;
 	}
 
 	return S_OK;	
@@ -2816,12 +2820,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister,c
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 {
-	mDeviceState.mRenderStates[State] = Value;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded RenderStates " << State;
 		this->mCurrentStateRecording->mDeviceState.mRenderStates[State] = Value;
+	}
+	else
+	{
+		mDeviceState.mRenderStates[State] = Value;
 	}
 
 	return S_OK;	
@@ -2836,12 +2841,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDir
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value)
 {
-	mDeviceState.mSamplerStates[Sampler][Type] = Value;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded SamplerStates " << Sampler << " " << Type;
 		this->mCurrentStateRecording->mDeviceState.mSamplerStates[Sampler][Type] = Value;
+	}
+	else
+	{
+		mDeviceState.mSamplerStates[Sampler][Type] = Value;
 	}
 
 	return S_OK;
@@ -2849,18 +2855,23 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTAT
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT *pRect)
 {
-	mDeviceState.m9Scissor = (*pRect);
-
-	mDeviceState.mScissor.extent.width = mDeviceState.m9Scissor.right;
-	mDeviceState.mScissor.extent.height = mDeviceState.m9Scissor.bottom;
-	mDeviceState.mScissor.offset.x = mDeviceState.m9Scissor.left;
-	mDeviceState.mScissor.offset.y = mDeviceState.m9Scissor.top;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded Scissor";
-		this->mCurrentStateRecording->mDeviceState.m9Scissor = mDeviceState.m9Scissor;
-		this->mCurrentStateRecording->mDeviceState.mScissor = mDeviceState.mScissor;
+		this->mCurrentStateRecording->mDeviceState.m9Scissor = (*pRect);
+
+		this->mCurrentStateRecording->mDeviceState.mScissor.extent.width = this->mCurrentStateRecording->mDeviceState.m9Scissor.right;
+		this->mCurrentStateRecording->mDeviceState.mScissor.extent.height = this->mCurrentStateRecording->mDeviceState.m9Scissor.bottom;
+		this->mCurrentStateRecording->mDeviceState.mScissor.offset.x = this->mCurrentStateRecording->mDeviceState.m9Scissor.left;
+		this->mCurrentStateRecording->mDeviceState.mScissor.offset.y = this->mCurrentStateRecording->mDeviceState.m9Scissor.top;
+	}
+	else
+	{
+		mDeviceState.m9Scissor = (*pRect);
+
+		mDeviceState.mScissor.extent.width = mDeviceState.m9Scissor.right;
+		mDeviceState.mScissor.extent.height = mDeviceState.m9Scissor.bottom;
+		mDeviceState.mScissor.offset.x = mDeviceState.m9Scissor.left;
+		mDeviceState.mScissor.offset.y = mDeviceState.m9Scissor.top;
 	}
 
 	return S_OK;	
@@ -2879,12 +2890,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DV
 {	
 	CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
 
-	mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded StreamSources " << StreamNumber;
-		this->mCurrentStateRecording->mDeviceState.mStreamSources[StreamNumber] = mDeviceState.mStreamSources[StreamNumber];
+		this->mCurrentStateRecording->mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
+	}
+	else
+	{
+		mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
 	}
 
 	return S_OK;
@@ -2902,29 +2914,38 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
 	auto texture = (CTexture9*)pTexture;
-	VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
-
-	if (pTexture==nullptr)
-	{
-		sampler.sampler = mBufferManager->mSampler;
-		sampler.imageView = mBufferManager->mImageView;
-	}
-	else
-	{
-		texture->GenerateSampler(Sampler);
-		sampler.sampler = texture->mSampler;
-		sampler.imageView = texture->mImageView;
-	}
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded ImageInfo " << Sampler;
+		VkDescriptorImageInfo& sampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
 
-		VkDescriptorImageInfo& targetSampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
+		if (pTexture == nullptr)
+		{
+			sampler.sampler = mBufferManager->mSampler;
+			sampler.imageView = mBufferManager->mImageView;
+		}
+		else
+		{
+			texture->GenerateSampler(Sampler);
+			sampler.sampler = texture->mSampler;
+			sampler.imageView = texture->mImageView;
+		}
+	}
+	else
+	{
+		VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
 
-		targetSampler.imageLayout = sampler.imageLayout;
-		targetSampler.imageView = sampler.imageView;
-		targetSampler.sampler = sampler.sampler;
+		if (pTexture == nullptr)
+		{
+			sampler.sampler = mBufferManager->mSampler;
+			sampler.imageView = mBufferManager->mImageView;
+		}
+		else
+		{
+			texture->GenerateSampler(Sampler);
+			sampler.sampler = texture->mSampler;
+			sampler.imageView = texture->mImageView;
+		}
 	}
 
 	return S_OK;	
@@ -2932,12 +2953,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value)
 {
-	mDeviceState.mTextureStageStates[Stage][Type] = Value;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded TextureStageState " << Stage << " " << Type;
 		this->mCurrentStateRecording->mDeviceState.mTextureStageStates[Stage][Type] = Value;
+	}
+	else
+	{
+		mDeviceState.mTextureStageStates[Stage][Type] = Value;
 	}
 
 	return S_OK;	
@@ -2947,66 +2969,29 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 {
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded Transforms " << State;
 		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
 	}
 	else
 	{
 		mDeviceState.mTransforms[State] = (*pMatrix);
 
-		switch (State)
-		{
-		case D3DTS_WORLD:
-			for (size_t i = 0; i < 4; i++)
-			{
-				for (size_t j = 0; j < 4; j++)
-				{
-					mBufferManager->mUBO.model[i][j] = pMatrix->m[i][j];
-				}
-			}
-			break;
-		case D3DTS_VIEW:
-			for (size_t i = 0; i < 4; i++)
-			{
-				for (size_t j = 0; j < 4; j++)
-				{
-					mBufferManager->mUBO.view[i][j] = pMatrix->m[i][j];
-				}
-			}
-			break;
-		case D3DTS_PROJECTION:
-			for (size_t i = 0; i < 4; i++)
-			{
-				for (size_t j = 0; j < 4; j++)
-				{
-					mBufferManager->mUBO.proj[i][j] = pMatrix->m[i][j];
-				}
-			}
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetTransform The following state type was ignored. " << State;
-			break;
-		}
-
-		mBufferManager->UpdateUniformBuffer();
+		mBufferManager->UpdateUniformBuffer(true);
 	}
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTransform State:" << State;
-	//Print(mDeviceState.mTransforms);
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
 {
-	mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
-	mDeviceState.mHasVertexDeclaration = true;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded VertexDeclaration";
-		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = mDeviceState.mVertexDeclaration;
+		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
 		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
+	}
+	else
+	{
+		mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+		mDeviceState.mHasVertexDeclaration = true;
 	}
 
 	return S_OK;	
@@ -3019,19 +3004,21 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pSha
 		pShader->AddRef();
 	}
 
-	if (mDeviceState.mVertexShader != nullptr)
-	{
-		mDeviceState.mVertexShader->Release();
-	}
-
-	mDeviceState.mVertexShader = (CVertexShader9*)pShader;
-	mDeviceState.mHasVertexShader = true;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		//BOOST_LOG_TRIVIAL(info) << "Recorded VertexShader";
-		this->mCurrentStateRecording->mDeviceState.mVertexShader = mDeviceState.mVertexShader;
+		this->mCurrentStateRecording->mDeviceState.mVertexShader = (CVertexShader9*)pShader;
 		this->mCurrentStateRecording->mDeviceState.mHasVertexShader = true;
+	}
+	else
+	{
+		if (mDeviceState.mVertexShader != nullptr)
+		{
+			mDeviceState.mVertexShader->Release();
+		}
+
+		mDeviceState.mVertexShader = (CVertexShader9*)pShader;
+		mDeviceState.mHasVertexShader = true;
 	}
 
 	return S_OK;
@@ -3066,18 +3053,23 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 {
-	mDeviceState.m9Viewport = (*pViewport);
-
-	mDeviceState.mViewport.width = mDeviceState.m9Viewport.Width;
-	mDeviceState.mViewport.height = mDeviceState.m9Viewport.Height;
-	mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
-	mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded Viewport";
-		this->mCurrentStateRecording->mDeviceState.m9Viewport = mDeviceState.m9Viewport;
-		this->mCurrentStateRecording->mDeviceState.mViewport = mDeviceState.mViewport;
+		this->mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
+
+		this->mCurrentStateRecording->mDeviceState.mViewport.width = mDeviceState.m9Viewport.Width;
+		this->mCurrentStateRecording->mDeviceState.mViewport.height = mDeviceState.m9Viewport.Height;
+		this->mCurrentStateRecording->mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
+		this->mCurrentStateRecording->mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
+	}
+	else
+	{
+		mDeviceState.m9Viewport = (*pViewport);
+
+		mDeviceState.mViewport.width = mDeviceState.m9Viewport.Width;
+		mDeviceState.mViewport.height = mDeviceState.m9Viewport.Height;
+		mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
+		mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 	}
 
 	return S_OK;	
