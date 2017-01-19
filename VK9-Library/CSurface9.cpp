@@ -257,6 +257,11 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 		return D3DERR_INVALIDCALL;
 	}
 
+	//if (mMipIndex==0)
+	//{
+	//	std::memset(mData, 255, mMemoryAllocateInfo.allocationSize);
+	//}
+
 	if (mLayout.offset)
 	{
 		/*
@@ -290,9 +295,14 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
 	if (mData != nullptr)
 	{
+		//SaveImage( (boost::format("image%3%_%1%_%2%.ppm") % mMipIndex % counter % this).str().c_str() , (char*)mData, mHeight, mWidth, mLayout.rowPitch);
+		//counter++;
+
 		vkUnmapMemory(mDevice->mDevice, mStagingDeviceMemory);
 		mData = nullptr;
 	}
+
+	//this->Flush();
 
 	return S_OK;
 }
@@ -368,12 +378,12 @@ void CSurface9::Flush()
 		return;
 	}
 
-	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL); //VK_IMAGE_LAYOUT_PREINITIALIZED
-	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mTexture->mLevels);
+	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,1,0); //VK_IMAGE_LAYOUT_PREINITIALIZED
+	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,mMipIndex);
 
 	mTexture->CopyImage(mStagingImage, mTexture->mImage, mWidth, mHeight, 0, this->mMipIndex);
 
-	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex);
 
 	if (mStagingImage != VK_NULL_HANDLE)
 	{

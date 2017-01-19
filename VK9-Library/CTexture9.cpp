@@ -495,11 +495,13 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurfac
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::LockRect Level:" << Level << " Handle: " << this;
 	return mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::UnlockRect Level:" << Level << " Handle: " << this;
 	return mSurfaces[Level]->UnlockRect();
 }
 
@@ -660,6 +662,7 @@ void CTexture9::MarkSamplerDirty()
 
 void CTexture9::Flush()
 {
+	//mSurfaces[0]->Flush();
 	for (size_t i = 0; i < mSurfaces.size(); i++)
 	{
 		mSurfaces[i]->Flush();

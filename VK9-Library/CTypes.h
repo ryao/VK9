@@ -37,6 +37,7 @@ class CVertexDeclaration9;
 class CIndexBuffer9;
 class CPixelShader9;
 class CVertexShader9;
+class CTexture9;
 
 struct Monitor
 {
@@ -137,6 +138,7 @@ struct DeviceState
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
 	VkDescriptorImageInfo mDescriptorImageInfo[16] = {};
+	std::unordered_map<DWORD, CTexture9*> mTextures;
 
 	//IDirect3DDevice9::SetTextureStageState
 	std::unordered_map<DWORD, std::unordered_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;

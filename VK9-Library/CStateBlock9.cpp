@@ -20,6 +20,7 @@ misrepresented as being the original software.
 
 #include "CStateBlock9.h"
 #include "CDevice9.h"
+#include "CTexture9.h"
 
 #include "Utilities.h"
 
@@ -391,20 +392,41 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
-	for (size_t i = 0; i < 16; i++)
+	BOOST_FOREACH(const auto& pair1, sourceState.mTextures)
 	{
-		const VkDescriptorImageInfo& sourceSampler = sourceState.mDescriptorImageInfo[i];
-		if (sourceSampler.sampler != VK_NULL_HANDLE)
+		VkDescriptorImageInfo& targetSampler = targetState.mDescriptorImageInfo[pair1.first];
+
+		if ((!onlyIfExists || targetSampler.sampler != VK_NULL_HANDLE) && (type == D3DSBT_ALL))
 		{
-			VkDescriptorImageInfo& targetSampler = targetState.mDescriptorImageInfo[i];
-			if ((!onlyIfExists || targetSampler.sampler != VK_NULL_HANDLE) && (type == D3DSBT_ALL))
+			if (pair1.second == nullptr)
 			{
-				targetSampler.imageLayout = sourceSampler.imageLayout;
-				targetSampler.imageView = sourceSampler.imageView;
-				targetSampler.sampler = sourceSampler.sampler;
+				//Revsit
+				//sampler.sampler = mDevice->mBufferManager->mSampler;
+				//sampler.imageView = mDevice->mBufferManager->mImageView;
+			}
+			else
+			{
+				targetState.mTextures[pair1.first] = pair1.second;
+				pair1.second->GenerateSampler(pair1.first);
+				targetSampler.sampler = pair1.second->mSampler;
+				targetSampler.imageView = pair1.second->mImageView;
 			}
 		}
 	}
+	//for (size_t i = 0; i < 16; i++)
+	//{
+	//	const VkDescriptorImageInfo& sourceSampler = sourceState.mDescriptorImageInfo[i];
+	//	if (sourceSampler.sampler != VK_NULL_HANDLE)
+	//	{
+	//		VkDescriptorImageInfo& targetSampler = targetState.mDescriptorImageInfo[i];
+	//		if ((!onlyIfExists || targetSampler.sampler != VK_NULL_HANDLE) && (type == D3DSBT_ALL))
+	//		{
+	//			targetSampler.imageLayout = sourceSampler.imageLayout;
+	//			targetSampler.imageView = sourceSampler.imageView;
+	//			targetSampler.sampler = sourceSampler.sampler;
+	//		}
+	//	}
+	//}
 
 	//IDirect3DDevice9::SetTextureStageState
 	if (sourceState.mTextureStageStates.size())

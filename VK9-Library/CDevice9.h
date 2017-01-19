@@ -264,7 +264,7 @@ public:
 	
 	PAINTSTRUCT* mPaintInformation = {};
 
-	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1);
+	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0);
 	void StartScene();
 	void StopScene();
 };

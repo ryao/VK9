@@ -1916,6 +1916,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
 {
+	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
+
 	if (mDeviceState.mIndexBuffer == nullptr)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive called with null index buffer.";
@@ -2913,36 +2915,41 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
-	auto texture = (CTexture9*)pTexture;
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTexture handle: " << pTexture << " sampler: " << Sampler;
 
-	if (this->mCurrentStateRecording != nullptr)
+	if (pTexture == nullptr)
 	{
-		VkDescriptorImageInfo& sampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
-
-		if (pTexture == nullptr)
+		if (this->mCurrentStateRecording != nullptr)
 		{
+			VkDescriptorImageInfo& sampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
 			sampler.sampler = mBufferManager->mSampler;
 			sampler.imageView = mBufferManager->mImageView;
 		}
 		else
 		{
-			texture->GenerateSampler(Sampler);
-			sampler.sampler = texture->mSampler;
-			sampler.imageView = texture->mImageView;
+			VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
+			sampler.sampler = mBufferManager->mSampler;
+			sampler.imageView = mBufferManager->mImageView;
 		}
 	}
 	else
 	{
-		VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
+		auto texture = (CTexture9*)pTexture;
 
-		if (pTexture == nullptr)
+		//texture->MarkSamplerDirty();
+		texture->GenerateSampler(Sampler);
+
+		if (this->mCurrentStateRecording != nullptr)
 		{
-			sampler.sampler = mBufferManager->mSampler;
-			sampler.imageView = mBufferManager->mImageView;
+			VkDescriptorImageInfo& sampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
+			this->mCurrentStateRecording->mDeviceState.mTextures[Sampler] = texture;
+			sampler.sampler = texture->mSampler;
+			sampler.imageView = texture->mImageView;
 		}
 		else
 		{
-			texture->GenerateSampler(Sampler);
+			VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
+			mDeviceState.mTextures[Sampler] = texture;
 			sampler.sampler = texture->mSampler;
 			sampler.imageView = texture->mImageView;
 		}
@@ -3129,7 +3136,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::ValidateDevice(DWORD *pNumPasses)
 	return S_OK;	
 }
 
-void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount)
+void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex)
 {
 	/*
 	This is just a helper method to reduce repeat code.
@@ -3189,7 +3196,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.image = image;
 	imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
-	imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+	imageMemoryBarrier.subresourceRange.baseMipLevel = mipIndex;
 	imageMemoryBarrier.subresourceRange.levelCount = levelCount;
 	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
 	imageMemoryBarrier.subresourceRange.layerCount = 1;

@@ -24,8 +24,10 @@ misrepresented as being the original software.
 #include "resource.h"
 #include "CTypes.h"
 #include "d3d9.h" // Base class: IDirect3DDevice9
+
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
+
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/log/core.hpp>
@@ -37,7 +39,10 @@ misrepresented as being the original software.
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
+
 #include <cstring>
+#include <fstream>
 
 #define D3DCOLOR_A(dw) (((float)(((dw) >> 24) & 0xFF)) / 255.0f)
 #define D3DCOLOR_R(dw) (((float)(((dw) >> 16) & 0xFF)) / 255.0f)
@@ -691,6 +696,28 @@ inline void Print(DeviceState& deviceState)
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI
+}
+
+inline void SaveImage(const char *filename,char* imageData,uint32_t height, uint32_t width, uint32_t rowPitch)
+{
+	std::ofstream file(filename, std::ios::out | std::ios::binary);
+
+	// Write the header
+	file << "P6\n" << width << "\n" << height << "\n" << 255 << "\n";
+
+	// Write the pixel data.
+	for (uint32_t y = 0; y < height; y++)
+	{
+		unsigned int *row = (unsigned int*)imageData;
+		for (uint32_t x = 0; x < width; x++)
+		{
+			file.write((char*)row, 3);
+			row++;
+		}
+		imageData += rowPitch;
+	}
+
+	file.close();
 }
 
 #endif // UTILITIES_H
