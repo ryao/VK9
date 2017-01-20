@@ -1633,7 +1633,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
 	this->mCurrentStateRecording = new CStateBlock9(this);
 
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
 
 	return S_OK;
 }
@@ -1916,7 +1916,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
+	//BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
 
 	if (mDeviceState.mIndexBuffer == nullptr)
 	{
@@ -2020,7 +2020,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
 {
 	(*ppSB) = this->mCurrentStateRecording;
 
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
 
 	this->mCurrentStateRecording = nullptr;
 

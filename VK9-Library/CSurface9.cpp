@@ -17,13 +17,13 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
- 
+
 #include "CSurface9.h"
 #include "CDevice9.h"
 #include "CTexture9.h"
 #include "Utilities.h"
 
-CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture,UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard,HANDLE *pSharedHandle)
+CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle)
 	: mDevice(Device),
 	mTexture(Texture),
 	mWidth(Width),
@@ -60,14 +60,14 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle)
-{	
+{
 	Init();
 }
 
 void CSurface9::Init()
 {
 	//mDevice->AddRef();
-	
+
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172611(v=vs.85).aspx
 	Only these two are valid usage values for surface per the documentation.
@@ -110,7 +110,7 @@ ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)
 	return InterlockedIncrement(&mReferenceCount);
 }
 
-HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid,void  **ppv)
+HRESULT STDMETHODCALLTYPE CSurface9::QueryInterface(REFIID riid, void  **ppv)
 {
 	if (ppv == nullptr)
 	{
@@ -191,7 +191,7 @@ void STDMETHODCALLTYPE CSurface9::PreLoad()
 
 	BOOST_LOG_TRIVIAL(warning) << "CSurface9::PreLoad is not implemented!";
 
-	return; 
+	return;
 }
 
 DWORD STDMETHODCALLTYPE CSurface9::SetPriority(DWORD PriorityNew)
@@ -243,39 +243,58 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 	pDesc->Width = this->mWidth;
 	pDesc->Height = this->mHeight;
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
+	mFlags = Flags;
+
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
+
 	Prepare();
 
-	mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
-	if (mResult != VK_SUCCESS)
+	if (mData == nullptr)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkMapMemory failed with return code of " << mResult;
-		return D3DERR_INVALIDCALL;
+		mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkMapMemory failed with return code of " << mResult;
+			if ((mFlags & D3DLOCK_DONOTWAIT) == D3DLOCK_DONOTWAIT)
+			{
+				return D3DERR_WASSTILLDRAWING;
+			}
+			else
+			{
+				return D3DERR_INVALIDCALL;
+			}
+		}
 	}
 
-	//if (mMipIndex==0)
-	//{
-	//	std::memset(mData, 255, mMemoryAllocateInfo.allocationSize);
-	//}
+	/*
+	Dear C++ committee Why can't we just assume increment is in bytes for void pointer?
+	I mean what else could I possibly mean when dealing with an untyped binary blob.
+	It's not like I picked void* so "don't use void*" is a terrible argument.
+	*/
 
 	if (mLayout.offset)
 	{
-		/*
-		Dear C++ committee Why can't we just assume incrment is in bytes for void pointer?
-		I mean what else could I possibly mean when dealing with an untyped binary blob.
-		It's not like I picked void* so "don't use void*" is a terrible argument.
-		*/
 		char* bytes = (char*)mData;
 		bytes += mLayout.offset;
 		mData = (void*)bytes;
 	}
 
+	if (pRect != nullptr)
+	{
+		char* bytes = (char*)mData;
+
+		bytes += (mLayout.rowPitch * pRect->top);
+		bytes += (4 * pRect->left);
+		mData = (void*)bytes;
+	}
+
 	pLockedRect->pBits = mData;
-	pLockedRect->Pitch = mLayout.rowPitch; 
+	pLockedRect->Pitch = mLayout.rowPitch;
 
 	return S_OK;
 }
@@ -295,12 +314,32 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
 	if (mData != nullptr)
 	{
-		//SaveImage( (boost::format("image%3%_%1%_%2%.ppm") % mMipIndex % counter % this).str().c_str() , (char*)mData, mHeight, mWidth, mLayout.rowPitch);
-		//counter++;
+		//if (mMipIndex == 0)
+		//{
+		//	SaveImage((boost::format("image%1%_%2%.ppm") % this % counter ).str().c_str(), (char*)mData, mHeight, mWidth, mLayout.rowPitch);
+		//}
+		counter++;
 
 		vkUnmapMemory(mDevice->mDevice, mStagingDeviceMemory);
 		mData = nullptr;
 	}
+
+	if ((mFlags & D3DLOCK_DISCARD) == D3DLOCK_DISCARD)
+	{
+		if (mStagingImage != VK_NULL_HANDLE)
+		{
+			vkDestroyImage(mDevice->mDevice, mStagingImage, NULL);
+			mStagingImage = VK_NULL_HANDLE;
+		}
+
+		if (mStagingDeviceMemory != VK_NULL_HANDLE)
+		{
+			vkFreeMemory(mDevice->mDevice, mStagingDeviceMemory, NULL);
+			mStagingDeviceMemory = VK_NULL_HANDLE;
+		}
+	}
+
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
 
 	//this->Flush();
 
@@ -378,12 +417,13 @@ void CSurface9::Flush()
 		return;
 	}
 
-	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,1,0); //VK_IMAGE_LAYOUT_PREINITIALIZED
-	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,mMipIndex);
+	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
+	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex);
 
 	mTexture->CopyImage(mStagingImage, mTexture->mImage, mWidth, mHeight, 0, this->mMipIndex);
 
 	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex);
+
 
 	if (mStagingImage != VK_NULL_HANDLE)
 	{

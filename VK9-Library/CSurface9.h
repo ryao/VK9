@@ -66,6 +66,8 @@ public:
 
 	uint32_t counter = 0;
 
+	DWORD mFlags = 0;
+
 	void Init();
 
 	void Prepare();
