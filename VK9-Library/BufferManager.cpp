@@ -75,11 +75,11 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
 	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
 	mPipelineColorBlendAttachmentState[0].colorBlendOp = VK_BLEND_OP_ADD;
-	mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR; //revisit
-	mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_DST_COLOR; //revisit
+	mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; //VK_BLEND_FACTOR_SRC_COLOR
+	mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; //VK_BLEND_FACTOR_DST_COLOR
 	mPipelineColorBlendAttachmentState[0].alphaBlendOp = VK_BLEND_OP_ADD;
-	mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; //revisit
-	mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // VK_BLEND_FACTOR_DST_ALPHA; //revisit
+	mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; //VK_BLEND_FACTOR_ONE
+	mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // VK_BLEND_FACTOR_ZERO
 
 	mPipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	mPipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;

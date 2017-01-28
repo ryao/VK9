@@ -38,7 +38,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 {
 	//mDevice->AddRef();
 
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9  device:" << device << " Width:" << Width << " Height:" << Height << " Levels:" << Levels << " Usage:" << Usage << " Format:" << Format << " Pool:" << Pool;
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9  device:" << device << " Width:" << Width << " Height:" << Height << " Levels:" << Levels << " Usage:" << Usage << " Format:" << Format << " Pool:" << Pool;
 
 	mRealFormat = ConvertFormat(mFormat);
 
@@ -631,7 +631,10 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 
 	if (mSampler != VK_NULL_HANDLE)
 	{
-		return; //already created.
+		//TODO: implement change tracking so the sampler can be kept is the states have not changed.
+		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+		mSampler = VK_NULL_HANDLE;
+		//return; //already created.
 	}
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
