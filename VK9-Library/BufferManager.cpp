@@ -69,11 +69,27 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
 
+	//mPipelineColorBlendAttachmentState[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT; //0xf;
+	//mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
+
 	mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
-	mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
+	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
+	mPipelineColorBlendAttachmentState[0].colorBlendOp = VK_BLEND_OP_ADD;
+	mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR; //revisit
+	mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_DST_COLOR; //revisit
+	mPipelineColorBlendAttachmentState[0].alphaBlendOp = VK_BLEND_OP_ADD;
+	mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; //revisit
+	mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // VK_BLEND_FACTOR_DST_ALPHA; //revisit
+
 	mPipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	mPipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+	mPipelineColorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_NO_OP;
 	mPipelineColorBlendStateCreateInfo.attachmentCount = 1;
 	mPipelineColorBlendStateCreateInfo.pAttachments = mPipelineColorBlendAttachmentState;
+	mPipelineColorBlendStateCreateInfo.blendConstants[0] = 1.0f;
+	mPipelineColorBlendStateCreateInfo.blendConstants[1] = 1.0f;
+	mPipelineColorBlendStateCreateInfo.blendConstants[2] = 1.0f;
+	mPipelineColorBlendStateCreateInfo.blendConstants[3] = 1.0f;
 
 	mPipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	mPipelineViewportStateCreateInfo.viewportCount = 1;
@@ -493,6 +509,50 @@ BufferManager::~BufferManager()
 void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
+	
+
+	/**********************************************
+	* Plug texture state stuff into pipeline.
+	**********************************************/
+
+	/*
+	I'll need to review this because d3d9 looks like these are per texture but it appears to be per pipeline in vulkan.
+	For now I'll use the first texture and go from there.
+	*/
+
+	auto stageSearchResult = mDevice->mDeviceState.mTextureStageStates.find(0);
+	if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates.end())
+	{
+		auto stageSearchResult = mDevice->mDeviceState.mTextureStageStates[0].find(D3DTSS_COLOROP);
+		if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates[0].end())
+		{
+			//mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_COLOROP]);
+
+		}
+
+		stageSearchResult = mDevice->mDeviceState.mTextureStageStates[0].find(D3DTSS_ALPHAOP);
+		if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates[0].end())
+		{
+			//mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_ALPHAOP]);
+
+		}
+
+		//mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA; //revisit
+		//mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE; //revisit
+		//mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; //revisit
+		//mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; //revisit
+
+
+		//if (mPipelineColorBlendAttachmentState[0].colorBlendOp  != VK_BLEND_OP_MAX_ENUM || mPipelineColorBlendAttachmentState[0].alphaBlendOp != VK_BLEND_OP_MAX_ENUM)
+		//{
+		//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
+		//}
+		//else
+		//{
+		//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
+		//}
+	}
+
 	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
 
 	/**********************************************

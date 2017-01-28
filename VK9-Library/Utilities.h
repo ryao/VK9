@@ -585,6 +585,106 @@ inline D3DFORMAT ConvertFormat(VkFormat format)
 	}
 }
 
+inline VkBlendOp ConvertColorOperation(D3DTEXTUREOP  input)
+{
+	VkBlendOp output; //TODO: review there are only two that match this doesn't seem right.
+
+	switch (input)
+	{
+	case D3DTOP_DISABLE:
+		output = VK_BLEND_OP_MAX_ENUM;
+		break;
+	case D3DTOP_SELECTARG1:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_SELECTARG2:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MODULATE:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MODULATE2X:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MODULATE4X:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_ADD:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_ADDSIGNED:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_ADDSIGNED2X:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_SUBTRACT:
+		output = VK_BLEND_OP_SUBTRACT;
+		break;
+	case D3DTOP_ADDSMOOTH:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_BLENDDIFFUSEALPHA:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_BLENDTEXTUREALPHA:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_BLENDFACTORALPHA:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_BLENDTEXTUREALPHAPM:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_BLENDCURRENTALPHA:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_PREMODULATE:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MODULATEALPHA_ADDCOLOR:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MODULATECOLOR_ADDALPHA:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MODULATEINVALPHA_ADDCOLOR:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MODULATEINVCOLOR_ADDALPHA:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_BUMPENVMAP:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_BUMPENVMAPLUMINANCE:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_DOTPRODUCT3:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_MULTIPLYADD:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_LERP:
+		output = VK_BLEND_OP_ADD;
+		break;
+	case D3DTOP_FORCE_DWORD:
+		output = VK_BLEND_OP_MAX_ENUM;
+		break;
+	default:
+		output = VK_BLEND_OP_ADD;
+		break;
+	}
+
+	return output;
+}
+
+inline VkBlendOp ConvertColorOperation(DWORD  input)
+{
+	return ConvertColorOperation((D3DTEXTUREOP)input);
+}
+
 inline void Print(std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& transforms)
 {
 	BOOST_FOREACH(const auto& pair1, transforms)
@@ -696,6 +796,24 @@ inline void Print(DeviceState& deviceState)
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI
+}
+
+/*
+d3d9 has a 32bit format where alpha is ignored but so far vulkan does not so to handle that I need to set alpha to be opacity
+*/
+inline void SetAlpha(char* imageData, uint32_t height, uint32_t width, uint32_t rowPitch)
+{
+	for (uint32_t y = 0; y < height; y++)
+	{
+		color_A8R8G8B8 *row = (color_A8R8G8B8*)imageData;
+		for (uint32_t x = 0; x < width; x++)
+		{
+			row->A = 0xFF;
+
+			row++;
+		}
+		imageData += rowPitch;
+	}
 }
 
 inline void SaveImage(const char *filename,char* imageData,uint32_t height, uint32_t width, uint32_t rowPitch)

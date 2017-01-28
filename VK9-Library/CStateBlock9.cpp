@@ -94,41 +94,20 @@ ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
-	
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture recorded state before." << this;
-	//Print(mDeviceState.mTransforms);
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture actual state before." << this;
-	//Print(this->mDevice->mDeviceState.mTransforms);
-
 	/*
 	Capture only captures the current state of state that has already been recorded (eg update not insert)
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205890(v=vs.85).aspx
 	*/
 	MergeState(this->mDevice->mDeviceState, mDeviceState, mType, true);
 
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture recorded state after." << this;
-	//Print(mDeviceState.mTransforms);
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture actual state after." << this;
-	//Print(this->mDevice->mDeviceState.mTransforms);
+	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Capture " << this;
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply " << this;
-
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply recorded state before." << this;
-	//Print(mDeviceState.mTransforms);
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply actual state before." << this;
-	//Print(this->mDevice->mDeviceState.mTransforms);
-
-	MergeState(mDeviceState, this->mDevice->mDeviceState,mType);
-
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply recorded state after." << this;
-	//Print(mDeviceState.mTransforms);
-	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply actual state after." << this;
-	//Print(this->mDevice->mDeviceState.mTransforms);
+	MergeState(mDeviceState, this->mDevice->mDeviceState,mType);	
 
 	if (mDeviceState.mTransforms.size())
 	{
@@ -138,6 +117,8 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 		}
 	}
 	
+	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply " << this;
+
 	return S_OK;
 }
 

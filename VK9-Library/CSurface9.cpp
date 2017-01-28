@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 #include "CTexture9.h"
 #include "Utilities.h"
+#include "CTypes.h"
 
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle)
 	: mDevice(Device),
@@ -250,7 +251,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 {
 	mFlags = Flags;
 
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
+	//BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
 
 	Prepare();
 
@@ -312,19 +313,29 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
+	counter++;
+
+	//color_A8R8G8B8* colors;
+	//colors = (color_A8R8G8B8*)mData;
+
+	//if (mMipIndex==0)
+	//{
+	//	SaveImage((boost::format("image%1%_%2%.ppm") % this % counter).str().c_str(), (char*)mData, mHeight, mWidth, mLayout.rowPitch);
+	//	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect " << (boost::format("image%1%_%2%.ppm") % this % counter).str().c_str() << " Format:" << mFormat;
+	//}
+
+	if (mFormat == D3DFMT_X8R8G8B8)
+	{
+		SetAlpha((char*)mData, mHeight, mWidth, mLayout.rowPitch);
+	}
+
 	if (mData != nullptr)
 	{
-		//if (mMipIndex == 0)
-		//{
-		//	SaveImage((boost::format("image%1%_%2%.ppm") % this % counter ).str().c_str(), (char*)mData, mHeight, mWidth, mLayout.rowPitch);
-		//}
-		counter++;
-
 		vkUnmapMemory(mDevice->mDevice, mStagingDeviceMemory);
 		mData = nullptr;
 	}
 
-	if ((mFlags & D3DLOCK_DISCARD) == D3DLOCK_DISCARD)
+	if ((mFlags & D3DLOCK_DISCARD) == D3DLOCK_DISCARD) // || ((mUsage & D3DUSAGE_DEPTHSTENCIL) == D3DUSAGE_DEPTHSTENCIL) && counter < 3
 	{
 		if (mStagingImage != VK_NULL_HANDLE)
 		{
@@ -338,8 +349,6 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 			mStagingDeviceMemory = VK_NULL_HANDLE;
 		}
 	}
-
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
 
 	//this->Flush();
 

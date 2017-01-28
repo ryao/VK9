@@ -316,5 +316,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 
 	InterlockedDecrement(&mLockCount);
 
+	//BOOST_LOG_TRIVIAL(info) << "CVertexBuffer9::Unlock";
+
 	return S_OK;	
 }

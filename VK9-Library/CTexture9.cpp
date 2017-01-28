@@ -38,6 +38,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 {
 	//mDevice->AddRef();
 
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9  device:" << device << " Width:" << Width << " Height:" << Height << " Levels:" << Levels << " Usage:" << Usage << " Format:" << Format << " Pool:" << Pool;
+
 	mRealFormat = ConvertFormat(mFormat);
 
 	if (!mLevels)
@@ -96,6 +98,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
 		return;
 	}
+
+	//D3DUSAGE_DEPTHSTENCIL
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -495,13 +499,21 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurfac
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::LockRect Level:" << Level << " Handle: " << this;
+	//if (Level == 0)
+	//{
+	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::LockRect Level:" << Level << " Handle: " << this;
+	//}
+	
 	return mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::UnlockRect Level:" << Level << " Handle: " << this;
+	//if (Level == 0)
+	//{
+	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::UnlockRect Level:" << Level << " Handle: " << this;
+	//}
+	
 	return mSurfaces[Level]->UnlockRect();
 }
 

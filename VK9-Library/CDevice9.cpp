@@ -1633,7 +1633,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
 	this->mCurrentStateRecording = new CStateBlock9(this);
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
 
 	return S_OK;
 }
@@ -1708,6 +1708,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D3
 	}
 
 	(*ppIndexBuffer) = (IDirect3DIndexBuffer9*)obj;
+
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateTexture Length:" << Length << " Usage:" << Usage << " Format:" << Format << " Pool:" << Pool;
 
 	return result;
 }
@@ -1830,6 +1832,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width,UINT Height,UINT Le
 
 	(*ppTexture) = (IDirect3DTexture9*)obj;
 
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateTexture Width:" << Width << " Height:" << Height << " Levels:" << Levels << " Usage:" << Usage << " Format:" << Format << " Pool:" << Pool;
+
 	return result;
 }
 
@@ -1847,6 +1851,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length,DWORD Usage,D
 	}
 
 	(*ppVertexBuffer) = (IDirect3DVertexBuffer9*)obj;
+
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateTexture Length:" << Length << " Usage:" << Usage << " Pool:" << Pool;
 
 	return result;
 }
@@ -1916,8 +1922,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
 {
-	//BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
-
 	if (mDeviceState.mIndexBuffer == nullptr)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive called with null index buffer.";
@@ -1938,6 +1942,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 		https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
 	*/	
 	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
+
+	//BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
 
 	return S_OK;
 }
@@ -2020,7 +2026,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
 {
 	(*ppSB) = this->mCurrentStateRecording;
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
 
 	this->mCurrentStateRecording = nullptr;
 
@@ -2852,6 +2858,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTAT
 		mDeviceState.mSamplerStates[Sampler][Type] = Value;
 	}
 
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetSamplerState Sampler:" << Sampler << " Type:" << Type << " Value:" << Value;
+
 	return S_OK;
 }
 
@@ -2915,8 +2923,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTexture handle: " << pTexture << " sampler: " << Sampler;
-
 	if (pTexture == nullptr)
 	{
 		if (this->mCurrentStateRecording != nullptr)
@@ -2955,6 +2961,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 		}
 	}
 
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTexture handle: " << pTexture << " sampler: " << Sampler;
+
 	return S_OK;	
 }
 
@@ -2968,6 +2976,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURES
 	{
 		mDeviceState.mTextureStageStates[Stage][Type] = Value;
 	}
+
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTextureStageState Stage:" << Stage << " Type:" << Type << " Value:" << Value;
 
 	return S_OK;	
 }
@@ -2984,6 +2994,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 
 		mBufferManager->UpdateUniformBuffer(true);
 	}
+	
+	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTransform State:" << State;
 
 	return S_OK;	
 }

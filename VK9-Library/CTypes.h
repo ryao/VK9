@@ -164,4 +164,12 @@ struct DeviceState
 
 };
 
+struct color_A8R8G8B8
+{
+	char B = 0;
+	char G = 0;
+	char R = 0;
+	char A = 0;
+};
+
 #endif // CTYPES_H
