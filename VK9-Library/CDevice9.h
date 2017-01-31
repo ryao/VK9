@@ -42,6 +42,7 @@ misrepresented as being the original software.
 #include "CStateBlock9.h"
 
 #include "BufferManager.h"
+#include "GarbageManager.h"
 
 class C9;
 
@@ -185,6 +186,7 @@ public:
 
 	//Managers
 	BufferManager* mBufferManager = nullptr;
+	GarbageManager mGarbageManager;
 
 	//Device Vulkan Handles
 	VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;

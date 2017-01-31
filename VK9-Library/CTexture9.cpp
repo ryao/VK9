@@ -632,7 +632,8 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 	if (mSampler != VK_NULL_HANDLE)
 	{
 		//TODO: implement change tracking so the sampler can be kept is the states have not changed.
-		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+		//vkDestroySampler(mDevice->mDevice, mSampler, NULL);
+		mDevice->mGarbageManager.mSamplers.push_back(mSampler);
 		mSampler = VK_NULL_HANDLE;
 		//return; //already created.
 	}
@@ -666,18 +667,8 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 	}
 }
 
-void CTexture9::MarkSamplerDirty()
-{
-	if (mSampler != VK_NULL_HANDLE)
-	{
-		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
-		mSampler = VK_NULL_HANDLE;
-	}
-}
-
 void CTexture9::Flush()
 {
-	//mSurfaces[0]->Flush();
 	for (size_t i = 0; i < mSurfaces.size(); i++)
 	{
 		mSurfaces[i]->Flush();

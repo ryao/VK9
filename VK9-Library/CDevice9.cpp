@@ -1384,6 +1384,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mBufferManager = new BufferManager(this);
 
+	mGarbageManager.mDevice = mDevice;
+
 	//Add implicit swap chain.
 	CSwapChain9* ptr = new CSwapChain9(pPresentationParameters);
 	mSwapChains.push_back(ptr);
@@ -1581,6 +1583,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 
 	//Clean up pipes.
 	mBufferManager->FlushDrawBufffer();
+
+	//Clean up unreferenced resources.
+	mGarbageManager.DestroyHandles();
 
 	//Print(mDeviceState.mTransforms);
 
@@ -2942,7 +2947,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 	{
 		auto texture = (CTexture9*)pTexture;
 
-		//texture->MarkSamplerDirty();
 		texture->GenerateSampler(Sampler);
 
 		if (this->mCurrentStateRecording != nullptr)

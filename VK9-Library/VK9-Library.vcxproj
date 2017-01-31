@@ -180,6 +180,7 @@
       </PrecompiledHeader>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
+    <ClCompile Include="GarbageManager.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
     <ClCompile Include="VK9-Library.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -208,6 +209,7 @@
     <ClInclude Include="CVertexDeclaration9.h" />
     <ClInclude Include="CVertexShader9.h" />
     <ClInclude Include="CVolumeTexture9.h" />
+    <ClInclude Include="GarbageManager.h" />
     <ClInclude Include="PrivateTypes.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderConverter.h" />
