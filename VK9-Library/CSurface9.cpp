@@ -89,7 +89,7 @@ void CSurface9::Init()
 
 CSurface9::~CSurface9()
 {
-	BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
+	//BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
 
 	if (mStagingImage != VK_NULL_HANDLE)
 	{

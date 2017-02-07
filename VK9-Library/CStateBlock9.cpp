@@ -119,6 +119,8 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 	
 	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply " << this;
 
+	//Print(this->mDevice->mDeviceState);
+
 	return S_OK;
 }
 
@@ -134,18 +136,40 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
-	if (sourceState.mFVF != -1 && (!onlyIfExists || targetState.mFVF != -1) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
+	//if (sourceState.mHasFVF && (!onlyIfExists || targetState.mHasFVF) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
+	//{
+	//	targetState.mFVF = sourceState.mFVF;
+
+	//	targetState.mFVFHasPosition = sourceState.mFVFHasPosition;
+	//	targetState.mFVFHasNormal = sourceState.mFVFHasNormal;
+	//	targetState.mFVFHasColor = sourceState.mFVFHasColor;
+	//	targetState.mFVFTextureCount = sourceState.mFVFTextureCount;
+
+	//	targetState.mHasVertexDeclaration = false;
+	//	targetState.mHasFVF = true;
+	//}
+
+	//IDirect3DDevice9::SetVertexDeclaration
+	//if (sourceState.mHasVertexDeclaration && (!onlyIfExists || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
+	//{
+	//	targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
+
+	//	targetState.mHasVertexDeclaration = true;
+	//	targetState.mHasFVF = false;
+	//}
+
+	if ((sourceState.mHasVertexDeclaration || sourceState.mHasFVF) && (!onlyIfExists || targetState.mHasFVF || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
 		targetState.mFVF = sourceState.mFVF;
+		targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
 
 		targetState.mFVFHasPosition = sourceState.mFVFHasPosition;
 		targetState.mFVFHasNormal = sourceState.mFVFHasNormal;
 		targetState.mFVFHasColor = sourceState.mFVFHasColor;
 		targetState.mFVFTextureCount = sourceState.mFVFTextureCount;
 
-		//If this is set it will be reset later.
-		targetState.mVertexDeclaration = nullptr;
-		targetState.mHasVertexDeclaration = true;
+		targetState.mHasVertexDeclaration = sourceState.mHasVertexDeclaration;
+		targetState.mHasFVF = sourceState.mHasFVF;
 	}
 
 	//IDirect3DDevice9::SetIndices
@@ -473,13 +497,6 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	{
 		targetState.m9Viewport = sourceState.m9Viewport;
 		targetState.mViewport = sourceState.mViewport;
-	}
-
-	//IDirect3DDevice9::SetVertexDeclaration
-	if (sourceState.mHasVertexDeclaration && (!onlyIfExists || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
-	{
-		targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
-		targetState.mHasVertexDeclaration = true;
 	}
 
 	//IDirect3DDevice9::SetVertexShader

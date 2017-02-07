@@ -105,6 +105,7 @@ struct DeviceState
 	BOOL mFVFHasColor = 0;
 	BOOL mFVFHasNormal = 0;
 	int32_t mFVFTextureCount = 0;
+	BOOL mHasFVF = 0;
 
 	//IDirect3DDevice9::SetIndices
 	CIndexBuffer9* mIndexBuffer = nullptr;

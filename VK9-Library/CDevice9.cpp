@@ -2688,8 +2688,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 		this->mCurrentStateRecording->mDeviceState.mFVFHasColor = _FVFHasColor;
 		this->mCurrentStateRecording->mDeviceState.mFVFTextureCount = _FVFTextureCount;
 
-		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = nullptr;
-		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
+
+		this->mCurrentStateRecording->mDeviceState.mHasFVF = true;
+		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = false;
 	}
 	else
 	{
@@ -2699,8 +2700,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 		mDeviceState.mFVFHasColor = _FVFHasColor;
 		mDeviceState.mFVFTextureCount = _FVFTextureCount;
 
-		this->mDeviceState.mVertexDeclaration = nullptr;
-		this->mDeviceState.mHasVertexDeclaration = true;	
+		mDeviceState.mHasFVF = true;
+		mDeviceState.mHasVertexDeclaration = false;	
 	}
 
 	mBufferManager->mLastType = D3DPT_FORCE_DWORD; //force pipe to reset if it's been built.
@@ -3009,12 +3010,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclarat
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+
 		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
+		this->mCurrentStateRecording->mDeviceState.mHasFVF = false;
 	}
 	else
 	{
 		mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+
 		mDeviceState.mHasVertexDeclaration = true;
+		mDeviceState.mHasFVF = false;
 	}
 
 	return S_OK;	

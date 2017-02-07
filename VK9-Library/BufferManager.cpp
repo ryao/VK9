@@ -714,7 +714,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		i++;
 	}
 
-	if (mDevice->mDeviceState.mVertexDeclaration != nullptr)
+	if (mDevice->mDeviceState.mHasVertexDeclaration && mDevice->mDeviceState.mVertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
@@ -771,7 +771,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 			}
 		}
 	}
-	else if (mDevice->mDeviceState.mFVF)
+	else if (mDevice->mDeviceState.mHasFVF && mDevice->mDeviceState.mFVF)
 	{
 		//revisit - make sure multiple sources is valid for FVF.
 		i = 0;
@@ -840,6 +840,10 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 			i++;
 		}
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unknown vertex format.";
 	}
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
