@@ -11,7 +11,7 @@ freely, subject to the following restrictions :
 
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software.If you use this software
-in a product, an acknowledgement in the product documentation would be
+in a product, an acknowledgment in the product documentation would be
 appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
 misrepresented as being the original software.
@@ -282,9 +282,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkCommandBuffer commandBuffer;
-	VkFilter realFilter = VK_FILTER_LINEAR;
-
-	realFilter = ConvertFilter(mMipFilter);
+	VkFilter realFilter = ConvertFilter(mMipFilter);
 
 	VkCommandBufferAllocateInfo commandBufferInfo = {};
 	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -338,7 +336,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	I'm debating whether or not to have the population of the image here. If I don't I'll end up creating another command for that. On the other hand this method should purely populate the other levels as per the spec.
 	*/
 
-	// Transiton zero mip level to transfer source
+	// Transition zero mip level to transfer source
 	//mipSubRange.baseMipLevel = 0;
 
 	//imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -369,7 +367,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 
 		mipSubRange.baseMipLevel = i;
 
-		// Transiton current mip level to transfer dest
+		// Transition current mip level to transfer dest
 		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		imageMemoryBarrier.image = mImage;
@@ -658,6 +656,14 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 	samplerCreateInfo.mipLodBias = 0.0f;
 	samplerCreateInfo.minLod = 0.0f;
 	//samplerCreateInfo.maxLod = (float)mLevels;
+
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAGFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER];
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MINFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MINFILTER];
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSU " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU];
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSV " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV];
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSW " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW];
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAXANISOTROPY " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MIPFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER];
 
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
 	if (mResult != VK_SUCCESS)

@@ -1003,7 +1003,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	Trying modes in order of preference (Mailbox,immediate, FIFO)
 	VK_PRESENT_MODE_MAILBOX_KHR - Wait for the next vertical blanking interval to update the image. New images replace the one waiting to be displayed.
 	VK_PRESENT_MODE_IMMEDIATE_KHR - Do not wait for vertical blanking to update the image.
-	VK_PRESENT_MODE_FIFO_KHR - Wait for hte next virtical blanking interval to update the image. If the interval is missed wait for hte next one. New images will be queued for display.
+	VK_PRESENT_MODE_FIFO_KHR - Wait for the next vertical blanking interval to update the image. If the interval is missed wait for the next one. New images will be queued for display.
 	*/
 	for (size_t i = 0; i < mPresentationModeCount; i++)
 	{
@@ -2936,12 +2936,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 			VkDescriptorImageInfo& sampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
 			sampler.sampler = mBufferManager->mSampler;
 			sampler.imageView = mBufferManager->mImageView;
+			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 		else
 		{
 			VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
 			sampler.sampler = mBufferManager->mSampler;
 			sampler.imageView = mBufferManager->mImageView;
+			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 	}
 	else
@@ -2956,6 +2958,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 			this->mCurrentStateRecording->mDeviceState.mTextures[Sampler] = texture;
 			sampler.sampler = texture->mSampler;
 			sampler.imageView = texture->mImageView;
+			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 		else
 		{
@@ -2963,6 +2966,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 			mDeviceState.mTextures[Sampler] = texture;
 			sampler.sampler = texture->mSampler;
 			sampler.imageView = texture->mImageView;
+			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 	}
 
@@ -3398,13 +3402,13 @@ void CDevice9::StopScene()
 	mIsSceneStarted = false;
 
 	VkResult result; // = VK_SUCCESS
-	VkPipelineStageFlags pipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	mPipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
 	mSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	mSubmitInfo.pNext = nullptr;
 	mSubmitInfo.waitSemaphoreCount = 1;
 	mSubmitInfo.pWaitSemaphores = &mPresentCompleteSemaphore;
-	mSubmitInfo.pWaitDstStageMask = &pipeStageFlags;
+	mSubmitInfo.pWaitDstStageMask = &mPipeStageFlags;
 	mSubmitInfo.commandBufferCount = 1;
 	mSubmitInfo.pCommandBuffers = &mSwapchainBuffers[mCurrentBuffer];
 	mSubmitInfo.signalSemaphoreCount = 0;

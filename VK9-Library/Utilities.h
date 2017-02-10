@@ -253,7 +253,10 @@ inline VkSamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input)
 	case D3DTEXF_PYRAMIDALQUAD:	// 4-sample tent
 		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
 		break;
-	case D3DTEXF_GAUSSIANQUAD:	// 4-sample gaussian
+	case D3DTEXF_GAUSSIANQUAD:	// 4-sample Gaussian
+		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		break;
+	default:
 		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
 		break;
 	}
@@ -282,8 +285,11 @@ inline VkFilter ConvertFilter(D3DTEXTUREFILTERTYPE input)
 	case D3DTEXF_PYRAMIDALQUAD:	// 4-sample tent
 		output = VK_FILTER_CUBIC_IMG; //revisit
 		break;
-	case D3DTEXF_GAUSSIANQUAD:	// 4-sample gaussian
+	case D3DTEXF_GAUSSIANQUAD:	// 4-sample Gaussian
 		output = VK_FILTER_CUBIC_IMG; //revisit
+		break;
+	default:
+		output = VK_FILTER_NEAREST; //revisit
 		break;
 	}
 

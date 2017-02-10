@@ -31,10 +31,10 @@ class CSwapChain9 : public IDirect3DSwapChain9
 private:
 
 public:
-	ULONG mReferenceCount;
-	VkResult mResult;
+	ULONG mReferenceCount = 1;
+	VkResult mResult = VK_SUCCESS;
 
-	CDevice9* mDevice;
+	CDevice9* mDevice = nullptr;
 
 	D3DPRESENT_PARAMETERS* mPresentationParameters;
 

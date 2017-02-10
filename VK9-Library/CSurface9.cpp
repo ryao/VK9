@@ -11,7 +11,7 @@ freely, subject to the following restrictions :
 
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software.If you use this software
-in a product, an acknowledgement in the product documentation would be
+in a product, an acknowledgment in the product documentation would be
 appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
 misrepresented as being the original software.
@@ -313,7 +313,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
-	counter++;
+	//counter++;
 
 	//color_A8R8G8B8* colors;
 	//colors = (color_A8R8G8B8*)mData;
@@ -339,13 +339,13 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 	{
 		if (mStagingImage != VK_NULL_HANDLE)
 		{
-			vkDestroyImage(mDevice->mDevice, mStagingImage, NULL);
+			mDevice->mGarbageManager.mImages.push_back(mStagingImage);
 			mStagingImage = VK_NULL_HANDLE;
 		}
 
 		if (mStagingDeviceMemory != VK_NULL_HANDLE)
 		{
-			vkFreeMemory(mDevice->mDevice, mStagingDeviceMemory, NULL);
+			mDevice->mGarbageManager.mMemories.push_back(mStagingDeviceMemory);
 			mStagingDeviceMemory = VK_NULL_HANDLE;
 		}
 	}
@@ -436,13 +436,13 @@ void CSurface9::Flush()
 
 	if (mStagingImage != VK_NULL_HANDLE)
 	{
-		vkDestroyImage(mDevice->mDevice, mStagingImage, NULL);
+		mDevice->mGarbageManager.mImages.push_back(mStagingImage);
 		mStagingImage = VK_NULL_HANDLE;
 	}
 
 	if (mStagingDeviceMemory != VK_NULL_HANDLE)
 	{
-		vkFreeMemory(mDevice->mDevice, mStagingDeviceMemory, NULL);
+		mDevice->mGarbageManager.mMemories.push_back(mStagingDeviceMemory);
 		mStagingDeviceMemory = VK_NULL_HANDLE;
 	}
 }

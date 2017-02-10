@@ -258,7 +258,7 @@ public:
 	VkImageMemoryBarrier mPrePresentBarrier = {};
 	VkPresentInfoKHR mPresentInfo = {};
 	VkPushConstantRange mPushConstants[1] = {};
-	
+	VkPipelineStageFlags mPipeStageFlags = {};
 	std::vector<CRenderTargetSurface9*> mRenderTargets;
 
 	BOOL mIsDirty = true;

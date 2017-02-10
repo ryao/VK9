@@ -29,8 +29,8 @@ class CDevice9;
 class CResource9 : public IDirect3DResource9
 {
 private:
-	CDevice9* mDevice;
-	ULONG mReferenceCount;
+	CDevice9* mDevice = nullptr;
+	ULONG mReferenceCount = 0;
 public:
 	CResource9();
 	~CResource9();

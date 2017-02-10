@@ -11,7 +11,7 @@ freely, subject to the following restrictions :
 
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software.If you use this software
-in a product, an acknowledgement in the product documentation would be
+in a product, an acknowledgment in the product documentation would be
 appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
 misrepresented as being the original software.
@@ -32,6 +32,26 @@ GarbageManager::~GarbageManager()
 
 void GarbageManager::DestroyHandles()
 {
+	//Images
+	for (size_t i = 0; i < mImages.size(); i++)
+	{
+		if (mImages[i] != VK_NULL_HANDLE)
+		{
+			vkDestroyImage(mDevice, mImages[i], NULL);
+		}
+	}
+	mImages.clear();
+
+	//Memories
+	for (size_t i = 0; i < mMemories.size(); i++)
+	{
+		if (mMemories[i] != VK_NULL_HANDLE)
+		{
+			vkFreeMemory(mDevice, mMemories[i], NULL);
+		}
+	}
+	mMemories.clear();
+
 	//Samplers
 	for (size_t i = 0; i < mSamplers.size(); i++)
 	{

@@ -30,6 +30,23 @@ CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 {
 	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)";
 	
+	//for (size_t i = 0; i < 16; i++)
+	//{
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
+	//}
+
 	MergeState(this->mDevice->mDeviceState, mDeviceState, mType, false);
 }
 
@@ -37,6 +54,23 @@ CStateBlock9::CStateBlock9(CDevice9* device)
 	: mDevice(device)
 {
 	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device)";
+
+	//for (size_t i = 0; i < 16; i++)
+	//{
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
+	//	mDeviceState.mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
+	//}
 }
 
 CStateBlock9::~CStateBlock9()
@@ -375,6 +409,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 			}
 		}
 	}
+	//targetState.mSamplerStates = sourceState.mSamplerStates;
 
 	//IDirect3DDevice9::SetScissorRect
 	if ((sourceState.m9Scissor.right != 0 || sourceState.m9Scissor.left != 0) && (!onlyIfExists || targetState.mHasIndexBuffer) && (type == D3DSBT_ALL))
@@ -403,18 +438,21 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 		if ((!onlyIfExists || targetSampler.sampler != VK_NULL_HANDLE) && (type == D3DSBT_ALL))
 		{
+			targetState.mTextures[pair1.first] = pair1.second;
+
 			if (pair1.second == nullptr)
 			{
 				//Revsit
-				//sampler.sampler = mDevice->mBufferManager->mSampler;
-				//sampler.imageView = mDevice->mBufferManager->mImageView;
+				targetSampler.sampler = targetState.mDescriptorImageInfo[15].sampler;
+				targetSampler.imageView = targetState.mDescriptorImageInfo[15].imageView;
+				targetSampler.imageLayout = targetState.mDescriptorImageInfo[15].imageLayout;
 			}
 			else
-			{
-				targetState.mTextures[pair1.first] = pair1.second;
+			{				
 				pair1.second->GenerateSampler(pair1.first);
 				targetSampler.sampler = pair1.second->mSampler;
 				targetSampler.imageView = pair1.second->mImageView;
+				targetSampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			}
 		}
 	}
