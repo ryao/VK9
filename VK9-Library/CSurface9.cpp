@@ -359,6 +359,7 @@ void CSurface9::Prepare()
 {
 	if (mStagingDeviceMemory != VK_NULL_HANDLE)
 	{
+		this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_PREINITIALIZED, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
 		return;
 	}
 
@@ -434,15 +435,15 @@ void CSurface9::Flush()
 	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex);
 
 
-	if (mStagingImage != VK_NULL_HANDLE)
-	{
-		mDevice->mGarbageManager.mImages.push_back(mStagingImage);
-		mStagingImage = VK_NULL_HANDLE;
-	}
+	//if (mStagingImage != VK_NULL_HANDLE)
+	//{
+	//	mDevice->mGarbageManager.mImages.push_back(mStagingImage);
+	//	mStagingImage = VK_NULL_HANDLE;
+	//}
 
-	if (mStagingDeviceMemory != VK_NULL_HANDLE)
-	{
-		mDevice->mGarbageManager.mMemories.push_back(mStagingDeviceMemory);
-		mStagingDeviceMemory = VK_NULL_HANDLE;
-	}
+	//if (mStagingDeviceMemory != VK_NULL_HANDLE)
+	//{
+	//	mDevice->mGarbageManager.mMemories.push_back(mStagingDeviceMemory);
+	//	mStagingDeviceMemory = VK_NULL_HANDLE;
+	//}
 }

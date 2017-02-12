@@ -169,6 +169,16 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::LightEnable
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
+
+	//IDirect3DDevice9::SetVertexDeclaration
+	//if (sourceState.mHasVertexDeclaration && (!onlyIfExists || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
+	//{
+	//	targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
+
+	//	targetState.mHasVertexDeclaration = true;
+	//	targetState.mHasFVF = false;
+	//}
+
 	//IDirect3DDevice9::SetFVF
 	//if (sourceState.mHasFVF && (!onlyIfExists || targetState.mHasFVF) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	//{
@@ -181,15 +191,6 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 	//	targetState.mHasVertexDeclaration = false;
 	//	targetState.mHasFVF = true;
-	//}
-
-	//IDirect3DDevice9::SetVertexDeclaration
-	//if (sourceState.mHasVertexDeclaration && (!onlyIfExists || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
-	//{
-	//	targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
-
-	//	targetState.mHasVertexDeclaration = true;
-	//	targetState.mHasFVF = false;
 	//}
 
 	if ((sourceState.mHasVertexDeclaration || sourceState.mHasFVF) && (!onlyIfExists || targetState.mHasFVF || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))

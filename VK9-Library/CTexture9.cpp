@@ -657,13 +657,13 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 	samplerCreateInfo.minLod = 0.0f;
 	//samplerCreateInfo.maxLod = (float)mLevels;
 
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAGFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER];
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MINFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MINFILTER];
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSU " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU];
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSV " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV];
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSW " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW];
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAXANISOTROPY " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];
-	BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MIPFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER];
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAGFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER];
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MINFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MINFILTER];
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSU " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU];
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSV " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV];
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSW " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW];
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAXANISOTROPY " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];
+	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MIPFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER];
 
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
 	if (mResult != VK_SUCCESS)
