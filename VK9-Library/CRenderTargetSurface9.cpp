@@ -11,7 +11,7 @@ freely, subject to the following restrictions :
 
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software.If you use this software
-in a product, an acknowledgement in the product documentation would be
+in a product, an acknowledgment in the product documentation would be
 appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
 misrepresented as being the original software.
@@ -86,6 +86,13 @@ ULONG STDMETHODCALLTYPE CRenderTargetSurface9::Release(void)
 }
 
 //IDirect3DResource9
+HRESULT STDMETHODCALLTYPE CRenderTargetSurface9::GetDevice(IDirect3DDevice9** ppDevice)
+{ 
+	mDevice->AddRef(); 
+	(*ppDevice) = (IDirect3DDevice9*)mDevice; 
+	return S_OK; 
+}
+
 HRESULT STDMETHODCALLTYPE CRenderTargetSurface9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.

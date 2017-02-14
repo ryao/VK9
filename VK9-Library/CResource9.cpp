@@ -74,6 +74,13 @@ ULONG STDMETHODCALLTYPE CResource9::Release(void)
 	return ref;
 }
 
+HRESULT STDMETHODCALLTYPE CResource9::GetDevice(IDirect3DDevice9** ppDevice)
+{ 
+	mDevice->AddRef(); 
+	(*ppDevice) = (IDirect3DDevice9*)mDevice; 
+	return S_OK; 
+}
+
 HRESULT STDMETHODCALLTYPE CResource9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.

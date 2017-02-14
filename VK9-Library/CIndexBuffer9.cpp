@@ -160,6 +160,13 @@ ULONG STDMETHODCALLTYPE CIndexBuffer9::Release(void)
 	return ref;
 }
 
+HRESULT STDMETHODCALLTYPE CIndexBuffer9::GetDevice(IDirect3DDevice9** ppDevice)
+{ 
+	mDevice->AddRef(); 
+	(*ppDevice) = (IDirect3DDevice9*)mDevice; 
+	return S_OK; 
+}
+
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.

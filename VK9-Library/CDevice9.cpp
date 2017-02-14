@@ -11,7 +11,7 @@ freely, subject to the following restrictions :
 
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software.If you use this software
-in a product, an acknowledgement in the product documentation would be
+in a product, an acknowledgment in the product documentation would be
 appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
 misrepresented as being the original software.
@@ -349,7 +349,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 	else
 	{
-		//Appearently the swap chain size must match the surface size if it is defined.
+		//Apparently the swap chain size must match the surface size if it is defined.
 		mSwapchainExtent = mSurfaceCapabilities.currentExtent;
 		mPresentationParameters.BackBufferWidth = mSurfaceCapabilities.currentExtent.width;
 		mPresentationParameters.BackBufferHeight = mSurfaceCapabilities.currentExtent.height;
@@ -402,11 +402,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	if (mSurfaceFormatCount == 1 && mSurfaceFormats[0].format == VK_FORMAT_UNDEFINED)
 	{
-		mFormat = VK_FORMAT_B8G8R8A8_UNORM; //No prefered format so set a default.
+		mFormat = VK_FORMAT_B8G8R8A8_UNORM; //No preferred format so set a default.
 	}
 	else
 	{
-		mFormat = mSurfaceFormats[0].format; //Pull the prefered format.
+		mFormat = mSurfaceFormats[0].format; //Pull the preferred format.
 	}
 
 	switch (mFormat)
@@ -1530,7 +1530,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 
 HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 {
-	//Acording to a tip from the Nine team games don't always use the begin/end scene functions correctly.
+	//According to a tip from the Nine team games don't always use the begin/end scene functions correctly.
 
 	if (!mIsSceneStarted)
 	{
@@ -1542,7 +1542,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 
 HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 {
-	//Acording to a tip from the Nine team games don't always use the begin/end scene functions correctly.
+	//According to a tip from the Nine team games don't always use the begin/end scene functions correctly.
 
 	return D3D_OK;
 }

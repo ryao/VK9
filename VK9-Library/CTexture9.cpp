@@ -222,6 +222,13 @@ ULONG STDMETHODCALLTYPE CTexture9::Release(void)
 	return ref;
 }
 
+HRESULT STDMETHODCALLTYPE CTexture9::GetDevice(IDirect3DDevice9** ppDevice)
+{ 
+	mDevice->AddRef(); 
+	(*ppDevice) = (IDirect3DDevice9*)mDevice; 
+	return S_OK; 
+}
+
 HRESULT STDMETHODCALLTYPE CTexture9::FreePrivateData(REFGUID refguid)
 {
 	//TODO: Implement.
