@@ -523,15 +523,16 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	auto stageSearchResult = mDevice->mDeviceState.mTextureStageStates.find(0);
 	if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates.end())
 	{
-		auto stageSearchResult = mDevice->mDeviceState.mTextureStageStates[0].find(D3DTSS_COLOROP);
-		if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates[0].end())
+		auto firstTextureStage = mDevice->mDeviceState.mTextureStageStates[0];
+		auto stageSearchResult = firstTextureStage.find(D3DTSS_COLOROP);
+		if (stageSearchResult != firstTextureStage.end())
 		{
 			//mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_COLOROP]);
 
 		}
 
-		stageSearchResult = mDevice->mDeviceState.mTextureStageStates[0].find(D3DTSS_ALPHAOP);
-		if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates[0].end())
+		stageSearchResult = firstTextureStage.find(D3DTSS_ALPHAOP);
+		if (stageSearchResult != firstTextureStage.end())
 		{
 			//mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_ALPHAOP]);
 

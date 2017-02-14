@@ -65,7 +65,7 @@ public:
 	uint32_t mMipIndex = 0;
 
 	uint32_t counter = 0;
-
+	BOOL mIsFlushed = false;
 	DWORD mFlags = 0;
 
 	void Init();

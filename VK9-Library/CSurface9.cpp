@@ -359,7 +359,11 @@ void CSurface9::Prepare()
 {
 	if (mStagingDeviceMemory != VK_NULL_HANDLE)
 	{
-		this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_PREINITIALIZED, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
+		if (mIsFlushed)
+		{
+			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
+			mIsFlushed = false;
+		}		
 		return;
 	}
 
@@ -427,7 +431,9 @@ void CSurface9::Flush()
 		return;
 	}
 
-	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
+	mIsFlushed = true;
+
+	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
 	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex);
 
 	mTexture->CopyImage(mStagingImage, mTexture->mImage, mWidth, mHeight, 0, this->mMipIndex);
