@@ -285,7 +285,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	//Setup the descriptor pool for resource binding.
-	//For the multi-threaded version we'll need seperate descriptor/command pools per thread.
+	//For the multi-threaded version we'll need separate descriptor/command pools per thread.
 	VkDescriptorPoolSize descriptorPoolSizes [11] = {};
 	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
 	descriptorPoolSizes[0].descriptorCount = 128; //Revisit
@@ -1399,6 +1399,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 CDevice9::~CDevice9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
+
+	mGarbageManager.DestroyHandles();
 
 	for (size_t i = 0; i < mSwapChains.size(); i++)
 	{

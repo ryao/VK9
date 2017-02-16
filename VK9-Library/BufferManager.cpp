@@ -593,7 +593,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 	mDescriptorSetLayoutBinding[1].binding = 1;
 	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[1].descriptorCount = 16; //Update to use mapped texture.
+	mDescriptorSetLayoutBinding[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //Update to use mapped texture.
 	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
@@ -848,7 +848,14 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	}
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
-	mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.
+	if (mDevice->mDeviceState.mTextures.size())
+	{
+		mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.
+	}
+	else
+	{
+		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //Ignore second element if there are no textures.
+	}	
 
 	mDescriptorSetAllocateInfo.pSetLayouts = &context.DescriptorSetLayout;
 	mDescriptorSetAllocateInfo.descriptorSetCount = 1; //mDevice->mDeviceState.mStreamSources.size(); //determines the number of descriptor sets to be allocated from the pool.
@@ -887,10 +894,17 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
 
 	mWriteDescriptorSet[1].dstSet = context.DescriptorSet;
-	mWriteDescriptorSet[1].descriptorCount = 16;
+	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
 	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
-
-	vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
+	
+	if (mDevice->mDeviceState.mTextures.size())
+	{
+		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
+	}
+	else
+	{
+		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
+	}
 
 	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, nullptr, &context.PipelineLayout);
 	if (result != VK_SUCCESS)
