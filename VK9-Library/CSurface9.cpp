@@ -85,6 +85,62 @@ void CSurface9::Init()
 	}
 
 	mRealFormat = ConvertFormat(mFormat);
+
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
+	imageCreateInfo.extent = { mWidth, mHeight, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	imageCreateInfo.flags = 0;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+
+	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mStagingImage);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkCreateImage failed with return code of " << mResult;
+		return;
+	}
+
+	VkMemoryRequirements memoryRequirements = {};
+	vkGetImageMemoryRequirements(mDevice->mDevice, mStagingImage, &memoryRequirements);
+
+	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	mMemoryAllocateInfo.pNext = NULL;
+	mMemoryAllocateInfo.allocationSize = 0;
+	mMemoryAllocateInfo.memoryTypeIndex = 0;
+	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare Could not find memory type from properties.";
+		return;
+	}
+
+	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mStagingDeviceMemory);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkAllocateMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkBindImageMemory(mDevice->mDevice, mStagingImage, mStagingDeviceMemory, 0);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkBindImageMemory failed with return code of " << mResult;
+		return;
+	}
+
+	mSubresource.mipLevel = 0;
+	mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
+	mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayout);
 }
 
 CSurface9::~CSurface9()
@@ -102,8 +158,6 @@ CSurface9::~CSurface9()
 		vkFreeMemory(mDevice->mDevice, mStagingDeviceMemory, NULL);
 		mStagingDeviceMemory = VK_NULL_HANDLE;
 	}
-
-	//mDevice->Release();
 }
 
 ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)
@@ -260,10 +314,14 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 
 	//BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
 
-	Prepare();
-
 	if (mData == nullptr)
 	{
+		if (mIsFlushed)
+		{
+			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
+			mIsFlushed = false;
+		}
+
 		mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
 		if (mResult != VK_SUCCESS)
 		{
@@ -277,28 +335,22 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 				return D3DERR_INVALIDCALL;
 			}
 		}
-	}
 
-	/*
-	Dear C++ committee Why can't we just assume increment is in bytes for void pointer?
-	I mean what else could I possibly mean when dealing with an untyped binary blob.
-	It's not like I picked void* so "don't use void*" is a terrible argument.
-	*/
+		if (mLayout.offset)
+		{
+			char* bytes = (char*)mData;
+			bytes += mLayout.offset;
+			mData = (void*)bytes;
+		}
 
-	if (mLayout.offset)
-	{
-		char* bytes = (char*)mData;
-		bytes += mLayout.offset;
-		mData = (void*)bytes;
-	}
+		if (pRect != nullptr)
+		{
+			char* bytes = (char*)mData;
 
-	if (pRect != nullptr)
-	{
-		char* bytes = (char*)mData;
-
-		bytes += (mLayout.rowPitch * pRect->top);
-		bytes += (4 * pRect->left);
-		mData = (void*)bytes;
+			bytes += (mLayout.rowPitch * pRect->top);
+			bytes += (4 * pRect->left);
+			mData = (void*)bytes;
+		}
 	}
 
 	pLockedRect->pBits = mData;
@@ -320,143 +372,101 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
-	//counter++;
-
-	//color_A8R8G8B8* colors;
-	//colors = (color_A8R8G8B8*)mData;
-
-	//if (mMipIndex==0)
-	//{
-	//	SaveImage((boost::format("image%1%_%2%.ppm") % this % counter).str().c_str(), (char*)mData, mHeight, mWidth, mLayout.rowPitch);
-	//	BOOST_LOG_TRIVIAL(info) << "CSurface9::UnlockRect " << (boost::format("image%1%_%2%.ppm") % this % counter).str().c_str() << " Format:" << mFormat;
-	//}
-
-	if (mFormat == D3DFMT_X8R8G8B8)
-	{
-		SetAlpha((char*)mData, mHeight, mWidth, mLayout.rowPitch);
-	}
-
 	if (mData != nullptr)
 	{
+		if (mFormat == D3DFMT_X8R8G8B8)
+		{
+			SetAlpha((char*)mData, mHeight, mWidth, mLayout.rowPitch);
+		}
+
 		vkUnmapMemory(mDevice->mDevice, mStagingDeviceMemory);
 		mData = nullptr;
 	}
 
-	if ((mFlags & D3DLOCK_DISCARD) == D3DLOCK_DISCARD) // || ((mUsage & D3DUSAGE_DEPTHSTENCIL) == D3DUSAGE_DEPTHSTENCIL) && counter < 3
-	{
-		if (mStagingImage != VK_NULL_HANDLE)
-		{
-			mDevice->mGarbageManager.mImages.push_back(mStagingImage);
-			mStagingImage = VK_NULL_HANDLE;
-		}
-
-		if (mStagingDeviceMemory != VK_NULL_HANDLE)
-		{
-			mDevice->mGarbageManager.mMemories.push_back(mStagingDeviceMemory);
-			mStagingDeviceMemory = VK_NULL_HANDLE;
-		}
-	}
-
-	//this->Flush();
-
 	return S_OK;
-}
-
-void CSurface9::Prepare()
-{
-	if (mStagingDeviceMemory != VK_NULL_HANDLE)
-	{
-		if (mIsFlushed)
-		{
-			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
-			mIsFlushed = false;
-		}		
-		return;
-	}
-
-	VkImageCreateInfo imageCreateInfo = {};
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = NULL;
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { mWidth, mHeight, 1 };
-	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	imageCreateInfo.flags = 0;
-	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-
-	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mStagingImage);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkCreateImage failed with return code of " << mResult;
-		return;
-	}
-
-	VkMemoryRequirements memoryRequirements = {};
-	vkGetImageMemoryRequirements(mDevice->mDevice, mStagingImage, &memoryRequirements);
-
-	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	mMemoryAllocateInfo.pNext = NULL;
-	mMemoryAllocateInfo.allocationSize = 0;
-	mMemoryAllocateInfo.memoryTypeIndex = 0;
-	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mMemoryAllocateInfo.memoryTypeIndex))
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare Could not find memory type from properties.";
-		return;
-	}
-
-	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mStagingDeviceMemory);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkAllocateMemory failed with return code of " << mResult;
-		return;
-	}
-
-	mResult = vkBindImageMemory(mDevice->mDevice, mStagingImage, mStagingDeviceMemory, 0);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkBindImageMemory failed with return code of " << mResult;
-		return;
-	}
-
-	mSubresource.mipLevel = 0;
-	mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
-	mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-	vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayout);
 }
 
 void CSurface9::Flush()
 {
-	if (mStagingDeviceMemory == VK_NULL_HANDLE)
+	mIsFlushed = true;
+
+	VkCommandBuffer commandBuffer;
+
+	VkCommandBufferAllocateInfo commandBufferInfo = {};
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferInfo.pNext = nullptr;
+	commandBufferInfo.commandPool = mDevice->mCommandPool;
+	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferInfo.commandBufferCount = 1;
+
+	mResult = vkAllocateCommandBuffers(mDevice->mDevice, &commandBufferInfo, &commandBuffer);
+	if (mResult != VK_SUCCESS)
 	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkAllocateCommandBuffers failed with return code of " << mResult;
 		return;
 	}
 
-	mIsFlushed = true;
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	commandBufferInheritanceInfo.pNext = nullptr;
+	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	commandBufferInheritanceInfo.queryFlags = 0;
+	commandBufferInheritanceInfo.pipelineStatistics = 0;
 
-	this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
-	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex);
+	VkCommandBufferBeginInfo commandBufferBeginInfo;
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.pNext = nullptr;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
-	mTexture->CopyImage(mStagingImage, mTexture->mImage, mWidth, mHeight, 0, this->mMipIndex);
+	mResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkBeginCommandBuffer failed with return code of " << mResult;
+		return;
+	}
 
-	this->mDevice->SetImageLayout(mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex);
+	SetImageLayout(commandBuffer, mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0);
+	SetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex);
+	CopyImage(commandBuffer, mStagingImage, mTexture->mImage, mWidth, mHeight, 0, this->mMipIndex);
+	SetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex);
 
+	mResult = vkEndCommandBuffer(commandBuffer);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkEndCommandBuffer failed with return code of " << mResult;
+		return;
+	}
 
-	//if (mStagingImage != VK_NULL_HANDLE)
-	//{
-	//	mDevice->mGarbageManager.mImages.push_back(mStagingImage);
-	//	mStagingImage = VK_NULL_HANDLE;
-	//}
+	VkCommandBuffer commandBuffers[] = { commandBuffer };
+	VkFence nullFence = VK_NULL_HANDLE;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = NULL;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = NULL;
+	submitInfo.pWaitDstStageMask = NULL;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = NULL;
 
-	//if (mStagingDeviceMemory != VK_NULL_HANDLE)
-	//{
-	//	mDevice->mGarbageManager.mMemories.push_back(mStagingDeviceMemory);
-	//	mStagingDeviceMemory = VK_NULL_HANDLE;
-	//}
+	mResult = vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, nullFence);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueSubmit failed with return code of " << mResult;
+		return;
+	}
+
+	mResult = vkQueueWaitIdle(mDevice->mQueue);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueWaitIdle failed with return code of " << mResult;
+		return;
+	}
+
+	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, commandBuffers);
 }

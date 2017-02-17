@@ -70,7 +70,6 @@ public:
 
 	void Init();
 
-	void Prepare();
 	void Flush();
 
 public:

@@ -290,7 +290,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
 	descriptorPoolSizes[0].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorPoolSizes[1].descriptorCount = 128; //Revisit
+	descriptorPoolSizes[1].descriptorCount = 256; //Revisit
 	descriptorPoolSizes[2].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 	descriptorPoolSizes[2].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -300,7 +300,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	descriptorPoolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
 	descriptorPoolSizes[5].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorPoolSizes[6].descriptorCount = 128; //Revisit
+	descriptorPoolSizes[6].descriptorCount = 256; //Revisit
 	descriptorPoolSizes[7].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	descriptorPoolSizes[7].descriptorCount = 128; //Revisit
 	descriptorPoolSizes[8].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
@@ -313,7 +313,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = NULL;
-	descriptorPoolCreateInfo.maxSets = 128; //Revisit
+	descriptorPoolCreateInfo.maxSets = 256; //Revisit
 	descriptorPoolCreateInfo.poolSizeCount = 11;
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
 	/*
