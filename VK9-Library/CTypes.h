@@ -148,6 +148,7 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetTransform
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+	BOOL mHasTransformsChanged = 0;
 
 	//IDirect3DDevice9::SetViewport
 	D3DVIEWPORT9 m9Viewport = {};

@@ -2931,45 +2931,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
 {
-	if (pTexture == nullptr)
+	auto texture = (CTexture9*)pTexture; //Check for compiler bugs.
+
+	if (this->mCurrentStateRecording != nullptr)
 	{
-		if (this->mCurrentStateRecording != nullptr)
-		{
-			VkDescriptorImageInfo& sampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
-			sampler.sampler = mBufferManager->mSampler;
-			sampler.imageView = mBufferManager->mImageView;
-			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		}
-		else
-		{
-			VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
-			sampler.sampler = mBufferManager->mSampler;
-			sampler.imageView = mBufferManager->mImageView;
-			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		}
+		this->mCurrentStateRecording->mDeviceState.mTextures[Sampler] = texture;
 	}
 	else
 	{
-		auto texture = (CTexture9*)pTexture;
-
-		texture->GenerateSampler(Sampler);
-
-		if (this->mCurrentStateRecording != nullptr)
-		{
-			VkDescriptorImageInfo& sampler = this->mCurrentStateRecording->mDeviceState.mDescriptorImageInfo[Sampler];
-			this->mCurrentStateRecording->mDeviceState.mTextures[Sampler] = texture;
-			sampler.sampler = texture->mSampler;
-			sampler.imageView = texture->mImageView;
-			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		}
-		else
-		{
-			VkDescriptorImageInfo& sampler = mDeviceState.mDescriptorImageInfo[Sampler];
-			mDeviceState.mTextures[Sampler] = texture;
-			sampler.sampler = texture->mSampler;
-			sampler.imageView = texture->mImageView;
-			sampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		}
+		mDeviceState.mTextures[Sampler] = texture;
 	}
 
 	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTexture handle: " << pTexture << " sampler: " << Sampler;
@@ -2996,17 +2966,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURES
 HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
 {
 	if (this->mCurrentStateRecording != nullptr)
-	{
+	{	
 		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
+		this->mCurrentStateRecording->mDeviceState.mHasTransformsChanged = true;
 	}
 	else
 	{
 		mDeviceState.mTransforms[State] = (*pMatrix);
-
-		mBufferManager->UpdateUniformBuffer(true);
+		mDeviceState.mHasTransformsChanged = true;
+		//
 	}
-	
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTransform State:" << State;
 
 	return S_OK;	
 }

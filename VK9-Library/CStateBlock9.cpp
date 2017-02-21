@@ -142,14 +142,6 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
 	MergeState(mDeviceState, this->mDevice->mDeviceState,mType);	
-
-	if (mDeviceState.mTransforms.size())
-	{
-		if (mType == D3DSBT_ALL)
-		{
-			this->mDevice->mBufferManager->UpdateUniformBuffer(true); //Have to push the updated UBO into memory buffer.
-		}
-	}
 	
 	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply " << this;
 
@@ -442,42 +434,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetTexture
 	BOOST_FOREACH(const auto& pair1, sourceState.mTextures)
 	{
-		VkDescriptorImageInfo& targetSampler = targetState.mDescriptorImageInfo[pair1.first];
-
-		if ((!onlyIfExists || targetSampler.sampler != VK_NULL_HANDLE) && (type == D3DSBT_ALL))
+		if ((type == D3DSBT_ALL))
 		{
 			targetState.mTextures[pair1.first] = pair1.second;
-
-			if (pair1.second == nullptr)
-			{
-				//Revsit
-				targetSampler.sampler = targetState.mDescriptorImageInfo[15].sampler;
-				targetSampler.imageView = targetState.mDescriptorImageInfo[15].imageView;
-				targetSampler.imageLayout = targetState.mDescriptorImageInfo[15].imageLayout;
-			}
-			else
-			{				
-				pair1.second->GenerateSampler(pair1.first);
-				targetSampler.sampler = pair1.second->mSampler;
-				targetSampler.imageView = pair1.second->mImageView;
-				targetSampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			}
 		}
 	}
-	//for (size_t i = 0; i < 16; i++)
-	//{
-	//	const VkDescriptorImageInfo& sourceSampler = sourceState.mDescriptorImageInfo[i];
-	//	if (sourceSampler.sampler != VK_NULL_HANDLE)
-	//	{
-	//		VkDescriptorImageInfo& targetSampler = targetState.mDescriptorImageInfo[i];
-	//		if ((!onlyIfExists || targetSampler.sampler != VK_NULL_HANDLE) && (type == D3DSBT_ALL))
-	//		{
-	//			targetSampler.imageLayout = sourceSampler.imageLayout;
-	//			targetSampler.imageView = sourceSampler.imageView;
-	//			targetSampler.sampler = sourceSampler.sampler;
-	//		}
-	//	}
-	//}
 
 	//IDirect3DDevice9::SetTextureStageState
 	if (sourceState.mTextureStageStates.size())
@@ -537,6 +498,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 			}
 		}
 	}
+	targetState.mHasTransformsChanged = true;
 
 	//IDirect3DDevice9::SetViewport
 	if ((sourceState.m9Viewport.Width != 0) && (!onlyIfExists || targetState.m9Viewport.Width != 0) && (type == D3DSBT_ALL))

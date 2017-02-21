@@ -292,7 +292,6 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDC(HDC* phdc)
 	return E_NOTIMPL;
 }
 
-
 HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 {
 	pDesc->Format = this->mFormat;
@@ -311,6 +310,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
 	mFlags = Flags;
+
+	char* bytes = nullptr;
 
 	//BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
 
@@ -336,29 +337,25 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 			}
 		}
 
+		bytes = (char*)mData;
+
 		if (mLayout.offset)
 		{
-			char* bytes = (char*)mData;
 			bytes += mLayout.offset;
-			mData = (void*)bytes;
 		}
 
 		if (pRect != nullptr)
 		{
-			char* bytes = (char*)mData;
-
 			bytes += (mLayout.rowPitch * pRect->top);
 			bytes += (4 * pRect->left);
-			mData = (void*)bytes;
 		}
 	}
 
-	pLockedRect->pBits = mData;
+	pLockedRect->pBits = (void*)bytes;
 	pLockedRect->Pitch = mLayout.rowPitch;
 
 	return S_OK;
 }
-
 
 HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 {
@@ -368,7 +365,6 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 	return E_NOTIMPL;
 }
-
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {

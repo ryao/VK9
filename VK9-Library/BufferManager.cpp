@@ -19,6 +19,7 @@ misrepresented as being the original software.
 */
 #include "BufferManager.h"
 #include "CDevice9.h"
+#include "CTexture9.h"
 
 #include "Utilities.h"
 
@@ -378,7 +379,6 @@ BufferManager::BufferManager(CDevice9* device)
 
 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mUniformStagingBuffer, mUniformStagingBufferMemory);
-	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
 
 	mDescriptorBufferInfo.buffer = mUniformBuffer;
 	mDescriptorBufferInfo.offset = 0;
@@ -409,22 +409,10 @@ BufferManager::~BufferManager()
 		mUniformStagingBuffer = VK_NULL_HANDLE;
 	}
 
-	if (mUniformBuffer != VK_NULL_HANDLE)
-	{
-		vkDestroyBuffer(mDevice->mDevice, mUniformBuffer, NULL);
-		mUniformBuffer = VK_NULL_HANDLE;
-	}
-
 	if (mUniformStagingBufferMemory != VK_NULL_HANDLE)
 	{
 		vkFreeMemory(mDevice->mDevice, mUniformStagingBufferMemory, NULL);
 		mUniformStagingBufferMemory = VK_NULL_HANDLE;
-	}
-
-	if (mUniformBufferMemory != VK_NULL_HANDLE)
-	{
-		vkFreeMemory(mDevice->mDevice, mUniformBufferMemory, NULL);
-		mUniformBufferMemory = VK_NULL_HANDLE;
 	}
 
 	if (mImageView != VK_NULL_HANDLE)
@@ -504,12 +492,45 @@ BufferManager::~BufferManager()
 		vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, nullptr);
 		mPipelineCache = VK_NULL_HANDLE;
 	}
+
+	FlushDrawBufffer();
 }
 
 void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
-	
+
+	/**********************************************
+	* Update UBO structure.
+	**********************************************/
+	if (mDevice->mDeviceState.mHasTransformsChanged)
+	{
+		UpdateUniformBuffer();
+		mDevice->mDeviceState.mHasTransformsChanged = false;
+	}
+
+
+	/**********************************************
+	* Update the textures that are currently mapped.
+	**********************************************/
+	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTextures)
+	{
+		VkDescriptorImageInfo& targetSampler = mDevice->mDeviceState.mDescriptorImageInfo[pair1.first];
+
+		if (pair1.second != nullptr)
+		{
+			pair1.second->GenerateSampler(pair1.first);
+			targetSampler.sampler = pair1.second->mSampler;
+			targetSampler.imageView = pair1.second->mImageView;
+			targetSampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+		else
+		{
+			targetSampler.sampler = this->mSampler;
+			targetSampler.imageView = this->mImageView;
+			targetSampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
+	}
 
 	/**********************************************
 	* Plug texture state stuff into pipeline.
@@ -945,54 +966,61 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	this->mDrawBuffer.push_back(context);
 }
 
-void BufferManager::UpdateUniformBuffer(BOOL recalculateMatrices)
+void BufferManager::UpdateUniformBuffer()
 {
 	VkResult result;
 	void* data = nullptr;
+	DeviceState&  deviceState = mDevice->mDeviceState;
 
-	if (recalculateMatrices)
+	BOOST_FOREACH(const auto& pair1, deviceState.mTransforms)
 	{
-		DeviceState&  deviceState = mDevice->mDeviceState;
-
-		BOOST_FOREACH(const auto& pair1, deviceState.mTransforms)
+		switch (pair1.first)
 		{
-			switch (pair1.first)
+		case D3DTS_WORLD:
+			for (size_t i = 0; i < 4; i++)
 			{
-			case D3DTS_WORLD:
-				for (size_t i = 0; i < 4; i++)
+				for (size_t j = 0; j < 4; j++)
 				{
-					for (size_t j = 0; j < 4; j++)
-					{
-						mUBO.model[i][j] = pair1.second.m[i][j];
-					}
+					mUBO.model[i][j] = pair1.second.m[i][j];
 				}
-				break;
-			case D3DTS_VIEW:
-				for (size_t i = 0; i < 4; i++)
-				{
-					for (size_t j = 0; j < 4; j++)
-					{
-						mUBO.view[i][j] = pair1.second.m[i][j];
-					}
-				}
-				break;
-			case D3DTS_PROJECTION:
-				for (size_t i = 0; i < 4; i++)
-				{
-					for (size_t j = 0; j < 4; j++)
-					{
-						mUBO.proj[i][j] = pair1.second.m[i][j];
-					}
-				}
-				break;
-			default:
-				BOOST_LOG_TRIVIAL(warning) << "BufferManager::UpdateUniformBuffer The following state type was ignored. " << pair1.first;
-				break;
 			}
+			break;
+		case D3DTS_VIEW:
+			for (size_t i = 0; i < 4; i++)
+			{
+				for (size_t j = 0; j < 4; j++)
+				{
+					mUBO.view[i][j] = pair1.second.m[i][j];
+				}
+			}
+			break;
+		case D3DTS_PROJECTION:
+			for (size_t i = 0; i < 4; i++)
+			{
+				for (size_t j = 0; j < 4; j++)
+				{
+					mUBO.proj[i][j] = pair1.second.m[i][j];
+				}
+			}
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "BufferManager::UpdateUniformBuffer The following state type was ignored. " << pair1.first;
+			break;
 		}
 	}
 
-	//Copy current UBO into staging memory buffer.
+	//Create a new buffer.
+	mUniformBuffer = VK_NULL_HANDLE;
+	mUniformBufferMemory = VK_NULL_HANDLE;
+	CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
+	
+	//Put the new buffer into the list so it can be cleaned up at the end of the render pass.
+	HistoricalUniformBuffer historicalUniformBuffer;
+	historicalUniformBuffer.UniformBuffer = mUniformBuffer;
+	historicalUniformBuffer.UniformBufferMemory = mUniformBufferMemory;
+	mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
+
+	//Copy current UBO into the staging memory buffer.
 	result = vkMapMemory(mDevice->mDevice, mUniformStagingBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
 	if (mResult != VK_SUCCESS)
 	{
@@ -1002,14 +1030,7 @@ void BufferManager::UpdateUniformBuffer(BOOL recalculateMatrices)
 	memcpy(data, &mUBO, sizeof(UniformBufferObject));
 	vkUnmapMemory(mDevice->mDevice, mUniformStagingBufferMemory);
 
-	//Move the existing buffer into the list so it can be cleaned up at the end of the render pass.
-	HistoricalUniformBuffer historicalUniformBuffer;
-	historicalUniformBuffer.UniformBuffer = mUniformBuffer;
-	historicalUniformBuffer.UniformBufferMemory = mUniformBufferMemory;
-	mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
-
-	//Create a new buffer and copy the staging data into it.
-	CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
+	//Copy the staging data into the new buffer.
 	CopyBuffer(mUniformStagingBuffer, mUniformBuffer, sizeof(UniformBufferObject));
 }
 
