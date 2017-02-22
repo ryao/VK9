@@ -82,10 +82,21 @@ public:
 
 struct DrawContext
 {
+	//Vulkan State
 	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
 	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
 	VkPipeline Pipeline = VK_NULL_HANDLE;
 	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
+
+	//D3D9 State
+	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
+	DWORD FVF = 0;
+	CVertexDeclaration9* VertexDeclaration = nullptr;
+	CVertexShader9* VertexShader = nullptr;
+	CPixelShader9* PixelShader = nullptr;
+	size_t StreamCount = 0;
+	D3DFILLMODE FillMode = D3DFILL_FORCE_DWORD;
+	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
 };
 
 struct HistoricalUniformBuffer
@@ -103,10 +114,6 @@ struct DeviceState
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
 	DWORD mFVF = -1;
-	BOOL mFVFHasPosition = 0;
-	BOOL mFVFHasColor = 0;
-	BOOL mFVFHasNormal = 0;
-	int32_t mFVFTextureCount = 0;
 	BOOL mHasFVF = 0;
 
 	//IDirect3DDevice9::SetIndices

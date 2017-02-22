@@ -170,40 +170,14 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetCurrentTexturePalette
 
 	//IDirect3DDevice9::SetVertexDeclaration
-	//if (sourceState.mHasVertexDeclaration && (!onlyIfExists || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
-	//{
-	//	targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
-
-	//	targetState.mHasVertexDeclaration = true;
-	//	targetState.mHasFVF = false;
-	//}
-
 	//IDirect3DDevice9::SetFVF
-	//if (sourceState.mHasFVF && (!onlyIfExists || targetState.mHasFVF) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
-	//{
-	//	targetState.mFVF = sourceState.mFVF;
-
-	//	targetState.mFVFHasPosition = sourceState.mFVFHasPosition;
-	//	targetState.mFVFHasNormal = sourceState.mFVFHasNormal;
-	//	targetState.mFVFHasColor = sourceState.mFVFHasColor;
-	//	targetState.mFVFTextureCount = sourceState.mFVFTextureCount;
-
-	//	targetState.mHasVertexDeclaration = false;
-	//	targetState.mHasFVF = true;
-	//}
-
 	if ((sourceState.mHasVertexDeclaration || sourceState.mHasFVF) && (!onlyIfExists || targetState.mHasFVF || targetState.mHasVertexDeclaration) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
 		targetState.mFVF = sourceState.mFVF;
-		targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
-
-		targetState.mFVFHasPosition = sourceState.mFVFHasPosition;
-		targetState.mFVFHasNormal = sourceState.mFVFHasNormal;
-		targetState.mFVFHasColor = sourceState.mFVFHasColor;
-		targetState.mFVFTextureCount = sourceState.mFVFTextureCount;
-
-		targetState.mHasVertexDeclaration = sourceState.mHasVertexDeclaration;
 		targetState.mHasFVF = sourceState.mHasFVF;
+
+		targetState.mVertexDeclaration = sourceState.mVertexDeclaration;
+		targetState.mHasVertexDeclaration = sourceState.mHasVertexDeclaration;		
 	}
 
 	//IDirect3DDevice9::SetIndices

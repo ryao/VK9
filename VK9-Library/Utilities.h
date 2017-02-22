@@ -713,10 +713,6 @@ inline void Print(DeviceState& deviceState)
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
 	BOOST_LOG_TRIVIAL(info) << "FVF: " << deviceState.mFVF;
-	BOOST_LOG_TRIVIAL(info) << "FVFHasPosition: " << deviceState.mFVFHasPosition;
-	BOOST_LOG_TRIVIAL(info) << "FVFHasNormal: " << deviceState.mFVFHasNormal;
-	BOOST_LOG_TRIVIAL(info) << "FVFHasColor: " << deviceState.mFVFHasColor;
-	BOOST_LOG_TRIVIAL(info) << "FVFTextureCount: " << deviceState.mFVFTextureCount;
 
 	//IDirect3DDevice9::SetIndices
 	BOOST_LOG_TRIVIAL(info) << "IndexBuffer: " << deviceState.mIndexBuffer;

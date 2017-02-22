@@ -111,6 +111,7 @@ public:
 	UniformBufferObject mUBO = {};
 
 	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
+	void CreatePipe(DrawContext& context);
 	void UpdateUniformBuffer();
 	void FlushDrawBufffer();
 

@@ -1377,10 +1377,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
 	mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-	mDeviceState.mFVFHasPosition = 0;
-	mDeviceState.mFVFHasColor = 0;
-	mDeviceState.mFVFHasNormal = 0;
-	mDeviceState.mFVFTextureCount = 0;
 
 	mBufferManager = new BufferManager(this);
 
@@ -1940,7 +1936,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 		this->StartScene();
 	}
 
-	DrawContext context;
+	DrawContext context = {};
 
 	mBufferManager->BeginDraw(context, Type);
 
@@ -1976,7 +1972,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 		this->StartScene();
 	}
 
-	DrawContext context;
+	DrawContext context = {};
 
 	mBufferManager->BeginDraw(context, PrimitiveType);
 
@@ -2612,96 +2608,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
-	BOOL _FVFHasPosition = false;
-	BOOL _FVFHasNormal = false;
-	BOOL _FVFHasColor = false;
-	int32_t _FVFTextureCount = 0;
-
-	if ((FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
-	{
-		_FVFHasPosition = true;
-	}
-
-	if ((FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
-	{
-		_FVFHasNormal = true;
-	}
-
-	if ((FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_PSIZE is not implemented!";
-	}
-
-	if ((FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
-	{
-		_FVFHasColor = true;
-	}
-
-	if ((FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_SPECULAR is not implemented!";
-	}
-
-	if ((FVF & D3DFVF_TEX1) == D3DFVF_TEX1)
-	{
-		_FVFTextureCount = 1;
-	}
-
-	if ((FVF & D3DFVF_TEX2) == D3DFVF_TEX2)
-	{
-		_FVFTextureCount = 2;
-	}
-
-	if ((FVF & D3DFVF_TEX3) == D3DFVF_TEX3)
-	{
-		_FVFTextureCount = 3;
-	}
-
-	if ((FVF & D3DFVF_TEX4) == D3DFVF_TEX4)
-	{
-		_FVFTextureCount = 4;
-	}
-
-	if ((FVF & D3DFVF_TEX5) == D3DFVF_TEX5)
-	{
-		_FVFTextureCount = 5;
-	}
-
-	if ((FVF & D3DFVF_TEX6) == D3DFVF_TEX6)
-	{
-		_FVFTextureCount = 6;
-	}
-
-	if ((FVF & D3DFVF_TEX7) == D3DFVF_TEX7)
-	{
-		_FVFTextureCount = 7;
-	}
-
-	if ((FVF & D3DFVF_TEX8) == D3DFVF_TEX8)
-	{
-		_FVFTextureCount = 8;
-	}
-
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		this->mCurrentStateRecording->mDeviceState.mFVF = FVF;
-		this->mCurrentStateRecording->mDeviceState.mFVFHasPosition = _FVFHasPosition;
-		this->mCurrentStateRecording->mDeviceState.mFVFHasNormal = _FVFHasNormal;
-		this->mCurrentStateRecording->mDeviceState.mFVFHasColor = _FVFHasColor;
-		this->mCurrentStateRecording->mDeviceState.mFVFTextureCount = _FVFTextureCount;
-
-
 		this->mCurrentStateRecording->mDeviceState.mHasFVF = true;
 		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = false;
 	}
 	else
 	{
 		mDeviceState.mFVF = FVF;
-		mDeviceState.mFVFHasPosition = _FVFHasPosition;
-		mDeviceState.mFVFHasNormal = _FVFHasNormal;
-		mDeviceState.mFVFHasColor = _FVFHasColor;
-		mDeviceState.mFVFTextureCount = _FVFTextureCount;
-
 		mDeviceState.mHasFVF = true;
 		mDeviceState.mHasVertexDeclaration = false;	
 	}

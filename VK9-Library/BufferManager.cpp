@@ -57,14 +57,14 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mPipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	mPipelineDynamicStateCreateInfo.pDynamicStates = mDynamicStateEnables;
-
-	mPipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	mPipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 	mPipelineRasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	mPipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	mPipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 	mPipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	mPipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+
 	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
@@ -499,6 +499,7 @@ BufferManager::~BufferManager()
 void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
+	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
 
 	/**********************************************
 	* Update UBO structure.
@@ -508,7 +509,6 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		UpdateUniformBuffer();
 		mDevice->mDeviceState.mHasTransformsChanged = false;
 	}
-
 
 	/**********************************************
 	* Update the textures that are currently mapped.
@@ -533,64 +533,241 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	}
 
 	/**********************************************
-	* Plug texture state stuff into pipeline.
+	* Setup context.
 	**********************************************/
+	context.PrimitiveType = type;
 
-	/*
-	I'll need to review this because d3d9 looks like these are per texture but it appears to be per pipeline in vulkan.
-	For now I'll use the first texture and go from there.
-	*/
-
-	auto stageSearchResult = mDevice->mDeviceState.mTextureStageStates.find(0);
-	if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates.end())
+	if (mDevice->mDeviceState.mHasFVF)
 	{
-		auto firstTextureStage = mDevice->mDeviceState.mTextureStageStates[0];
-		auto stageSearchResult = firstTextureStage.find(D3DTSS_COLOROP);
-		if (stageSearchResult != firstTextureStage.end())
-		{
-			//mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_COLOROP]);
-
-		}
-
-		stageSearchResult = firstTextureStage.find(D3DTSS_ALPHAOP);
-		if (stageSearchResult != firstTextureStage.end())
-		{
-			//mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_ALPHAOP]);
-
-		}
-
-		//mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA; //revisit
-		//mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE; //revisit
-		//mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; //revisit
-		//mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; //revisit
-
-
-		//if (mPipelineColorBlendAttachmentState[0].colorBlendOp  != VK_BLEND_OP_MAX_ENUM || mPipelineColorBlendAttachmentState[0].alphaBlendOp != VK_BLEND_OP_MAX_ENUM)
-		//{
-		//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
-		//}
-		//else
-		//{
-		//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
-		//}
+		context.FVF = mDevice->mDeviceState.mFVF;
+	}
+	
+	if (mDevice->mDeviceState.mHasVertexDeclaration)
+	{
+		context.VertexDeclaration = mDevice->mDeviceState.mVertexDeclaration;
 	}
 
-	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
+	if (mDevice->mDeviceState.mHasVertexShader)
+	{
+		context.VertexShader = mDevice->mDeviceState.mVertexShader;
+	}
 
-	/**********************************************
-	* Update Pipe Creation Information
-	**********************************************/
+	if (mDevice->mDeviceState.mHasPixelShader)
+	{
+		context.PixelShader = mDevice->mDeviceState.mPixelShader;
+	}
+
+	context.StreamCount = mDevice->mDeviceState.mStreamSources.size();
+
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_FILLMODE);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
-		mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)mDevice->mDeviceState.mRenderStates[D3DRS_FILLMODE]);
+		context.FillMode = (D3DFILLMODE)mDevice->mDeviceState.mRenderStates[D3DRS_FILLMODE];
+	}
+	else
+	{
+		context.FillMode = D3DFILL_SOLID;
 	}
 
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_CULLMODE);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
-		SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)searchResult->second);
+		context.CullMode = (D3DCULL)searchResult->second;
 	}
+	else
+	{
+		context.CullMode = D3DCULL_CW;
+	}
+
+	CreatePipe(context);
+
+	/**********************************************
+	* Setup bindings
+	**********************************************/
+	int i = 0;
+	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
+	{
+		mVertexInputBindingDescription[i].binding = source.first;
+		mVertexInputBindingDescription[i].stride = source.second.Stride;
+		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		i++;
+	}
+
+	mDescriptorBufferInfo.buffer = mUniformBuffer;
+
+	mWriteDescriptorSet[0].dstSet = context.DescriptorSet;
+	mWriteDescriptorSet[0].descriptorCount = 1;
+	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
+
+	mWriteDescriptorSet[1].dstSet = context.DescriptorSet;
+	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
+	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
+	
+	if (mDevice->mDeviceState.mTextures.size())
+	{
+		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
+	}
+	else
+	{
+		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
+	}
+
+	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);
+	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);
+
+	mVertexCount = 0;
+
+	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
+	{
+		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
+		mVertexCount += source.second.StreamData->mSize;
+	}
+
+	if (mDevice->mDeviceState.mIndexBuffer != nullptr)
+	{
+		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
+	}	
+}
+
+void BufferManager::CreatePipe(DrawContext& context)
+{
+	VkResult result = VK_SUCCESS;
+
+	/**********************************************
+	* Figure out flags
+	**********************************************/
+	uint32_t attributeCount = 0;
+	uint32_t textureCount = 0;
+	BOOL hasColor = 0;
+	BOOL hasPosition = 0;
+	BOOL hasNormal = 0;
+
+	if (context.VertexDeclaration != nullptr)
+	{
+		hasColor = context.VertexDeclaration->mHasColor;
+		hasPosition = context.VertexDeclaration->mHasPosition;
+		hasNormal = context.VertexDeclaration->mHasNormal;
+		textureCount = context.VertexDeclaration->mTextureCount;
+	}
+	else if (context.FVF)
+	{
+		if ((context.FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+		{
+			hasPosition = true;
+		}
+
+		if ((context.FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+		{
+			hasNormal = true;
+		}
+
+		if ((context.FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
+		{
+			BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_PSIZE is not implemented!";
+		}
+
+		if ((context.FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+		{
+			hasColor = true;
+		}
+
+		if ((context.FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+		{
+			BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_SPECULAR is not implemented!";
+		}
+
+		if ((context.FVF & D3DFVF_TEX1) == D3DFVF_TEX1)
+		{
+			textureCount = 1;
+		}
+
+		if ((context.FVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+		{
+			textureCount = 2;
+		}
+
+		if ((context.FVF & D3DFVF_TEX3) == D3DFVF_TEX3)
+		{
+			textureCount = 3;
+		}
+
+		if ((context.FVF & D3DFVF_TEX4) == D3DFVF_TEX4)
+		{
+			textureCount = 4;
+		}
+
+		if ((context.FVF & D3DFVF_TEX5) == D3DFVF_TEX5)
+		{
+			textureCount = 5;
+		}
+
+		if ((context.FVF & D3DFVF_TEX6) == D3DFVF_TEX6)
+		{
+			textureCount = 6;
+		}
+
+		if ((context.FVF & D3DFVF_TEX7) == D3DFVF_TEX7)
+		{
+			textureCount = 7;
+		}
+
+		if ((context.FVF & D3DFVF_TEX8) == D3DFVF_TEX8)
+		{
+			textureCount = 8;
+		}
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported layout definition.";
+	}
+
+	attributeCount += hasColor;
+	attributeCount += hasPosition;
+	attributeCount += hasNormal;
+	attributeCount += textureCount;
+
+	/**********************************************
+	* Figure out render states & texture states
+	**********************************************/
+	/*
+	I'll need to review this because d3d9 looks like these are per texture but it appears to be per pipeline in vulkan.
+	For now I'll use the first texture and go from there.
+	*/
+
+	//auto stageSearchResult = mDevice->mDeviceState.mTextureStageStates.find(0);
+	//if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates.end())
+	//{
+	//	auto firstTextureStage = mDevice->mDeviceState.mTextureStageStates[0];
+	//	auto stageSearchResult = firstTextureStage.find(D3DTSS_COLOROP);
+	//	if (stageSearchResult != firstTextureStage.end())
+	//	{
+	//		//mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_COLOROP]);
+
+	//	}
+
+	//	stageSearchResult = firstTextureStage.find(D3DTSS_ALPHAOP);
+	//	if (stageSearchResult != firstTextureStage.end())
+	//	{
+	//		//mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_ALPHAOP]);
+
+	//	}
+
+	//	//mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA; //revisit
+	//	//mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE; //revisit
+	//	//mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; //revisit
+	//	//mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; //revisit
+
+
+	//	//if (mPipelineColorBlendAttachmentState[0].colorBlendOp  != VK_BLEND_OP_MAX_ENUM || mPipelineColorBlendAttachmentState[0].alphaBlendOp != VK_BLEND_OP_MAX_ENUM)
+	//	//{
+	//	//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
+	//	//}
+	//	//else
+	//	//{
+	//	//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
+	//	//}
+	//}
 
 	/*
 	// D3DRS_ZBIAS is not defined.
@@ -604,7 +781,9 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	}
 	*/
 
-	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(type);
+	SetCulling(mPipelineRasterizationStateCreateInfo, context.CullMode);
+	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode(context.FillMode);
+	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context.PrimitiveType);
 
 	mDescriptorSetLayoutBinding[0].binding = 0;
 	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
@@ -614,47 +793,9 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 	mDescriptorSetLayoutBinding[1].binding = 1;
 	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //Update to use mapped texture.
+	mDescriptorSetLayoutBinding[1].descriptorCount = textureCount; //Update to use mapped texture.
 	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
-
-	/**********************************************
-	* Figure out flags
-	**********************************************/
-	uint32_t attributeCount = 0;
-	uint32_t textureCount = 0;
-	BOOL hasColor = 0;
-	BOOL hasPosition = 0;
-	BOOL hasNormal = 0;
-
-	if (mDevice->mDeviceState.mVertexDeclaration != nullptr)
-	{
-		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mHasColor;
-		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mHasPosition;
-		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mHasNormal;
-		attributeCount += mDevice->mDeviceState.mVertexDeclaration->mTextureCount;
-
-		hasColor = mDevice->mDeviceState.mVertexDeclaration->mHasColor;
-		hasPosition = mDevice->mDeviceState.mVertexDeclaration->mHasPosition;
-		hasNormal = mDevice->mDeviceState.mVertexDeclaration->mHasNormal;
-		textureCount = mDevice->mDeviceState.mVertexDeclaration->mTextureCount;
-	}
-	else if (mDevice->mDeviceState.mFVF)
-	{
-		attributeCount += mDevice->mDeviceState.mFVFHasColor;
-		attributeCount += mDevice->mDeviceState.mFVFHasNormal;
-		attributeCount += mDevice->mDeviceState.mFVFHasPosition;
-		attributeCount += mDevice->mDeviceState.mFVFTextureCount;
-
-		hasNormal = mDevice->mDeviceState.mFVFHasNormal;
-		hasColor = mDevice->mDeviceState.mFVFHasColor;
-		hasPosition = mDevice->mDeviceState.mFVFHasPosition;
-		textureCount = mDevice->mDeviceState.mFVFTextureCount;
-	}
-	else
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported layout definition.";
-	}
 
 	/**********************************************
 	* Figure out correct shader
@@ -723,28 +864,19 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported layout.";
 	}
 
+
 	/**********************************************
-	* Setup bindings
+	* Figure out attributes
 	**********************************************/
-	int i = 0;
-	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
-	{
-		mVertexInputBindingDescription[i].binding = source.first;
-		mVertexInputBindingDescription[i].stride = source.second.Stride;
-		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		i++;
-	}
-
-	if (mDevice->mDeviceState.mHasVertexDeclaration && mDevice->mDeviceState.mVertexDeclaration != nullptr)
+	if (context.VertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
-		attributeCount = mDevice->mDeviceState.mVertexDeclaration->mVertexElements.size();
+		attributeCount = context.VertexDeclaration->mVertexElements.size();
 
 		for (size_t i = 0; i < attributeCount; i++)
 		{
-			D3DVERTEXELEMENT9& element = mDevice->mDeviceState.mVertexDeclaration->mVertexElements[i];
+			D3DVERTEXELEMENT9& element = context.VertexDeclaration->mVertexElements[i];
 
 			int t = D3DDECLTYPE_FLOAT3;
 
@@ -793,11 +925,10 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 			}
 		}
 	}
-	else if (mDevice->mDeviceState.mHasFVF && mDevice->mDeviceState.mFVF)
+	else if (context.FVF)
 	{
 		//revisit - make sure multiple sources is valid for FVF.
-		i = 0;
-		BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
+		for (size_t i = 0; i < context.StreamCount; i++)
 		{
 			int attributeIndex = i * attributeCount;
 			uint32_t offset = 0;
@@ -805,7 +936,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 			if (hasPosition)
 			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].binding = i;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
 				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
 				mVertexInputAttributeDescription[attributeIndex].offset = offset;
@@ -816,7 +947,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 			if (hasNormal)
 			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].binding = i;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
 				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32B32_SFLOAT;
 				mVertexInputAttributeDescription[attributeIndex].offset = offset;
@@ -827,9 +958,9 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 			//D3DFVF_PSIZE
 
-			if ((mDevice->mDeviceState.mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+			if ((context.FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].binding = i;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
 				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
 				mVertexInputAttributeDescription[attributeIndex].offset = offset;
@@ -838,9 +969,9 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 				attributeIndex += 1;
 			}
 
-			if ((mDevice->mDeviceState.mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+			if ((context.FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].binding = i;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
 				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_B8G8R8A8_UINT;
 				mVertexInputAttributeDescription[attributeIndex].offset = offset;
@@ -851,7 +982,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 			for (size_t j = 0; j < textureCount; j++)
 			{
-				mVertexInputAttributeDescription[attributeIndex].binding = source.first;
+				mVertexInputAttributeDescription[attributeIndex].binding = i;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
 				mVertexInputAttributeDescription[attributeIndex].format = VK_FORMAT_R32G32_SFLOAT;
 				mVertexInputAttributeDescription[attributeIndex].offset = offset;
@@ -859,8 +990,6 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 				location += 1;
 				attributeIndex += 1;
 			}
-
-			i++;
 		}
 	}
 	else
@@ -869,28 +998,26 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	}
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
-	if (mDevice->mDeviceState.mTextures.size())
+	if (textureCount)
 	{
 		mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.
 	}
 	else
 	{
 		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //Ignore second element if there are no textures.
-	}	
+	}
 
 	mDescriptorSetAllocateInfo.pSetLayouts = &context.DescriptorSetLayout;
-	mDescriptorSetAllocateInfo.descriptorSetCount = 1; //mDevice->mDeviceState.mStreamSources.size(); //determines the number of descriptor sets to be allocated from the pool.
+	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
 
 	mPipelineLayoutCreateInfo.pSetLayouts = &context.DescriptorSetLayout;
-	mPipelineLayoutCreateInfo.setLayoutCount = 1; // mDevice->mDeviceState.mStreamSources.size(); // The number of descriptor sets included in the pipeline layout.
+	mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = mDevice->mDeviceState.mStreamSources.size();
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount; //mDevice->mDeviceState.mStreamSources.size() *
-
-
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context.StreamCount;
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
 
 	/**********************************************
-	* Create Pipe
+	* Create pipeline and descriptor sets.
 	**********************************************/
 	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context.DescriptorSetLayout);
 	if (result != VK_SUCCESS)
@@ -908,25 +1035,6 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		return;
 	}
 
-	mDescriptorBufferInfo.buffer = mUniformBuffer;
-
-	mWriteDescriptorSet[0].dstSet = context.DescriptorSet;
-	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
-
-	mWriteDescriptorSet[1].dstSet = context.DescriptorSet;
-	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
-	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
-	
-	if (mDevice->mDeviceState.mTextures.size())
-	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
-	}
-	else
-	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
-	}
-
 	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, nullptr, &context.PipelineLayout);
 	if (result != VK_SUCCESS)
 	{
@@ -936,31 +1044,11 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 	mGraphicsPipelineCreateInfo.layout = context.PipelineLayout;
 
-	/*
-	Pipeline creation is expensive I need to find a way to reuse these.
-	*/
 	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
 	//result = vkCreateGraphicsPipelines(mDevice->mDevice, VK_NULL_HANDLE, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreateGraphicsPipelines failed with return code of " << result;
-		//Don't return so we can destroy cache.
-	}
-
-	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);
-	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);
-
-	mVertexCount = 0;
-
-	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
-	{
-		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
-		mVertexCount += source.second.StreamData->mSize;
-	}
-
-	if (mDevice->mDeviceState.mIndexBuffer != nullptr)
-	{
-		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
 	}
 
 	this->mDrawBuffer.push_back(context);
