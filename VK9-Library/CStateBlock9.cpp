@@ -143,6 +143,14 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
 	MergeState(mDeviceState, this->mDevice->mDeviceState,mType);	
 	
+	//if (mDeviceState.mTransforms.size())
+	//{
+		if (mType == D3DSBT_ALL)
+		{
+			this->mDevice->mDeviceState.mHasTransformsChanged = true;
+		}
+	//}
+
 	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::Apply " << this;
 
 	//Print(this->mDevice->mDeviceState);
@@ -198,10 +206,10 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetPixelShader
 	if (sourceState.mHasPixelShader && (!onlyIfExists || targetState.mHasPixelShader) && (type == D3DSBT_ALL || type == D3DSBT_PIXELSTATE))
 	{
-		if (targetState.mPixelShader != nullptr)
-		{
-			targetState.mPixelShader->Release();
-		}
+		//if (targetState.mPixelShader != nullptr)
+		//{
+		//	targetState.mPixelShader->Release();
+		//}
 
 		//TODO: may leak
 		targetState.mPixelShader = sourceState.mPixelShader;
@@ -462,17 +470,16 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	}
 
 	//IDirect3DDevice9::SetTransform
-	if (sourceState.mTransforms.size())
+	if (type == D3DSBT_ALL)
 	{
 		BOOST_FOREACH(const auto& pair1, sourceState.mTransforms)
 		{
-			if (type == D3DSBT_ALL && (!onlyIfExists || targetState.mTransforms.count(pair1.first) > 0)) //
+			if (!onlyIfExists || targetState.mTransforms.count(pair1.first) > 0)
 			{
 				targetState.mTransforms[pair1.first] = pair1.second;
-			}
+			}		
 		}
 	}
-	targetState.mHasTransformsChanged = true;
 
 	//IDirect3DDevice9::SetViewport
 	if ((sourceState.m9Viewport.Width != 0) && (!onlyIfExists || targetState.m9Viewport.Width != 0) && (type == D3DSBT_ALL))
@@ -484,10 +491,10 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetVertexShader
 	if (sourceState.mHasVertexShader && (!onlyIfExists || targetState.mHasVertexShader) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
-		if (targetState.mVertexShader != nullptr)
-		{
-			targetState.mVertexShader->Release();
-		}
+		//if (targetState.mVertexShader != nullptr)
+		//{
+		//	targetState.mVertexShader->Release();
+		//}
 
 		targetState.mVertexShader = sourceState.mVertexShader;
 		targetState.mHasVertexShader = true;

@@ -504,10 +504,11 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	/**********************************************
 	* Update UBO structure.
 	**********************************************/
-	if (mDevice->mDeviceState.mHasTransformsChanged)
+	if (mDevice->mDeviceState.mHasTransformsChanged || mHistoricalUniformBuffers.size()==0)
 	{
 		UpdateUniformBuffer();
 		mDevice->mDeviceState.mHasTransformsChanged = false;
+		Print(mDevice->mDeviceState.mTransforms);
 	}
 
 	/**********************************************
@@ -537,14 +538,13 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	**********************************************/
 	context.PrimitiveType = type;
 
-	if (mDevice->mDeviceState.mHasFVF)
-	{
-		context.FVF = mDevice->mDeviceState.mFVF;
-	}
-	
 	if (mDevice->mDeviceState.mHasVertexDeclaration)
 	{
 		context.VertexDeclaration = mDevice->mDeviceState.mVertexDeclaration;
+	}
+	else if (mDevice->mDeviceState.mHasFVF)
+	{
+		context.FVF = mDevice->mDeviceState.mFVF;
 	}
 
 	if (mDevice->mDeviceState.mHasVertexShader)
@@ -579,11 +579,6 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		context.CullMode = D3DCULL_CW;
 	}
 
-	CreatePipe(context);
-
-	/**********************************************
-	* Setup bindings
-	**********************************************/
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
 	{
@@ -591,8 +586,16 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
 		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
+		context.Bindings[source.first] = source.second.Stride;
+
 		i++;
 	}
+
+	CreatePipe(context);
+
+	/**********************************************
+	* Setup bindings
+	**********************************************/
 
 	mDescriptorBufferInfo.buffer = mUniformBuffer;
 

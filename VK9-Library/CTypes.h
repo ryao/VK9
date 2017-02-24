@@ -88,6 +88,9 @@ struct DrawContext
 	VkPipeline Pipeline = VK_NULL_HANDLE;
 	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 
+	//Misc
+	std::unordered_map<UINT, UINT> Bindings;
+
 	//D3D9 State
 	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
 	DWORD FVF = 0;
@@ -155,7 +158,7 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetTransform
 	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
-	BOOL mHasTransformsChanged = 0;
+	BOOL mHasTransformsChanged = true;
 
 	//IDirect3DDevice9::SetViewport
 	D3DVIEWPORT9 m9Viewport = {};

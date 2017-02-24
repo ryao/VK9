@@ -2621,8 +2621,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 		mDeviceState.mHasVertexDeclaration = false;	
 	}
 
-	mBufferManager->mLastType = D3DPT_FORCE_DWORD; //force pipe to reset if it's been built.
-
 	return S_OK;	
 }
 
@@ -2889,7 +2887,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 	{
 		mDeviceState.mTransforms[State] = (*pMatrix);
 		mDeviceState.mHasTransformsChanged = true;
-		//
 	}
 
 	return S_OK;	
@@ -3280,8 +3277,6 @@ void CDevice9::StartScene()
 
 	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mViewport);
 	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mScissor);
-
-	this->mBufferManager->mLastType = D3DPT_FORCE_DWORD;
 }
 
 void CDevice9::StopScene()

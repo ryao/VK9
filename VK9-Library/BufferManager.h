@@ -103,8 +103,6 @@ public:
 	VkBuffer mUniformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory mUniformBufferMemory = VK_NULL_HANDLE;
 
-	D3DPRIMITIVETYPE mLastType = D3DPT_FORCE_DWORD;
-
 	std::vector<DrawContext> mDrawBuffer;
 	std::vector<HistoricalUniformBuffer> mHistoricalUniformBuffers;
 
