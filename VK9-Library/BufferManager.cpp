@@ -508,7 +508,7 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	{
 		UpdateUniformBuffer();
 		mDevice->mDeviceState.mHasTransformsChanged = false;
-		Print(mDevice->mDeviceState.mTransforms);
+		//Print(mDevice->mDeviceState.mTransforms);
 	}
 
 	/**********************************************
@@ -591,7 +591,44 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		i++;
 	}
 
-	CreatePipe(context);
+	/**********************************************
+	* Check for existing pipeline. Create one if there isn't a matching one.
+	**********************************************/
+
+	for (size_t i = 0; i < mDrawBuffer.size(); i++)
+	{
+		if (mDrawBuffer[i].PrimitiveType == context.PrimitiveType
+			&& mDrawBuffer[i].FVF == context.FVF
+			&& mDrawBuffer[i].VertexDeclaration == context.VertexDeclaration
+			&& mDrawBuffer[i].VertexShader == context.VertexShader
+			&& mDrawBuffer[i].PixelShader == context.PixelShader
+			&& mDrawBuffer[i].StreamCount == context.StreamCount
+			&& mDrawBuffer[i].FillMode == context.FillMode
+			&& mDrawBuffer[i].CullMode == context.CullMode)
+		{
+			BOOL isMatch = true;
+			BOOST_FOREACH(const auto& pair, context.Bindings)
+			{
+				if (mDrawBuffer[i].Bindings.count(pair.first) == 0 || pair.second != mDrawBuffer[i].Bindings[pair.first])
+				{
+					isMatch = false;
+					break;
+				}
+			}
+			if (isMatch)
+			{
+				context.DescriptorSet = mDrawBuffer[i].DescriptorSet;
+				context.DescriptorSetLayout = mDrawBuffer[i].DescriptorSetLayout;
+				context.Pipeline = mDrawBuffer[i].Pipeline;
+				context.PipelineLayout = mDrawBuffer[i].PipelineLayout;
+			}
+		}
+	}
+
+	if (context.Pipeline == VK_NULL_HANDLE)
+	{
+		CreatePipe(context);
+	}	
 
 	/**********************************************
 	* Setup bindings
