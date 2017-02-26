@@ -692,6 +692,52 @@ inline VkBlendOp ConvertColorOperation(DWORD  input)
 {
 	return ConvertColorOperation((D3DTEXTUREOP)input);
 }
+inline uint32_t ConvertFormat(DWORD fvf)
+{
+	//TODO: This should be able to be simplified by bitwise operators.
+
+	if ((fvf & D3DFVF_TEX8) == D3DFVF_TEX8)
+	{
+		return 8;
+	}
+
+	if ((fvf & D3DFVF_TEX7) == D3DFVF_TEX7)
+	{
+		return 7;
+	}
+
+	if ((fvf & D3DFVF_TEX6) == D3DFVF_TEX6)
+	{
+		return 6;
+	}
+
+	if ((fvf & D3DFVF_TEX5) == D3DFVF_TEX5)
+	{
+		return 5;
+	}
+
+	if ((fvf & D3DFVF_TEX4) == D3DFVF_TEX4)
+	{
+		return 4;
+	}
+
+	if ((fvf & D3DFVF_TEX3) == D3DFVF_TEX3)
+	{
+		return 3;
+	}
+
+	if ((fvf & D3DFVF_TEX2) == D3DFVF_TEX2)
+	{
+		return 2;
+	}
+
+	if ((fvf & D3DFVF_TEX1) == D3DFVF_TEX1)
+	{
+		return 1;
+	}
+
+	return 0;
+}
 
 inline void Print(std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& transforms)
 {

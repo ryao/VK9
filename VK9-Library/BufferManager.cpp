@@ -617,10 +617,9 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 			}
 			if (isMatch)
 			{
-				context.DescriptorSet = mDrawBuffer[i].DescriptorSet;
-				context.DescriptorSetLayout = mDrawBuffer[i].DescriptorSetLayout;
 				context.Pipeline = mDrawBuffer[i].Pipeline;
 				context.PipelineLayout = mDrawBuffer[i].PipelineLayout;
+				context.DescriptorSetLayout = mDrawBuffer[i].DescriptorSetLayout;
 			}
 		}
 	}
@@ -629,6 +628,8 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	{
 		CreatePipe(context);
 	}	
+
+	CreateDescriptorSet(context);
 
 	/**********************************************
 	* Setup bindings
@@ -653,8 +654,9 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
 	}
 
-	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);
 	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);
+
+	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);	
 
 	mVertexCount = 0;
 
@@ -704,7 +706,7 @@ void BufferManager::CreatePipe(DrawContext& context)
 
 		if ((context.FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
 		{
-			BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_PSIZE is not implemented!";
+			BOOST_LOG_TRIVIAL(warning) << "BufferManager::CreatePipe D3DFVF_PSIZE is not implemented!";
 		}
 
 		if ((context.FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
@@ -714,52 +716,14 @@ void BufferManager::CreatePipe(DrawContext& context)
 
 		if ((context.FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 		{
-			BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetFVF D3DFVF_SPECULAR is not implemented!";
+			BOOST_LOG_TRIVIAL(warning) << "BufferManager::CreatePipe D3DFVF_SPECULAR is not implemented!";
 		}
 
-		if ((context.FVF & D3DFVF_TEX1) == D3DFVF_TEX1)
-		{
-			textureCount = 1;
-		}
-
-		if ((context.FVF & D3DFVF_TEX2) == D3DFVF_TEX2)
-		{
-			textureCount = 2;
-		}
-
-		if ((context.FVF & D3DFVF_TEX3) == D3DFVF_TEX3)
-		{
-			textureCount = 3;
-		}
-
-		if ((context.FVF & D3DFVF_TEX4) == D3DFVF_TEX4)
-		{
-			textureCount = 4;
-		}
-
-		if ((context.FVF & D3DFVF_TEX5) == D3DFVF_TEX5)
-		{
-			textureCount = 5;
-		}
-
-		if ((context.FVF & D3DFVF_TEX6) == D3DFVF_TEX6)
-		{
-			textureCount = 6;
-		}
-
-		if ((context.FVF & D3DFVF_TEX7) == D3DFVF_TEX7)
-		{
-			textureCount = 7;
-		}
-
-		if ((context.FVF & D3DFVF_TEX8) == D3DFVF_TEX8)
-		{
-			textureCount = 8;
-		}
+		textureCount = ConvertFormat(context.FVF);
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported layout definition.";
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported layout definition.";
 	}
 
 	attributeCount += hasColor;
@@ -825,18 +789,6 @@ void BufferManager::CreatePipe(DrawContext& context)
 	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode(context.FillMode);
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context.PrimitiveType);
 
-	mDescriptorSetLayoutBinding[0].binding = 0;
-	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // VK_SHADER_STAGE_ALL_GRAPHICS
-	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
-
-	mDescriptorSetLayoutBinding[1].binding = 1;
-	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[1].descriptorCount = textureCount; //Update to use mapped texture.
-	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
-
 	/**********************************************
 	* Figure out correct shader
 	**********************************************/
@@ -852,7 +804,7 @@ void BufferManager::CreatePipe(DrawContext& context)
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
 			break;
 		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported texture count " << textureCount;
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
 			break;
 		}
 	}
@@ -869,20 +821,20 @@ void BufferManager::CreatePipe(DrawContext& context)
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
 			break;
 		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported texture count " << textureCount;
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
 			break;
 		}
 	}
 	else if (hasPosition && hasColor && hasNormal)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw normals are not fully yet supported.";
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe normals are not fully yet supported.";
 		switch (textureCount)
 		{
 		case 0:
 			//No textures.
 			break;
 		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported texture count " << textureCount;
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
 			break;
 		}
 	}
@@ -895,15 +847,14 @@ void BufferManager::CreatePipe(DrawContext& context)
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
 			break;
 		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported texture count " << textureCount;
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
 			break;
 		}
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unsupported layout.";
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported layout.";
 	}
-
 
 	/**********************************************
 	* Figure out attributes
@@ -1037,6 +988,24 @@ void BufferManager::CreatePipe(DrawContext& context)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unknown vertex format.";
 	}
 
+	mPipelineLayoutCreateInfo.pSetLayouts = &context.DescriptorSetLayout;
+	mPipelineLayoutCreateInfo.setLayoutCount = 1;
+
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context.StreamCount;
+	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
+
+	mDescriptorSetLayoutBinding[0].binding = 0;
+	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // VK_SHADER_STAGE_ALL_GRAPHICS
+	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
+
+	mDescriptorSetLayoutBinding[1].binding = 1;
+	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	mDescriptorSetLayoutBinding[1].descriptorCount = textureCount; //Update to use mapped texture.
+	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
+
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	if (textureCount)
 	{
@@ -1047,31 +1016,14 @@ void BufferManager::CreatePipe(DrawContext& context)
 		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //Ignore second element if there are no textures.
 	}
 
-	mDescriptorSetAllocateInfo.pSetLayouts = &context.DescriptorSetLayout;
-	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
-
-	mPipelineLayoutCreateInfo.pSetLayouts = &context.DescriptorSetLayout;
-	mPipelineLayoutCreateInfo.setLayoutCount = 1;
-
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context.StreamCount;
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
-
 	/**********************************************
-	* Create pipeline and descriptor sets.
+	* Create pipeline & descriptor set layout.
 	**********************************************/
+
 	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context.DescriptorSetLayout);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreateDescriptorSetLayout failed with return code of " << result;
-		return;
-	}
-
-	mDescriptorSetAllocateInfo.pSetLayouts = &context.DescriptorSetLayout;
-
-	result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &context.DescriptorSet);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkAllocateDescriptorSets failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << result;
 		return;
 	}
 
@@ -1092,6 +1044,27 @@ void BufferManager::CreatePipe(DrawContext& context)
 	}
 
 	this->mDrawBuffer.push_back(context);
+}
+
+void BufferManager::CreateDescriptorSet(DrawContext& context)
+{
+	VkResult result = VK_SUCCESS;
+
+	mDescriptorSetAllocateInfo.pSetLayouts = &context.DescriptorSetLayout;
+	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
+
+	/**********************************************
+	* Create Descriptor set
+	**********************************************/
+
+	result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &context.DescriptorSet);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << result;
+		return;
+	}
+
+	mDevice->mGarbageManager.mDescriptorSets.push_back(context.DescriptorSet);
 }
 
 void BufferManager::UpdateUniformBuffer()
@@ -1169,10 +1142,6 @@ void BufferManager::FlushDrawBufffer()
 		if (mDrawBuffer[i].Pipeline!= VK_NULL_HANDLE)
 		{
 			vkDestroyPipeline(mDevice->mDevice, mDrawBuffer[i].Pipeline, NULL);
-		}
-		if (mDrawBuffer[i].DescriptorSet != VK_NULL_HANDLE)
-		{
-			vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mDrawBuffer[i].DescriptorSet);
 		}
 		if (mDrawBuffer[i].PipelineLayout != VK_NULL_HANDLE)
 		{

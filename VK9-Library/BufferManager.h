@@ -110,6 +110,7 @@ public:
 
 	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
 	void CreatePipe(DrawContext& context);
+	void CreateDescriptorSet(DrawContext& context);
 	void UpdateUniformBuffer();
 	void FlushDrawBufffer();
 

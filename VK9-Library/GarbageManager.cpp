@@ -62,4 +62,14 @@ void GarbageManager::DestroyHandles()
 	}
 	mSamplers.clear();
 
+	//DescriptorSets
+	for (size_t i = 0; i < mDescriptorSets.size(); i++)
+	{
+		if (mDescriptorSets[i] != VK_NULL_HANDLE)
+		{
+			vkFreeDescriptorSets(mDevice, mDescriptorPool, 1, &mDescriptorSets[i]);
+		}
+	}
+	mDescriptorSets.clear();
+
 }

@@ -334,6 +334,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateDescriptorPool succeeded.";
 	}
 
+	mGarbageManager.mDescriptorPool = mDescriptorPool;
+
 	//Create queue so we can submit command buffers.
 	vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0,&mQueue);
 

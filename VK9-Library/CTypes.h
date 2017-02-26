@@ -91,7 +91,7 @@ struct DrawContext
 	//Misc
 	std::unordered_map<UINT, UINT> Bindings;
 
-	//D3D9 State
+	//D3D9 State - Pipe
 	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
 	DWORD FVF = 0;
 	CVertexDeclaration9* VertexDeclaration = nullptr;

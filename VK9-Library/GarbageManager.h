@@ -39,12 +39,14 @@ class GarbageManager
 
 		//Handles to destroy with.
 		VkDevice mDevice = VK_NULL_HANDLE;
-
+		VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 
 		//Handles to destroy	
 		std::vector<VkImage> mImages;
 		std::vector<VkDeviceMemory> mMemories;
 		std::vector<VkSampler> mSamplers;
+		std::vector<VkDescriptorSet> mDescriptorSets;
+
 };
 
 #endif // GARBAGEMANAGER_H
