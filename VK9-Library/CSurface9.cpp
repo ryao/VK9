@@ -310,7 +310,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::GetDesc(D3DSURFACE_DESC* pDesc)
 HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
 	mFlags = Flags;
-
+	
 	char* bytes = nullptr;
 
 	//BOOST_LOG_TRIVIAL(info) << "CSurface9::LockRect Level:" << mMipIndex << " Handle: " << this << " Flags: " << mFlags;
@@ -319,8 +319,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	{
 		if (mIsFlushed)
 		{
-			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED
-			mIsFlushed = false;
+			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 		}
 
 		mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
@@ -354,6 +353,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	pLockedRect->pBits = (void*)bytes;
 	pLockedRect->Pitch = mLayout.rowPitch;
 
+	mIsFlushed = false;
+
 	return S_OK;
 }
 
@@ -384,6 +385,10 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 
 void CSurface9::Flush()
 {
+	if (mIsFlushed)
+	{
+		return;
+	}
 	mIsFlushed = true;
 
 	VkCommandBuffer commandBuffer;

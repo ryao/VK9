@@ -285,37 +285,61 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	//Setup the descriptor pool for resource binding.
-	//For the multi-threaded version we'll need separate descriptor/command pools per thread.
 	VkDescriptorPoolSize descriptorPoolSizes [11] = {};
-	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-	descriptorPoolSizes[0].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorPoolSizes[1].descriptorCount = 256; //Revisit
-	descriptorPoolSizes[2].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	descriptorPoolSizes[2].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	descriptorPoolSizes[3].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[4].type = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-	descriptorPoolSizes[4].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-	descriptorPoolSizes[5].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorPoolSizes[6].descriptorCount = 256; //Revisit
-	descriptorPoolSizes[7].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	descriptorPoolSizes[7].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[8].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-	descriptorPoolSizes[8].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[9].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-	descriptorPoolSizes[9].descriptorCount = 128; //Revisit
-	descriptorPoolSizes[10].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	descriptorPoolSizes[10].descriptorCount = 128; //Revisit
+	#define MAX_DESCRIPTOR 512
 
+	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
+	descriptorPoolSizes[0].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetSamplers = " << mDeviceProperties.limits.maxDescriptorSetSamplers;
+
+	descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorPoolSizes[1].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorSamplers);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxPerStageDescriptorSamplers = " << mDeviceProperties.limits.maxPerStageDescriptorSamplers;
+
+	descriptorPoolSizes[2].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	descriptorPoolSizes[2].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSampledImages);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetSampledImages = " << mDeviceProperties.limits.maxDescriptorSetSampledImages;
+
+	descriptorPoolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	descriptorPoolSizes[3].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageImages);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetStorageImages = " << mDeviceProperties.limits.maxDescriptorSetStorageImages;
+
+	descriptorPoolSizes[4].type = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+	descriptorPoolSizes[4].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorSampledImages);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxPerStageDescriptorSampledImages = " << mDeviceProperties.limits.maxPerStageDescriptorSampledImages;
+
+	descriptorPoolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+	descriptorPoolSizes[5].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorStorageImages);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxPerStageDescriptorStorageImages = " << mDeviceProperties.limits.maxPerStageDescriptorStorageImages;
+
+	descriptorPoolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	descriptorPoolSizes[6].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetUniformBuffers);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetUniformBuffers = " << mDeviceProperties.limits.maxDescriptorSetUniformBuffers;
+
+	descriptorPoolSizes[7].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	descriptorPoolSizes[7].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageBuffers);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetStorageBuffers = " << mDeviceProperties.limits.maxDescriptorSetStorageBuffers;
+
+	descriptorPoolSizes[8].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	descriptorPoolSizes[8].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetUniformBuffersDynamic = " << mDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic;
+
+	descriptorPoolSizes[9].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+	descriptorPoolSizes[9].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetStorageBuffersDynamic = " << mDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic;
+
+	descriptorPoolSizes[10].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	descriptorPoolSizes[10].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetInputAttachments);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetInputAttachments = " << mDeviceProperties.limits.maxDescriptorSetInputAttachments;
+
+	
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = NULL;
-	descriptorPoolCreateInfo.maxSets = 256; //Revisit
+	descriptorPoolCreateInfo.maxSets = std::min((uint32_t)1024, mDeviceProperties.limits.maxDescriptorSetSamplers);
 	descriptorPoolCreateInfo.poolSizeCount = 11;
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
+
 	/*
 	This flag allows descriptors to return to the pool when they are freed. 
 	If not set we'll have to reset the pool and frankly I don't want to code for that.

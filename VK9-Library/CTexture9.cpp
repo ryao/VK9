@@ -639,7 +639,7 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 
 	if (mSampler != VK_NULL_HANDLE)
 	{
-		//TODO: implement change tracking so the sampler can be kept is the states have not changed.
+		//TODO: implement change tracking so the sampler can be kept if the states have not changed.
 		//vkDestroySampler(mDevice->mDevice, mSampler, NULL);
 		mDevice->mGarbageManager.mSamplers.push_back(mSampler);
 		mSampler = VK_NULL_HANDLE;
@@ -657,13 +657,20 @@ void CTexture9::GenerateSampler(DWORD samplerIndex)
 	samplerCreateInfo.addressModeU = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU]);
 	samplerCreateInfo.addressModeV = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV]);
 	samplerCreateInfo.addressModeW = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW]);
-	samplerCreateInfo.anisotropyEnable = VK_FALSE;
 	samplerCreateInfo.maxAnisotropy = mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];  //16 D3DSAMP_MAXANISOTROPY
+	if (samplerCreateInfo.maxAnisotropy)
+	{
+		samplerCreateInfo.anisotropyEnable = VK_TRUE;
+	}
+	else
+	{
+		samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	}
 	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; // VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
 	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerCreateInfo.mipmapMode = ConvertMipmapMode((D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER]); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	samplerCreateInfo.mipLodBias = 0.0f;
+	samplerCreateInfo.mipLodBias = (float)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPMAPLODBIAS];
 	samplerCreateInfo.minLod = 0.0f;
 	//samplerCreateInfo.maxLod = (float)mLevels;
 
