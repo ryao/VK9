@@ -630,62 +630,10 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, commandBuffers);
 }
 
-void CTexture9::GenerateSampler(DWORD samplerIndex)
+void CTexture9::Flush()
 {
 	for (size_t i = 0; i < mSurfaces.size(); i++)
 	{
 		mSurfaces[i]->Flush();
-	}
-
-	if (mSampler != VK_NULL_HANDLE)
-	{
-		//TODO: implement change tracking so the sampler can be kept if the states have not changed.
-		//vkDestroySampler(mDevice->mDevice, mSampler, NULL);
-		mDevice->mGarbageManager.mSamplers.push_back(mSampler);
-		mSampler = VK_NULL_HANDLE;
-		//return; //already created.
-	}
-
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
-	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
-
-	VkSamplerCreateInfo samplerCreateInfo = {};
-	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerCreateInfo.pNext = NULL;
-	samplerCreateInfo.magFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER]);
-	samplerCreateInfo.minFilter = ConvertFilter((D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MINFILTER]);
-	samplerCreateInfo.addressModeU = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU]);
-	samplerCreateInfo.addressModeV = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV]);
-	samplerCreateInfo.addressModeW = ConvertTextureAddress((D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW]);
-	samplerCreateInfo.maxAnisotropy = mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];  //16 D3DSAMP_MAXANISOTROPY
-	if (samplerCreateInfo.maxAnisotropy)
-	{
-		samplerCreateInfo.anisotropyEnable = VK_TRUE;
-	}
-	else
-	{
-		samplerCreateInfo.anisotropyEnable = VK_FALSE;
-	}
-	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; // VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
-	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerCreateInfo.mipmapMode = ConvertMipmapMode((D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER]); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	samplerCreateInfo.mipLodBias = (float)mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPMAPLODBIAS];
-	samplerCreateInfo.minLod = 0.0f;
-	//samplerCreateInfo.maxLod = (float)mLevels;
-
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAGFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAGFILTER];
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MINFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MINFILTER];
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSU " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSU];
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSV " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSV];
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_ADDRESSW " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_ADDRESSW];
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MAXANISOTROPY " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MAXANISOTROPY];
-	//BOOST_LOG_TRIVIAL(info) << "CTexture9::GenerateSampler D3DSAMP_MIPFILTER " << mDevice->mDeviceState.mSamplerStates[samplerIndex][D3DSAMP_MIPFILTER];
-
-	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateSampler vkCreateSampler failed with return code of " << mResult;
-		return;
 	}
 }

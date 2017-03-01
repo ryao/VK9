@@ -520,8 +520,39 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 
 		if (pair1.second != nullptr)
 		{
-			pair1.second->GenerateSampler(pair1.first);
-			targetSampler.sampler = pair1.second->mSampler;
+			SamplerRequest request = {};
+			
+			request.MagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MAGFILTER];
+			request.MinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MINFILTER];
+			request.AddressModeU = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_ADDRESSU];
+			request.AddressModeV = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_ADDRESSV];
+			request.AddressModeW = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_ADDRESSW];
+			request.MaxAnisotropy = mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MAXANISOTROPY];
+			request.MipmapMode = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MIPFILTER];
+			request.MipLodBias = (float)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MIPMAPLODBIAS];
+
+			for (size_t i = 0; i < mSamplerRequests.size(); i++)
+			{
+				auto& storedRequest = mSamplerRequests[i];
+				if (request.MagFilter == storedRequest.MagFilter
+					&& request.MinFilter == storedRequest.MinFilter
+					&& request.AddressModeU == storedRequest.AddressModeU
+					&& request.AddressModeV == storedRequest.AddressModeV
+					&& request.AddressModeW == storedRequest.AddressModeW
+					&& request.MaxAnisotropy == storedRequest.MaxAnisotropy
+					&& request.MipmapMode == storedRequest.MipmapMode
+					&& request.MipLodBias == storedRequest.MipLodBias)
+				{
+					request.Sampler = storedRequest.Sampler;
+				}
+			}
+
+			if (request.Sampler == VK_NULL_HANDLE)
+			{
+				CreateSampler(request);
+			}	
+
+			targetSampler.sampler = request.Sampler;
 			targetSampler.imageView = pair1.second->mImageView;
 			targetSampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
@@ -629,30 +660,16 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 		CreatePipe(context);
 	}	
 
+	/**********************************************
+	* Check for existing DescriptorSet. Create one if there isn't a matching one.
+	**********************************************/
+
+	//TODO: add logic to check for existing descriptor.
 	CreateDescriptorSet(context);
 
 	/**********************************************
 	* Setup bindings
 	**********************************************/
-
-	mDescriptorBufferInfo.buffer = mUniformBuffer;
-
-	mWriteDescriptorSet[0].dstSet = context.DescriptorSet;
-	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
-
-	mWriteDescriptorSet[1].dstSet = context.DescriptorSet;
-	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
-	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
-	
-	if (mDevice->mDeviceState.mTextures.size())
-	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
-	}
-	else
-	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
-	}
 
 	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);
 
@@ -1065,6 +1082,68 @@ void BufferManager::CreateDescriptorSet(DrawContext& context)
 	}
 
 	mDevice->mGarbageManager.mDescriptorSets.push_back(context.DescriptorSet);
+
+	mDescriptorBufferInfo.buffer = mUniformBuffer;
+
+	mWriteDescriptorSet[0].dstSet = context.DescriptorSet;
+	mWriteDescriptorSet[0].descriptorCount = 1;
+	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
+
+	mWriteDescriptorSet[1].dstSet = context.DescriptorSet;
+	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
+	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
+
+	if (mDevice->mDeviceState.mTextures.size())
+	{
+		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
+	}
+	else
+	{
+		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
+	}
+}
+
+void BufferManager::CreateSampler(SamplerRequest& request)
+{
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
+	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
+
+	VkSamplerCreateInfo samplerCreateInfo = {};
+	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerCreateInfo.pNext = NULL;
+
+	samplerCreateInfo.magFilter = ConvertFilter(request.MagFilter);
+	samplerCreateInfo.minFilter = ConvertFilter(request.MinFilter);
+	samplerCreateInfo.addressModeU = ConvertTextureAddress(request.AddressModeU);
+	samplerCreateInfo.addressModeV = ConvertTextureAddress(request.AddressModeV);
+	samplerCreateInfo.addressModeW = ConvertTextureAddress(request.AddressModeW);
+	samplerCreateInfo.maxAnisotropy = request.MaxAnisotropy;  //16 D3DSAMP_MAXANISOTROPY
+	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request.MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.mipLodBias = request.MipLodBias;
+
+	if (samplerCreateInfo.maxAnisotropy)
+	{
+		samplerCreateInfo.anisotropyEnable = VK_TRUE;
+	}
+	else
+	{
+		samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	}
+
+	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; // VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerCreateInfo.minLod = 0.0f;
+	//samplerCreateInfo.maxLod = (float)mLevels;
+
+	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &request.Sampler);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateSampler vkCreateSampler failed with return code of " << mResult;
+		return;
+	}
+
+	mSamplerRequests.push_back(request);
 }
 
 void BufferManager::UpdateUniformBuffer()
@@ -1167,6 +1246,15 @@ void BufferManager::FlushDrawBufffer()
 		}
 	}
 	mHistoricalUniformBuffers.clear();
+
+	for (size_t i = 0; i < mSamplerRequests.size(); i++)
+	{
+		if (mSamplerRequests[i].Sampler != VK_NULL_HANDLE)
+		{
+			vkDestroySampler(mDevice->mDevice, mSamplerRequests[i].Sampler, NULL);
+		}
+	}
+	mSamplerRequests.clear();
 }
 
 void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)

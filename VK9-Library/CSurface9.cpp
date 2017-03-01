@@ -380,6 +380,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 		mData = nullptr;
 	}
 
+	this->Flush();
+
 	return S_OK;
 }
 

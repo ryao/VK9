@@ -103,6 +103,7 @@ public:
 	VkBuffer mUniformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory mUniformBufferMemory = VK_NULL_HANDLE;
 
+	std::vector<SamplerRequest> mSamplerRequests;
 	std::vector<DrawContext> mDrawBuffer;
 	std::vector<HistoricalUniformBuffer> mHistoricalUniformBuffers;
 
@@ -111,6 +112,8 @@ public:
 	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
 	void CreatePipe(DrawContext& context);
 	void CreateDescriptorSet(DrawContext& context);
+	void CreateSampler(SamplerRequest& request);
+
 	void UpdateUniformBuffer();
 	void FlushDrawBufffer();
 

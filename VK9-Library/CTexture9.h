@@ -62,7 +62,7 @@ public:
 	std::vector<CSurface9*> mSurfaces;
 
 	void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
-	void GenerateSampler(DWORD samplerIndex);
+	void Flush();
 
 public:
 	//IUnknown

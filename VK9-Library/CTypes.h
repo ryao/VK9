@@ -80,6 +80,23 @@ public:
 	~StreamSource();
 };
 
+struct SamplerRequest
+{
+	//Vulkan State
+	VkSampler Sampler = VK_NULL_HANDLE;
+
+	//D3D9 State
+	DWORD SamplerIndex=0;
+	D3DTEXTUREFILTERTYPE MagFilter;
+	D3DTEXTUREFILTERTYPE MinFilter;
+	D3DTEXTUREADDRESS AddressModeU;
+	D3DTEXTUREADDRESS AddressModeV;
+	D3DTEXTUREADDRESS AddressModeW;
+	DWORD MaxAnisotropy;
+	D3DTEXTUREFILTERTYPE MipmapMode;
+	float MipLodBias;
+};
+
 struct DrawContext
 {
 	//Vulkan State
