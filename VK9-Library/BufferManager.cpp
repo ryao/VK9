@@ -1189,29 +1189,48 @@ void BufferManager::UpdateUniformBuffer()
 		}
 	}
 
-	//Create a new buffer.
 	mUniformBuffer = VK_NULL_HANDLE;
 	mUniformBufferMemory = VK_NULL_HANDLE;
-	CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
-	
-	//Put the new buffer into the list so it can be cleaned up at the end of the render pass.
-	HistoricalUniformBuffer historicalUniformBuffer;
-	historicalUniformBuffer.UniformBuffer = mUniformBuffer;
-	historicalUniformBuffer.UniformBufferMemory = mUniformBufferMemory;
-	mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
 
-	//Copy current UBO into the staging memory buffer.
-	result = vkMapMemory(mDevice->mDevice, mUniformStagingBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
-	if (mResult != VK_SUCCESS)
+	//Look for the buffer in history and assign it if found.
+	for (size_t i = 0; i < mHistoricalUniformBuffers.size(); i++)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetTransform vkMapMemory failed with return code of " << result;
-		return;
+		auto& hub = mHistoricalUniformBuffers[i];
+		if (mUBO.model == hub.UBO.model
+			&& mUBO.proj == hub.UBO.proj
+			&& mUBO.view == hub.UBO.view)
+		{
+			mUniformBuffer = hub.UniformBuffer;
+			mUniformBufferMemory = hub.UniformBufferMemory;
+			break;
+		}
 	}
-	memcpy(data, &mUBO, sizeof(UniformBufferObject));
-	vkUnmapMemory(mDevice->mDevice, mUniformStagingBufferMemory);
 
-	//Copy the staging data into the new buffer.
-	CopyBuffer(mUniformStagingBuffer, mUniformBuffer, sizeof(UniformBufferObject));
+	//If the UBO is not in history than create a new buffer and copy the UBO into it.
+	if (mUniformBuffer == VK_NULL_HANDLE)
+	{
+		//Copy current UBO into the staging memory buffer.
+		result = vkMapMemory(mDevice->mDevice, mUniformStagingBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
+		if (mResult != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetTransform vkMapMemory failed with return code of " << result;
+			return;
+		}
+		memcpy(data, &mUBO, sizeof(UniformBufferObject));
+		vkUnmapMemory(mDevice->mDevice, mUniformStagingBufferMemory);
+
+		//Create a new buffer.
+		CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
+
+		//Put the new buffer into the list so it can be cleaned up later.
+		HistoricalUniformBuffer historicalUniformBuffer;
+		historicalUniformBuffer.UniformBuffer = mUniformBuffer;
+		historicalUniformBuffer.UniformBufferMemory = mUniformBufferMemory;
+		mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
+
+		//Copy the staging data into the new buffer.
+		CopyBuffer(mUniformStagingBuffer, mUniformBuffer, sizeof(UniformBufferObject));
+	}
 }
 
 void BufferManager::FlushDrawBufffer()

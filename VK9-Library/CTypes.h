@@ -121,6 +121,7 @@ struct DrawContext
 
 struct HistoricalUniformBuffer
 {
+	UniformBufferObject UBO = {};
 	VkBuffer UniformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
 };
