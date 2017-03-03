@@ -23,6 +23,8 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
+#include <glm/gtc/epsilon.hpp> //Needed for matrix == matrix
+
 typedef std::unordered_map<UINT, StreamSource> map_type;
 
 BufferManager::BufferManager()
@@ -1237,13 +1239,10 @@ void BufferManager::UpdateUniformBuffer()
 	//Look for the buffer in history and assign it if found.
 	for (size_t i = 0; i < mHistoricalUniformBuffers.size(); i++)
 	{
-		auto& hub = mHistoricalUniformBuffers[i];
-		if (mUBO.model == hub.UBO.model
-			&& mUBO.proj == hub.UBO.proj
-			&& mUBO.view == hub.UBO.view)
+		if (memcmp(&mUBO,&mHistoricalUniformBuffers[i].UBO,sizeof(UniformBufferObject))==0)
 		{
-			mUniformBuffer = hub.UniformBuffer;
-			mUniformBufferMemory = hub.UniformBufferMemory;
+			mUniformBuffer = mHistoricalUniformBuffers[i].UniformBuffer;
+			mUniformBufferMemory = mHistoricalUniformBuffers[i].UniformBufferMemory;
 			break;
 		}
 	}
@@ -1266,8 +1265,10 @@ void BufferManager::UpdateUniformBuffer()
 
 		//Put the new buffer into the list so it can be cleaned up later.
 		HistoricalUniformBuffer historicalUniformBuffer;
+
 		historicalUniformBuffer.UniformBuffer = mUniformBuffer;
 		historicalUniformBuffer.UniformBufferMemory = mUniformBufferMemory;
+		historicalUniformBuffer.UBO = mUBO;
 		mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
 
 		//Copy the staging data into the new buffer.
