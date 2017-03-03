@@ -1963,8 +1963,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 	}
 
 	DrawContext context = {};
-
-	mBufferManager->BeginDraw(context, Type);
+	ResourceContext resourceContext = {};
+	mBufferManager->BeginDraw(context, resourceContext, Type);
 
 	/*
 		https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
@@ -1999,8 +1999,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 	}
 
 	DrawContext context = {};
-
-	mBufferManager->BeginDraw(context, PrimitiveType);
+	ResourceContext resourceContext = {};
+	mBufferManager->BeginDraw(context, resourceContext, PrimitiveType);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
 

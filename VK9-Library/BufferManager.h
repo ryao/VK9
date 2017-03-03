@@ -109,9 +109,9 @@ public:
 
 	UniformBufferObject mUBO = {};
 
-	void BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type);
+	void BeginDraw(DrawContext& context, ResourceContext& resourceContext, D3DPRIMITIVETYPE type);
 	void CreatePipe(DrawContext& context);
-	void CreateDescriptorSet(DrawContext& context);
+	void CreateDescriptorSet(DrawContext& context, ResourceContext& resourceContext);
 	void CreateSampler(SamplerRequest& request);
 
 	void UpdateUniformBuffer();

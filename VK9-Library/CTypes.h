@@ -97,10 +97,18 @@ struct SamplerRequest
 	float MipLodBias;
 };
 
+struct ResourceContext
+{
+	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
+	VkDescriptorBufferInfo DescriptorBufferInfo = {};
+
+	//Vulkan State
+	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
+};
+
 struct DrawContext
 {
 	//Vulkan State
-	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
 	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
 	VkPipeline Pipeline = VK_NULL_HANDLE;
 	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;

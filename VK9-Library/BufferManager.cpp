@@ -496,7 +496,7 @@ BufferManager::~BufferManager()
 	FlushDrawBufffer();
 }
 
-void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
+void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceContext, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
 	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
@@ -664,14 +664,22 @@ void BufferManager::BeginDraw(DrawContext& context, D3DPRIMITIVETYPE type)
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
 
+	mDescriptorBufferInfo.buffer = mUniformBuffer;
+	resourceContext.DescriptorBufferInfo = mDescriptorBufferInfo;
+	std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext.DescriptorImageInfo));
+
 	//TODO: add logic to check for existing descriptor.
-	CreateDescriptorSet(context);
+
+	if (resourceContext.DescriptorSet == VK_NULL_HANDLE)
+	{
+		CreateDescriptorSet(context, resourceContext);
+	}	
 
 	/**********************************************
 	* Setup bindings
 	**********************************************/
 
-	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &context.DescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &resourceContext.DescriptorSet, 0, nullptr);
 
 	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);	
 
@@ -1063,7 +1071,7 @@ void BufferManager::CreatePipe(DrawContext& context)
 	this->mDrawBuffer.push_back(context);
 }
 
-void BufferManager::CreateDescriptorSet(DrawContext& context)
+void BufferManager::CreateDescriptorSet(DrawContext& context, ResourceContext& resourceContext)
 {
 	VkResult result = VK_SUCCESS;
 
@@ -1074,24 +1082,22 @@ void BufferManager::CreateDescriptorSet(DrawContext& context)
 	* Create Descriptor set
 	**********************************************/
 
-	result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &context.DescriptorSet);
+	result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &resourceContext.DescriptorSet);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << result;
 		return;
 	}
 
-	mDevice->mGarbageManager.mDescriptorSets.push_back(context.DescriptorSet);
+	mDevice->mGarbageManager.mDescriptorSets.push_back(resourceContext.DescriptorSet);
 
-	mDescriptorBufferInfo.buffer = mUniformBuffer;
-
-	mWriteDescriptorSet[0].dstSet = context.DescriptorSet;
+	mWriteDescriptorSet[0].dstSet = resourceContext.DescriptorSet;
 	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
+	mWriteDescriptorSet[0].pBufferInfo = &resourceContext.DescriptorBufferInfo;
 
-	mWriteDescriptorSet[1].dstSet = context.DescriptorSet;
+	mWriteDescriptorSet[1].dstSet = resourceContext.DescriptorSet;
 	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
-	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
+	mWriteDescriptorSet[1].pImageInfo = resourceContext.DescriptorImageInfo;
 
 	if (mDevice->mDeviceState.mTextures.size())
 	{
