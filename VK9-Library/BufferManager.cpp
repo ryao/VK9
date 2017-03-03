@@ -664,9 +664,45 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
 
+	//Copy information into resource context.
 	mDescriptorBufferInfo.buffer = mUniformBuffer;
 	resourceContext.DescriptorBufferInfo = mDescriptorBufferInfo;
 	std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext.DescriptorImageInfo));
+
+	//Loop over cached descriptor information.
+	for (size_t i = 0; i < mResourceBuffer.size(); i++)
+	{
+		auto& resourceBuffer = mResourceBuffer[i];
+		if (resourceBuffer.DescriptorBufferInfo.buffer == resourceContext.DescriptorBufferInfo.buffer
+			&& resourceBuffer.DescriptorBufferInfo.offset == resourceContext.DescriptorBufferInfo.offset
+			&& resourceBuffer.DescriptorBufferInfo.range == resourceContext.DescriptorBufferInfo.range)
+		{
+			BOOL imageMatches = true;
+
+			//The image info array is currently always 16.
+			for (size_t j = 0; j < 16; j++)
+			{
+				auto& imageData1 = resourceBuffer.DescriptorImageInfo[j];
+				auto& imageData2 = resourceContext.DescriptorImageInfo[j];
+
+				if (imageData1.imageLayout == imageData2.imageLayout
+					&& imageData1.imageView == imageData2.imageView
+					&& imageData1.sampler == imageData2.sampler)
+				{
+					//nothing?
+				}
+				else
+				{
+					imageMatches = false;
+					break;
+				}
+			}
+			if (imageMatches)
+			{
+				resourceContext.DescriptorSet = resourceBuffer.DescriptorSet;
+			}
+		}
+	}
 
 	//TODO: add logic to check for existing descriptor.
 
@@ -1089,7 +1125,7 @@ void BufferManager::CreateDescriptorSet(DrawContext& context, ResourceContext& r
 		return;
 	}
 
-	mDevice->mGarbageManager.mDescriptorSets.push_back(resourceContext.DescriptorSet);
+	mResourceBuffer.push_back(resourceContext);
 
 	mWriteDescriptorSet[0].dstSet = resourceContext.DescriptorSet;
 	mWriteDescriptorSet[0].descriptorCount = 1;
@@ -1280,6 +1316,15 @@ void BufferManager::FlushDrawBufffer()
 		}
 	}
 	mSamplerRequests.clear();
+
+	for (size_t i = 0; i < mResourceBuffer.size(); i++)
+	{
+		if (mResourceBuffer[i].DescriptorSet != VK_NULL_HANDLE)
+		{
+			vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mResourceBuffer[i].DescriptorSet);
+		}		
+	}
+	mResourceBuffer.clear();
 }
 
 void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)

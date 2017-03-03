@@ -105,8 +105,8 @@ public:
 
 	std::vector<SamplerRequest> mSamplerRequests;
 	std::vector<DrawContext> mDrawBuffer;
-	std::vector<HistoricalUniformBuffer> mHistoricalUniformBuffers;
-
+	std::vector<ResourceContext> mResourceBuffer;
+	std::vector<HistoricalUniformBuffer> mHistoricalUniformBuffers;	
 	UniformBufferObject mUBO = {};
 
 	void BeginDraw(DrawContext& context, ResourceContext& resourceContext, D3DPRIMITIVETYPE type);
