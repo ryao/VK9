@@ -25,11 +25,86 @@ misrepresented as being the original software.
 #include <vulkan/vk_sdk_platform.h>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include "CTypes.h"
 #include "CIndexBuffer9.h"
 
 class CDevice9;
+
+struct SamplerRequest
+{
+	//Vulkan State
+	VkSampler Sampler = VK_NULL_HANDLE;
+
+	//D3D9 State
+	DWORD SamplerIndex = 0;
+	D3DTEXTUREFILTERTYPE MagFilter;
+	D3DTEXTUREFILTERTYPE MinFilter;
+	D3DTEXTUREADDRESS AddressModeU;
+	D3DTEXTUREADDRESS AddressModeV;
+	D3DTEXTUREADDRESS AddressModeW;
+	DWORD MaxAnisotropy;
+	D3DTEXTUREFILTERTYPE MipmapMode;
+	float MipLodBias;
+
+	//Resource Handling.
+	CDevice9* mDevice = nullptr;
+	SamplerRequest(CDevice9* device) : mDevice(device) {}
+	~SamplerRequest();
+};
+
+struct ResourceContext
+{
+	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
+	VkDescriptorBufferInfo DescriptorBufferInfo = {};
+
+	//Vulkan State
+	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
+
+	//Resource Handling.
+	CDevice9* mDevice = nullptr;
+	ResourceContext(CDevice9* device) : mDevice(device) {}
+	~ResourceContext();
+};
+
+struct DrawContext
+{
+	//Vulkan State
+	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
+	VkPipeline Pipeline = VK_NULL_HANDLE;
+	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
+
+	//Misc
+	std::unordered_map<UINT, UINT> Bindings;
+
+	//D3D9 State - Pipe
+	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
+	DWORD FVF = 0;
+	CVertexDeclaration9* VertexDeclaration = nullptr;
+	CVertexShader9* VertexShader = nullptr;
+	CPixelShader9* PixelShader = nullptr;
+	size_t StreamCount = 0;
+	D3DFILLMODE FillMode = D3DFILL_FORCE_DWORD;
+	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
+
+	//Resource Handling.
+	CDevice9* mDevice = nullptr;
+	DrawContext(CDevice9* device) : mDevice(device) {}
+	~DrawContext();
+};
+
+struct HistoricalUniformBuffer
+{
+	UniformBufferObject UBO = {};
+	VkBuffer UniformBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
+
+	//Resource Handling.
+	CDevice9* mDevice = nullptr;
+	HistoricalUniformBuffer(CDevice9* device) : mDevice(device) {}
+	~HistoricalUniformBuffer();
+};
 
 class BufferManager
 {
@@ -103,16 +178,18 @@ public:
 	VkBuffer mUniformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory mUniformBufferMemory = VK_NULL_HANDLE;
 
-	std::vector<SamplerRequest> mSamplerRequests;
-	std::vector<DrawContext> mDrawBuffer;
-	std::vector<ResourceContext> mResourceBuffer;
-	std::vector<HistoricalUniformBuffer> mHistoricalUniformBuffers;	
+	std::vector< std::shared_ptr<SamplerRequest> > mSamplerRequests;
+	std::vector< std::shared_ptr<DrawContext> > mDrawBuffer;
+	std::vector< std::shared_ptr<ResourceContext> > mResourceBuffer;
+	std::vector< std::shared_ptr<HistoricalUniformBuffer> > mHistoricalUniformBuffers;
 	UniformBufferObject mUBO = {};
 
-	void BeginDraw(DrawContext& context, ResourceContext& resourceContext, D3DPRIMITIVETYPE type);
-	void CreatePipe(DrawContext& context);
-	void CreateDescriptorSet(DrawContext& context, ResourceContext& resourceContext);
-	void CreateSampler(SamplerRequest& request);
+	float mEpsilon = std::numeric_limits<float>::epsilon();
+
+	void BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type);
+	void CreatePipe(std::shared_ptr<DrawContext> context);
+	void CreateDescriptorSet(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext);
+	void CreateSampler(std::shared_ptr<SamplerRequest> request);
 
 	void UpdateUniformBuffer();
 	void FlushDrawBufffer();

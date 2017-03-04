@@ -286,7 +286,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	//Setup the descriptor pool for resource binding.
 	VkDescriptorPoolSize descriptorPoolSizes [11] = {};
-	#define MAX_DESCRIPTOR 512
+	#define MAX_DESCRIPTOR 2048
 
 	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
 	descriptorPoolSizes[0].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
@@ -336,7 +336,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = NULL;
-	descriptorPoolCreateInfo.maxSets = std::min((uint32_t)1024, mDeviceProperties.limits.maxDescriptorSetSamplers);
+	descriptorPoolCreateInfo.maxSets = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
 	descriptorPoolCreateInfo.poolSizeCount = 11;
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
 
@@ -1962,8 +1962,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 		this->StartScene();
 	}
 
-	DrawContext context = {};
-	ResourceContext resourceContext = {};
+	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(this);
+	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(this);
+
 	mBufferManager->BeginDraw(context, resourceContext, Type);
 
 	/*
@@ -1998,8 +1999,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 		this->StartScene();
 	}
 
-	DrawContext context = {};
-	ResourceContext resourceContext = {};
+	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(this);
+	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(this);
+
 	mBufferManager->BeginDraw(context, resourceContext, PrimitiveType);
 
 	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);

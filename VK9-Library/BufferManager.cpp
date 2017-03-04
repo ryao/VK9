@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 #include <glm/gtc/epsilon.hpp> //Needed for matrix == matrix
+#include <chrono>
 
 typedef std::unordered_map<UINT, StreamSource> map_type;
 
@@ -498,7 +499,7 @@ BufferManager::~BufferManager()
 	FlushDrawBufffer();
 }
 
-void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceContext, D3DPRIMITIVETYPE type)
+void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
 	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
@@ -506,12 +507,13 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 	/**********************************************
 	* Update UBO structure.
 	**********************************************/
-	if (mDevice->mDeviceState.mHasTransformsChanged || mHistoricalUniformBuffers.size()==0)
-	{
-		UpdateUniformBuffer();
-		mDevice->mDeviceState.mHasTransformsChanged = false;
-		//Print(mDevice->mDeviceState.mTransforms);
-	}
+	UpdateUniformBuffer();
+
+	//if (mDevice->mDeviceState.mHasTransformsChanged || mHistoricalUniformBuffers.size()==0)
+	//{		
+	//	mDevice->mDeviceState.mHasTransformsChanged = false;
+	//	//Print(mDevice->mDeviceState.mTransforms);
+	//}
 
 	/**********************************************
 	* Update the textures that are currently mapped.
@@ -522,39 +524,40 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 
 		if (pair1.second != nullptr)
 		{
-			SamplerRequest request = {};
+			std::shared_ptr<SamplerRequest> request = std::make_shared<SamplerRequest>(mDevice);
 			
-			request.MagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MAGFILTER];
-			request.MinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MINFILTER];
-			request.AddressModeU = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_ADDRESSU];
-			request.AddressModeV = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_ADDRESSV];
-			request.AddressModeW = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_ADDRESSW];
-			request.MaxAnisotropy = mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MAXANISOTROPY];
-			request.MipmapMode = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MIPFILTER];
-			request.MipLodBias = (float)mDevice->mDeviceState.mSamplerStates[request.SamplerIndex][D3DSAMP_MIPMAPLODBIAS];
+			request->MagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAGFILTER];
+			request->MinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MINFILTER];
+			request->AddressModeU = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSU];
+			request->AddressModeV = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSV];
+			request->AddressModeW = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSW];
+			request->MaxAnisotropy = mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAXANISOTROPY];
+			request->MipmapMode = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPFILTER];
+			request->MipLodBias = (float)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPMAPLODBIAS];
 
 			for (size_t i = 0; i < mSamplerRequests.size(); i++)
 			{
 				auto& storedRequest = mSamplerRequests[i];
-				if (request.MagFilter == storedRequest.MagFilter
-					&& request.MinFilter == storedRequest.MinFilter
-					&& request.AddressModeU == storedRequest.AddressModeU
-					&& request.AddressModeV == storedRequest.AddressModeV
-					&& request.AddressModeW == storedRequest.AddressModeW
-					&& request.MaxAnisotropy == storedRequest.MaxAnisotropy
-					&& request.MipmapMode == storedRequest.MipmapMode
-					&& request.MipLodBias == storedRequest.MipLodBias)
+				if (request->MagFilter == storedRequest->MagFilter
+					&& request->MinFilter == storedRequest->MinFilter
+					&& request->AddressModeU == storedRequest->AddressModeU
+					&& request->AddressModeV == storedRequest->AddressModeV
+					&& request->AddressModeW == storedRequest->AddressModeW
+					&& request->MaxAnisotropy == storedRequest->MaxAnisotropy
+					&& request->MipmapMode == storedRequest->MipmapMode
+					&& request->MipLodBias == storedRequest->MipLodBias)
 				{
-					request.Sampler = storedRequest.Sampler;
+					request->Sampler = storedRequest->Sampler;
+					request->mDevice = nullptr; //Not owner.
 				}
 			}
 
-			if (request.Sampler == VK_NULL_HANDLE)
+			if (request->Sampler == VK_NULL_HANDLE)
 			{
 				CreateSampler(request);
 			}	
 
-			targetSampler.sampler = request.Sampler;
+			targetSampler.sampler = request->Sampler;
 			targetSampler.imageView = pair1.second->mImageView;
 			targetSampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
@@ -569,47 +572,47 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 	/**********************************************
 	* Setup context.
 	**********************************************/
-	context.PrimitiveType = type;
+	context->PrimitiveType = type;
 
 	if (mDevice->mDeviceState.mHasVertexDeclaration)
 	{
-		context.VertexDeclaration = mDevice->mDeviceState.mVertexDeclaration;
+		context->VertexDeclaration = mDevice->mDeviceState.mVertexDeclaration;
 	}
 	else if (mDevice->mDeviceState.mHasFVF)
 	{
-		context.FVF = mDevice->mDeviceState.mFVF;
+		context->FVF = mDevice->mDeviceState.mFVF;
 	}
 
 	if (mDevice->mDeviceState.mHasVertexShader)
 	{
-		context.VertexShader = mDevice->mDeviceState.mVertexShader;
+		context->VertexShader = mDevice->mDeviceState.mVertexShader;
 	}
 
 	if (mDevice->mDeviceState.mHasPixelShader)
 	{
-		context.PixelShader = mDevice->mDeviceState.mPixelShader;
+		context->PixelShader = mDevice->mDeviceState.mPixelShader;
 	}
 
-	context.StreamCount = mDevice->mDeviceState.mStreamSources.size();
+	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
 
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_FILLMODE);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
-		context.FillMode = (D3DFILLMODE)mDevice->mDeviceState.mRenderStates[D3DRS_FILLMODE];
+		context->FillMode = (D3DFILLMODE)mDevice->mDeviceState.mRenderStates[D3DRS_FILLMODE];
 	}
 	else
 	{
-		context.FillMode = D3DFILL_SOLID;
+		context->FillMode = D3DFILL_SOLID;
 	}
 
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_CULLMODE);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
-		context.CullMode = (D3DCULL)searchResult->second;
+		context->CullMode = (D3DCULL)searchResult->second;
 	}
 	else
 	{
-		context.CullMode = D3DCULL_CW;
+		context->CullMode = D3DCULL_CW;
 	}
 
 	int i = 0;
@@ -619,7 +622,7 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
 		mVertexInputBindingDescription[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-		context.Bindings[source.first] = source.second.Stride;
+		context->Bindings[source.first] = source.second.Stride;
 
 		i++;
 	}
@@ -630,19 +633,19 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 
 	for (size_t i = 0; i < mDrawBuffer.size(); i++)
 	{
-		if (mDrawBuffer[i].PrimitiveType == context.PrimitiveType
-			&& mDrawBuffer[i].FVF == context.FVF
-			&& mDrawBuffer[i].VertexDeclaration == context.VertexDeclaration
-			&& mDrawBuffer[i].VertexShader == context.VertexShader
-			&& mDrawBuffer[i].PixelShader == context.PixelShader
-			&& mDrawBuffer[i].StreamCount == context.StreamCount
-			&& mDrawBuffer[i].FillMode == context.FillMode
-			&& mDrawBuffer[i].CullMode == context.CullMode)
+		if (mDrawBuffer[i]->PrimitiveType == context->PrimitiveType
+			&& mDrawBuffer[i]->FVF == context->FVF
+			&& mDrawBuffer[i]->VertexDeclaration == context->VertexDeclaration
+			&& mDrawBuffer[i]->VertexShader == context->VertexShader
+			&& mDrawBuffer[i]->PixelShader == context->PixelShader
+			&& mDrawBuffer[i]->StreamCount == context->StreamCount
+			&& mDrawBuffer[i]->FillMode == context->FillMode
+			&& mDrawBuffer[i]->CullMode == context->CullMode)
 		{
 			BOOL isMatch = true;
-			BOOST_FOREACH(const auto& pair, context.Bindings)
+			BOOST_FOREACH(const auto& pair, context->Bindings)
 			{
-				if (mDrawBuffer[i].Bindings.count(pair.first) == 0 || pair.second != mDrawBuffer[i].Bindings[pair.first])
+				if (mDrawBuffer[i]->Bindings.count(pair.first) == 0 || pair.second != mDrawBuffer[i]->Bindings[pair.first])
 				{
 					isMatch = false;
 					break;
@@ -650,14 +653,15 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 			}
 			if (isMatch)
 			{
-				context.Pipeline = mDrawBuffer[i].Pipeline;
-				context.PipelineLayout = mDrawBuffer[i].PipelineLayout;
-				context.DescriptorSetLayout = mDrawBuffer[i].DescriptorSetLayout;
+				context->Pipeline = mDrawBuffer[i]->Pipeline;
+				context->PipelineLayout = mDrawBuffer[i]->PipelineLayout;
+				context->DescriptorSetLayout = mDrawBuffer[i]->DescriptorSetLayout;
+				context->mDevice = nullptr; //Not owner.
 			}
 		}
 	}
 
-	if (context.Pipeline == VK_NULL_HANDLE)
+	if (context->Pipeline == VK_NULL_HANDLE)
 	{
 		CreatePipe(context);
 	}	
@@ -668,24 +672,24 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 
 	//Copy information into resource context.
 	mDescriptorBufferInfo.buffer = mUniformBuffer;
-	resourceContext.DescriptorBufferInfo = mDescriptorBufferInfo;
-	std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext.DescriptorImageInfo));
+	resourceContext->DescriptorBufferInfo = mDescriptorBufferInfo;
+	std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
 	//Loop over cached descriptor information.
 	for (size_t i = 0; i < mResourceBuffer.size(); i++)
 	{
 		auto& resourceBuffer = mResourceBuffer[i];
-		if (resourceBuffer.DescriptorBufferInfo.buffer == resourceContext.DescriptorBufferInfo.buffer
-			&& resourceBuffer.DescriptorBufferInfo.offset == resourceContext.DescriptorBufferInfo.offset
-			&& resourceBuffer.DescriptorBufferInfo.range == resourceContext.DescriptorBufferInfo.range)
+		if (resourceBuffer->DescriptorBufferInfo.buffer == resourceContext->DescriptorBufferInfo.buffer
+			&& resourceBuffer->DescriptorBufferInfo.offset == resourceContext->DescriptorBufferInfo.offset
+			&& resourceBuffer->DescriptorBufferInfo.range == resourceContext->DescriptorBufferInfo.range)
 		{
 			BOOL imageMatches = true;
 
 			//The image info array is currently always 16.
 			for (size_t j = 0; j < 16; j++)
 			{
-				auto& imageData1 = resourceBuffer.DescriptorImageInfo[j];
-				auto& imageData2 = resourceContext.DescriptorImageInfo[j];
+				auto& imageData1 = resourceBuffer->DescriptorImageInfo[j];
+				auto& imageData2 = resourceContext->DescriptorImageInfo[j];
 
 				if (imageData1.imageLayout == imageData2.imageLayout
 					&& imageData1.imageView == imageData2.imageView
@@ -701,14 +705,13 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 			}
 			if (imageMatches)
 			{
-				resourceContext.DescriptorSet = resourceBuffer.DescriptorSet;
+				resourceContext->DescriptorSet = resourceBuffer->DescriptorSet;
+				resourceContext->mDevice = nullptr; //Not owner.
 			}
 		}
 	}
 
-	//TODO: add logic to check for existing descriptor.
-
-	if (resourceContext.DescriptorSet == VK_NULL_HANDLE)
+	if (resourceContext->DescriptorSet == VK_NULL_HANDLE)
 	{
 		CreateDescriptorSet(context, resourceContext);
 	}	
@@ -717,9 +720,9 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 	* Setup bindings
 	**********************************************/
 
-	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.PipelineLayout, 0, 1, &resourceContext.DescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
 
-	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context.Pipeline);	
+	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);	
 
 	mVertexCount = 0;
 
@@ -735,7 +738,7 @@ void BufferManager::BeginDraw(DrawContext& context, ResourceContext& resourceCon
 	}	
 }
 
-void BufferManager::CreatePipe(DrawContext& context)
+void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 {
 	VkResult result = VK_SUCCESS;
 
@@ -748,41 +751,43 @@ void BufferManager::CreatePipe(DrawContext& context)
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
 
-	if (context.VertexDeclaration != nullptr)
+	if (context->VertexDeclaration != nullptr)
 	{
-		hasColor = context.VertexDeclaration->mHasColor;
-		hasPosition = context.VertexDeclaration->mHasPosition;
-		hasNormal = context.VertexDeclaration->mHasNormal;
-		textureCount = context.VertexDeclaration->mTextureCount;
+		auto vertexDeclaration = context->VertexDeclaration;
+
+		hasColor = vertexDeclaration->mHasColor;
+		hasPosition = vertexDeclaration->mHasPosition;
+		hasNormal = vertexDeclaration->mHasNormal;
+		textureCount = vertexDeclaration->mTextureCount;
 	}
-	else if (context.FVF)
+	else if (context->FVF)
 	{
-		if ((context.FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+		if ((context->FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 		{
 			hasPosition = true;
 		}
 
-		if ((context.FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+		if ((context->FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
 		{
 			hasNormal = true;
 		}
 
-		if ((context.FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
+		if ((context->FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
 		{
 			BOOST_LOG_TRIVIAL(warning) << "BufferManager::CreatePipe D3DFVF_PSIZE is not implemented!";
 		}
 
-		if ((context.FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+		if ((context->FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 		{
 			hasColor = true;
 		}
 
-		if ((context.FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+		if ((context->FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 		{
 			BOOST_LOG_TRIVIAL(warning) << "BufferManager::CreatePipe D3DFVF_SPECULAR is not implemented!";
 		}
 
-		textureCount = ConvertFormat(context.FVF);
+		textureCount = ConvertFormat(context->FVF);
 	}
 	else
 	{
@@ -848,9 +853,9 @@ void BufferManager::CreatePipe(DrawContext& context)
 	}
 	*/
 
-	SetCulling(mPipelineRasterizationStateCreateInfo, context.CullMode);
-	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode(context.FillMode);
-	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context.PrimitiveType);
+	SetCulling(mPipelineRasterizationStateCreateInfo, context->CullMode);
+	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode(context->FillMode);
+	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context->PrimitiveType);
 
 	/**********************************************
 	* Figure out correct shader
@@ -922,15 +927,15 @@ void BufferManager::CreatePipe(DrawContext& context)
 	/**********************************************
 	* Figure out attributes
 	**********************************************/
-	if (context.VertexDeclaration != nullptr)
+	if (context->VertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
-		attributeCount = context.VertexDeclaration->mVertexElements.size();
+		attributeCount = context->VertexDeclaration->mVertexElements.size();
 
 		for (size_t i = 0; i < attributeCount; i++)
 		{
-			D3DVERTEXELEMENT9& element = context.VertexDeclaration->mVertexElements[i];
+			D3DVERTEXELEMENT9& element = context->VertexDeclaration->mVertexElements[i];
 
 			int t = D3DDECLTYPE_FLOAT3;
 
@@ -979,10 +984,10 @@ void BufferManager::CreatePipe(DrawContext& context)
 			}
 		}
 	}
-	else if (context.FVF)
+	else if (context->FVF)
 	{
 		//revisit - make sure multiple sources is valid for FVF.
-		for (size_t i = 0; i < context.StreamCount; i++)
+		for (size_t i = 0; i < context->StreamCount; i++)
 		{
 			int attributeIndex = i * attributeCount;
 			uint32_t offset = 0;
@@ -1012,7 +1017,7 @@ void BufferManager::CreatePipe(DrawContext& context)
 
 			//D3DFVF_PSIZE
 
-			if ((context.FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+			if ((context->FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = i;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
@@ -1023,7 +1028,7 @@ void BufferManager::CreatePipe(DrawContext& context)
 				attributeIndex += 1;
 			}
 
-			if ((context.FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+			if ((context->FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = i;
 				mVertexInputAttributeDescription[attributeIndex].location = location;
@@ -1051,10 +1056,10 @@ void BufferManager::CreatePipe(DrawContext& context)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unknown vertex format.";
 	}
 
-	mPipelineLayoutCreateInfo.pSetLayouts = &context.DescriptorSetLayout;
+	mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 	mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context.StreamCount;
+	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
 
 	mDescriptorSetLayoutBinding[0].binding = 0;
@@ -1083,23 +1088,23 @@ void BufferManager::CreatePipe(DrawContext& context)
 	* Create pipeline & descriptor set layout.
 	**********************************************/
 
-	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context.DescriptorSetLayout);
+	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << result;
 		return;
 	}
 
-	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, nullptr, &context.PipelineLayout);
+	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, nullptr, &context->PipelineLayout);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreatePipelineLayout failed with return code of " << result;
 		return;
 	}
 
-	mGraphicsPipelineCreateInfo.layout = context.PipelineLayout;
+	mGraphicsPipelineCreateInfo.layout = context->PipelineLayout;
 
-	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
+	result = vkCreateGraphicsPipelines(mDevice->mDevice, mPipelineCache, 1, &mGraphicsPipelineCreateInfo, nullptr, &context->Pipeline);
 	//result = vkCreateGraphicsPipelines(mDevice->mDevice, VK_NULL_HANDLE, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
 	if (result != VK_SUCCESS)
 	{
@@ -1109,18 +1114,18 @@ void BufferManager::CreatePipe(DrawContext& context)
 	this->mDrawBuffer.push_back(context);
 }
 
-void BufferManager::CreateDescriptorSet(DrawContext& context, ResourceContext& resourceContext)
+void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext)
 {
 	VkResult result = VK_SUCCESS;
 
-	mDescriptorSetAllocateInfo.pSetLayouts = &context.DescriptorSetLayout;
+	mDescriptorSetAllocateInfo.pSetLayouts = &context->DescriptorSetLayout;
 	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
 
 	/**********************************************
 	* Create Descriptor set
 	**********************************************/
 
-	result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &resourceContext.DescriptorSet);
+	result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &resourceContext->DescriptorSet);
 	if (result != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << result;
@@ -1129,13 +1134,13 @@ void BufferManager::CreateDescriptorSet(DrawContext& context, ResourceContext& r
 
 	mResourceBuffer.push_back(resourceContext);
 
-	mWriteDescriptorSet[0].dstSet = resourceContext.DescriptorSet;
+	mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
 	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &resourceContext.DescriptorBufferInfo;
+	mWriteDescriptorSet[0].pBufferInfo = &resourceContext->DescriptorBufferInfo;
 
-	mWriteDescriptorSet[1].dstSet = resourceContext.DescriptorSet;
+	mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
 	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
-	mWriteDescriptorSet[1].pImageInfo = resourceContext.DescriptorImageInfo;
+	mWriteDescriptorSet[1].pImageInfo = resourceContext->DescriptorImageInfo;
 
 	if (mDevice->mDeviceState.mTextures.size())
 	{
@@ -1147,7 +1152,7 @@ void BufferManager::CreateDescriptorSet(DrawContext& context, ResourceContext& r
 	}
 }
 
-void BufferManager::CreateSampler(SamplerRequest& request)
+void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 {
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
 	//Mipmap filter to use during minification. See D3DTEXTUREFILTERTYPE. The default value is D3DTEXF_NONE.
@@ -1156,14 +1161,14 @@ void BufferManager::CreateSampler(SamplerRequest& request)
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerCreateInfo.pNext = NULL;
 
-	samplerCreateInfo.magFilter = ConvertFilter(request.MagFilter);
-	samplerCreateInfo.minFilter = ConvertFilter(request.MinFilter);
-	samplerCreateInfo.addressModeU = ConvertTextureAddress(request.AddressModeU);
-	samplerCreateInfo.addressModeV = ConvertTextureAddress(request.AddressModeV);
-	samplerCreateInfo.addressModeW = ConvertTextureAddress(request.AddressModeW);
-	samplerCreateInfo.maxAnisotropy = request.MaxAnisotropy;  //16 D3DSAMP_MAXANISOTROPY
-	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request.MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	samplerCreateInfo.mipLodBias = request.MipLodBias;
+	samplerCreateInfo.magFilter = ConvertFilter(request->MagFilter);
+	samplerCreateInfo.minFilter = ConvertFilter(request->MinFilter);
+	samplerCreateInfo.addressModeU = ConvertTextureAddress(request->AddressModeU);
+	samplerCreateInfo.addressModeV = ConvertTextureAddress(request->AddressModeV);
+	samplerCreateInfo.addressModeW = ConvertTextureAddress(request->AddressModeW);
+	samplerCreateInfo.maxAnisotropy = request->MaxAnisotropy;  //16 D3DSAMP_MAXANISOTROPY
+	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request->MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerCreateInfo.mipLodBias = request->MipLodBias;
 
 	if (samplerCreateInfo.maxAnisotropy)
 	{
@@ -1180,7 +1185,7 @@ void BufferManager::CreateSampler(SamplerRequest& request)
 	samplerCreateInfo.minLod = 0.0f;
 	//samplerCreateInfo.maxLod = (float)mLevels;
 
-	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &request.Sampler);
+	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &request->Sampler);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateSampler vkCreateSampler failed with return code of " << mResult;
@@ -1192,36 +1197,35 @@ void BufferManager::CreateSampler(SamplerRequest& request)
 
 void BufferManager::UpdateUniformBuffer()
 {
-	VkResult result;
+	VkResult result = VK_SUCCESS;
 	void* data = nullptr;
-	DeviceState&  deviceState = mDevice->mDeviceState;
 
-	BOOST_FOREACH(const auto& pair1, deviceState.mTransforms)
+	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTransforms)
 	{
 		switch (pair1.first)
 		{
 		case D3DTS_WORLD:
-			for (size_t i = 0; i < 4; i++)
+			for (int32_t i = 0; i < 4; i++)
 			{
-				for (size_t j = 0; j < 4; j++)
+				for (int32_t j = 0; j < 4; j++)
 				{
 					mUBO.model[i][j] = pair1.second.m[i][j];
 				}
 			}
 			break;
 		case D3DTS_VIEW:
-			for (size_t i = 0; i < 4; i++)
+			for (int32_t i = 0; i < 4; i++)
 			{
-				for (size_t j = 0; j < 4; j++)
+				for (int32_t j = 0; j < 4; j++)
 				{
 					mUBO.view[i][j] = pair1.second.m[i][j];
 				}
 			}
 			break;
 		case D3DTS_PROJECTION:
-			for (size_t i = 0; i < 4; i++)
+			for (int32_t i = 0; i < 4; i++)
 			{
-				for (size_t j = 0; j < 4; j++)
+				for (int32_t j = 0; j < 4; j++)
 				{
 					mUBO.proj[i][j] = pair1.second.m[i][j];
 				}
@@ -1237,14 +1241,55 @@ void BufferManager::UpdateUniformBuffer()
 	mUniformBufferMemory = VK_NULL_HANDLE;
 
 	//Look for the buffer in history and assign it if found.
-	for (size_t i = 0; i < mHistoricalUniformBuffers.size(); i++)
+	for (int32_t i = 0; i < mHistoricalUniformBuffers.size(); i++)
 	{
-		if (memcmp(&mUBO,&mHistoricalUniformBuffers[i].UBO,sizeof(UniformBufferObject))==0)
+		BOOL isMatch = true;
+
+		for (int32_t l = 0; l < 4; l++)
 		{
-			mUniformBuffer = mHistoricalUniformBuffers[i].UniformBuffer;
-			mUniformBufferMemory = mHistoricalUniformBuffers[i].UniformBufferMemory;
-			break;
+			for (int32_t v = 0; v < 4; v++)
+			{			
+				float f1 = mHistoricalUniformBuffers[i]->UBO.model[l][v];
+				float f2 = mUBO.model[l][v];
+				if (abs(f1 - f2) >= mEpsilon)
+				{
+					goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
+				}
+			}
 		}
+
+		for (int32_t l = 0; l < 4; l++)
+		{
+			for (int32_t v = 0; v < 4; v++)
+			{
+				float f1 = mHistoricalUniformBuffers[i]->UBO.proj[l][v];
+				float f2 = mUBO.proj[l][v];
+				if (abs(f1 - f2) >= mEpsilon)
+				{
+					goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
+				}
+			}
+		}
+
+		for (int32_t l = 0; l < 4; l++)
+		{
+			for (int32_t v = 0; v < 4; v++)
+			{
+				float f1 = mHistoricalUniformBuffers[i]->UBO.view[l][v];
+				float f2 = mUBO.view[l][v];
+				if (abs(f1 - f2) >= mEpsilon)
+				{
+					goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
+				}
+			}
+		}
+		
+		mUniformBuffer = mHistoricalUniformBuffers[i]->UniformBuffer;
+		mUniformBufferMemory = mHistoricalUniformBuffers[i]->UniformBufferMemory;
+		break;
+
+	Next_Loop_Iteration:
+		int test = 0; //The code won't compile if the label is the last thing.
 	}
 
 	//If the UBO is not in history than create a new buffer and copy the UBO into it.
@@ -1264,13 +1309,12 @@ void BufferManager::UpdateUniformBuffer()
 		CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
 
 		//Put the new buffer into the list so it can be cleaned up later.
-		HistoricalUniformBuffer historicalUniformBuffer;
+		std::shared_ptr<HistoricalUniformBuffer> historicalUniformBuffer = std::make_shared<HistoricalUniformBuffer>(mDevice);
 
-		historicalUniformBuffer.UniformBuffer = mUniformBuffer;
-		historicalUniformBuffer.UniformBufferMemory = mUniformBufferMemory;
-		historicalUniformBuffer.UBO = mUBO;
+		historicalUniformBuffer->UniformBuffer = mUniformBuffer;
+		historicalUniformBuffer->UniformBufferMemory = mUniformBufferMemory;
+		historicalUniformBuffer->UBO = mUBO;
 		mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
-
 		//Copy the staging data into the new buffer.
 		CopyBuffer(mUniformStagingBuffer, mUniformBuffer, sizeof(UniformBufferObject));
 	}
@@ -1278,53 +1322,14 @@ void BufferManager::UpdateUniformBuffer()
 
 void BufferManager::FlushDrawBufffer()
 {
-	for (size_t i = 0; i < mDrawBuffer.size(); i++)
-	{
-		if (mDrawBuffer[i].Pipeline!= VK_NULL_HANDLE)
-		{
-			vkDestroyPipeline(mDevice->mDevice, mDrawBuffer[i].Pipeline, NULL);
-		}
-		if (mDrawBuffer[i].PipelineLayout != VK_NULL_HANDLE)
-		{
-			vkDestroyPipelineLayout(mDevice->mDevice, mDrawBuffer[i].PipelineLayout, NULL);
-		}
-		if (mDrawBuffer[i].DescriptorSetLayout != VK_NULL_HANDLE)
-		{
-			vkDestroyDescriptorSetLayout(mDevice->mDevice, mDrawBuffer[i].DescriptorSetLayout, NULL);
-		}		
-	}
+	std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
+
 	mDrawBuffer.clear();
 
-	for (size_t i = 0; i < mHistoricalUniformBuffers.size(); i++)
-	{		
-		if (mHistoricalUniformBuffers[i].UniformBuffer != VK_NULL_HANDLE)
-		{
-			vkDestroyBuffer(mDevice->mDevice, mHistoricalUniformBuffers[i].UniformBuffer, NULL);
-		}
-
-		if (mHistoricalUniformBuffers[i].UniformBufferMemory != VK_NULL_HANDLE)
-		{
-			vkFreeMemory(mDevice->mDevice, mHistoricalUniformBuffers[i].UniformBufferMemory, NULL);
-		}
-	}
 	mHistoricalUniformBuffers.clear();
 
-	for (size_t i = 0; i < mSamplerRequests.size(); i++)
-	{
-		if (mSamplerRequests[i].Sampler != VK_NULL_HANDLE)
-		{
-			vkDestroySampler(mDevice->mDevice, mSamplerRequests[i].Sampler, NULL);
-		}
-	}
 	mSamplerRequests.clear();
 
-	for (size_t i = 0; i < mResourceBuffer.size(); i++)
-	{
-		if (mResourceBuffer[i].DescriptorSet != VK_NULL_HANDLE)
-		{
-			vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &mResourceBuffer[i].DescriptorSet);
-		}		
-	}
 	mResourceBuffer.clear();
 }
 
@@ -1401,4 +1406,56 @@ void BufferManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
 	vkQueueWaitIdle(mDevice->mQueue);
 
 	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, &commandBuffer);
+}
+
+SamplerRequest::~SamplerRequest()
+{
+	if (mDevice != nullptr && Sampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(mDevice->mDevice, Sampler, NULL);
+	}
+}
+
+ResourceContext::~ResourceContext()
+{
+	if (mDevice != nullptr && DescriptorSet != VK_NULL_HANDLE)
+	{
+		vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &DescriptorSet);
+	}
+}
+
+DrawContext::~DrawContext()
+{
+	if (mDevice != nullptr)
+	{
+		if (Pipeline != VK_NULL_HANDLE)
+		{
+			vkDestroyPipeline(mDevice->mDevice, Pipeline, NULL);
+		}
+		if (PipelineLayout != VK_NULL_HANDLE)
+		{
+			vkDestroyPipelineLayout(mDevice->mDevice, PipelineLayout, NULL);
+		}
+		if (DescriptorSetLayout != VK_NULL_HANDLE)
+		{
+			vkDestroyDescriptorSetLayout(mDevice->mDevice, DescriptorSetLayout, NULL);
+		}
+	}
+
+}
+
+HistoricalUniformBuffer::~HistoricalUniformBuffer()
+{
+	if (mDevice != nullptr)
+	{
+		if (UniformBuffer != VK_NULL_HANDLE)
+		{
+			vkDestroyBuffer(mDevice->mDevice, UniformBuffer, NULL);
+		}
+
+		if (UniformBufferMemory != VK_NULL_HANDLE)
+		{
+			vkFreeMemory(mDevice->mDevice, UniformBufferMemory, NULL);
+		}
+	}
 }

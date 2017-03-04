@@ -80,60 +80,6 @@ public:
 	~StreamSource();
 };
 
-struct SamplerRequest
-{
-	//Vulkan State
-	VkSampler Sampler = VK_NULL_HANDLE;
-
-	//D3D9 State
-	DWORD SamplerIndex=0;
-	D3DTEXTUREFILTERTYPE MagFilter;
-	D3DTEXTUREFILTERTYPE MinFilter;
-	D3DTEXTUREADDRESS AddressModeU;
-	D3DTEXTUREADDRESS AddressModeV;
-	D3DTEXTUREADDRESS AddressModeW;
-	DWORD MaxAnisotropy;
-	D3DTEXTUREFILTERTYPE MipmapMode;
-	float MipLodBias;
-};
-
-struct ResourceContext
-{
-	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
-	VkDescriptorBufferInfo DescriptorBufferInfo = {};
-
-	//Vulkan State
-	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
-};
-
-struct DrawContext
-{
-	//Vulkan State
-	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
-	VkPipeline Pipeline = VK_NULL_HANDLE;
-	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-
-	//Misc
-	std::unordered_map<UINT, UINT> Bindings;
-
-	//D3D9 State - Pipe
-	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
-	DWORD FVF = 0;
-	CVertexDeclaration9* VertexDeclaration = nullptr;
-	CVertexShader9* VertexShader = nullptr;
-	CPixelShader9* PixelShader = nullptr;
-	size_t StreamCount = 0;
-	D3DFILLMODE FillMode = D3DFILL_FORCE_DWORD;
-	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
-};
-
-struct HistoricalUniformBuffer
-{
-	UniformBufferObject UBO = {};
-	VkBuffer UniformBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
-};
-
 struct DeviceState
 {
 	//IDirect3DDevice9::LightEnable
