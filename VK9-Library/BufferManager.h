@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include <unordered_map>
 #include <vector>
 #include <memory>
+#include <chrono>
 
 #include "CTypes.h"
 #include "CIndexBuffer9.h"
@@ -49,6 +50,7 @@ struct SamplerRequest
 	float MipLodBias;
 
 	//Resource Handling.
+	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
 	CDevice9* mDevice = nullptr;
 	SamplerRequest(CDevice9* device) : mDevice(device) {}
 	~SamplerRequest();
@@ -63,6 +65,7 @@ struct ResourceContext
 	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
 
 	//Resource Handling.
+	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
 	CDevice9* mDevice = nullptr;
 	ResourceContext(CDevice9* device) : mDevice(device) {}
 	~ResourceContext();
@@ -89,6 +92,7 @@ struct DrawContext
 	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
 
 	//Resource Handling.
+	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
 	CDevice9* mDevice = nullptr;
 	DrawContext(CDevice9* device) : mDevice(device) {}
 	~DrawContext();
@@ -101,6 +105,7 @@ struct HistoricalUniformBuffer
 	VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
 
 	//Resource Handling.
+	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
 	CDevice9* mDevice = nullptr;
 	HistoricalUniformBuffer(CDevice9* device) : mDevice(device) {}
 	~HistoricalUniformBuffer();

@@ -24,7 +24,8 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 #include <glm/gtc/epsilon.hpp> //Needed for matrix == matrix
-#include <chrono>
+
+#define CACHE_SECONDS 2
 
 typedef std::unordered_map<UINT, StreamSource> map_type;
 
@@ -496,7 +497,10 @@ BufferManager::~BufferManager()
 		mPipelineCache = VK_NULL_HANDLE;
 	}
 
-	FlushDrawBufffer();
+	mDrawBuffer.clear();
+	mHistoricalUniformBuffers.clear();
+	mSamplerRequests.clear();
+	mResourceBuffer.clear();
 }
 
 void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
@@ -549,6 +553,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 				{
 					request->Sampler = storedRequest->Sampler;
 					request->mDevice = nullptr; //Not owner.
+					storedRequest->LastUsed = std::chrono::steady_clock::now();
 				}
 			}
 
@@ -657,6 +662,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 				context->PipelineLayout = mDrawBuffer[i]->PipelineLayout;
 				context->DescriptorSetLayout = mDrawBuffer[i]->DescriptorSetLayout;
 				context->mDevice = nullptr; //Not owner.
+				mDrawBuffer[i]->LastUsed = std::chrono::steady_clock::now();
 			}
 		}
 	}
@@ -707,6 +713,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			{
 				resourceContext->DescriptorSet = resourceBuffer->DescriptorSet;
 				resourceContext->mDevice = nullptr; //Not owner.
+				resourceBuffer->LastUsed = std::chrono::steady_clock::now();
 			}
 		}
 	}
@@ -1286,6 +1293,7 @@ void BufferManager::UpdateUniformBuffer()
 		
 		mUniformBuffer = mHistoricalUniformBuffers[i]->UniformBuffer;
 		mUniformBufferMemory = mHistoricalUniformBuffers[i]->UniformBufferMemory;
+		mHistoricalUniformBuffers[i]->LastUsed = std::chrono::steady_clock::now();
 		break;
 
 	Next_Loop_Iteration:
@@ -1322,15 +1330,18 @@ void BufferManager::UpdateUniformBuffer()
 
 void BufferManager::FlushDrawBufffer()
 {
-	std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
+	/*
+	Uses remove_if and chrono to remove elements that have not been used in over a second.	
+	*/
+	mDrawBuffer.erase(std::remove_if(mDrawBuffer.begin(), mDrawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mDrawBuffer.end());
+	mHistoricalUniformBuffers.erase(std::remove_if(mHistoricalUniformBuffers.begin(), mHistoricalUniformBuffers.end(), [](const std::shared_ptr<HistoricalUniformBuffer> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mHistoricalUniformBuffers.end());
+	mSamplerRequests.erase(std::remove_if(mSamplerRequests.begin(), mSamplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mSamplerRequests.end());
+	mResourceBuffer.erase(std::remove_if(mResourceBuffer.begin(), mResourceBuffer.end(), [](const std::shared_ptr<ResourceContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mResourceBuffer.end());
 
-	mDrawBuffer.clear();
-
-	mHistoricalUniformBuffers.clear();
-
-	mSamplerRequests.clear();
-
-	mResourceBuffer.clear();
+	//mDrawBuffer.clear();
+	//mHistoricalUniformBuffers.clear();
+	//mSamplerRequests.clear();
+	//mResourceBuffer.clear();
 }
 
 void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)
