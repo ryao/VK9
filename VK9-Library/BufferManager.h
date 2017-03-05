@@ -23,8 +23,8 @@ misrepresented as being the original software.
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
-#include <unordered_map>
-#include <vector>
+#include <boost/container/flat_map.hpp>
+#include <boost/container/small_vector.hpp>
 #include <memory>
 #include <chrono>
 
@@ -79,7 +79,7 @@ struct DrawContext
 	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 
 	//Misc
-	std::unordered_map<UINT, UINT> Bindings;
+	boost::container::flat_map<UINT, UINT> Bindings;
 
 	//D3D9 State - Pipe
 	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
@@ -190,14 +190,14 @@ public:
 	VkBuffer mUniformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory mUniformBufferMemory = VK_NULL_HANDLE;
 
-	std::vector< std::shared_ptr<SamplerRequest> > mSamplerRequests;
-	std::vector< std::shared_ptr<DrawContext> > mDrawBuffer;
+	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
+	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;
 
-	std::vector< std::shared_ptr<ResourceContext> > mUsedResourceBuffer;
-	std::vector< std::shared_ptr<ResourceContext> > mUnusedResourceBuffer;
+	boost::container::small_vector< std::shared_ptr<ResourceContext>, 16> mUsedResourceBuffer;
+	boost::container::small_vector< std::shared_ptr<ResourceContext>, 16> mUnusedResourceBuffer;
 
-	std::vector< std::shared_ptr<HistoricalUniformBuffer> > mUsedUniformBuffers;
-	std::vector< std::shared_ptr<HistoricalUniformBuffer> > mUnusedUniformBuffers;
+	boost::container::small_vector< std::shared_ptr<HistoricalUniformBuffer>, 16> mUsedUniformBuffers;
+	boost::container::small_vector< std::shared_ptr<HistoricalUniformBuffer>, 16> mUnusedUniformBuffers;
 	UniformBufferObject mUBO = {};
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();

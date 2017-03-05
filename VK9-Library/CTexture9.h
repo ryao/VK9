@@ -21,7 +21,7 @@ misrepresented as being the original software.
 #ifndef CTEXTURE9_H
 #define CTEXTURE9_H
 
-#include <vector>
+#include <boost/container/small_vector.hpp>
 #include "d3d9.h" // Base class: IDirect3DTexture9
 #include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
@@ -59,7 +59,7 @@ public:
 	VkSampler mSampler = VK_NULL_HANDLE;
 	VkImageView mImageView = VK_NULL_HANDLE;
 
-	std::vector<CSurface9*> mSurfaces;
+	boost::container::small_vector<CSurface9*,5> mSurfaces;
 
 	void CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
 	void Flush();

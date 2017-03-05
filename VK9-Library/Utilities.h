@@ -739,7 +739,7 @@ inline uint32_t ConvertFormat(DWORD fvf)
 	return 0;
 }
 
-inline void Print(std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& transforms)
+inline void Print(boost::container::flat_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& transforms)
 {
 	BOOST_FOREACH(const auto& pair1, transforms)
 	{
@@ -858,7 +858,7 @@ inline void SetAlpha(char* imageData, uint32_t height, uint32_t width, uint32_t 
 		color_A8R8G8B8 *row = (color_A8R8G8B8*)imageData;
 		for (uint32_t x = 0; x < width; x++)
 		{
-			row->A = 0xFF;
+			row->A = UCHAR_MAX; //0xFF;
 
 			row++;
 		}

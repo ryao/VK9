@@ -23,7 +23,7 @@ misrepresented as being the original software.
 
 #include "d3d9.h" // Base class: IDirect3DVertexDeclaration9
 #include <vulkan/vulkan.h>
-#include <vector>
+#include <boost/container/small_vector.hpp>
 
 class CDevice9;
 
@@ -35,7 +35,7 @@ public:
 	CVertexDeclaration9(CDevice9* device,const D3DVERTEXELEMENT9* pVertexElements);
 	~CVertexDeclaration9();
 
-	std::vector<D3DVERTEXELEMENT9> mVertexElements;
+	boost::container::small_vector<D3DVERTEXELEMENT9,16> mVertexElements;
 	BOOL mHasPosition=0;
 	BOOL mHasColor=0;
 	BOOL mHasNormal=0;

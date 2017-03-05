@@ -26,8 +26,8 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3DDevice9
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
-#include <vector>
-#include <unordered_map>
+#include <boost/container/small_vector.hpp>
+#include <boost/container/flat_map.hpp>
 
 #include "CVertexDeclaration9.h"
 #include "CSurface9.h"
@@ -222,7 +222,7 @@ public:
 	VkSurfaceTransformFlagBitsKHR mTransformFlags;
 	uint32_t mDisplayCount = 0;
 	VkFramebuffer* mFramebuffers = nullptr;
-	std::vector<CSwapChain9*> mSwapChains;
+	boost::container::small_vector<CSwapChain9*,2> mSwapChains;
 
 	//Depth
 	VkFormat mDepthFormat = VK_FORMAT_UNDEFINED;
@@ -237,8 +237,8 @@ public:
 	uint32_t mGraphicsQueueIndex = UINT32_MAX;
 	uint32_t mPresentationQueueIndex = UINT32_MAX;
 	ULONG mReferenceCount = 1;
-	std::vector<char*> mExtensionNames;
-	std::vector<char*> mLayerExtensionNames;
+	boost::container::small_vector<char*,16> mExtensionNames;
+	boost::container::small_vector<char*,16> mLayerExtensionNames;
 	uint32_t mCurrentBuffer = 0;
 	VkCommandPool mCommandPool = VK_NULL_HANDLE;
 	VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
@@ -259,7 +259,7 @@ public:
 	VkPresentInfoKHR mPresentInfo = {};
 	VkPushConstantRange mPushConstants[1] = {};
 	VkPipelineStageFlags mPipeStageFlags = {};
-	std::vector<CRenderTargetSurface9*> mRenderTargets;
+	boost::container::small_vector<CRenderTargetSurface9*,16> mRenderTargets;
 
 	BOOL mIsDirty = true;
 	BOOL mIsSceneStarted = false;

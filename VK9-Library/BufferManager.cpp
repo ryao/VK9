@@ -23,11 +23,11 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
-#include <glm/gtc/epsilon.hpp> //Needed for matrix == matrix
+#include <glm/gtc/epsilon.hpp>
 
 #define CACHE_SECONDS 1
 
-typedef std::unordered_map<UINT, StreamSource> map_type;
+typedef boost::container::flat_map<UINT, StreamSource> map_type;
 
 BufferManager::BufferManager()
 {
@@ -531,7 +531,7 @@ BufferManager::~BufferManager()
 void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
-	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
+	boost::container::flat_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
 
 	/**********************************************
 	* Update UBO structure.
@@ -1247,7 +1247,7 @@ void BufferManager::UpdateUniformBuffer()
 			{
 				for (int32_t j = 0; j < 4; j++)
 				{
-					mUBO.model[i][j] = pair1.second.m[i][j];
+					mUBO.Model.Value[i][j] = pair1.second.m[i][j];
 				}
 			}
 			break;
@@ -1256,7 +1256,7 @@ void BufferManager::UpdateUniformBuffer()
 			{
 				for (int32_t j = 0; j < 4; j++)
 				{
-					mUBO.view[i][j] = pair1.second.m[i][j];
+					mUBO.View.Value[i][j] = pair1.second.m[i][j];
 				}
 			}
 			break;
@@ -1265,7 +1265,7 @@ void BufferManager::UpdateUniformBuffer()
 			{
 				for (int32_t j = 0; j < 4; j++)
 				{
-					mUBO.proj[i][j] = pair1.second.m[i][j];
+					mUBO.Projection.Value[i][j] = pair1.second.m[i][j];
 				}
 			}
 			break;
@@ -1281,50 +1281,41 @@ void BufferManager::UpdateUniformBuffer()
 	//Look for the buffer in history and assign it if found.
 	for (size_t i = 0; i < mUsedUniformBuffers.size(); i++)
 	{
-		BOOL isMatch = true;
+		auto& usedBuffer = (*mUsedUniformBuffers[i]);
 
-		for (int32_t l = 0; l < 4; l++)
+		for (int32_t j = 0; j < 16; j++)
 		{
-			for (int32_t v = 0; v < 4; v++)
-			{			
-				float f1 = mUsedUniformBuffers[i]->UBO.model[l][v];
-				float f2 = mUBO.model[l][v];
-				if (abs(f1 - f2) >= mEpsilon)
-				{
-					goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
-				}
+			float f1 = usedBuffer.UBO.Model.FlatValue[j];
+			float f2 = mUBO.Model.FlatValue[j];
+			if (abs(f1 - f2) >= mEpsilon)
+			{
+				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
 			}
 		}
 
-		for (int32_t l = 0; l < 4; l++)
+		for (int32_t j = 0; j < 16; j++)
 		{
-			for (int32_t v = 0; v < 4; v++)
+			float f1 = usedBuffer.UBO.Projection.FlatValue[j];
+			float f2 = mUBO.Projection.FlatValue[j];
+			if (abs(f1 - f2) >= mEpsilon)
 			{
-				float f1 = mUsedUniformBuffers[i]->UBO.proj[l][v];
-				float f2 = mUBO.proj[l][v];
-				if (abs(f1 - f2) >= mEpsilon)
-				{
-					goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
-				}
+				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
 			}
 		}
 
-		for (int32_t l = 0; l < 4; l++)
+		for (int32_t j = 0; j < 16; j++)
 		{
-			for (int32_t v = 0; v < 4; v++)
+			float f1 = usedBuffer.UBO.View.FlatValue[j];
+			float f2 = mUBO.View.FlatValue[j];
+			if (abs(f1 - f2) >= mEpsilon)
 			{
-				float f1 = mUsedUniformBuffers[i]->UBO.view[l][v];
-				float f2 = mUBO.view[l][v];
-				if (abs(f1 - f2) >= mEpsilon)
-				{
-					goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
-				}
+				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
 			}
 		}
 		
-		mUniformBuffer = mUsedUniformBuffers[i]->UniformBuffer;
-		mUniformBufferMemory = mUsedUniformBuffers[i]->UniformBufferMemory;
-		mUsedUniformBuffers[i]->LastUsed = std::chrono::steady_clock::now();
+		mUniformBuffer = usedBuffer.UniformBuffer;
+		mUniformBufferMemory = usedBuffer.UniformBufferMemory;
+		usedBuffer.LastUsed = std::chrono::steady_clock::now();
 		break;
 
 	Next_Loop_Iteration:

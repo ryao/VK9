@@ -24,7 +24,7 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3D9
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
-#include <vector>
+#include <boost/container/small_vector.hpp>
 #include <boost/program_options.hpp>
 //#include <boost/log/utility/setup/file.hpp>
 //#include <boost/log/sinks/sync_frontend.hpp>
@@ -58,9 +58,9 @@ public:
 	VkLayerProperties* mLayerProperties = nullptr;
 	uint32_t mLayerPropertyCount = 0;
 	
-	std::vector<char*> mExtensionNames;
-	std::vector<char*> mLayerExtensionNames;
-	std::vector<Monitor> mMonitors;
+	boost::container::small_vector<char*,16> mExtensionNames;
+	boost::container::small_vector<char*,16> mLayerExtensionNames;
+	boost::container::small_vector<Monitor,3> mMonitors;
 	bool mValidationPresent = false;
 
 	boost::program_options::variables_map mOptions;

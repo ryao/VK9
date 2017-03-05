@@ -29,8 +29,8 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 
-#include <vector>
-#include <unordered_map>
+#include <boost/container/small_vector.hpp>
+#include <boost/container/flat_map.hpp>
 
 class CVertexBuffer9;
 class CVertexDeclaration9;
@@ -57,10 +57,19 @@ struct Vertex
 	DWORD color;   // Color of vertex
 };
 
+union Matrix
+{
+	float Value[4][4];
+	float FlatValue[16];
+};
+
 struct UniformBufferObject {
-	glm::mat4 model;// = glm::mat4(1.0);
-	glm::mat4 view;// = glm::mat4(1.0);
-	glm::mat4 proj;// = glm::mat4(1.0);
+	//glm::mat4 model;// = glm::mat4(1.0);
+	//glm::mat4 view;// = glm::mat4(1.0);
+	//glm::mat4 proj;// = glm::mat4(1.0);
+	Matrix Model = {1.0,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 };
+	Matrix View = { 1.0,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 };
+	Matrix Projection = { 1.0,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 ,1.0 };
 };
 
 class StreamSource
@@ -83,7 +92,7 @@ public:
 struct DeviceState
 {
 	//IDirect3DDevice9::LightEnable
-	std::unordered_map<DWORD, BOOL> mLightSettings;
+	boost::container::flat_map<DWORD, BOOL> mLightSettings;
 
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
@@ -108,28 +117,28 @@ struct DeviceState
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
 	//IDirect3DDevice9::SetRenderState
-	std::unordered_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
+	boost::container::flat_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
 
 	//IDirect3DDevice9::SetSamplerState
-	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
+	boost::container::flat_map<DWORD, boost::container::flat_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
 
 	//IDirect3DDevice9::SetScissorRect
 	RECT m9Scissor = {};
 	VkRect2D mScissor = {};
 
 	//IDirect3DDevice9::SetStreamSource
-	std::unordered_map<UINT, StreamSource> mStreamSources;
+	boost::container::flat_map<UINT, StreamSource> mStreamSources;
 
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
 	VkDescriptorImageInfo mDescriptorImageInfo[16] = {};
-	std::unordered_map<DWORD, CTexture9*> mTextures;
+	boost::container::flat_map<DWORD, CTexture9*> mTextures;
 
 	//IDirect3DDevice9::SetTextureStageState
-	std::unordered_map<DWORD, std::unordered_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;
+	boost::container::flat_map<DWORD, boost::container::flat_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;
 
 	//IDirect3DDevice9::SetTransform
-	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+	boost::container::flat_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
 	BOOL mHasTransformsChanged = true;
 
 	//IDirect3DDevice9::SetViewport
@@ -152,10 +161,10 @@ struct DeviceState
 
 struct color_A8R8G8B8
 {
-	char B = 0;
-	char G = 0;
-	char R = 0;
-	char A = 0;
+	unsigned char B = 0;
+	unsigned char G = 0;
+	unsigned char R = 0;
+	unsigned char A = 0;
 };
 
 #endif // CTYPES_H
