@@ -33,7 +33,7 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 	ConvertedShader output;
 	DWORD token;
 	VersionToken versionToken;
-	size_t size = sizeof(VersionToken);
+	int32_t size = sizeof(VersionToken);
 
 	versionToken = (*(VersionToken*)shader);
 	shader += 1;

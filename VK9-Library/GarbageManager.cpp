@@ -33,7 +33,7 @@ GarbageManager::~GarbageManager()
 void GarbageManager::DestroyHandles()
 {
 	//Images
-	for (size_t i = 0; i < mImages.size(); i++)
+	for (int32_t i = 0; i < mImages.size(); i++)
 	{
 		if (mImages[i] != VK_NULL_HANDLE)
 		{
@@ -43,7 +43,7 @@ void GarbageManager::DestroyHandles()
 	mImages.clear();
 
 	//Memories
-	for (size_t i = 0; i < mMemories.size(); i++)
+	for (int32_t i = 0; i < mMemories.size(); i++)
 	{
 		if (mMemories[i] != VK_NULL_HANDLE)
 		{
@@ -53,7 +53,7 @@ void GarbageManager::DestroyHandles()
 	mMemories.clear();
 
 	//Samplers
-	for (size_t i = 0; i < mSamplers.size(); i++)
+	for (int32_t i = 0; i < mSamplers.size(); i++)
 	{
 		if (mSamplers[i] != VK_NULL_HANDLE)
 		{
@@ -63,7 +63,7 @@ void GarbageManager::DestroyHandles()
 	mSamplers.clear();
 
 	//DescriptorSets
-	for (size_t i = 0; i < mDescriptorSets.size(); i++)
+	for (int32_t i = 0; i < mDescriptorSets.size(); i++)
 	{
 		if (mDescriptorSets[i] != VK_NULL_HANDLE)
 		{

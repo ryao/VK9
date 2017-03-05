@@ -82,7 +82,7 @@ C9::C9()
 	mResult = vkEnumerateInstanceLayerProperties(&mLayerPropertyCount, mLayerProperties);
 	if (mResult == VK_SUCCESS)
 	{
-		for (size_t i = 0; i < mLayerPropertyCount; i++)
+		for (int32_t i = 0; i < mLayerPropertyCount; i++)
 		{
 			if (strcmp(mLayerProperties[i].layerName,"VK_LAYER_LUNARG_standard_validation")==0)
 			{
@@ -97,7 +97,7 @@ C9::C9()
 	VkExtensionProperties* extension = new VkExtensionProperties[extensionCount];
 	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extension);
 
-	for (size_t i = 0; i < extensionCount; i++)
+	for (int32_t i = 0; i < extensionCount; i++)
 	{
 		BOOST_LOG_TRIVIAL(info) << "C9::C9 extension available: " << extension[i].extensionName;
 		if (strcmp(extension[i].extensionName, "VK_KHR_display")==0)

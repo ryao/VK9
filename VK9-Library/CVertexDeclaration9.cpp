@@ -26,7 +26,7 @@ misrepresented as being the original software.
 CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMENT9* pVertexElements)
 	: mDevice(device)
 {
-	size_t i = 0;
+	int32_t i = 0;
 
 	while (pVertexElements[i].Stream != 0xFF)
 	{

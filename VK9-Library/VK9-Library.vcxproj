@@ -92,6 +92,7 @@
       <Version>
       </Version>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
+      <Profile>true</Profile>
     </Link>
     <PreBuildEvent>
       <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"

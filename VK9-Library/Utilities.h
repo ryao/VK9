@@ -150,9 +150,9 @@ inline VkFormat ConvertDeclType(D3DDECLTYPE input)
 	return output;
 }
 
-inline uint32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType, UINT primtiveCount)
+inline int32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType, int32_t primtiveCount)
 {
-	uint32_t output;
+	int32_t output;
 
 	switch (primtiveType)
 	{
@@ -804,7 +804,7 @@ inline void Print(DeviceState& deviceState)
 
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
-	for (size_t i = 0; i < 16; i++)
+	for (int32_t i = 0; i < 16; i++)
 	{
 		VkDescriptorImageInfo& sampler = deviceState.mDescriptorImageInfo[i];
 

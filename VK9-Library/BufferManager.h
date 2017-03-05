@@ -87,7 +87,7 @@ struct DrawContext
 	CVertexDeclaration9* VertexDeclaration = nullptr;
 	CVertexShader9* VertexShader = nullptr;
 	CPixelShader9* PixelShader = nullptr;
-	size_t StreamCount = 0;
+	int32_t StreamCount = 0;
 	D3DFILLMODE FillMode = D3DFILL_FORCE_DWORD;
 	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
 
@@ -149,6 +149,13 @@ public:
 	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
 	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
 
+	//Command Buffer & Buffer Copy Setup
+	VkCommandBufferAllocateInfo mCommandBufferAllocateInfo = {};
+	VkCommandBuffer mCommandBuffer = VK_NULL_HANDLE;
+	VkCommandBufferBeginInfo mBeginInfo = {};
+	VkBufferCopy mCopyRegion = {};
+	VkSubmitInfo mSubmitInfo = {};
+
 	//VkDescriptorSetLayout mDescriptorSetLayout;
 	//VkPipelineLayout mPipelineLayout;
 	VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
@@ -176,7 +183,7 @@ public:
 	int32_t mTextureHeight = 0;
 	
 	VkDescriptorBufferInfo mDescriptorBufferInfo = {};
-	uint32_t mVertexCount = 0;
+	int32_t mVertexCount = 0;
 
 	VkBuffer mUniformStagingBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory mUniformStagingBufferMemory = VK_NULL_HANDLE;
@@ -185,8 +192,12 @@ public:
 
 	std::vector< std::shared_ptr<SamplerRequest> > mSamplerRequests;
 	std::vector< std::shared_ptr<DrawContext> > mDrawBuffer;
-	std::vector< std::shared_ptr<ResourceContext> > mResourceBuffer;
-	std::vector< std::shared_ptr<HistoricalUniformBuffer> > mHistoricalUniformBuffers;
+
+	std::vector< std::shared_ptr<ResourceContext> > mUsedResourceBuffer;
+	std::vector< std::shared_ptr<ResourceContext> > mUnusedResourceBuffer;
+
+	std::vector< std::shared_ptr<HistoricalUniformBuffer> > mUsedUniformBuffers;
+	std::vector< std::shared_ptr<HistoricalUniformBuffer> > mUnusedUniformBuffers;
 	UniformBufferObject mUBO = {};
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();

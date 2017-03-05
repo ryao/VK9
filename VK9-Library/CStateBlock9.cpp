@@ -30,7 +30,7 @@ CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 {
 	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)";
 	
-	//for (size_t i = 0; i < 16; i++)
+	//for (int32_t i = 0; i < 16; i++)
 	//{
 	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
 	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
@@ -55,7 +55,7 @@ CStateBlock9::CStateBlock9(CDevice9* device)
 {
 	//BOOST_LOG_TRIVIAL(info) << "CStateBlock9::CStateBlock9(CDevice9* device)";
 
-	//for (size_t i = 0; i < 16; i++)
+	//for (int32_t i = 0; i < 16; i++)
 	//{
 	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
 	//	mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;

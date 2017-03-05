@@ -25,7 +25,7 @@ misrepresented as being the original software.
 
 #include <glm/gtc/epsilon.hpp> //Needed for matrix == matrix
 
-#define CACHE_SECONDS 2
+#define CACHE_SECONDS 1
 
 typedef std::unordered_map<UINT, StreamSource> map_type;
 
@@ -403,10 +403,31 @@ BufferManager::BufferManager(CDevice9* device)
 	mWriteDescriptorSet[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	mWriteDescriptorSet[1].descriptorCount = 1;
 	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
+
+	//Command Buffer Setup
+	mCommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	mCommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	mCommandBufferAllocateInfo.commandPool = mDevice->mCommandPool;
+	mCommandBufferAllocateInfo.commandBufferCount = 1;
+
+	vkAllocateCommandBuffers(mDevice->mDevice, &mCommandBufferAllocateInfo, &mCommandBuffer);
+
+	mBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	mBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	mSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	mSubmitInfo.commandBufferCount = 1;
+	mSubmitInfo.pCommandBuffers = &mCommandBuffer;
 } 
 
 BufferManager::~BufferManager()
 {
+	if (mCommandBuffer != VK_NULL_HANDLE)
+	{
+		vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, &mCommandBuffer);
+		mCommandBuffer = VK_NULL_HANDLE;
+	}	
+
 	if (mUniformStagingBuffer != VK_NULL_HANDLE)
 	{
 		vkDestroyBuffer(mDevice->mDevice, mUniformStagingBuffer, NULL);
@@ -498,9 +519,13 @@ BufferManager::~BufferManager()
 	}
 
 	mDrawBuffer.clear();
-	mHistoricalUniformBuffers.clear();
 	mSamplerRequests.clear();
-	mResourceBuffer.clear();
+
+	mUsedUniformBuffers.clear();
+	mUnusedUniformBuffers.clear();
+
+	mUsedResourceBuffer.clear();
+	mUnusedResourceBuffer.clear();
 }
 
 void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
@@ -512,12 +537,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	* Update UBO structure.
 	**********************************************/
 	UpdateUniformBuffer();
-
-	//if (mDevice->mDeviceState.mHasTransformsChanged || mHistoricalUniformBuffers.size()==0)
-	//{		
-	//	mDevice->mDeviceState.mHasTransformsChanged = false;
-	//	//Print(mDevice->mDeviceState.mTransforms);
-	//}
 
 	/**********************************************
 	* Update the textures that are currently mapped.
@@ -682,9 +701,9 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
 	//Loop over cached descriptor information.
-	for (size_t i = 0; i < mResourceBuffer.size(); i++)
+	for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
 	{
-		auto& resourceBuffer = mResourceBuffer[i];
+		auto& resourceBuffer = mUsedResourceBuffer[i];
 		if (resourceBuffer->DescriptorBufferInfo.buffer == resourceContext->DescriptorBufferInfo.buffer
 			&& resourceBuffer->DescriptorBufferInfo.offset == resourceContext->DescriptorBufferInfo.offset
 			&& resourceBuffer->DescriptorBufferInfo.range == resourceContext->DescriptorBufferInfo.range)
@@ -692,7 +711,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			BOOL imageMatches = true;
 
 			//The image info array is currently always 16.
-			for (size_t j = 0; j < 16; j++)
+			for (int32_t j = 0; j < 16; j++)
 			{
 				auto& imageData1 = resourceBuffer->DescriptorImageInfo[j];
 				auto& imageData2 = resourceContext->DescriptorImageInfo[j];
@@ -994,7 +1013,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	else if (context->FVF)
 	{
 		//revisit - make sure multiple sources is valid for FVF.
-		for (size_t i = 0; i < context->StreamCount; i++)
+		for (int32_t i = 0; i < context->StreamCount; i++)
 		{
 			int attributeIndex = i * attributeCount;
 			uint32_t offset = 0;
@@ -1129,17 +1148,29 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
 
 	/**********************************************
-	* Create Descriptor set
+	* Create descriptor set if there are none left over, otherwise reuse an existing descriptor set.
 	**********************************************/
 
-	result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &resourceContext->DescriptorSet);
-	if (result != VK_SUCCESS)
+	if (mUnusedResourceBuffer.size())
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << result;
-		return;
+		auto& buffer = mUnusedResourceBuffer.back();
+		buffer->mDevice = nullptr;
+
+		resourceContext->DescriptorSet = buffer->DescriptorSet;
+
+		mUnusedResourceBuffer.pop_back();
+	}
+	else
+	{
+		result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &resourceContext->DescriptorSet);
+		if (result != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << result;
+			return;
+		}
 	}
 
-	mResourceBuffer.push_back(resourceContext);
+	mUsedResourceBuffer.push_back(resourceContext);
 
 	mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
 	mWriteDescriptorSet[0].descriptorCount = 1;
@@ -1248,7 +1279,7 @@ void BufferManager::UpdateUniformBuffer()
 	mUniformBufferMemory = VK_NULL_HANDLE;
 
 	//Look for the buffer in history and assign it if found.
-	for (int32_t i = 0; i < mHistoricalUniformBuffers.size(); i++)
+	for (size_t i = 0; i < mUsedUniformBuffers.size(); i++)
 	{
 		BOOL isMatch = true;
 
@@ -1256,7 +1287,7 @@ void BufferManager::UpdateUniformBuffer()
 		{
 			for (int32_t v = 0; v < 4; v++)
 			{			
-				float f1 = mHistoricalUniformBuffers[i]->UBO.model[l][v];
+				float f1 = mUsedUniformBuffers[i]->UBO.model[l][v];
 				float f2 = mUBO.model[l][v];
 				if (abs(f1 - f2) >= mEpsilon)
 				{
@@ -1269,7 +1300,7 @@ void BufferManager::UpdateUniformBuffer()
 		{
 			for (int32_t v = 0; v < 4; v++)
 			{
-				float f1 = mHistoricalUniformBuffers[i]->UBO.proj[l][v];
+				float f1 = mUsedUniformBuffers[i]->UBO.proj[l][v];
 				float f2 = mUBO.proj[l][v];
 				if (abs(f1 - f2) >= mEpsilon)
 				{
@@ -1282,7 +1313,7 @@ void BufferManager::UpdateUniformBuffer()
 		{
 			for (int32_t v = 0; v < 4; v++)
 			{
-				float f1 = mHistoricalUniformBuffers[i]->UBO.view[l][v];
+				float f1 = mUsedUniformBuffers[i]->UBO.view[l][v];
 				float f2 = mUBO.view[l][v];
 				if (abs(f1 - f2) >= mEpsilon)
 				{
@@ -1291,9 +1322,9 @@ void BufferManager::UpdateUniformBuffer()
 			}
 		}
 		
-		mUniformBuffer = mHistoricalUniformBuffers[i]->UniformBuffer;
-		mUniformBufferMemory = mHistoricalUniformBuffers[i]->UniformBufferMemory;
-		mHistoricalUniformBuffers[i]->LastUsed = std::chrono::steady_clock::now();
+		mUniformBuffer = mUsedUniformBuffers[i]->UniformBuffer;
+		mUniformBufferMemory = mUsedUniformBuffers[i]->UniformBufferMemory;
+		mUsedUniformBuffers[i]->LastUsed = std::chrono::steady_clock::now();
 		break;
 
 	Next_Loop_Iteration:
@@ -1313,8 +1344,21 @@ void BufferManager::UpdateUniformBuffer()
 		memcpy(data, &mUBO, sizeof(UniformBufferObject));
 		vkUnmapMemory(mDevice->mDevice, mUniformStagingBufferMemory);
 
-		//Create a new buffer.
-		CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
+		if (mUnusedUniformBuffers.size())
+		{
+			auto& buffer = mUnusedUniformBuffers.back();
+			buffer->mDevice = nullptr;
+
+			mUniformBuffer = buffer->UniformBuffer;
+			mUniformBufferMemory = buffer->UniformBufferMemory;
+
+			mUnusedUniformBuffers.pop_back();
+		}
+		else
+		{
+			//Create a new buffer.
+			CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
+		}
 
 		//Put the new buffer into the list so it can be cleaned up later.
 		std::shared_ptr<HistoricalUniformBuffer> historicalUniformBuffer = std::make_shared<HistoricalUniformBuffer>(mDevice);
@@ -1322,7 +1366,7 @@ void BufferManager::UpdateUniformBuffer()
 		historicalUniformBuffer->UniformBuffer = mUniformBuffer;
 		historicalUniformBuffer->UniformBufferMemory = mUniformBufferMemory;
 		historicalUniformBuffer->UBO = mUBO;
-		mHistoricalUniformBuffers.push_back(historicalUniformBuffer);
+		mUsedUniformBuffers.push_back(historicalUniformBuffer);
 		//Copy the staging data into the new buffer.
 		CopyBuffer(mUniformStagingBuffer, mUniformBuffer, sizeof(UniformBufferObject));
 	}
@@ -1334,9 +1378,29 @@ void BufferManager::FlushDrawBufffer()
 	Uses remove_if and chrono to remove elements that have not been used in over a second.	
 	*/
 	mDrawBuffer.erase(std::remove_if(mDrawBuffer.begin(), mDrawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mDrawBuffer.end());
-	mHistoricalUniformBuffers.erase(std::remove_if(mHistoricalUniformBuffers.begin(), mHistoricalUniformBuffers.end(), [](const std::shared_ptr<HistoricalUniformBuffer> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mHistoricalUniformBuffers.end());
 	mSamplerRequests.erase(std::remove_if(mSamplerRequests.begin(), mSamplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mSamplerRequests.end());
-	mResourceBuffer.erase(std::remove_if(mResourceBuffer.begin(), mResourceBuffer.end(), [](const std::shared_ptr<ResourceContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mResourceBuffer.end());
+	
+	/*
+	Add expired buffers to unused list so they can be reused and then remove them from the used queue.
+	*/
+
+	for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
+	{
+		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - mUsedResourceBuffer[i]->LastUsed).count() > CACHE_SECONDS)
+		{
+			mUnusedResourceBuffer.push_back(mUsedResourceBuffer[i]);
+		}
+	}
+	mUsedResourceBuffer.erase(std::remove_if(mUsedResourceBuffer.begin(), mUsedResourceBuffer.end(), [](const std::shared_ptr<ResourceContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mUsedResourceBuffer.end());
+	
+	for (size_t i = 0; i < mUsedUniformBuffers.size(); i++)
+	{
+		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - mUsedUniformBuffers[i]->LastUsed).count() > CACHE_SECONDS)
+		{
+			mUnusedUniformBuffers.push_back(mUsedUniformBuffers[i]);
+		}
+	}
+	mUsedUniformBuffers.erase(std::remove_if(mUsedUniformBuffers.begin(), mUsedUniformBuffers.end(), [](const std::shared_ptr<HistoricalUniformBuffer> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mUsedUniformBuffers.end());
 
 	//mDrawBuffer.clear();
 	//mHistoricalUniformBuffers.clear();
@@ -1387,36 +1451,16 @@ void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, Vk
 
 void BufferManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
-	VkCommandBufferAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = mDevice->mCommandPool;
-	allocInfo.commandBufferCount = 1;
+	vkBeginCommandBuffer(mCommandBuffer, &mBeginInfo);
+	{
+		mCopyRegion.size = size;
+		vkCmdCopyBuffer(mCommandBuffer, srcBuffer, dstBuffer, 1, &mCopyRegion);
+	}
+	vkEndCommandBuffer(mCommandBuffer);
 
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(mDevice->mDevice, &allocInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-	VkBufferCopy copyRegion = {};
-	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-	vkEndCommandBuffer(commandBuffer);
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(mDevice->mQueue);
-
-	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, &commandBuffer);
+	vkQueueSubmit(mDevice->mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(mDevice->mQueue);	
+	vkResetCommandBuffer(mCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT); //So far resetting a command buffer is about 10 times faster than allocating a new one.
 }
 
 SamplerRequest::~SamplerRequest()

@@ -18,6 +18,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <algorithm>
+
 #include "C9.h"
 #include "CDevice9.h"
 #include "CCubeTexture9.h"
@@ -81,7 +83,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	BOOST_LOG_TRIVIAL(info) << "GPU driver version: " << mDeviceProperties.driverVersion;
 	BOOST_LOG_TRIVIAL(info) << "GPU API version: " << mDeviceProperties.apiVersion;
 	
-	for (size_t i = 0; i < mDeviceMemoryProperties.memoryHeapCount; i++)
+	for (int32_t i = 0; i < mDeviceMemoryProperties.memoryHeapCount; i++)
 	{
 		if ((mDeviceMemoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) == VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
 		{
@@ -124,7 +126,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	VkExtensionProperties* extension = new VkExtensionProperties[extensionCount];
 	vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &extensionCount, extension);
 
-	for (size_t i = 0; i < extensionCount; i++)
+	for (int32_t i = 0; i < extensionCount; i++)
 	{
 		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 extension available: " << extension[i].extensionName;	
 	}
@@ -227,7 +229,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	Otherwise look for one for presentation and one for graphics.
 	The index of the queue us stored for later use.
 	*/
-	for (size_t i = 0; i < mQueueCount; i++)
+	for (int32_t i = 0; i < mQueueCount; i++)
 	{
 		VkBool32 doesSupportPresentation = false;
 		VkBool32 doesSupportGraphics = false;
@@ -1031,7 +1033,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	VK_PRESENT_MODE_IMMEDIATE_KHR - Do not wait for vertical blanking to update the image.
 	VK_PRESENT_MODE_FIFO_KHR - Wait for the next vertical blanking interval to update the image. If the interval is missed wait for the next one. New images will be queued for display.
 	*/
-	for (size_t i = 0; i < mPresentationModeCount; i++)
+	for (int32_t i = 0; i < mPresentationModeCount; i++)
 	{
 		if (mPresentationModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
 		{
@@ -1096,6 +1098,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateSwapchainKHR succeeded.";
 	}
 
+	mPresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	mPresentInfo.pNext = nullptr;
+	mPresentInfo.swapchainCount = 1;
+	mPresentInfo.pSwapchains = &mSwapchain;
+
 	//Create the images (buffers) that will be used by the swap chain.
 	mResult = vkGetSwapchainImagesKHR(mDevice, mSwapchain, &mSwapchainImageCount, nullptr);
 	if (mResult != VK_SUCCESS)
@@ -1121,7 +1128,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR succeeded.";
 	}
 
-	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	for (int32_t i = 0; i < mSwapchainImageCount; i++)
 	{
 		VkImageViewCreateInfo color_image_view = {};
 
@@ -1161,7 +1168,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	commandBufferInfo.commandBufferCount = 1;
 
-	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	for (int32_t i = 0; i < mSwapchainImageCount; i++)
 	{
 		mResult = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mSwapchainBuffers[i]);
 		if (mResult != VK_SUCCESS)
@@ -1351,7 +1358,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mFramebuffers = new VkFramebuffer[mSwapchainImageCount];
 
-	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	for (int32_t i = 0; i < mSwapchainImageCount; i++)
 	{
 		attachments[0] = mSwapchainViews[i];
 		mResult = vkCreateFramebuffer(mDevice, &framebufferCreateInfo, nullptr, &mFramebuffers[i]);
@@ -1384,7 +1391,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mCommandBufferBeginInfo.flags = 0;
 	mCommandBufferBeginInfo.pInheritanceInfo = &mCommandBufferInheritanceInfo;
 
-	for (size_t i = 0; i < 16; i++)
+	for (int32_t i = 0; i < 16; i++)
 	{
 		mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
 		mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
@@ -1424,7 +1431,7 @@ CDevice9::~CDevice9()
 
 	mGarbageManager.DestroyHandles();
 
-	for (size_t i = 0; i < mSwapChains.size(); i++)
+	for (int32_t i = 0; i < mSwapChains.size(); i++)
 	{
 		delete mSwapChains[i];
 	}
@@ -1433,7 +1440,7 @@ CDevice9::~CDevice9()
 
 	if (mFramebuffers!= nullptr)
 	{
-		for (size_t i = 0; i < mSwapchainImageCount; i++)
+		for (int32_t i = 0; i < mSwapchainImageCount; i++)
 		{
 			if (mFramebuffers[i] != VK_NULL_HANDLE)
 			{
@@ -1486,7 +1493,7 @@ CDevice9::~CDevice9()
 
 	if (mSwapchainViews != nullptr)
 	{
-		for (size_t i = 0; i < mSwapchainImageCount; i++)
+		for (int32_t i = 0; i < mSwapchainImageCount; i++)
 		{
 			if (mSwapchainViews[i] != VK_NULL_HANDLE)
 			{
@@ -1499,7 +1506,7 @@ CDevice9::~CDevice9()
 	//if (mSwapchainImages != nullptr)
 	//{
 		//For some reason destroying the images causes a crash. I'm guessing it's a double free or something like that because the views have already been destroyed.
-		//for (size_t i = 0; i < mSwapchainImageCount; i++)
+		//for (int32_t i = 0; i < mSwapchainImageCount; i++)
 		//{
 		//	if (mSwapchainImages[i] != VK_NULL_HANDLE)
 		//	{
@@ -1581,10 +1588,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 
 	VkResult result; // = VK_SUCCESS
 
-	mPresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	mPresentInfo.pNext = nullptr;
-	mPresentInfo.swapchainCount = 1;
-	mPresentInfo.pSwapchains = &mSwapchain;
 	mPresentInfo.pImageIndices = &mCurrentBuffer;
 
 	result = vkQueuePresentKHR(mQueue, &mPresentInfo);

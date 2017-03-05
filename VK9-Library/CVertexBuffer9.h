@@ -43,8 +43,8 @@ public:
 	ULONG mReferenceCount;
 	VkResult mResult;
 	void* mData;
-	size_t mSize;
-	size_t mCapacity;
+	int32_t mSize;
+	int32_t mCapacity;
 	bool mIsDirty;
 	uint32_t mLockCount;
 
