@@ -704,9 +704,11 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
 	{
 		auto& resourceBuffer = mUsedResourceBuffer[i];
-		if (resourceBuffer->DescriptorBufferInfo.buffer == resourceContext->DescriptorBufferInfo.buffer
-			&& resourceBuffer->DescriptorBufferInfo.offset == resourceContext->DescriptorBufferInfo.offset
-			&& resourceBuffer->DescriptorBufferInfo.range == resourceContext->DescriptorBufferInfo.range)
+		auto& descriptorBuffer = resourceBuffer->DescriptorBufferInfo;
+
+		if (descriptorBuffer.buffer == mDescriptorBufferInfo.buffer
+			&& descriptorBuffer.offset == mDescriptorBufferInfo.offset
+			&& descriptorBuffer.range == mDescriptorBufferInfo.range)
 		{
 			BOOL imageMatches = true;
 
@@ -1237,6 +1239,7 @@ void BufferManager::UpdateUniformBuffer()
 {
 	VkResult result = VK_SUCCESS;
 	void* data = nullptr;
+	float diff;
 
 	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTransforms)
 	{
@@ -1285,29 +1288,20 @@ void BufferManager::UpdateUniformBuffer()
 
 		for (int32_t j = 0; j < 16; j++)
 		{
-			float f1 = usedBuffer.UBO.Model.FlatValue[j];
-			float f2 = mUBO.Model.FlatValue[j];
-			if (abs(f1 - f2) >= mEpsilon)
+			diff = usedBuffer.UBO.Model.FlatValue[j] - mUBO.Model.FlatValue[j];
+			if (diff != 0 && abs(diff) >= mEpsilon)
 			{
 				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
 			}
-		}
 
-		for (int32_t j = 0; j < 16; j++)
-		{
-			float f1 = usedBuffer.UBO.Projection.FlatValue[j];
-			float f2 = mUBO.Projection.FlatValue[j];
-			if (abs(f1 - f2) >= mEpsilon)
+			diff = usedBuffer.UBO.Projection.FlatValue[j] - mUBO.Projection.FlatValue[j];
+			if (diff != 0 && abs(diff) >= mEpsilon)
 			{
 				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
 			}
-		}
 
-		for (int32_t j = 0; j < 16; j++)
-		{
-			float f1 = usedBuffer.UBO.View.FlatValue[j];
-			float f2 = mUBO.View.FlatValue[j];
-			if (abs(f1 - f2) >= mEpsilon)
+			diff = usedBuffer.UBO.View.FlatValue[j] - mUBO.View.FlatValue[j];
+			if (diff != 0 && abs(diff) >= mEpsilon)
 			{
 				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
 			}
