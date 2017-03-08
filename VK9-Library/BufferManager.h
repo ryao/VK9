@@ -98,19 +98,6 @@ struct DrawContext
 	~DrawContext();
 };
 
-struct HistoricalUniformBuffer
-{
-	UniformBufferObject UBO = {};
-	VkBuffer UniformBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
-
-	//Resource Handling.
-	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	CDevice9* mDevice = nullptr;
-	HistoricalUniformBuffer(CDevice9* device) : mDevice(device) {}
-	~HistoricalUniformBuffer();
-};
-
 class BufferManager
 {
 public:
@@ -143,7 +130,8 @@ public:
 	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
 	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
-	VkWriteDescriptorSet mWriteDescriptorSet[2] = {};
+	VkWriteDescriptorSet mWriteDescriptorSet[1] = {};
+	VkPushConstantRange mPushConstantRanges[1] = {};
 
 	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
 	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
@@ -196,8 +184,9 @@ public:
 	boost::container::small_vector< std::shared_ptr<ResourceContext>, 16> mUsedResourceBuffer;
 	boost::container::small_vector< std::shared_ptr<ResourceContext>, 16> mUnusedResourceBuffer;
 
-	boost::container::small_vector< std::shared_ptr<HistoricalUniformBuffer>, 16> mUsedUniformBuffers;
-	boost::container::small_vector< std::shared_ptr<HistoricalUniformBuffer>, 16> mUnusedUniformBuffers;
+	VkDescriptorSet mLastDescriptorSet = VK_NULL_HANDLE;
+	VkPipeline mLastVkPipeline = VK_NULL_HANDLE;
+
 	UniformBufferObject mUBO = {};
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();
@@ -207,7 +196,7 @@ public:
 	void CreateDescriptorSet(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext);
 	void CreateSampler(std::shared_ptr<SamplerRequest> request);
 
-	void UpdateUniformBuffer();
+	void UpdateUniformBuffer(std::shared_ptr<DrawContext> context);
 	void FlushDrawBufffer();
 
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory);

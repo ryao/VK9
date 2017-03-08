@@ -52,6 +52,9 @@ BufferManager::BufferManager(CDevice9* device)
 	mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
 	mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
 
+	mPushConstantRanges[0].size = sizeof(UniformBufferObject);
+	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
@@ -389,20 +392,12 @@ BufferManager::BufferManager(CDevice9* device)
 	mDescriptorBufferInfo.range = sizeof(UniformBufferObject);
 
 	mWriteDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	//mWriteDescriptorSet.dstSet = descriptorSet;
-	mWriteDescriptorSet[0].dstBinding = 0;
-	mWriteDescriptorSet[0].dstArrayElement = 0;
-	mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo;
-
-	mWriteDescriptorSet[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet[1].dstSet = descriptorSet;
-	mWriteDescriptorSet[1].dstBinding = 1;
-	mWriteDescriptorSet[1].dstArrayElement = 0;
-	mWriteDescriptorSet[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	mWriteDescriptorSet[1].descriptorCount = 1;
-	mWriteDescriptorSet[1].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
+	mWriteDescriptorSet[0].dstBinding = 1;
+	mWriteDescriptorSet[0].dstArrayElement = 0;
+	mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	mWriteDescriptorSet[0].descriptorCount = 1;
+	mWriteDescriptorSet[0].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
 
 	//Command Buffer Setup
 	mCommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -521,9 +516,6 @@ BufferManager::~BufferManager()
 	mDrawBuffer.clear();
 	mSamplerRequests.clear();
 
-	mUsedUniformBuffers.clear();
-	mUnusedUniformBuffers.clear();
-
 	mUsedResourceBuffer.clear();
 	mUnusedResourceBuffer.clear();
 }
@@ -532,11 +524,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 {
 	VkResult result = VK_SUCCESS;
 	boost::container::flat_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
-
-	/**********************************************
-	* Update UBO structure.
-	**********************************************/
-	UpdateUniformBuffer();
 
 	/**********************************************
 	* Update the textures that are currently mapped.
@@ -692,6 +679,11 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	}	
 
 	/**********************************************
+	* Update UBO structure.
+	**********************************************/
+	UpdateUniformBuffer(context); 
+
+	/**********************************************
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
 
@@ -748,9 +740,17 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	* Setup bindings
 	**********************************************/
 
-	vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
+	if (mLastDescriptorSet != resourceContext->DescriptorSet)
+	{
+		vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
+		mLastDescriptorSet = resourceContext->DescriptorSet;
+	}
 
-	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);	
+	if (mLastVkPipeline != context->Pipeline)
+	{
+		vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
+		mLastVkPipeline = context->Pipeline;
+	}
 
 	mVertexCount = 0;
 
@@ -1087,29 +1087,26 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 	mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
+	mPipelineLayoutCreateInfo.pPushConstantRanges = mPushConstantRanges;
+	mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
 
 	mDescriptorSetLayoutBinding[0].binding = 0;
-	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // VK_SHADER_STAGE_ALL_GRAPHICS
+	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	mDescriptorSetLayoutBinding[0].descriptorCount = textureCount; //Update to use mapped texture.
+	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
-
-	mDescriptorSetLayoutBinding[1].binding = 1;
-	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[1].descriptorCount = textureCount; //Update to use mapped texture.
-	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	if (textureCount)
 	{
-		mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.
+		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.
 	}
 	else
 	{
-		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //Ignore second element if there are no textures.
+		mDescriptorSetLayoutCreateInfo.bindingCount = 0; //Ignore second element if there are no textures.
 	}
 
 	/**********************************************
@@ -1175,18 +1172,10 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	mUsedResourceBuffer.push_back(resourceContext);
 
 	mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &resourceContext->DescriptorBufferInfo;
-
-	mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
-	mWriteDescriptorSet[1].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
-	mWriteDescriptorSet[1].pImageInfo = resourceContext->DescriptorImageInfo;
+	mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
+	mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
 
 	if (mDevice->mDeviceState.mTextures.size())
-	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
-	}
-	else
 	{
 		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
 	}
@@ -1235,12 +1224,17 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	mSamplerRequests.push_back(request);
 }
 
-void BufferManager::UpdateUniformBuffer()
+void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 {
 	VkResult result = VK_SUCCESS;
 	void* data = nullptr;
 	float diff;
 
+	if (!mDevice->mDeviceState.mHasTransformsChanged)
+	{
+		return;
+	}
+	
 	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTransforms)
 	{
 		switch (pair1.first)
@@ -1278,83 +1272,7 @@ void BufferManager::UpdateUniformBuffer()
 		}
 	}
 
-	mUniformBuffer = VK_NULL_HANDLE;
-	mUniformBufferMemory = VK_NULL_HANDLE;
-
-	//Look for the buffer in history and assign it if found.
-	for (size_t i = 0; i < mUsedUniformBuffers.size(); i++)
-	{
-		auto& usedBuffer = (*mUsedUniformBuffers[i]);
-
-		for (int32_t j = 0; j < 16; j++)
-		{
-			diff = usedBuffer.UBO.Model.FlatValue[j] - mUBO.Model.FlatValue[j];
-			if (diff != 0 && abs(diff) >= mEpsilon)
-			{
-				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
-			}
-
-			diff = usedBuffer.UBO.Projection.FlatValue[j] - mUBO.Projection.FlatValue[j];
-			if (diff != 0 && abs(diff) >= mEpsilon)
-			{
-				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
-			}
-
-			diff = usedBuffer.UBO.View.FlatValue[j] - mUBO.View.FlatValue[j];
-			if (diff != 0 && abs(diff) >= mEpsilon)
-			{
-				goto Next_Loop_Iteration; //Don't hate this is cleaner than multiple breaks.
-			}
-		}
-		
-		mUniformBuffer = usedBuffer.UniformBuffer;
-		mUniformBufferMemory = usedBuffer.UniformBufferMemory;
-		usedBuffer.LastUsed = std::chrono::steady_clock::now();
-		break;
-
-	Next_Loop_Iteration:
-		int test = 0; //The code won't compile if the label is the last thing.
-	}
-
-	//If the UBO is not in history than create a new buffer and copy the UBO into it.
-	if (mUniformBuffer == VK_NULL_HANDLE)
-	{
-		//Copy current UBO into the staging memory buffer.
-		result = vkMapMemory(mDevice->mDevice, mUniformStagingBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
-		if (mResult != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetTransform vkMapMemory failed with return code of " << result;
-			return;
-		}
-		memcpy(data, &mUBO, sizeof(UniformBufferObject));
-		vkUnmapMemory(mDevice->mDevice, mUniformStagingBufferMemory);
-
-		if (mUnusedUniformBuffers.size())
-		{
-			auto& buffer = mUnusedUniformBuffers.back();
-			buffer->mDevice = nullptr;
-
-			mUniformBuffer = buffer->UniformBuffer;
-			mUniformBufferMemory = buffer->UniformBufferMemory;
-
-			mUnusedUniformBuffers.pop_back();
-		}
-		else
-		{
-			//Create a new buffer.
-			CreateBuffer(sizeof(UniformBufferObject), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mUniformBuffer, mUniformBufferMemory);
-		}
-
-		//Put the new buffer into the list so it can be cleaned up later.
-		std::shared_ptr<HistoricalUniformBuffer> historicalUniformBuffer = std::make_shared<HistoricalUniformBuffer>(mDevice);
-
-		historicalUniformBuffer->UniformBuffer = mUniformBuffer;
-		historicalUniformBuffer->UniformBufferMemory = mUniformBufferMemory;
-		historicalUniformBuffer->UBO = mUBO;
-		mUsedUniformBuffers.push_back(historicalUniformBuffer);
-		//Copy the staging data into the new buffer.
-		CopyBuffer(mUniformStagingBuffer, mUniformBuffer, sizeof(UniformBufferObject));
-	}
+	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(UniformBufferObject), &mUBO);
 }
 
 void BufferManager::FlushDrawBufffer()
@@ -1377,20 +1295,6 @@ void BufferManager::FlushDrawBufffer()
 		}
 	}
 	mUsedResourceBuffer.erase(std::remove_if(mUsedResourceBuffer.begin(), mUsedResourceBuffer.end(), [](const std::shared_ptr<ResourceContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mUsedResourceBuffer.end());
-	
-	for (size_t i = 0; i < mUsedUniformBuffers.size(); i++)
-	{
-		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - mUsedUniformBuffers[i]->LastUsed).count() > CACHE_SECONDS)
-		{
-			mUnusedUniformBuffers.push_back(mUsedUniformBuffers[i]);
-		}
-	}
-	mUsedUniformBuffers.erase(std::remove_if(mUsedUniformBuffers.begin(), mUsedUniformBuffers.end(), [](const std::shared_ptr<HistoricalUniformBuffer> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mUsedUniformBuffers.end());
-
-	//mDrawBuffer.clear();
-	//mHistoricalUniformBuffers.clear();
-	//mSamplerRequests.clear();
-	//mResourceBuffer.clear();
 }
 
 void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)
@@ -1482,20 +1386,4 @@ DrawContext::~DrawContext()
 		}
 	}
 
-}
-
-HistoricalUniformBuffer::~HistoricalUniformBuffer()
-{
-	if (mDevice != nullptr)
-	{
-		if (UniformBuffer != VK_NULL_HANDLE)
-		{
-			vkDestroyBuffer(mDevice->mDevice, UniformBuffer, NULL);
-		}
-
-		if (UniformBufferMemory != VK_NULL_HANDLE)
-		{
-			vkFreeMemory(mDevice->mDevice, UniformBufferMemory, NULL);
-		}
-	}
 }
