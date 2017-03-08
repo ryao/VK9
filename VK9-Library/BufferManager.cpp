@@ -688,20 +688,15 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	**********************************************/
 
 	//Copy information into resource context.
-	mDescriptorBufferInfo.buffer = mUniformBuffer;
-	resourceContext->DescriptorBufferInfo = mDescriptorBufferInfo;
-	std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
-	//Loop over cached descriptor information.
-	for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
+	if (context->DescriptorSetLayout != VK_NULL_HANDLE)
 	{
-		auto& resourceBuffer = mUsedResourceBuffer[i];
-		auto& descriptorBuffer = resourceBuffer->DescriptorBufferInfo;
+		std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
-		if (descriptorBuffer.buffer == mDescriptorBufferInfo.buffer
-			&& descriptorBuffer.offset == mDescriptorBufferInfo.offset
-			&& descriptorBuffer.range == mDescriptorBufferInfo.range)
+		//Loop over cached descriptor information.
+		for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
 		{
+			auto& resourceBuffer = mUsedResourceBuffer[i];
 			BOOL imageMatches = true;
 
 			//The image info array is currently always 16.
@@ -727,30 +722,31 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 				resourceContext->DescriptorSet = resourceBuffer->DescriptorSet;
 				resourceContext->mDevice = nullptr; //Not owner.
 				resourceBuffer->LastUsed = std::chrono::steady_clock::now();
+				break;
 			}
 		}
-	}
 
-	if (resourceContext->DescriptorSet == VK_NULL_HANDLE)
-	{
-		CreateDescriptorSet(context, resourceContext);
-	}	
+		if (resourceContext->DescriptorSet == VK_NULL_HANDLE)
+		{
+			CreateDescriptorSet(context, resourceContext);
+		}
+
+		//if (mLastDescriptorSet != resourceContext->DescriptorSet)
+		//{
+			vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
+			mLastDescriptorSet = resourceContext->DescriptorSet;
+		//}
+	}
 
 	/**********************************************
 	* Setup bindings
 	**********************************************/
 
-	if (mLastDescriptorSet != resourceContext->DescriptorSet)
-	{
-		vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
-		mLastDescriptorSet = resourceContext->DescriptorSet;
-	}
-
-	if (mLastVkPipeline != context->Pipeline)
-	{
+	//if (mLastVkPipeline != context->Pipeline)
+	//{
 		vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
 		mLastVkPipeline = context->Pipeline;
-	}
+	//}
 
 	mVertexCount = 0;
 
@@ -1103,22 +1099,24 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	if (textureCount)
 	{
 		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.
+
+		result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
+		if (result != VK_SUCCESS)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << result;
+			return;
+		}
 	}
 	else
 	{
 		mDescriptorSetLayoutCreateInfo.bindingCount = 0; //Ignore second element if there are no textures.
+		mPipelineLayoutCreateInfo.setLayoutCount = 0;
+		context->DescriptorSetLayout = VK_NULL_HANDLE;
 	}
 
 	/**********************************************
 	* Create pipeline & descriptor set layout.
 	**********************************************/
-
-	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << result;
-		return;
-	}
 
 	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, nullptr, &context->PipelineLayout);
 	if (result != VK_SUCCESS)
@@ -1144,6 +1142,14 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	VkResult result = VK_SUCCESS;
 
 	mDescriptorSetAllocateInfo.pSetLayouts = &context->DescriptorSetLayout;
+
+	if (context->DescriptorSetLayout == VK_NULL_HANDLE)
+	{
+		resourceContext->DescriptorSet = VK_NULL_HANDLE;
+		mDescriptorSetAllocateInfo.descriptorSetCount = 0;
+		return;
+	}
+
 	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
 
 	/**********************************************

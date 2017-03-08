@@ -59,7 +59,6 @@ struct SamplerRequest
 struct ResourceContext
 {
 	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
-	VkDescriptorBufferInfo DescriptorBufferInfo = {};
 
 	//Vulkan State
 	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
