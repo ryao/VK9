@@ -82,7 +82,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	BOOST_LOG_TRIVIAL(info) << "GPU driver version: " << mDeviceProperties.driverVersion;
 	BOOST_LOG_TRIVIAL(info) << "GPU API version: " << mDeviceProperties.apiVersion;
-	
+	BOOST_LOG_TRIVIAL(info) << "maxPushConstantSize: " << mDeviceProperties.limits.maxPushConstantsSize;
+
 	for (size_t i = 0; i < mDeviceMemoryProperties.memoryHeapCount; i++)
 	{
 		if ((mDeviceMemoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) == VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)

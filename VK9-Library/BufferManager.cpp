@@ -122,7 +122,7 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mDescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	mDescriptorSetLayoutCreateInfo.pNext = NULL;
-	mDescriptorSetLayoutCreateInfo.bindingCount = 2;
+	mDescriptorSetLayoutCreateInfo.bindingCount = 1;
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 
 	mDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -393,7 +393,7 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mWriteDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet[1].dstSet = descriptorSet;
-	mWriteDescriptorSet[0].dstBinding = 1;
+	mWriteDescriptorSet[0].dstBinding = 0;
 	mWriteDescriptorSet[0].dstArrayElement = 0;
 	mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	mWriteDescriptorSet[0].descriptorCount = 1;
@@ -730,23 +730,23 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		{
 			CreateDescriptorSet(context, resourceContext);
 		}
-
-		//if (mLastDescriptorSet != resourceContext->DescriptorSet)
-		//{
-			vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
-			mLastDescriptorSet = resourceContext->DescriptorSet;
-		//}
 	}
 
 	/**********************************************
 	* Setup bindings
 	**********************************************/
 
-	//if (mLastVkPipeline != context->Pipeline)
-	//{
+	if (mLastVkPipeline != context->Pipeline)
+	{
 		vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
 		mLastVkPipeline = context->Pipeline;
-	//}
+	}
+
+	if (resourceContext->DescriptorSet != VK_NULL_HANDLE)
+	{
+		vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
+		mLastDescriptorSet = resourceContext->DescriptorSet;
+	}
 
 	mVertexCount = 0;
 
@@ -1080,9 +1080,6 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unknown vertex format.";
 	}
 
-	mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
-	mPipelineLayoutCreateInfo.setLayoutCount = 1;
-
 	mPipelineLayoutCreateInfo.pPushConstantRanges = mPushConstantRanges;
 	mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 
@@ -1095,10 +1092,14 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
 
-	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
+	
 	if (textureCount)
 	{
+		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.
+
+		mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
 		result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
 		if (result != VK_SUCCESS)
@@ -1109,8 +1110,12 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	}
 	else
 	{
-		mDescriptorSetLayoutCreateInfo.bindingCount = 0; //Ignore second element if there are no textures.
+		mDescriptorSetLayoutCreateInfo.pBindings = nullptr;
+		mDescriptorSetLayoutCreateInfo.bindingCount = 0;
+
+		mPipelineLayoutCreateInfo.pSetLayouts = nullptr;
 		mPipelineLayoutCreateInfo.setLayoutCount = 0;
+
 		context->DescriptorSetLayout = VK_NULL_HANDLE;
 	}
 
@@ -1141,15 +1146,13 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 {
 	VkResult result = VK_SUCCESS;
 
-	mDescriptorSetAllocateInfo.pSetLayouts = &context->DescriptorSetLayout;
-
 	if (context->DescriptorSetLayout == VK_NULL_HANDLE)
 	{
 		resourceContext->DescriptorSet = VK_NULL_HANDLE;
-		mDescriptorSetAllocateInfo.descriptorSetCount = 0;
 		return;
 	}
 
+	mDescriptorSetAllocateInfo.pSetLayouts = &context->DescriptorSetLayout;
 	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
 
 	/**********************************************
@@ -1178,13 +1181,11 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	mUsedResourceBuffer.push_back(resourceContext);
 
 	mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-	mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size(); //16; //Update to use mapped texture.
+	mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size();
 	mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
 
-	if (mDevice->mDeviceState.mTextures.size())
-	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
-	}
+	vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
+
 }
 
 void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
