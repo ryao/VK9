@@ -21,10 +21,13 @@ misrepresented as being the original software.
 #ifndef BUFFERMANAGER_H
 #define BUFFERMANAGER_H
 
+#define UBO_SIZE 64
+
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
+#include <Eigen/Dense>
 #include <memory>
 #include <chrono>
 
@@ -40,14 +43,14 @@ struct SamplerRequest
 
 	//D3D9 State
 	DWORD SamplerIndex = 0;
-	D3DTEXTUREFILTERTYPE MagFilter;
-	D3DTEXTUREFILTERTYPE MinFilter;
-	D3DTEXTUREADDRESS AddressModeU;
-	D3DTEXTUREADDRESS AddressModeV;
-	D3DTEXTUREADDRESS AddressModeW;
-	DWORD MaxAnisotropy;
-	D3DTEXTUREFILTERTYPE MipmapMode;
-	float MipLodBias;
+	D3DTEXTUREFILTERTYPE MagFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE MinFilter = D3DTEXF_NONE;
+	D3DTEXTUREADDRESS AddressModeU = D3DTADDRESS_FORCE_DWORD;
+	D3DTEXTUREADDRESS AddressModeV = D3DTADDRESS_FORCE_DWORD;
+	D3DTEXTUREADDRESS AddressModeW = D3DTADDRESS_FORCE_DWORD;
+	DWORD MaxAnisotropy = 0;
+	D3DTEXTUREFILTERTYPE MipmapMode = D3DTEXF_NONE;
+	float MipLodBias = 0.0f;
 
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
@@ -100,6 +103,7 @@ struct DrawContext
 class BufferManager
 {
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	BufferManager();
 	explicit BufferManager(CDevice9* device);
 	~BufferManager();
@@ -169,7 +173,6 @@ public:
 	int32_t mTextureWidth = 0;
 	int32_t mTextureHeight = 0;
 	
-	VkDescriptorBufferInfo mDescriptorBufferInfo = {};
 	int32_t mVertexCount = 0;
 
 	VkBuffer mUniformStagingBuffer = VK_NULL_HANDLE;
@@ -186,7 +189,10 @@ public:
 	VkDescriptorSet mLastDescriptorSet = VK_NULL_HANDLE;
 	VkPipeline mLastVkPipeline = VK_NULL_HANDLE;
 
-	UniformBufferObject mUBO = {};
+	Eigen::Matrix4f mModel;
+	Eigen::Matrix4f mView;
+	Eigen::Matrix4f mProjection;
+	Eigen::Matrix4f mTotalTransformation;
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();
 

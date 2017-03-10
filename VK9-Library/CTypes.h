@@ -21,9 +21,6 @@ misrepresented as being the original software.
 #ifndef CTYPES_H
 #define CTYPES_H
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "d3d9.h"
 #include "d3d9types.h"
 #include <vulkan/vulkan.h>
@@ -65,8 +62,13 @@ union Matrix
 
 struct UniformBufferObject {
 	//glm::mat4 model;// = glm::mat4(1.0);
-	//glm::mat4 view;// = glm::mat4(1.0);
-	//glm::mat4 proj;// = glm::mat4(1.0);
+	////glm::mat4 view;// = glm::mat4(1.0);
+	////glm::mat4 proj;// = glm::mat4(1.0);
+
+	//Eigen::Matrix4f Model;
+	//Eigen::Matrix4f View;
+	//Eigen::Matrix4f Projection;
+
 	Matrix Model = {
 		 1.0 ,0.0 ,0.0 ,0.0
 		,0.0 ,1.0 ,0.0 ,0.0

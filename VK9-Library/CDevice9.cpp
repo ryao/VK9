@@ -292,54 +292,54 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	#define MAX_DESCRIPTOR 2048
 
 	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-	descriptorPoolSizes[0].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
+	descriptorPoolSizes[0].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetSamplers = " << mDeviceProperties.limits.maxDescriptorSetSamplers;
 
 	descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorPoolSizes[1].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorSamplers);
+	descriptorPoolSizes[1].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorSamplers);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxPerStageDescriptorSamplers = " << mDeviceProperties.limits.maxPerStageDescriptorSamplers;
 
 	descriptorPoolSizes[2].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	descriptorPoolSizes[2].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSampledImages);
+	descriptorPoolSizes[2].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSampledImages);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetSampledImages = " << mDeviceProperties.limits.maxDescriptorSetSampledImages;
 
 	descriptorPoolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	descriptorPoolSizes[3].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageImages);
+	descriptorPoolSizes[3].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageImages);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetStorageImages = " << mDeviceProperties.limits.maxDescriptorSetStorageImages;
 
 	descriptorPoolSizes[4].type = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-	descriptorPoolSizes[4].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorSampledImages);
+	descriptorPoolSizes[4].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorSampledImages);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxPerStageDescriptorSampledImages = " << mDeviceProperties.limits.maxPerStageDescriptorSampledImages;
 
 	descriptorPoolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-	descriptorPoolSizes[5].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorStorageImages);
+	descriptorPoolSizes[5].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxPerStageDescriptorStorageImages);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxPerStageDescriptorStorageImages = " << mDeviceProperties.limits.maxPerStageDescriptorStorageImages;
 
 	descriptorPoolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorPoolSizes[6].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetUniformBuffers);
+	descriptorPoolSizes[6].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetUniformBuffers);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetUniformBuffers = " << mDeviceProperties.limits.maxDescriptorSetUniformBuffers;
 
 	descriptorPoolSizes[7].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	descriptorPoolSizes[7].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageBuffers);
+	descriptorPoolSizes[7].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageBuffers);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetStorageBuffers = " << mDeviceProperties.limits.maxDescriptorSetStorageBuffers;
 
 	descriptorPoolSizes[8].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-	descriptorPoolSizes[8].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic);
+	descriptorPoolSizes[8].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetUniformBuffersDynamic = " << mDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic;
 
 	descriptorPoolSizes[9].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-	descriptorPoolSizes[9].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic);
+	descriptorPoolSizes[9].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetStorageBuffersDynamic = " << mDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic;
 
 	descriptorPoolSizes[10].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	descriptorPoolSizes[10].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetInputAttachments);
+	descriptorPoolSizes[10].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetInputAttachments);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetInputAttachments = " << mDeviceProperties.limits.maxDescriptorSetInputAttachments;
 
 	
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = NULL;
-	descriptorPoolCreateInfo.maxSets = std::min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
+	descriptorPoolCreateInfo.maxSets = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
 	descriptorPoolCreateInfo.poolSizeCount = 11;
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
 
@@ -1975,7 +1975,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 		https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 		https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
 	*/	
-	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], std::min(mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
+	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], min(mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
 
 	//BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
 
@@ -2008,7 +2008,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 
 	mBufferManager->BeginDraw(context, resourceContext, PrimitiveType);
 
-	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], std::min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
+	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
 
 	//Print(mDeviceState.mTransforms);
 

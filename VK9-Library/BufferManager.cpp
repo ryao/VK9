@@ -23,8 +23,6 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
-#include <glm/gtc/epsilon.hpp>
-
 #define CACHE_SECONDS 1
 
 typedef boost::container::flat_map<UINT, StreamSource> map_type;
@@ -37,8 +35,23 @@ BufferManager::BufferManager()
 BufferManager::BufferManager(CDevice9* device)
 	: mDevice(device)
 {
-	//mVertShaderModule = LoadShaderFromResource(mDevice->mDevice,  TRI_VERT);
-	//mFragshaderModule = LoadShaderFromResource(mDevice->mDevice, TRI_FRAG);
+	mModel <<
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
+
+	mView <<
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
+
+	mProjection <<
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
 
 	mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
 	mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
@@ -52,7 +65,8 @@ BufferManager::BufferManager(CDevice9* device)
 	mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
 	mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
 
-	mPushConstantRanges[0].size = sizeof(UniformBufferObject);
+	mPushConstantRanges[0].offset = 0;
+	mPushConstantRanges[0].size = UBO_SIZE;
 	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -376,20 +390,6 @@ BufferManager::BufferManager(CDevice9* device)
 	mDevice->mDeviceState.mDescriptorImageInfo[15].sampler = mSampler;
 	mDevice->mDeviceState.mDescriptorImageInfo[15].imageView = mImageView;
 	mDevice->mDeviceState.mDescriptorImageInfo[15].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-	VkBufferCreateInfo bufferCreateInfo = {};
-	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.pNext = NULL;
-	bufferCreateInfo.size = (sizeof(UniformBufferObject));
-	bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	bufferCreateInfo.flags = 0;
-
-	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mUniformStagingBuffer, mUniformStagingBufferMemory);
-
-	mDescriptorBufferInfo.buffer = mUniformBuffer;
-	mDescriptorBufferInfo.offset = 0;
-	mDescriptorBufferInfo.range = sizeof(UniformBufferObject);
 
 	mWriteDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet[1].dstSet = descriptorSet;
@@ -736,11 +736,11 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	* Setup bindings
 	**********************************************/
 
-	if (mLastVkPipeline != context->Pipeline)
-	{
-		vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
-		mLastVkPipeline = context->Pipeline;
-	}
+	//if (mLastVkPipeline != context->Pipeline)
+	//{
+	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
+	//mLastVkPipeline = context->Pipeline;
+	//}
 
 	if (resourceContext->DescriptorSet != VK_NULL_HANDLE)
 	{
@@ -1092,13 +1092,12 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
 
+	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
+	mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 	
 	if (textureCount)
-	{
-		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
-		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.
-
-		mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+	{	
+		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.	
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
 		result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
@@ -1110,13 +1109,8 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	}
 	else
 	{
-		mDescriptorSetLayoutCreateInfo.pBindings = nullptr;
 		mDescriptorSetLayoutCreateInfo.bindingCount = 0;
-
-		mPipelineLayoutCreateInfo.pSetLayouts = nullptr;
 		mPipelineLayoutCreateInfo.setLayoutCount = 0;
-
-		context->DescriptorSetLayout = VK_NULL_HANDLE;
 	}
 
 	/**********************************************
@@ -1206,7 +1200,7 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request->MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.mipLodBias = request->MipLodBias;
 
-	if (samplerCreateInfo.maxAnisotropy)
+	if (samplerCreateInfo.maxAnisotropy > 0.0F)
 	{
 		samplerCreateInfo.anisotropyEnable = VK_TRUE;
 	}
@@ -1235,43 +1229,51 @@ void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 {
 	VkResult result = VK_SUCCESS;
 	void* data = nullptr;
-	float diff;
 
 	if (!mDevice->mDeviceState.mHasTransformsChanged)
 	{
 		return;
 	}
 	
+	/*
+	
+				pair1.second.m[0][0], pair1.second.m[0][1], pair1.second.m[0][2], pair1.second.m[0][3],
+				pair1.second.m[1][0], pair1.second.m[1][1], pair1.second.m[1][2], pair1.second.m[1][3],
+				pair1.second.m[2][0], pair1.second.m[2][1], pair1.second.m[2][2], pair1.second.m[2][3],
+				pair1.second.m[3][0], pair1.second.m[3][1], pair1.second.m[3][2], pair1.second.m[3][3];
+
+	*/
+
 	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTransforms)
 	{
 		switch (pair1.first)
 		{
 		case D3DTS_WORLD:
-			for (int32_t i = 0; i < 4; i++)
-			{
-				for (int32_t j = 0; j < 4; j++)
-				{
-					mUBO.Model.Value[i][j] = pair1.second.m[i][j];
-				}
-			}
+
+			mModel <<
+				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
+				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
+				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
+				pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
+
 			break;
 		case D3DTS_VIEW:
-			for (int32_t i = 0; i < 4; i++)
-			{
-				for (int32_t j = 0; j < 4; j++)
-				{
-					mUBO.View.Value[i][j] = pair1.second.m[i][j];
-				}
-			}
+
+			mView <<
+				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
+				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
+				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
+				pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
+
 			break;
 		case D3DTS_PROJECTION:
-			for (int32_t i = 0; i < 4; i++)
-			{
-				for (int32_t j = 0; j < 4; j++)
-				{
-					mUBO.Projection.Value[i][j] = pair1.second.m[i][j];
-				}
-			}
+
+			mProjection <<
+				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
+				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
+				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
+				pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
+
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "BufferManager::UpdateUniformBuffer The following state type was ignored. " << pair1.first;
@@ -1279,7 +1281,10 @@ void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 		}
 	}
 
-	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(UniformBufferObject), &mUBO);
+	mTotalTransformation = mProjection * mView * mModel;
+	//mTotalTransformation = mModel * mView * mProjection;
+
+	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, UBO_SIZE, mTotalTransformation.data());
 }
 
 void BufferManager::FlushDrawBufffer()

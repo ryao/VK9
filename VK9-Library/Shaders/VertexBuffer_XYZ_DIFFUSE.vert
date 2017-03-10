@@ -23,9 +23,7 @@ misrepresented as being the original software.
 #extension GL_ARB_shading_language_420pack : enable
 
 layout(push_constant) uniform UniformBufferObject {
-    mat4 model;
-    mat4 view;
-    mat4 projection;
+    mat4 totalTransformation;
 } ubo;
 
 layout (location = 0) in vec4 position;
@@ -56,8 +54,7 @@ vec4 Convert(uvec4 rgba)
 
 void main() 
 {
-	mat4 matrix = ubo.projection * ubo.view * ubo.model; 
-	gl_Position = matrix * position * vec4(1.0,-1.0,1.0,1.0);
+	gl_Position = ubo.totalTransformation * position * vec4(1.0,-1.0,1.0,1.0);
 
 	color = Convert(attr);
 }
