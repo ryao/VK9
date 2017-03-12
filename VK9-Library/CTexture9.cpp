@@ -112,6 +112,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewCreateInfo.subresourceRange.layerCount = 1;
 
+	imageViewCreateInfo.subresourceRange.levelCount = mLevels;
+
 	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL, &mImageView);
 	if (mResult != VK_SUCCESS)
 	{

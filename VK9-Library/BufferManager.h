@@ -51,6 +51,7 @@ struct SamplerRequest
 	DWORD MaxAnisotropy = 0;
 	D3DTEXTUREFILTERTYPE MipmapMode = D3DTEXF_NONE;
 	float MipLodBias = 0.0f;
+	float MaxLod = 1.0f;
 
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();

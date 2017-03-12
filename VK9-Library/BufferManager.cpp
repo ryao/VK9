@@ -544,6 +544,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			request->MaxAnisotropy = mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAXANISOTROPY];
 			request->MipmapMode = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPFILTER];
 			request->MipLodBias = (float)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPMAPLODBIAS];
+			request->MaxLod = pair1.second->mLevels;
 
 			for (size_t i = 0; i < mSamplerRequests.size(); i++)
 			{
@@ -555,7 +556,8 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 					&& request->AddressModeW == storedRequest->AddressModeW
 					&& request->MaxAnisotropy == storedRequest->MaxAnisotropy
 					&& request->MipmapMode == storedRequest->MipmapMode
-					&& request->MipLodBias == storedRequest->MipLodBias)
+					&& request->MipLodBias == storedRequest->MipLodBias
+					&& request->MaxLod == storedRequest->MaxLod)
 				{
 					request->Sampler = storedRequest->Sampler;
 					request->mDevice = nullptr; //Not owner.
@@ -736,10 +738,10 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	* Setup bindings
 	**********************************************/
 
-	//if (mLastVkPipeline != context->Pipeline)
+	//if (!mIsDirty || mLastVkPipeline != context->Pipeline)
 	//{
-	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
-	//mLastVkPipeline = context->Pipeline;
+		vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
+	//	mLastVkPipeline = context->Pipeline;
 	//}
 
 	if (resourceContext->DescriptorSet != VK_NULL_HANDLE)
@@ -760,6 +762,8 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	{
 		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
 	}	
+
+	mIsDirty = false;
 }
 
 void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
@@ -1200,20 +1204,24 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request->MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.mipLodBias = request->MipLodBias;
 
-	if (samplerCreateInfo.maxAnisotropy > 0.0F)
+	if (mDevice->mDeviceFeatures.samplerAnisotropy)
 	{
+		// Use max. level of anisotropy for this example
+		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy,mDevice->mDeviceProperties.limits.maxSamplerAnisotropy);
 		samplerCreateInfo.anisotropyEnable = VK_TRUE;
 	}
 	else
 	{
+		// The device does not support anisotropic filtering
+		samplerCreateInfo.maxAnisotropy = 1.0;
 		samplerCreateInfo.anisotropyEnable = VK_FALSE;
 	}
 
 	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; // VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
-	samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER; //VK_COMPARE_OP_ALWAYS
 	samplerCreateInfo.minLod = 0.0f;
-	//samplerCreateInfo.maxLod = (float)mLevels;
+	samplerCreateInfo.maxLod = request->MaxLod;
 
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &request->Sampler);
 	if (mResult != VK_SUCCESS)
@@ -1307,6 +1315,8 @@ void BufferManager::FlushDrawBufffer()
 		}
 	}
 	mUsedResourceBuffer.erase(std::remove_if(mUsedResourceBuffer.begin(), mUsedResourceBuffer.end(), [](const std::shared_ptr<ResourceContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mUsedResourceBuffer.end());
+
+	mIsDirty = true;
 }
 
 void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory)
