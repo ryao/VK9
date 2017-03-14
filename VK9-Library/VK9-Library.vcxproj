@@ -99,8 +99,12 @@
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"</Command>
     </PreBuildEvent>
@@ -146,8 +150,12 @@
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
 "$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"</Command>
     </PreBuildEvent>
@@ -223,6 +231,8 @@
     <None Include="d3d9.def" />
     <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag" />
     <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert" />
+    <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag" />
+    <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert" />
     <None Include="Shaders\VertexBuffer_XYZ_NORMAL.frag" />
     <None Include="Shaders\VertexBuffer_XYZ_NORMAL.vert" />
     <None Include="Shaders\VertexBuffer_XYZ_TEX1.frag">
@@ -233,6 +243,8 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
     </None>
+    <None Include="Shaders\VertexBuffer_XYZ_TEX2.frag" />
+    <None Include="Shaders\VertexBuffer_XYZ_TEX2.vert" />
     <None Include="VK9.conf">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
