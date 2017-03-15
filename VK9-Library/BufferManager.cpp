@@ -71,6 +71,9 @@ BufferManager::BufferManager(CDevice9* device)
 	mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
 	mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
 
+	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
+	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
+
 	mPushConstantRanges[0].offset = 0;
 	mPushConstantRanges[0].size = UBO_SIZE;
 	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -537,6 +540,18 @@ BufferManager::~BufferManager()
 		mFragShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
 	}
 
+	if (mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, NULL);
+		mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
+	}
+
+	if (mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, NULL);
+		mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
+	}
+
 	if (mPipelineCache != VK_NULL_HANDLE)
 	{
 		vkDestroyPipelineCache(mDevice->mDevice, mPipelineCache, nullptr);
@@ -961,11 +976,11 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	}
 	else if (hasPosition && hasColor && hasNormal)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe normals are not fully yet supported.";
 		switch (textureCount)
 		{
-		case 0:
-			//No textures.
+		case 2:
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;

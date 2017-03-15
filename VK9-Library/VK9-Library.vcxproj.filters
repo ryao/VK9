@@ -224,6 +224,12 @@
     <None Include="Shaders\VertexBuffer_XYZ_TEX2.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">

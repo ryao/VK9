@@ -172,6 +172,9 @@ public:
 	VkShaderModule mVertShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
 	VkShaderModule mFragShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
 
+	VkShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
+	VkShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
+
 	VkSampler mSampler = VK_NULL_HANDLE;
 	VkImage mImage = VK_NULL_HANDLE;
 	VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
