@@ -2300,29 +2300,23 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexDa
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index,D3DLIGHT9 *pLight)
 {
-	//TODO: Implement.
+	(*pLight) = mDeviceState.mLights[Index];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetLight is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 } 
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLightEnable(DWORD Index,BOOL *pEnable)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetLightEnable is not implemented!";
+	(*pEnable) = mDeviceState.mLightSettings[Index];
 
 	return S_OK;		
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetMaterial(D3DMATERIAL9 *pMaterial)
 {
-	//TODO: Implement.
+	(*pMaterial) = mDeviceState.mMaterial;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetMaterial is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 FLOAT STDMETHODCALLTYPE CDevice9::GetNPatchMode()
@@ -2541,11 +2535,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
 	
 HRESULT STDMETHODCALLTYPE CDevice9::LightEnable(DWORD LightIndex,BOOL bEnable)
 {
-	//TODO: Implement.
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mLightSettings[LightIndex] = bEnable;
+	}
+	else
+	{
+		mDeviceState.mLightSettings[LightIndex] = bEnable;
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::LightEnable is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
@@ -2681,18 +2680,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetLight is not implemented!";
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mLights[Index] = (*pLight);
+	}
+	else
+	{
+		mDeviceState.mLights[Index] = (*pLight);
+	}
 
 	return S_OK;	
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetMaterial is not implemented!";
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		this->mCurrentStateRecording->mDeviceState.mMaterial = (*pMaterial);
+	}
+	else
+	{
+		mDeviceState.mMaterial = (*pMaterial);
+	}
 
 	return S_OK;	
 }
