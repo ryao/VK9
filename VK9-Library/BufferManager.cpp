@@ -673,6 +673,26 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		context->CullMode = D3DCULL_CW;
 	}
 
+	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_LIGHTING);
+	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
+	{
+		context->IsLightingEnabled = (BOOL)searchResult->second;
+	}
+	else
+	{
+		context->IsLightingEnabled = false;
+	}
+
+	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_SHADEMODE);
+	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
+	{
+		context->ShadeMode = (D3DSHADEMODE)searchResult->second;
+	}
+	else
+	{
+		context->ShadeMode = D3DSHADE_GOURAUD;
+	}
+
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
 	{
@@ -698,7 +718,9 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->PixelShader == context->PixelShader
 			&& mDrawBuffer[i]->StreamCount == context->StreamCount
 			&& mDrawBuffer[i]->FillMode == context->FillMode
-			&& mDrawBuffer[i]->CullMode == context->CullMode)
+			&& mDrawBuffer[i]->CullMode == context->CullMode
+			&& mDrawBuffer[i]->IsLightingEnabled == context->IsLightingEnabled
+			&& mDrawBuffer[i]->ShadeMode == context->ShadeMode)
 		{
 			BOOL isMatch = true;
 			BOOST_FOREACH(const auto& pair, context->Bindings)
@@ -823,6 +845,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
+	BOOL isLightingEnabled = context->IsLightingEnabled;
 
 	if (context->VertexDeclaration != nullptr)
 	{
@@ -941,12 +964,26 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 			//No textures. 
 			break;
 		case 1:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+			if (isLightingEnabled)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
+			}
+			else
+			{
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+			}
 			break;
 		case 2:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX2;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX2;
+			if (isLightingEnabled)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
+			}
+			else
+			{
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX2;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX2;
+			}
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
@@ -958,14 +995,37 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		switch (textureCount)
 		{
 		case 0:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
+			if (isLightingEnabled)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
+			}
+			else
+			{
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
+			}
 			break;
 		case 1:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
+			if (isLightingEnabled)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
+			}
+			else
+			{
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
+			}
+
 			break;
 		case 2:
+			if (isLightingEnabled)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
+			}
+			else
+			{
+				
+			}
 			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX2;
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX2;
 			break;
@@ -979,8 +1039,15 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		switch (textureCount)
 		{
 		case 2:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+			if (isLightingEnabled)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
+			}
+			else
+			{
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+			}
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
@@ -992,8 +1059,15 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		switch (textureCount)
 		{
 		case 0:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
+			if (isLightingEnabled)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
+			}
+			else
+			{
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
+			}
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;

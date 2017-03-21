@@ -94,6 +94,10 @@ struct DrawContext
 	D3DFILLMODE FillMode = D3DFILL_FORCE_DWORD;
 	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
 
+	//D3d9 State - Lights
+	BOOL IsLightingEnabled = false;
+	D3DSHADEMODE ShadeMode = D3DSHADE_FORCE_DWORD;
+
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
 	CDevice9* mDevice = nullptr;

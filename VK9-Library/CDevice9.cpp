@@ -2682,11 +2682,26 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight
 {
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		this->mCurrentStateRecording->mDeviceState.mLights[Index] = (*pLight);
+		if (this->mCurrentStateRecording->mDeviceState.mLights.size() == Index)
+		{
+			this->mCurrentStateRecording->mDeviceState.mLights.push_back((*pLight));
+		}
+		else
+		{
+			this->mCurrentStateRecording->mDeviceState.mLights[Index] = (*pLight);
+		}
+		
 	}
 	else
 	{
-		mDeviceState.mLights[Index] = (*pLight);
+		if (mDeviceState.mLights.size() == Index)
+		{
+			mDeviceState.mLights.push_back((*pLight));
+		}
+		else
+		{
+			mDeviceState.mLights[Index] = (*pLight);
+		}		
 	}
 
 	return S_OK;	

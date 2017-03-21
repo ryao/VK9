@@ -119,7 +119,7 @@ struct DeviceState
 	BOOL mHasIndexBuffer = 0;
 
 	//IDirect3DDevice9::SetLight
-	boost::container::flat_map<DWORD,D3DLIGHT9> mLights;
+	boost::container::small_vector<D3DLIGHT9, 4> mLights;
 
 	//IDirect3DDevice9::SetMaterial
 	D3DMATERIAL9 mMaterial = {};
