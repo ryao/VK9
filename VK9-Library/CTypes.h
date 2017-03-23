@@ -111,7 +111,7 @@ struct DeviceState
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
-	DWORD mFVF = -1;
+	DWORD mFVF = LONG_MAX;
 	BOOL mHasFVF = 0;
 
 	//IDirect3DDevice9::SetIndices
