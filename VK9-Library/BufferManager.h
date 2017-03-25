@@ -96,6 +96,7 @@ struct DrawContext
 
 	//D3d9 State - Lights
 	BOOL IsLightingEnabled = false;
+	size_t LightCount = 0;
 	D3DSHADEMODE ShadeMode = D3DSHADE_FORCE_DWORD;
 
 	//Resource Handling.

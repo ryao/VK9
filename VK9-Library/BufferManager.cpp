@@ -157,9 +157,6 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	mPipelineLayoutCreateInfo.pNext = NULL;
 	mPipelineLayoutCreateInfo.setLayoutCount = 1;
-	//mPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
-	//mPipelineLayoutCreateInfo.pPushConstantRanges = mDevice->mPushConstants;
-	//mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 
 	mGraphicsPipelineCreateInfo.stageCount = 2;
 
@@ -186,7 +183,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mGraphicsPipelineCreateInfo.renderPass = mDevice->mRenderPass;
 	mGraphicsPipelineCreateInfo.pDynamicState = &mPipelineDynamicStateCreateInfo;
 
-	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;	
+	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
 	mResult = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, nullptr, &mPipelineCache);
 	if (mResult != VK_SUCCESS)
@@ -313,14 +310,14 @@ BufferManager::BufferManager(CDevice9* device)
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	imageViewCreateInfo.format = textureFormat;
 	imageViewCreateInfo.components =
-		{
-			VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
-			VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
-		};
+	{
+		VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+		VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
+	};
 	imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 	imageViewCreateInfo.flags = 0;
 
-	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL,&mSampler);
+	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateSampler failed with return code of " << mResult;
@@ -329,7 +326,7 @@ BufferManager::BufferManager(CDevice9* device)
 
 	imageViewCreateInfo.image = mImage;
 
-	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL,&mImageView);
+	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL, &mImageView);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateImageView failed with return code of " << mResult;
@@ -422,7 +419,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	mSubmitInfo.commandBufferCount = 1;
 	mSubmitInfo.pCommandBuffers = &mCommandBuffer;
-} 
+}
 
 BufferManager::~BufferManager()
 {
@@ -430,7 +427,7 @@ BufferManager::~BufferManager()
 	{
 		vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, &mCommandBuffer);
 		mCommandBuffer = VK_NULL_HANDLE;
-	}	
+	}
 
 	if (mUniformStagingBuffer != VK_NULL_HANDLE)
 	{
@@ -479,7 +476,7 @@ BufferManager::~BufferManager()
 		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_DIFFUSE, NULL);
 		mFragShaderModule_XYZ_DIFFUSE = VK_NULL_HANDLE;
 	}
-	
+
 	if (mVertShaderModule_XYZ_TEX1 != VK_NULL_HANDLE)
 	{
 		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_TEX1, NULL);
@@ -580,7 +577,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		if (pair1.second != nullptr)
 		{
 			std::shared_ptr<SamplerRequest> request = std::make_shared<SamplerRequest>(mDevice);
-			
+
 			request->MagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAGFILTER];
 			request->MinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MINFILTER];
 			request->AddressModeU = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSU];
@@ -613,7 +610,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			if (request->Sampler == VK_NULL_HANDLE)
 			{
 				CreateSampler(request);
-			}	
+			}
 
 			targetSampler.sampler = request->Sampler;
 			targetSampler.imageView = pair1.second->mImageView;
@@ -720,7 +717,8 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->FillMode == context->FillMode
 			&& mDrawBuffer[i]->CullMode == context->CullMode
 			&& mDrawBuffer[i]->IsLightingEnabled == context->IsLightingEnabled
-			&& mDrawBuffer[i]->ShadeMode == context->ShadeMode)
+			&& mDrawBuffer[i]->ShadeMode == context->ShadeMode
+			&& mDrawBuffer[i]->LightCount == context->LightCount)
 		{
 			BOOL isMatch = true;
 			BOOST_FOREACH(const auto& pair, context->Bindings)
@@ -745,12 +743,12 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	if (context->Pipeline == VK_NULL_HANDLE)
 	{
 		CreatePipe(context);
-	}	
+	}
 
 	/**********************************************
 	* Update UBO structure.
 	**********************************************/
-	UpdateUniformBuffer(context); 
+	UpdateUniformBuffer(context);
 
 	/**********************************************
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
@@ -807,7 +805,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	//if (!mIsDirty || mLastVkPipeline != context->Pipeline)
 	//{
-		vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
+	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
 	//	mLastVkPipeline = context->Pipeline;
 	//}
 
@@ -828,7 +826,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	if (mDevice->mDeviceState.mIndexBuffer != nullptr)
 	{
 		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
-	}	
+	}
 
 	mIsDirty = false;
 }
@@ -964,26 +962,12 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 			//No textures. 
 			break;
 		case 1:
-			if (isLightingEnabled)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
-			}
-			else
-			{
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
-			}
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
 			break;
 		case 2:
-			if (isLightingEnabled)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
-			}
-			else
-			{
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX2;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX2;
-			}
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX2;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX2;
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
@@ -995,37 +979,14 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		switch (textureCount)
 		{
 		case 0:
-			if (isLightingEnabled)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
-			}
-			else
-			{
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
-			}
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
 			break;
 		case 1:
-			if (isLightingEnabled)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
-			}
-			else
-			{
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
-			}
-
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
 			break;
 		case 2:
-			if (isLightingEnabled)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
-			}
-			else
-			{
-				
-			}
 			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX2;
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX2;
 			break;
@@ -1039,15 +1000,8 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		switch (textureCount)
 		{
 		case 2:
-			if (isLightingEnabled)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
-			}
-			else
-			{
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-			}
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
@@ -1059,15 +1013,8 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		switch (textureCount)
 		{
 		case 0:
-			if (isLightingEnabled)
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe lighting not supported.";
-			}
-			else
-			{
-				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
-				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
-			}
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
@@ -1225,9 +1172,9 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
-	
+
 	if (textureCount)
-	{	
+	{
 		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.	
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
@@ -1334,7 +1281,7 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	if (mDevice->mDeviceFeatures.samplerAnisotropy)
 	{
 		// Use max. level of anisotropy for this example
-		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy,mDevice->mDeviceProperties.limits.maxSamplerAnisotropy);
+		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy, mDevice->mDeviceProperties.limits.maxSamplerAnisotropy);
 		samplerCreateInfo.anisotropyEnable = VK_TRUE;
 	}
 	else
@@ -1369,9 +1316,9 @@ void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 	{
 		return;
 	}
-	
+
 	/*
-	
+
 				pair1.second.m[0][0], pair1.second.m[0][1], pair1.second.m[0][2], pair1.second.m[0][3],
 				pair1.second.m[1][0], pair1.second.m[1][1], pair1.second.m[1][2], pair1.second.m[1][3],
 				pair1.second.m[2][0], pair1.second.m[2][1], pair1.second.m[2][2], pair1.second.m[2][3],
@@ -1425,11 +1372,11 @@ void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 void BufferManager::FlushDrawBufffer()
 {
 	/*
-	Uses remove_if and chrono to remove elements that have not been used in over a second.	
+	Uses remove_if and chrono to remove elements that have not been used in over a second.
 	*/
 	mDrawBuffer.erase(std::remove_if(mDrawBuffer.begin(), mDrawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mDrawBuffer.end());
 	mSamplerRequests.erase(std::remove_if(mSamplerRequests.begin(), mSamplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mSamplerRequests.end());
-	
+
 	/*
 	Add expired buffers to unused list so they can be reused and then remove them from the used queue.
 	*/
@@ -1497,7 +1444,7 @@ void BufferManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
 	vkEndCommandBuffer(mCommandBuffer);
 
 	vkQueueSubmit(mDevice->mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(mDevice->mQueue);	
+	vkQueueWaitIdle(mDevice->mQueue);
 	vkResetCommandBuffer(mCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT); //So far resetting a command buffer is about 10 times faster than allocating a new one.
 }
 

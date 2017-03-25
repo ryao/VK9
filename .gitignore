@@ -7,3 +7,6 @@ Release
 *.opendb
 /.vs
 /VK9-Library/cstateblock9.i-9509fbe4
+*.plog
+*.plog
+/VK9.plog
