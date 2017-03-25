@@ -103,6 +103,12 @@ public:
 	~StreamSource();
 };
 
+struct SpecializationConstants
+{
+	int lightCount = 0;
+	int shadeMode = D3DSHADE_GOURAUD;
+};
+
 struct DeviceState
 {
 	//IDirect3DDevice9::LightEnable
@@ -175,6 +181,8 @@ struct DeviceState
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI
 
+	//Used for shader specialization.
+	SpecializationConstants mSpecializationConstants = {};
 };
 
 struct color_A8R8G8B8

@@ -78,6 +78,8 @@ BufferManager::BufferManager(CDevice9* device)
 	mPushConstantRanges[0].size = UBO_SIZE;
 	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+	mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
@@ -164,11 +166,12 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineShaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
 	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[0].pName = "main";
-
+	mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &mSpecializationInfo;
 	mPipelineShaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	mPipelineShaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[1].pName = "main";
+	mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &mSpecializationInfo;
 
 	mGraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	//mGraphicsPipelineCreateInfo.layout = mPipelineLayout;

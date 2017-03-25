@@ -180,6 +180,21 @@ public:
 	VkShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
 	VkShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
 
+	const VkSpecializationMapEntry mSpecializationMapEntries[2] =		
+	{ 
+		// id,offset,size
+		{ 0, 0, sizeof(int)},
+		{ 1, 1 * sizeof(int), sizeof(int) }
+	};
+
+	VkSpecializationInfo mSpecializationInfo = 
+	{
+		2,                                             // mapEntryCount
+		mSpecializationMapEntries,                     // pMapEntries
+		sizeof(SpecializationConstants),               // dataSize
+		nullptr,// pData
+	};
+
 	VkSampler mSampler = VK_NULL_HANDLE;
 	VkImage mImage = VK_NULL_HANDLE;
 	VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
