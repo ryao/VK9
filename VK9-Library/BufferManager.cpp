@@ -79,6 +79,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 	mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+	mSpecializationInfo.dataSize = sizeof(SpecializationConstants);
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
@@ -167,6 +168,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[0].pName = "main";
 	mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &mSpecializationInfo;
+
 	mPipelineShaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	mPipelineShaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
@@ -408,6 +410,14 @@ BufferManager::BufferManager(CDevice9* device)
 	mWriteDescriptorSet[0].descriptorCount = 1;
 	mWriteDescriptorSet[0].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
 
+	mWriteDescriptorSet[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	//mWriteDescriptorSet[1].dstSet = descriptorSet;
+	mWriteDescriptorSet[1].dstBinding = 1;
+	mWriteDescriptorSet[1].dstArrayElement = 0;
+	mWriteDescriptorSet[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mWriteDescriptorSet[1].descriptorCount = 2;
+	mWriteDescriptorSet[1].pBufferInfo = mDescriptorBufferInfo;
+
 	//Command Buffer Setup
 	mCommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	mCommandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -422,6 +432,10 @@ BufferManager::BufferManager(CDevice9* device)
 	mSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	mSubmitInfo.commandBufferCount = 1;
 	mSubmitInfo.pCommandBuffers = &mCommandBuffer;
+
+	//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
+	CreateBuffer(sizeof(D3DLIGHT9)*4, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mLightBuffer, mLightBufferMemory);
+	CreateBuffer(sizeof(D3DMATERIAL9), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mMaterialBuffer, mMaterialBufferMemory);
 }
 
 BufferManager::~BufferManager()
@@ -432,16 +446,28 @@ BufferManager::~BufferManager()
 		mCommandBuffer = VK_NULL_HANDLE;
 	}
 
-	if (mUniformStagingBuffer != VK_NULL_HANDLE)
+	if (mLightBuffer != VK_NULL_HANDLE)
 	{
-		vkDestroyBuffer(mDevice->mDevice, mUniformStagingBuffer, NULL);
-		mUniformStagingBuffer = VK_NULL_HANDLE;
+		vkDestroyBuffer(mDevice->mDevice, mLightBuffer, NULL);
+		mLightBuffer = VK_NULL_HANDLE;
 	}
 
-	if (mUniformStagingBufferMemory != VK_NULL_HANDLE)
+	if (mLightBufferMemory != VK_NULL_HANDLE)
 	{
-		vkFreeMemory(mDevice->mDevice, mUniformStagingBufferMemory, NULL);
-		mUniformStagingBufferMemory = VK_NULL_HANDLE;
+		vkFreeMemory(mDevice->mDevice, mLightBufferMemory, NULL);
+		mLightBufferMemory = VK_NULL_HANDLE;
+	}
+
+	if (mMaterialBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer(mDevice->mDevice, mMaterialBuffer, NULL);
+		mMaterialBuffer = VK_NULL_HANDLE;
+	}
+
+	if (mMaterialBufferMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(mDevice->mDevice, mMaterialBufferMemory, NULL);
+		mMaterialBufferMemory = VK_NULL_HANDLE;
 	}
 
 	if (mImageView != VK_NULL_HANDLE)
@@ -682,15 +708,19 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	{
 		context->IsLightingEnabled = false;
 	}
+	context->LightCount = mDevice->mDeviceState.mLights.size();
+	mDevice->mDeviceState.mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size();
 
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_SHADEMODE);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
 		context->ShadeMode = (D3DSHADEMODE)searchResult->second;
+		mDevice->mDeviceState.mSpecializationConstants.shadeMode = searchResult->second;
 	}
 	else
 	{
 		context->ShadeMode = D3DSHADE_GOURAUD;
+		mDevice->mDeviceState.mSpecializationConstants.shadeMode = D3DSHADE_GOURAUD;
 	}
 
 	int i = 0;
@@ -843,10 +873,11 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	**********************************************/
 	uint32_t attributeCount = 0;
 	uint32_t textureCount = 0;
+	uint32_t lightCount = context->LightCount;
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
-	BOOL isLightingEnabled = context->IsLightingEnabled;
+	BOOL isLightingEnabled = context->IsLightingEnabled;	
 
 	if (context->VertexDeclaration != nullptr)
 	{
@@ -1173,12 +1204,32 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
 
+	mDescriptorSetLayoutBinding[1].binding = 1;
+	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mDescriptorSetLayoutBinding[1].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
+
+	mDescriptorSetLayoutBinding[2].binding = 2;
+	mDescriptorSetLayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mDescriptorSetLayoutBinding[2].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[2].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+	mDescriptorSetLayoutBinding[2].pImmutableSamplers = NULL;
+
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 
 	if (textureCount)
 	{
-		mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.	
+		if (lightCount)
+		{
+			mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
+		}
+		else
+		{
+			mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.	
+		}	
+
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
 		result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
@@ -1259,8 +1310,26 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size();
 	mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
 
-	vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
+	if (mDevice->mDeviceState.mLights.size())
+	{
+		mDescriptorBufferInfo[0].buffer = mLightBuffer;
+		mDescriptorBufferInfo[0].offset = 0;
+		mDescriptorBufferInfo[0].range = sizeof(D3DLIGHT9) * mDevice->mDeviceState.mLights.size();
 
+		mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
+		mDescriptorBufferInfo[1].offset = 0;
+		mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
+
+		mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
+		mWriteDescriptorSet[1].descriptorCount = 2;
+		mWriteDescriptorSet[1].pBufferInfo = mDescriptorBufferInfo;
+
+		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
+	}
+	else
+	{
+		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
+	}
 }
 
 void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
@@ -1315,19 +1384,22 @@ void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 	VkResult result = VK_SUCCESS;
 	void* data = nullptr;
 
+	if (mDevice->mDeviceState.mAreLightsDirty)
+	{
+		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(D3DLIGHT9)*context->LightCount, mDevice->mDeviceState.mLights.data());
+		mDevice->mDeviceState.mAreLightsDirty = false;
+	}
+
+	if (mDevice->mDeviceState.mIsMaterialDirty)
+	{
+		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mMaterialBuffer, 0, sizeof(D3DMATERIAL9), &mDevice->mDeviceState.mMaterial);
+		mDevice->mDeviceState.mIsMaterialDirty = false;
+	}
+
 	if (!mDevice->mDeviceState.mHasTransformsChanged)
 	{
 		return;
 	}
-
-	/*
-
-				pair1.second.m[0][0], pair1.second.m[0][1], pair1.second.m[0][2], pair1.second.m[0][3],
-				pair1.second.m[1][0], pair1.second.m[1][1], pair1.second.m[1][2], pair1.second.m[1][3],
-				pair1.second.m[2][0], pair1.second.m[2][1], pair1.second.m[2][2], pair1.second.m[2][3],
-				pair1.second.m[3][0], pair1.second.m[3][1], pair1.second.m[3][2], pair1.second.m[3][3];
-
-	*/
 
 	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTransforms)
 	{

@@ -139,8 +139,9 @@ public:
 	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
 	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
-	VkWriteDescriptorSet mWriteDescriptorSet[1] = {};
+	VkWriteDescriptorSet mWriteDescriptorSet[3] = {};
 	VkPushConstantRange mPushConstantRanges[1] = {};
+	VkDescriptorBufferInfo mDescriptorBufferInfo[2] = {};
 
 	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
 	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
@@ -205,10 +206,11 @@ public:
 	
 	int32_t mVertexCount = 0;
 
-	VkBuffer mUniformStagingBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory mUniformStagingBufferMemory = VK_NULL_HANDLE;
-	VkBuffer mUniformBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory mUniformBufferMemory = VK_NULL_HANDLE;
+	VkBuffer mLightBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory mLightBufferMemory = VK_NULL_HANDLE;
+	VkBuffer mMaterialBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory mMaterialBufferMemory = VK_NULL_HANDLE;
+
 
 	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
 	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;

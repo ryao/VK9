@@ -126,9 +126,11 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetLight
 	boost::container::small_vector<D3DLIGHT9, 4> mLights;
+	BOOL mAreLightsDirty = true;
 
 	//IDirect3DDevice9::SetMaterial
 	D3DMATERIAL9 mMaterial = {};
+	BOOL mIsMaterialDirty = true;
 
 	//IDirect3DDevice9::SetNPatchMode
 	float mNSegments = -1;

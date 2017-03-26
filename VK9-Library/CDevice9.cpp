@@ -2685,10 +2685,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight
 		if (this->mCurrentStateRecording->mDeviceState.mLights.size() == Index)
 		{
 			this->mCurrentStateRecording->mDeviceState.mLights.push_back((*pLight));
+			this->mCurrentStateRecording->mDeviceState.mAreLightsDirty = true;
 		}
 		else
 		{
 			this->mCurrentStateRecording->mDeviceState.mLights[Index] = (*pLight);
+			this->mCurrentStateRecording->mDeviceState.mAreLightsDirty = true;
 		}
 		
 	}
@@ -2697,10 +2699,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight
 		if (mDeviceState.mLights.size() == Index)
 		{
 			mDeviceState.mLights.push_back((*pLight));
+			mDeviceState.mAreLightsDirty = true;
 		}
 		else
 		{
 			mDeviceState.mLights[Index] = (*pLight);
+			mDeviceState.mAreLightsDirty = true;
 		}		
 	}
 
@@ -2712,10 +2716,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		this->mCurrentStateRecording->mDeviceState.mMaterial = (*pMaterial);
+		this->mCurrentStateRecording->mDeviceState.mIsMaterialDirty = true;
 	}
 	else
 	{
 		mDeviceState.mMaterial = (*pMaterial);
+		mDeviceState.mIsMaterialDirty = true;
 	}
 
 	return S_OK;	

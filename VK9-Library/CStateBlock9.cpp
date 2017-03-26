@@ -220,9 +220,16 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 				targetState.mLights.push_back(sourceState.mLights[i]);
 			}
 		}
+		targetState.mAreLightsDirty = true;
 	}
 
 	//IDirect3DDevice9::SetMaterial
+	if ((type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
+	{
+		targetState.mMaterial = sourceState.mMaterial;
+		targetState.mIsMaterialDirty = true;
+	}
+
 	//IDirect3DDevice9::SetNPatchMode
 	if (sourceState.mNSegments != -1 && (!onlyIfExists || targetState.mNSegments != -1) && (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
