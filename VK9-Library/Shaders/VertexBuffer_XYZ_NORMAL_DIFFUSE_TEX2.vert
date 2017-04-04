@@ -30,58 +30,67 @@ misrepresented as being the original software.
 #define D3DLIGHT_SPOT 2
 #define D3DLIGHT_DIRECTIONAL 3
 
-layout(constant_id = 0) const int lightCount = 0;
+layout(constant_id = 0) const int lightCount = 1;
 layout(constant_id = 1) const int shadeMode = D3DSHADE_GOURAUD;
+layout(constant_id = 2) const bool isLightingEnabled = true;
+layout(constant_id = 3) const int textureCount = 1;
 
-#if lightCount > 0
-	struct Light
-	{
-		int        Type;            /* Type of light source */
-		vec4       Diffuse;         /* Diffuse color of light */
-		vec4       Specular;        /* Specular color of light */
-		vec4       Ambient;         /* Ambient color of light */
-		vec3       Position;        /* Position in world space */
-		vec3       Direction;       /* Direction in world space */
-		float      Range;           /* Cutoff range */
-		float      Falloff;         /* Falloff */
-		float      Attenuation0;    /* Constant attenuation */
-		float      Attenuation1;    /* Linear attenuation */
-		float      Attenuation2;    /* Quadratic attenuation */
-		float      Theta;           /* Inner angle of spotlight cone */
-		float      Phi;             /* Outer angle of spotlight cone */
-	};
+struct Light
+{
+	int        Type;            /* Type of light source */
+	vec4       Diffuse;         /* Diffuse color of light */
+	vec4       Specular;        /* Specular color of light */
+	vec4       Ambient;         /* Ambient color of light */
+	vec3       Position;        /* Position in world space */
+	vec3       Direction;       /* Direction in world space */
+	float      Range;           /* Cutoff range */
+	float      Falloff;         /* Falloff */
+	float      Attenuation0;    /* Constant attenuation */
+	float      Attenuation1;    /* Linear attenuation */
+	float      Attenuation2;    /* Quadratic attenuation */
+	float      Theta;           /* Inner angle of spotlight cone */
+	float      Phi;             /* Outer angle of spotlight cone */
+};
  
-	struct Material
-	{
-		vec4   Diffuse;        /* Diffuse color RGBA */
-		vec4   Ambient;        /* Ambient color RGB */
-		vec4   Specular;       /* Specular 'shininess' */
-		vec4   Emissive;       /* Emissive color RGB */
-		float  Power;          /* Sharpness if specular highlight */
-	};
+struct Material
+{
+	vec4   Diffuse;        /* Diffuse color RGBA */
+	vec4   Ambient;        /* Ambient color RGB */
+	vec4   Specular;       /* Specular 'shininess' */
+	vec4   Emissive;       /* Emissive color RGB */
+	float  Power;          /* Sharpness if specular highlight */
+};
 
-	layout(binding = 1) uniform Material material;
-	layout(binding = 2) uniform Light lights[lightCount];
+layout(binding = 1) uniform MaterialBlock
+{
+	Material material;
+};
 
-	vec3 getGouradLight( int lightIndex, vec3 position, vec3 norm )
-	{
-		vec3 s = normalize( vec3( lights[lightIndex].Position - position ) );
-		vec3 v = normalize( -position.xyz );
-		vec3 r = reflect( -s, norm );
- 
-		vec3 ambient = Light[lightIndex].Ambient * material.Ambient;
- 
-		float sDotN = max( dot( s, norm ), 0.0 );
-		vec3 diffuse = lights[lightIndex].Diffuse * material.Diffuse * sDotN;
- 
-		vec3 spec = vec3( 0.0 );
-		if ( sDotN > 0.0 )
-			spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power );
- 
-		return ambient + diffuse + spec;
-	}
+layout(binding = 2) uniform LightBlock
+{
+	Light lights[lightCount];
+};
 
-#endif
+vec4 getGouradLight( int lightIndex, vec4 position1, vec4 norm )
+{
+	vec3 lightPosition = lights[lightIndex].Position * vec3(1.0,-1.0,1.0);
+
+	vec3 s = normalize( vec3( lightPosition.xyz - position1.xyz ) );
+	vec3 v = normalize( -position1.xyz );
+	vec3 r = reflect( -s, norm.xyz );
+ 
+	vec4 ambient = lights[lightIndex].Ambient * material.Ambient;
+ 
+	float sDotN = max( dot( s, norm.xyz ), 0.0 );
+	vec4 diffuse = lights[lightIndex].Diffuse * material.Diffuse * sDotN;
+ 
+	vec4 spec = vec4( 0.0 );
+	if ( sDotN > 0.0 )
+		spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power );
+ 
+	return ambient + diffuse + spec;
+}
+
 
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
@@ -97,6 +106,7 @@ layout (location = 0) out vec4 normal;
 layout (location = 1) out vec4 color;
 layout (location = 2) out vec2 texcoord1;
 layout (location = 3) out vec2 texcoord2;
+layout (location = 4) out vec4 pos;
 
 out gl_PerVertex 
 {
@@ -122,19 +132,27 @@ vec4 Convert(uvec4 rgba)
 
 void main() 
 {
-	gl_Position = ubo.totalTransformation * position * vec4(1.0,-1.0,1.0,1.0);
+	vec4 lightColor = vec4(1.0,1.0,1.0,1);
+
+	pos = ubo.totalTransformation * position * vec4(1.0,-1.0,1.0,1.0);
+
+	gl_Position = pos;
 
 	normal = attr1;
 	color = Convert(attr2);
 	texcoord1 = attr3;
 	texcoord2 = attr4;
 
-	#if lightCount > 0
-		#if shadeMode = D3DSHADE_GOURAUD
-		for( int i=0; i<lightCount; ++i )
+	/*if(isLightingEnabled)
+	{
+		if(shadeMode == D3DSHADE_GOURAUD)
 		{
-			color += getGouradLight( i, gl_Position, normal);
+			for( int i=0; i<lightCount; ++i )
+			{
+				lightColor += getGouradLight( i, pos, normal);
+			}
 		}
-		#endif
-	#endif
+		color *= lightColor;
+	}*/
+
 }

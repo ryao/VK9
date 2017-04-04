@@ -96,7 +96,8 @@ struct DrawContext
 
 	//D3d9 State - Lights
 	BOOL IsLightingEnabled = false;
-	size_t LightCount = 0;
+	size_t LightCount = 1;
+	size_t TextureCount = 1;
 	D3DSHADEMODE ShadeMode = D3DSHADE_FORCE_DWORD;
 
 	//Resource Handling.
@@ -181,16 +182,18 @@ public:
 	VkShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
 	VkShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
 
-	const VkSpecializationMapEntry mSpecializationMapEntries[2] =		
+	const VkSpecializationMapEntry mSpecializationMapEntries[4] =		
 	{ 
 		// id,offset,size
 		{ 0, 0, sizeof(int)},
-		{ 1, 1 * sizeof(int), sizeof(int) }
+		{ 1, 1 * sizeof(int), sizeof(int)},
+		{ 2, 2 * sizeof(int), sizeof(int)},
+		{ 3, 3 * sizeof(int), sizeof(int) }
 	};
 
 	VkSpecializationInfo mSpecializationInfo = 
 	{
-		2,                                             // mapEntryCount
+		4,                                             // mapEntryCount
 		mSpecializationMapEntries,                     // pMapEntries
 		sizeof(SpecializationConstants),               // dataSize
 		nullptr,// pData

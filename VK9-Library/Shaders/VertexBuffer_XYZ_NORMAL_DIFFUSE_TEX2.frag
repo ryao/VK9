@@ -30,63 +30,72 @@ misrepresented as being the original software.
 #define D3DLIGHT_SPOT 2
 #define D3DLIGHT_DIRECTIONAL 3
 
-layout(constant_id = 0) const int lightCount = 0;
+layout(constant_id = 0) const int lightCount = 2;
 layout(constant_id = 1) const int shadeMode = D3DSHADE_GOURAUD;
+layout(constant_id = 2) const bool isLightingEnabled = true;
+layout(constant_id = 3) const int textureCount = 2;
 
-#if lightCount > 0
-	struct Light
-	{
-		int        Type;            /* Type of light source */
-		vec4       Diffuse;         /* Diffuse color of light */
-		vec4       Specular;        /* Specular color of light */
-		vec4       Ambient;         /* Ambient color of light */
-		vec3       Position;        /* Position in world space */
-		vec3       Direction;       /* Direction in world space */
-		float      Range;           /* Cutoff range */
-		float      Falloff;         /* Falloff */
-		float      Attenuation0;    /* Constant attenuation */
-		float      Attenuation1;    /* Linear attenuation */
-		float      Attenuation2;    /* Quadratic attenuation */
-		float      Theta;           /* Inner angle of spotlight cone */
-		float      Phi;             /* Outer angle of spotlight cone */
-	};
+struct Light
+{
+	int        Type;            /* Type of light source */
+	vec4       Diffuse;         /* Diffuse color of light */
+	vec4       Specular;        /* Specular color of light */
+	vec4       Ambient;         /* Ambient color of light */
+	vec3       Position;        /* Position in world space */
+	vec3       Direction;       /* Direction in world space */
+	float      Range;           /* Cutoff range */
+	float      Falloff;         /* Falloff */
+	float      Attenuation0;    /* Constant attenuation */
+	float      Attenuation1;    /* Linear attenuation */
+	float      Attenuation2;    /* Quadratic attenuation */
+	float      Theta;           /* Inner angle of spotlight cone */
+	float      Phi;             /* Outer angle of spotlight cone */
+};
  
-	struct Material
-	{
-		vec4   Diffuse;        /* Diffuse color RGBA */
-		vec4   Ambient;        /* Ambient color RGB */
-		vec4   Specular;       /* Specular 'shininess' */
-		vec4   Emissive;       /* Emissive color RGB */
-		float  Power;          /* Sharpness if specular highlight */
-	};
+struct Material
+{
+	vec4   Diffuse;        /* Diffuse color RGBA */
+	vec4   Ambient;        /* Ambient color RGB */
+	vec4   Specular;       /* Specular 'shininess' */
+	vec4   Emissive;       /* Emissive color RGB */
+	float  Power;          /* Sharpness if specular highlight */
+};
 
-	layout(binding = 1) uniform Material material;
-	layout(binding = 2) uniform Light lights[lightCount];
+layout(binding = 1) uniform MaterialBlock
+{
+	Material material;
+};
 
-	void getPhongLight( int lightIndex, vec3 position, vec3 norm, out vec3 ambient, out vec3 diffuse, out vec3 spec )
-	{
-		vec3 n = normalize( norm );
-		vec3 s = normalize( lights[lightIndex].Position - position );
-		vec3 v = normalize( -position );
-		vec3 r = reflect( -s, n );
- 
-		ambient = lights[lightIndex].Ambient * material.Ambient;
- 
-		float sDotN = max( dot( s, n ), 0.0 );
-		diffuse = lights[lightIndex].Diffuse * material.Diffuse * sDotN;
- 
- 
-		spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power ); 
-	}
+layout(binding = 2) uniform LightBlock
+{
+	Light lights[lightCount];
+};
 
-#endif
+void getPhongLight( int lightIndex, vec3 position1, vec4 norm, out vec4 ambient, out vec4 diffuse, out vec4 spec )
+{
+	vec3 lightPosition = lights[lightIndex].Position * vec3(1.0,-1.0,1.0);
 
-layout(binding = 0) uniform sampler2D textures[2];
+	vec3 n = normalize( norm.xyz );
+	vec3 s = normalize( lightPosition - position1 );
+	vec3 v = normalize( -position1 );
+	vec3 r = reflect( -s, n );
+ 
+	ambient = lights[lightIndex].Ambient * material.Ambient;
+ 
+	float sDotN = max( dot( s, n ), 0.0 );
+	diffuse = lights[lightIndex].Diffuse * material.Diffuse * sDotN;
+ 
+ 
+	spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power ); 
+}
+
+layout(binding = 0) uniform sampler2D textures[textureCount];
 
 layout (location = 0) in vec4 normal;
 layout (location = 1) in vec4 color;
 layout (location = 2) in vec2 texcoord1;
 layout (location = 3) in vec2 texcoord2;
+layout (location = 4) in vec4 pos;
 
 layout (location = 0) out vec4 uFragColor;
 
@@ -94,24 +103,26 @@ void main()
 {
 	uFragColor = texture(textures[0], texcoord1.xy) * texture(textures[1], texcoord2.xy) * color;
 
-	#if lightCount > 0
-		#if shadeMode = D3DSHADE_PHONG
-		vec3 ambientSum = vec3(0);
-		vec3 diffuseSum = vec3(0);
-		vec3 specSum = vec3(0);
-		vec3 ambient, diffuse, spec;
-
-		for( int i=0; i<lightCount; ++i )
+	if(isLightingEnabled)
+	{
+		if(shadeMode == D3DSHADE_PHONG)
 		{
-			getPhongLight( i, gl_Position, normal, ambient, diffuse, spec );
-			ambientSum += ambient;
-			diffuseSum += diffuse;
-			specSum += spec;
+			vec4 ambientSum = vec4(0);
+			vec4 diffuseSum = vec4(0);
+			vec4 specSum = vec4(0);
+			vec4 ambient, diffuse, spec;
+
+			for( int i=0; i<lightCount; ++i )
+			{
+				getPhongLight( i, pos.xyz, normal, ambient, diffuse, spec );
+				ambientSum += ambient;
+				diffuseSum += diffuse;
+				specSum += spec;
+			}
+
+			ambientSum /= lightCount;
+
+			uFragColor = vec4( ambientSum + diffuseSum) * uFragColor + vec4( specSum);
 		}
-
-		ambientSum /= lightCount;
-
-		uFragColor = vec4( ambientSum + diffuseSum, 1 ) * uFragColor + vec4( specSum, 1 );
-		#endif
-	#endif
+	}
 }

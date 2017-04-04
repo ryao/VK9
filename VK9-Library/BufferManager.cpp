@@ -703,13 +703,16 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
 		context->IsLightingEnabled = (BOOL)searchResult->second;
+		mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled = (BOOL)searchResult->second;
 	}
 	else
 	{
 		context->IsLightingEnabled = false;
+		mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled = false;
 	}
+
 	context->LightCount = mDevice->mDeviceState.mLights.size();
-	mDevice->mDeviceState.mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size();
+	mDevice->mDeviceState.mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size(); 
 
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_SHADEMODE);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
@@ -722,6 +725,9 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		context->ShadeMode = D3DSHADE_GOURAUD;
 		mDevice->mDeviceState.mSpecializationConstants.shadeMode = D3DSHADE_GOURAUD;
 	}
+
+	context->TextureCount = mDevice->mDeviceState.mTextures.size();
+	mDevice->mDeviceState.mSpecializationConstants.textureCount = mDevice->mDeviceState.mTextures.size();
 
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
@@ -751,7 +757,8 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->CullMode == context->CullMode
 			&& mDrawBuffer[i]->IsLightingEnabled == context->IsLightingEnabled
 			&& mDrawBuffer[i]->ShadeMode == context->ShadeMode
-			&& mDrawBuffer[i]->LightCount == context->LightCount)
+			&& mDrawBuffer[i]->LightCount == context->LightCount
+			) //&& mDrawBuffer[i]->TextureCount == context->TextureCount  texture count should be part of vertex declaration or FVF.
 		{
 			BOOL isMatch = true;
 			BOOST_FOREACH(const auto& pair, context->Bindings)

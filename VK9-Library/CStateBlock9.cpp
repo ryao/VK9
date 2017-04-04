@@ -205,10 +205,10 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		targetState.mIndexBuffer = sourceState.mIndexBuffer;
 		targetState.mHasIndexBuffer = true;
 	}
-
-	//IDirect3DDevice9::SetLight
+	
 	if ((type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	{
+		//IDirect3DDevice9::SetLight
 		for (size_t i = 0; i < sourceState.mLights.size(); i++)
 		{
 			if (i < targetState.mLights.size())
@@ -221,11 +221,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 			}
 		}
 		targetState.mAreLightsDirty = true;
-	}
 
-	//IDirect3DDevice9::SetMaterial
-	if ((type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
-	{
+		//IDirect3DDevice9::SetMaterial
 		targetState.mMaterial = sourceState.mMaterial;
 		targetState.mIsMaterialDirty = true;
 	}

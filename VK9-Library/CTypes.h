@@ -105,8 +105,12 @@ public:
 
 struct SpecializationConstants
 {
-	int lightCount = 0;
+	int lightCount = 1;
 	int shadeMode = D3DSHADE_GOURAUD;
+	int isLightingEnabled = true;
+	int textureCount = 1;
+	int colorOperation_0 = D3DTOP_MODULATE;
+	int colorOperation_1 = D3DTOP_DISABLE;
 };
 
 struct DeviceState
