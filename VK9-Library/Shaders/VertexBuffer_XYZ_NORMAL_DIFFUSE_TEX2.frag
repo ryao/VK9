@@ -30,6 +30,44 @@ misrepresented as being the original software.
 #define D3DLIGHT_SPOT 2
 #define D3DLIGHT_DIRECTIONAL 3
 
+#define D3DTOP_DISABLE 1
+#define D3DTOP_SELECTARG1 2
+#define D3DTOP_SELECTARG2 3
+#define D3DTOP_MODULATE 4
+#define D3DTOP_MODULATE2X 5
+#define D3DTOP_MODULATE4X 6
+#define D3DTOP_ADD 7
+#define D3DTOP_ADDSIGNED 8
+#define D3DTOP_ADDSIGNED2X 9
+#define D3DTOP_SUBTRACT 10
+#define D3DTOP_ADDSMOOTH 11
+#define D3DTOP_BLENDDIFFUSEALPHA 12
+#define D3DTOP_BLENDTEXTUREALPHA 13
+#define D3DTOP_BLENDFACTORALPHA 14
+#define D3DTOP_BLENDTEXTUREALPHAPM 15
+#define D3DTOP_BLENDCURRENTALPHA 16
+#define D3DTOP_PREMODULATE 17
+#define D3DTOP_MODULATEALPHA_ADDCOLOR 18
+#define D3DTOP_MODULATECOLOR_ADDALPHA 19
+#define D3DTOP_MODULATEINVALPHA_ADDCOLOR 20
+#define D3DTOP_MODULATEINVCOLOR_ADDALPHA 21
+#define D3DTOP_BUMPENVMAP 22
+#define D3DTOP_BUMPENVMAPLUMINANCE 23
+#define D3DTOP_DOTPRODUCT3 24
+#define D3DTOP_MULTIPLYADD 25
+#define D3DTOP_LERP 26
+
+#define D3DTA_SELECTMASK        0x0000000f  // mask for arg selector
+#define D3DTA_DIFFUSE           0x00000000  // select diffuse color (read only)
+#define D3DTA_CURRENT           0x00000001  // select stage destination register (read/write)
+#define D3DTA_TEXTURE           0x00000002  // select texture color (read only)
+#define D3DTA_TFACTOR           0x00000003  // select D3DRS_TEXTUREFACTOR (read only)
+#define D3DTA_SPECULAR          0x00000004  // select specular color (read only)
+#define D3DTA_TEMP              0x00000005  // select temporary register color (read/write)
+#define D3DTA_CONSTANT          0x00000006  // select texture stage constant
+#define D3DTA_COMPLEMENT        0x00000010  // take 1.0 - x (read modifier)
+#define D3DTA_ALPHAREPLICATE    0x00000020  // replicate alpha to color components (read modifier)
+
 layout(constant_id = 0) const int lightCount = 2;
 layout(constant_id = 1) const int shadeMode = D3DSHADE_GOURAUD;
 layout(constant_id = 2) const bool isLightingEnabled = true;

@@ -109,8 +109,20 @@ struct SpecializationConstants
 	int shadeMode = D3DSHADE_GOURAUD;
 	int isLightingEnabled = true;
 	int textureCount = 1;
+
+
+	int       Constant_0 = 0;
+	int         Result_0 = D3DTA_CURRENT;
 	int colorOperation_0 = D3DTOP_MODULATE;
-	int colorOperation_1 = D3DTOP_DISABLE;
+	int colorArgument0_0 = D3DTA_CURRENT;
+	int colorArgument1_0 = D3DTA_TEXTURE;
+	int colorArgument2_0 = D3DTA_CURRENT;
+	int alphaOperation_0 = D3DTOP_SELECTARG1;
+	int alphaArgument0_0 = D3DTA_CURRENT;
+	int alphaArgument1_0 = D3DTA_TEXTURE;
+	int alphaArgument2_0 = D3DTA_CURRENT;
+
+	//int colorOperation_1 = D3DTOP_DISABLE;
 };
 
 struct DeviceState
