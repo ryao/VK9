@@ -68,6 +68,13 @@ misrepresented as being the original software.
 #define D3DTA_COMPLEMENT        0x00000010  // take 1.0 - x (read modifier)
 #define D3DTA_ALPHAREPLICATE    0x00000020  // replicate alpha to color components (read modifier)
 
+#define D3DTTFF_DISABLE 0     // texture coordinates are passed directly
+#define D3DTTFF_COUNT1 1      // rasterizer should expect 1-D texture coords
+#define D3DTTFF_COUNT2 2      // rasterizer should expect 2-D texture coords
+#define D3DTTFF_COUNT3 3      // rasterizer should expect 3-D texture coords
+#define D3DTTFF_COUNT4 4      // rasterizer should expect 4-D texture coords
+#define D3DTTFF_PROJECTED 256 // texcoords to be divided by COUNTth element
+
 layout(constant_id = 0) const int lightCount = 2;
 layout(constant_id = 1) const int shadeMode = D3DSHADE_GOURAUD;
 layout(constant_id = 2) const bool isLightingEnabled = true;
