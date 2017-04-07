@@ -110,7 +110,7 @@ struct SpecializationConstants
 	int isLightingEnabled = true;
 	int textureCount = 1;
 
-
+	//Texture Stage _0
 	int Constant_0 = 0;
 	int Result_0 = D3DTA_CURRENT;
 	int textureTransformationFlags_0 = D3DTTFF_DISABLE;
@@ -130,6 +130,7 @@ struct SpecializationConstants
 	float bumpMapScale_0 = 0.0;
 	float bumpMapOffset_0 = 0.0;
 
+	//Texture Stage _1
 	int Constant_1 = 0;
 	int Result_1 = D3DTA_CURRENT;
 	int textureTransformationFlags_1 = D3DTTFF_DISABLE;
@@ -149,6 +150,7 @@ struct SpecializationConstants
 	float bumpMapScale_1 = 0.0;
 	float bumpMapOffset_1 = 0.0;
 
+	//Texture Stage _2
 	int Constant_2 = 0;
 	int Result_2 = D3DTA_CURRENT;
 	int textureTransformationFlags_2 = D3DTTFF_DISABLE;
@@ -168,6 +170,7 @@ struct SpecializationConstants
 	float bumpMapScale_2 = 0.0;
 	float bumpMapOffset_2 = 0.0;
 
+	//Texture Stage _3
 	int Constant_3 = 0;
 	int Result_3 = D3DTA_CURRENT;
 	int textureTransformationFlags_3 = D3DTTFF_DISABLE;
@@ -187,6 +190,7 @@ struct SpecializationConstants
 	float bumpMapScale_3 = 0.0;
 	float bumpMapOffset_3 = 0.0;
 
+	//Texture Stage _4
 	int Constant_4 = 0;
 	int Result_4 = D3DTA_CURRENT;
 	int textureTransformationFlags_4 = D3DTTFF_DISABLE;
@@ -206,6 +210,7 @@ struct SpecializationConstants
 	float bumpMapScale_4 = 0.0;
 	float bumpMapOffset_4 = 0.0;
 
+	//Texture Stage _5
 	int Constant_5 = 0;
 	int Result_5 = D3DTA_CURRENT;
 	int textureTransformationFlags_5 = D3DTTFF_DISABLE;
@@ -225,6 +230,7 @@ struct SpecializationConstants
 	float bumpMapScale_5 = 0.0;
 	float bumpMapOffset_5 = 0.0;
 
+	//Texture Stage _6
 	int Constant_6 = 0;
 	int Result_6 = D3DTA_CURRENT;
 	int textureTransformationFlags_6 = D3DTTFF_DISABLE;
@@ -244,6 +250,7 @@ struct SpecializationConstants
 	float bumpMapScale_6 = 0.0;
 	float bumpMapOffset_6 = 0.0;
 
+	//Texture Stage _7
 	int Constant_7 = 0;
 	int Result_7 = D3DTA_CURRENT;
 	int textureTransformationFlags_7 = D3DTTFF_DISABLE;

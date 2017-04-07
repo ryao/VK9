@@ -75,10 +75,176 @@ misrepresented as being the original software.
 #define D3DTTFF_COUNT4 4      // rasterizer should expect 4-D texture coords
 #define D3DTTFF_PROJECTED 256 // texcoords to be divided by COUNTth element
 
+#define D3DTSS_TCI_PASSTHRU                             0x00000000
+#define D3DTSS_TCI_CAMERASPACENORMAL                    0x00010000
+#define D3DTSS_TCI_CAMERASPACEPOSITION                  0x00020000
+#define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR          0x00030000
+#define D3DTSS_TCI_SPHEREMAP                            0x00040000
+
 layout(constant_id = 0) const int lightCount = 2;
 layout(constant_id = 1) const int shadeMode = D3DSHADE_GOURAUD;
 layout(constant_id = 2) const bool isLightingEnabled = true;
 layout(constant_id = 3) const int textureCount = 2;
+
+//Texture Stage _0
+layout(constant_id = 4) const int Constant_0 = 0;
+layout(constant_id = 5) const int Result_0 = D3DTA_CURRENT;
+layout(constant_id = 6) const int textureTransformationFlags_0 = D3DTTFF_DISABLE;
+layout(constant_id = 7) const int texureCoordinateIndex_0 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 8) const int colorOperation_0 = D3DTOP_MODULATE;
+layout(constant_id = 9) const int colorArgument0_0 = D3DTA_CURRENT;
+layout(constant_id = 10) const int colorArgument1_0 = D3DTA_TEXTURE;
+layout(constant_id = 11) const int colorArgument2_0 = D3DTA_CURRENT;
+layout(constant_id = 12) const int alphaOperation_0 = D3DTOP_SELECTARG1;
+layout(constant_id = 13) const int alphaArgument0_0 = D3DTA_CURRENT;
+layout(constant_id = 14) const int alphaArgument1_0 = D3DTA_TEXTURE;
+layout(constant_id = 15) const int alphaArgument2_0 = D3DTA_CURRENT;
+layout(constant_id = 16) const float bumpMapMatrix00_0 = 0.0;
+layout(constant_id = 17) const float bumpMapMatrix01_0 = 0.0;
+layout(constant_id = 18) const float bumpMapMatrix10_0 = 0.0;
+layout(constant_id = 19) const float bumpMapMatrix11_0 = 0.0;
+layout(constant_id = 20) const float bumpMapScale_0 = 0.0;
+layout(constant_id = 21) const float bumpMapOffset_0 = 0.0;
+
+//Texture Stage _1
+layout(constant_id = 22) const int Constant_1 = 0;
+layout(constant_id = 23) const int Result_1 = D3DTA_CURRENT;
+layout(constant_id = 24) const int textureTransformationFlags_1 = D3DTTFF_DISABLE;
+layout(constant_id = 25) const int texureCoordinateIndex_1 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 26) const int colorOperation_1 = D3DTOP_DISABLE;
+layout(constant_id = 27) const int colorArgument0_1 = D3DTA_CURRENT;
+layout(constant_id = 28) const int colorArgument1_1 = D3DTA_TEXTURE;
+layout(constant_id = 29) const int colorArgument2_1 = D3DTA_CURRENT;
+layout(constant_id = 30) const int alphaOperation_1 = D3DTOP_DISABLE;
+layout(constant_id = 31) const int alphaArgument0_1 = D3DTA_CURRENT;
+layout(constant_id = 32) const int alphaArgument1_1 = D3DTA_TEXTURE;
+layout(constant_id = 33) const int alphaArgument2_1 = D3DTA_CURRENT;
+layout(constant_id = 34) const float bumpMapMatrix00_1 = 0.0;
+layout(constant_id = 35) const float bumpMapMatrix01_1 = 0.0;
+layout(constant_id = 36) const float bumpMapMatrix10_1 = 0.0;
+layout(constant_id = 37) const float bumpMapMatrix11_1 = 0.0;
+layout(constant_id = 38) const float bumpMapScale_1 = 0.0;
+layout(constant_id = 39) const float bumpMapOffset_1 = 0.0;
+
+//Texture Stage _2
+layout(constant_id = 40) const int Constant_2 = 0;
+layout(constant_id = 41) const int Result_2 = D3DTA_CURRENT;
+layout(constant_id = 42) const int textureTransformationFlags_2 = D3DTTFF_DISABLE;
+layout(constant_id = 43) const int texureCoordinateIndex_2 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 44) const int colorOperation_2 = D3DTOP_DISABLE;
+layout(constant_id = 45) const int colorArgument0_2 = D3DTA_CURRENT;
+layout(constant_id = 46) const int colorArgument1_2 = D3DTA_TEXTURE;
+layout(constant_id = 47) const int colorArgument2_2 = D3DTA_CURRENT;
+layout(constant_id = 48) const int alphaOperation_2 = D3DTOP_DISABLE;
+layout(constant_id = 49) const int alphaArgument0_2 = D3DTA_CURRENT;
+layout(constant_id = 50) const int alphaArgument1_2 = D3DTA_TEXTURE;
+layout(constant_id = 51) const int alphaArgument2_2 = D3DTA_CURRENT;
+layout(constant_id = 52) const float bumpMapMatrix00_2 = 0.0;
+layout(constant_id = 53) const float bumpMapMatrix01_2 = 0.0;
+layout(constant_id = 54) const float bumpMapMatrix10_2 = 0.0;
+layout(constant_id = 55) const float bumpMapMatrix11_2 = 0.0;
+layout(constant_id = 56) const float bumpMapScale_2 = 0.0;
+layout(constant_id = 57) const float bumpMapOffset_2 = 0.0;
+
+//Texture Stage _3
+layout(constant_id = 58) const int Constant_3 = 0;
+layout(constant_id = 59) const int Result_3 = D3DTA_CURRENT;
+layout(constant_id = 60) const int textureTransformationFlags_3 = D3DTTFF_DISABLE;
+layout(constant_id = 61) const int texureCoordinateIndex_3 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 62) const int colorOperation_3 = D3DTOP_DISABLE;
+layout(constant_id = 63) const int colorArgument0_3 = D3DTA_CURRENT;
+layout(constant_id = 64) const int colorArgument1_3 = D3DTA_TEXTURE;
+layout(constant_id = 65) const int colorArgument2_3 = D3DTA_CURRENT;
+layout(constant_id = 66) const int alphaOperation_3 = D3DTOP_DISABLE;
+layout(constant_id = 67) const int alphaArgument0_3 = D3DTA_CURRENT;
+layout(constant_id = 68) const int alphaArgument1_3 = D3DTA_TEXTURE;
+layout(constant_id = 69) const int alphaArgument2_3 = D3DTA_CURRENT;
+layout(constant_id = 70) const float bumpMapMatrix00_3 = 0.0;
+layout(constant_id = 71) const float bumpMapMatrix01_3 = 0.0;
+layout(constant_id = 72) const float bumpMapMatrix10_3 = 0.0;
+layout(constant_id = 73) const float bumpMapMatrix11_3 = 0.0;
+layout(constant_id = 74) const float bumpMapScale_3 = 0.0;
+layout(constant_id = 75) const float bumpMapOffset_3 = 0.0;
+
+//Texture Stage _4
+layout(constant_id = 76) const int Constant_4 = 0;
+layout(constant_id = 77) const int Result_4 = D3DTA_CURRENT;
+layout(constant_id = 78) const int textureTransformationFlags_4 = D3DTTFF_DISABLE;
+layout(constant_id = 79) const int texureCoordinateIndex_4 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 80) const int colorOperation_4 = D3DTOP_DISABLE;
+layout(constant_id = 81) const int colorArgument0_4 = D3DTA_CURRENT;
+layout(constant_id = 82) const int colorArgument1_4 = D3DTA_TEXTURE;
+layout(constant_id = 83) const int colorArgument2_4 = D3DTA_CURRENT;
+layout(constant_id = 84) const int alphaOperation_4 = D3DTOP_DISABLE;
+layout(constant_id = 85) const int alphaArgument0_4 = D3DTA_CURRENT;
+layout(constant_id = 86) const int alphaArgument1_4 = D3DTA_TEXTURE;
+layout(constant_id = 87) const int alphaArgument2_4 = D3DTA_CURRENT;
+layout(constant_id = 88) const float bumpMapMatrix00_4 = 0.0;
+layout(constant_id = 89) const float bumpMapMatrix01_4 = 0.0;
+layout(constant_id = 90) const float bumpMapMatrix10_4 = 0.0;
+layout(constant_id = 91) const float bumpMapMatrix11_4 = 0.0;
+layout(constant_id = 92) const float bumpMapScale_4 = 0.0;
+layout(constant_id = 93) const float bumpMapOffset_4 = 0.0;
+
+//Texture Stage _5
+layout(constant_id = 94 ) const int Constant_5 = 0;
+layout(constant_id = 95 ) const int Result_5 = D3DTA_CURRENT;
+layout(constant_id = 96 ) const int textureTransformationFlags_5 = D3DTTFF_DISABLE;
+layout(constant_id = 97 ) const int texureCoordinateIndex_5 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 98 ) const int colorOperation_5 = D3DTOP_DISABLE;
+layout(constant_id = 99 ) const int colorArgument0_5 = D3DTA_CURRENT;
+layout(constant_id = 100) const int colorArgument1_5 = D3DTA_TEXTURE;
+layout(constant_id = 101) const int colorArgument2_5 = D3DTA_CURRENT;
+layout(constant_id = 102) const int alphaOperation_5 = D3DTOP_DISABLE;
+layout(constant_id = 103) const int alphaArgument0_5 = D3DTA_CURRENT;
+layout(constant_id = 104) const int alphaArgument1_5 = D3DTA_TEXTURE;
+layout(constant_id = 105) const int alphaArgument2_5 = D3DTA_CURRENT;
+layout(constant_id = 106) const float bumpMapMatrix00_5 = 0.0;
+layout(constant_id = 107) const float bumpMapMatrix01_5 = 0.0;
+layout(constant_id = 108) const float bumpMapMatrix10_5 = 0.0;
+layout(constant_id = 109) const float bumpMapMatrix11_5 = 0.0;
+layout(constant_id = 110) const float bumpMapScale_5 = 0.0;
+layout(constant_id = 111) const float bumpMapOffset_5 = 0.0;
+
+//Texture Stage _6
+layout(constant_id = 112) const int Constant_6 = 0;
+layout(constant_id = 113) const int Result_6 = D3DTA_CURRENT;
+layout(constant_id = 114) const int textureTransformationFlags_6 = D3DTTFF_DISABLE;
+layout(constant_id = 115) const int texureCoordinateIndex_6 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 116) const int colorOperation_6 = D3DTOP_DISABLE;
+layout(constant_id = 117) const int colorArgument0_6 = D3DTA_CURRENT;
+layout(constant_id = 118) const int colorArgument1_6 = D3DTA_TEXTURE;
+layout(constant_id = 119) const int colorArgument2_6 = D3DTA_CURRENT;
+layout(constant_id = 120) const int alphaOperation_6 = D3DTOP_DISABLE;
+layout(constant_id = 121) const int alphaArgument0_6 = D3DTA_CURRENT;
+layout(constant_id = 122) const int alphaArgument1_6 = D3DTA_TEXTURE;
+layout(constant_id = 123) const int alphaArgument2_6 = D3DTA_CURRENT;
+layout(constant_id = 124) const float bumpMapMatrix00_6 = 0.0;
+layout(constant_id = 125) const float bumpMapMatrix01_6 = 0.0;
+layout(constant_id = 126) const float bumpMapMatrix10_6 = 0.0;
+layout(constant_id = 127) const float bumpMapMatrix11_6 = 0.0;
+layout(constant_id = 128) const float bumpMapScale_6 = 0.0;
+layout(constant_id = 129) const float bumpMapOffset_6 = 0.0;
+
+//Texture Stage _7
+layout(constant_id = 130) const int Constant_7 = 0;
+layout(constant_id = 131) const int Result_7 = D3DTA_CURRENT;
+layout(constant_id = 132) const int textureTransformationFlags_7 = D3DTTFF_DISABLE;
+layout(constant_id = 133) const int texureCoordinateIndex_7 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 134) const int colorOperation_7 = D3DTOP_DISABLE;
+layout(constant_id = 135) const int colorArgument0_7 = D3DTA_CURRENT;
+layout(constant_id = 136) const int colorArgument1_7 = D3DTA_TEXTURE;
+layout(constant_id = 137) const int colorArgument2_7 = D3DTA_CURRENT;
+layout(constant_id = 138) const int alphaOperation_7 = D3DTOP_DISABLE;
+layout(constant_id = 139) const int alphaArgument0_7 = D3DTA_CURRENT;
+layout(constant_id = 140) const int alphaArgument1_7 = D3DTA_TEXTURE;
+layout(constant_id = 141) const int alphaArgument2_7 = D3DTA_CURRENT;
+layout(constant_id = 142) const float bumpMapMatrix00_7 = 0.0;
+layout(constant_id = 143) const float bumpMapMatrix01_7 = 0.0;
+layout(constant_id = 144) const float bumpMapMatrix10_7 = 0.0;
+layout(constant_id = 145) const float bumpMapMatrix11_7 = 0.0;
+layout(constant_id = 146) const float bumpMapScale_7 = 0.0;
+layout(constant_id = 147) const float bumpMapOffset_7 = 0.0;
 
 struct Light
 {
