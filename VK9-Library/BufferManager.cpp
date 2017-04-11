@@ -702,17 +702,15 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_LIGHTING);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
-		context->IsLightingEnabled = (BOOL)searchResult->second;
 		mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled = (BOOL)searchResult->second;
 	}
 	else
 	{
-		context->IsLightingEnabled = false;
 		mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled = false;
 	}
 
-	context->LightCount = mDevice->mDeviceState.mLights.size();
-	mDevice->mDeviceState.mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size(); 
+	context->mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size();
+	mDevice->mDeviceState.mSpecializationConstants.lightCount = context->mSpecializationConstants.lightCount;
 
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_SHADEMODE);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
@@ -726,8 +724,9 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		mDevice->mDeviceState.mSpecializationConstants.shadeMode = D3DSHADE_GOURAUD;
 	}
 
-	context->TextureCount = mDevice->mDeviceState.mTextures.size();
-	mDevice->mDeviceState.mSpecializationConstants.textureCount = mDevice->mDeviceState.mTextures.size();
+	context->mSpecializationConstants.textureCount = mDevice->mDeviceState.mTextures.size();
+	mDevice->mDeviceState.mSpecializationConstants.textureCount = context->mSpecializationConstants.textureCount;
+
 
 	int i = 0;
 	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
@@ -755,9 +754,190 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->StreamCount == context->StreamCount
 			&& mDrawBuffer[i]->FillMode == context->FillMode
 			&& mDrawBuffer[i]->CullMode == context->CullMode
-			&& mDrawBuffer[i]->IsLightingEnabled == context->IsLightingEnabled
+			&& mDrawBuffer[i]->mSpecializationConstants.isLightingEnabled == context->mSpecializationConstants.isLightingEnabled
 			&& mDrawBuffer[i]->ShadeMode == context->ShadeMode
-			&& mDrawBuffer[i]->LightCount == context->LightCount
+			&& mDrawBuffer[i]->mSpecializationConstants.lightCount == context->mSpecializationConstants.lightCount
+
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_0 == context->mSpecializationConstants.texureCoordinateIndex_0
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_1 == context->mSpecializationConstants.texureCoordinateIndex_1
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_2 == context->mSpecializationConstants.texureCoordinateIndex_2
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_3 == context->mSpecializationConstants.texureCoordinateIndex_3
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_4 == context->mSpecializationConstants.texureCoordinateIndex_4
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_5 == context->mSpecializationConstants.texureCoordinateIndex_5
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_6 == context->mSpecializationConstants.texureCoordinateIndex_6
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_7 == context->mSpecializationConstants.texureCoordinateIndex_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_0 == context->mSpecializationConstants.textureTransformationFlags_0
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_1 == context->mSpecializationConstants.textureTransformationFlags_1
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_2 == context->mSpecializationConstants.textureTransformationFlags_2
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_3 == context->mSpecializationConstants.textureTransformationFlags_3
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_4 == context->mSpecializationConstants.textureTransformationFlags_4
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_5 == context->mSpecializationConstants.textureTransformationFlags_5
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_6 == context->mSpecializationConstants.textureTransformationFlags_6
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_7 == context->mSpecializationConstants.textureTransformationFlags_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_0 == context->mSpecializationConstants.colorOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_1 == context->mSpecializationConstants.colorOperation_1
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_2 == context->mSpecializationConstants.colorOperation_2
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_3 == context->mSpecializationConstants.colorOperation_3
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_4 == context->mSpecializationConstants.colorOperation_4
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_5 == context->mSpecializationConstants.colorOperation_5
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_6 == context->mSpecializationConstants.colorOperation_6
+			&& mDrawBuffer[i]->mSpecializationConstants.colorOperation_7 == context->mSpecializationConstants.colorOperation_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_0 == context->mSpecializationConstants.colorArgument1_0
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_1 == context->mSpecializationConstants.colorArgument1_1
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_2 == context->mSpecializationConstants.colorArgument1_2
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_3 == context->mSpecializationConstants.colorArgument1_3
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_4 == context->mSpecializationConstants.colorArgument1_4
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_5 == context->mSpecializationConstants.colorArgument1_5
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_6 == context->mSpecializationConstants.colorArgument1_6
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument1_7 == context->mSpecializationConstants.colorArgument1_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_0 == context->mSpecializationConstants.colorArgument2_0
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_1 == context->mSpecializationConstants.colorArgument2_1
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_2 == context->mSpecializationConstants.colorArgument2_2
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_3 == context->mSpecializationConstants.colorArgument2_3
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_4 == context->mSpecializationConstants.colorArgument2_4
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_5 == context->mSpecializationConstants.colorArgument2_5
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_6 == context->mSpecializationConstants.colorArgument2_6
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_7 == context->mSpecializationConstants.colorArgument2_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_1 == context->mSpecializationConstants.alphaOperation_1
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_2 == context->mSpecializationConstants.alphaOperation_2
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_3 == context->mSpecializationConstants.alphaOperation_3
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_4 == context->mSpecializationConstants.alphaOperation_4
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_5 == context->mSpecializationConstants.alphaOperation_5
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_6 == context->mSpecializationConstants.alphaOperation_6
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_7 == context->mSpecializationConstants.alphaOperation_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_0 == context->mSpecializationConstants.alphaArgument1_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_1 == context->mSpecializationConstants.alphaArgument1_1
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_2 == context->mSpecializationConstants.alphaArgument1_2
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_3 == context->mSpecializationConstants.alphaArgument1_3
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_4 == context->mSpecializationConstants.alphaArgument1_4
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_5 == context->mSpecializationConstants.alphaArgument1_5
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_6 == context->mSpecializationConstants.alphaArgument1_6
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument1_7 == context->mSpecializationConstants.alphaArgument1_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_0 == context->mSpecializationConstants.alphaArgument2_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_1 == context->mSpecializationConstants.alphaArgument2_1
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_2 == context->mSpecializationConstants.alphaArgument2_2
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_3 == context->mSpecializationConstants.alphaArgument2_3
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_4 == context->mSpecializationConstants.alphaArgument2_4
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_5 == context->mSpecializationConstants.alphaArgument2_5
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_6 == context->mSpecializationConstants.alphaArgument2_6
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument2_7 == context->mSpecializationConstants.alphaArgument2_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_0 == context->mSpecializationConstants.bumpMapMatrix00_0
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_1 == context->mSpecializationConstants.bumpMapMatrix00_1
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_2 == context->mSpecializationConstants.bumpMapMatrix00_2
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_3 == context->mSpecializationConstants.bumpMapMatrix00_3
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_4 == context->mSpecializationConstants.bumpMapMatrix00_4
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_5 == context->mSpecializationConstants.bumpMapMatrix00_5
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_6 == context->mSpecializationConstants.bumpMapMatrix00_6
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix00_7 == context->mSpecializationConstants.bumpMapMatrix00_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_0 == context->mSpecializationConstants.bumpMapMatrix01_0
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_1 == context->mSpecializationConstants.bumpMapMatrix01_1
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_2 == context->mSpecializationConstants.bumpMapMatrix01_2
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_3 == context->mSpecializationConstants.bumpMapMatrix01_3
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_4 == context->mSpecializationConstants.bumpMapMatrix01_4
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_5 == context->mSpecializationConstants.bumpMapMatrix01_5
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_6 == context->mSpecializationConstants.bumpMapMatrix01_6
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix01_7 == context->mSpecializationConstants.bumpMapMatrix01_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_0 == context->mSpecializationConstants.bumpMapMatrix10_0
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_1 == context->mSpecializationConstants.bumpMapMatrix10_1
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_2 == context->mSpecializationConstants.bumpMapMatrix10_2
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_3 == context->mSpecializationConstants.bumpMapMatrix10_3
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_4 == context->mSpecializationConstants.bumpMapMatrix10_4
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_5 == context->mSpecializationConstants.bumpMapMatrix10_5
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_6 == context->mSpecializationConstants.bumpMapMatrix10_6
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix10_7 == context->mSpecializationConstants.bumpMapMatrix10_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_0 == context->mSpecializationConstants.bumpMapMatrix11_0
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_1 == context->mSpecializationConstants.bumpMapMatrix11_1
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_2 == context->mSpecializationConstants.bumpMapMatrix11_2
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_3 == context->mSpecializationConstants.bumpMapMatrix11_3
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_4 == context->mSpecializationConstants.bumpMapMatrix11_4
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_5 == context->mSpecializationConstants.bumpMapMatrix11_5
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_6 == context->mSpecializationConstants.bumpMapMatrix11_6
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapMatrix11_7 == context->mSpecializationConstants.bumpMapMatrix11_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_0 == context->mSpecializationConstants.texureCoordinateIndex_0
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_1 == context->mSpecializationConstants.texureCoordinateIndex_1
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_2 == context->mSpecializationConstants.texureCoordinateIndex_2
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_3 == context->mSpecializationConstants.texureCoordinateIndex_3
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_4 == context->mSpecializationConstants.texureCoordinateIndex_4
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_5 == context->mSpecializationConstants.texureCoordinateIndex_5
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_6 == context->mSpecializationConstants.texureCoordinateIndex_6
+			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_7 == context->mSpecializationConstants.texureCoordinateIndex_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_0 == context->mSpecializationConstants.bumpMapScale_0
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_1 == context->mSpecializationConstants.bumpMapScale_1
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_2 == context->mSpecializationConstants.bumpMapScale_2
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_3 == context->mSpecializationConstants.bumpMapScale_3
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_4 == context->mSpecializationConstants.bumpMapScale_4
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_5 == context->mSpecializationConstants.bumpMapScale_5
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_6 == context->mSpecializationConstants.bumpMapScale_6
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapScale_7 == context->mSpecializationConstants.bumpMapScale_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_0 == context->mSpecializationConstants.bumpMapOffset_0
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_1 == context->mSpecializationConstants.bumpMapOffset_1
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_2 == context->mSpecializationConstants.bumpMapOffset_2
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_3 == context->mSpecializationConstants.bumpMapOffset_3
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_4 == context->mSpecializationConstants.bumpMapOffset_4
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_5 == context->mSpecializationConstants.bumpMapOffset_5
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_6 == context->mSpecializationConstants.bumpMapOffset_6
+			&& mDrawBuffer[i]->mSpecializationConstants.bumpMapOffset_7 == context->mSpecializationConstants.bumpMapOffset_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_0 == context->mSpecializationConstants.textureTransformationFlags_0
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_1 == context->mSpecializationConstants.textureTransformationFlags_1
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_2 == context->mSpecializationConstants.textureTransformationFlags_2
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_3 == context->mSpecializationConstants.textureTransformationFlags_3
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_4 == context->mSpecializationConstants.textureTransformationFlags_4
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_5 == context->mSpecializationConstants.textureTransformationFlags_5
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_6 == context->mSpecializationConstants.textureTransformationFlags_6
+			&& mDrawBuffer[i]->mSpecializationConstants.textureTransformationFlags_7 == context->mSpecializationConstants.textureTransformationFlags_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_0 == context->mSpecializationConstants.colorArgument0_0
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_1 == context->mSpecializationConstants.colorArgument0_1
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_2 == context->mSpecializationConstants.colorArgument0_2
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_3 == context->mSpecializationConstants.colorArgument0_3
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_4 == context->mSpecializationConstants.colorArgument0_4
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_5 == context->mSpecializationConstants.colorArgument0_5
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_6 == context->mSpecializationConstants.colorArgument0_6
+			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument0_7 == context->mSpecializationConstants.colorArgument0_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_0 == context->mSpecializationConstants.alphaArgument0_0
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_1 == context->mSpecializationConstants.alphaArgument0_1
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_2 == context->mSpecializationConstants.alphaArgument0_2
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_3 == context->mSpecializationConstants.alphaArgument0_3
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_4 == context->mSpecializationConstants.alphaArgument0_4
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_5 == context->mSpecializationConstants.alphaArgument0_5
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_6 == context->mSpecializationConstants.alphaArgument0_6
+			&& mDrawBuffer[i]->mSpecializationConstants.alphaArgument0_7 == context->mSpecializationConstants.alphaArgument0_7
+
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_0 == context->mSpecializationConstants.Result_0
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_1 == context->mSpecializationConstants.Result_1
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_2 == context->mSpecializationConstants.Result_2
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_3 == context->mSpecializationConstants.Result_3
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_4 == context->mSpecializationConstants.Result_4
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_5 == context->mSpecializationConstants.Result_5
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_6 == context->mSpecializationConstants.Result_6
+			&& mDrawBuffer[i]->mSpecializationConstants.Result_7 == context->mSpecializationConstants.Result_7
+
 			) //&& mDrawBuffer[i]->TextureCount == context->TextureCount  texture count should be part of vertex declaration or FVF.
 		{
 			BOOL isMatch = true;
@@ -880,11 +1060,11 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	**********************************************/
 	uint32_t attributeCount = 0;
 	uint32_t textureCount = 0;
-	uint32_t lightCount = context->LightCount;
+	uint32_t lightCount = context->mSpecializationConstants.lightCount;
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
-	BOOL isLightingEnabled = context->IsLightingEnabled;	
+	BOOL isLightingEnabled = context->mSpecializationConstants.isLightingEnabled;
 
 	if (context->VertexDeclaration != nullptr)
 	{
@@ -1393,7 +1573,7 @@ void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 
 	if (mDevice->mDeviceState.mAreLightsDirty)
 	{
-		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(D3DLIGHT9)*context->LightCount, mDevice->mDeviceState.mLights.data());
+		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(D3DLIGHT9)*context->mSpecializationConstants.lightCount, mDevice->mDeviceState.mLights.data());
 		mDevice->mDeviceState.mAreLightsDirty = false;
 	}
 

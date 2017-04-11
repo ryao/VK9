@@ -812,13 +812,13 @@ inline void Print(DeviceState& deviceState)
 	}
 
 	//IDirect3DDevice9::SetTextureStageState
-	BOOST_FOREACH(const auto& pair1, deviceState.mTextureStageStates)
-	{
-		BOOST_FOREACH(const auto& pair2, pair1.second)
-		{
-			BOOST_LOG_TRIVIAL(info) << "TextureStageState: " << pair1.first << " " << pair2.first << " " << pair2.second;
-		}
-	}
+	//BOOST_FOREACH(const auto& pair1, deviceState.mTextureStageStates)
+	//{
+	//	BOOST_FOREACH(const auto& pair2, pair1.second)
+	//	{
+	//		BOOST_LOG_TRIVIAL(info) << "TextureStageState: " << pair1.first << " " << pair2.first << " " << pair2.second;
+	//	}
+	//}
 
 	//IDirect3DDevice9::SetTransform
 	BOOST_FOREACH(const auto& pair1, deviceState.mTransforms)

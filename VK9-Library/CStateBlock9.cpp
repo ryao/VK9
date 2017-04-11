@@ -453,50 +453,190 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	}
 
 	//IDirect3DDevice9::SetTextureStageState
-	if (sourceState.mTextureStageStates.size())
+	if (type == D3DSBT_VERTEXSTATE || type == D3DSBT_ALL)
 	{
-		BOOST_FOREACH(const auto& pair1, sourceState.mTextureStageStates)
-		{
-			BOOST_FOREACH(const auto& pair2, pair1.second)
-			{
-				if (!onlyIfExists || (targetState.mTextureStageStates.count(pair1.first) > 0 && targetState.mTextureStageStates[pair1.first].count(pair2.first) > 0))
-				{
-					if
-						(
-						(type == D3DSBT_ALL) ||
-							(type == D3DSBT_VERTEXSTATE &&
-							(
-								pair2.first == D3DTSS_TEXCOORDINDEX ||
-								pair2.first == D3DTSS_TEXTURETRANSFORMFLAGS
+		targetState.mSpecializationConstants.texureCoordinateIndex_0 = sourceState.mSpecializationConstants.texureCoordinateIndex_0;
+		targetState.mSpecializationConstants.texureCoordinateIndex_1 = sourceState.mSpecializationConstants.texureCoordinateIndex_1;
+		targetState.mSpecializationConstants.texureCoordinateIndex_2 = sourceState.mSpecializationConstants.texureCoordinateIndex_2;
+		targetState.mSpecializationConstants.texureCoordinateIndex_3 = sourceState.mSpecializationConstants.texureCoordinateIndex_3;
+		targetState.mSpecializationConstants.texureCoordinateIndex_4 = sourceState.mSpecializationConstants.texureCoordinateIndex_4;
+		targetState.mSpecializationConstants.texureCoordinateIndex_5 = sourceState.mSpecializationConstants.texureCoordinateIndex_5;
+		targetState.mSpecializationConstants.texureCoordinateIndex_6 = sourceState.mSpecializationConstants.texureCoordinateIndex_6;
+		targetState.mSpecializationConstants.texureCoordinateIndex_7 = sourceState.mSpecializationConstants.texureCoordinateIndex_7;
 
-								)) ||
-								(type == D3DSBT_PIXELSTATE &&
-							(
-								pair2.first == D3DTSS_COLOROP ||
-								pair2.first == D3DTSS_COLORARG1 ||
-								pair2.first == D3DTSS_COLORARG2 ||
-								pair2.first == D3DTSS_ALPHAOP ||
-								pair2.first == D3DTSS_ALPHAARG1 ||
-								pair2.first == D3DTSS_ALPHAARG2 ||
-								pair2.first == D3DTSS_BUMPENVMAT00 ||
-								pair2.first == D3DTSS_BUMPENVMAT01 ||
-								pair2.first == D3DTSS_BUMPENVMAT10 ||
-								pair2.first == D3DTSS_BUMPENVMAT11 ||
-								pair2.first == D3DTSS_TEXCOORDINDEX ||
-								pair2.first == D3DTSS_BUMPENVLSCALE ||
-								pair2.first == D3DTSS_BUMPENVLOFFSET ||
-								pair2.first == D3DTSS_TEXTURETRANSFORMFLAGS ||
-								pair2.first == D3DTSS_COLORARG0 ||
-								pair2.first == D3DTSS_ALPHAARG0 ||
-								pair2.first == D3DTSS_RESULTARG
-								))
-							)
-					{
-						targetState.mTextureStageStates[pair1.first][pair2.first] = pair2.second;
-					}
-				}		
-			}
-		}
+		targetState.mSpecializationConstants.textureTransformationFlags_0 = sourceState.mSpecializationConstants.textureTransformationFlags_0;
+		targetState.mSpecializationConstants.textureTransformationFlags_1 = sourceState.mSpecializationConstants.textureTransformationFlags_1;
+		targetState.mSpecializationConstants.textureTransformationFlags_2 = sourceState.mSpecializationConstants.textureTransformationFlags_2;
+		targetState.mSpecializationConstants.textureTransformationFlags_3 = sourceState.mSpecializationConstants.textureTransformationFlags_3;
+		targetState.mSpecializationConstants.textureTransformationFlags_4 = sourceState.mSpecializationConstants.textureTransformationFlags_4;
+		targetState.mSpecializationConstants.textureTransformationFlags_5 = sourceState.mSpecializationConstants.textureTransformationFlags_5;
+		targetState.mSpecializationConstants.textureTransformationFlags_6 = sourceState.mSpecializationConstants.textureTransformationFlags_6;
+		targetState.mSpecializationConstants.textureTransformationFlags_7 = sourceState.mSpecializationConstants.textureTransformationFlags_7;
+	}
+
+	if (type == D3DSBT_PIXELSTATE || type == D3DSBT_ALL)
+	{
+		targetState.mSpecializationConstants.colorOperation_0 = sourceState.mSpecializationConstants.colorOperation_0;
+		targetState.mSpecializationConstants.colorOperation_1 = sourceState.mSpecializationConstants.colorOperation_1;
+		targetState.mSpecializationConstants.colorOperation_2 = sourceState.mSpecializationConstants.colorOperation_2;
+		targetState.mSpecializationConstants.colorOperation_3 = sourceState.mSpecializationConstants.colorOperation_3;
+		targetState.mSpecializationConstants.colorOperation_4 = sourceState.mSpecializationConstants.colorOperation_4;
+		targetState.mSpecializationConstants.colorOperation_5 = sourceState.mSpecializationConstants.colorOperation_5;
+		targetState.mSpecializationConstants.colorOperation_6 = sourceState.mSpecializationConstants.colorOperation_6;
+		targetState.mSpecializationConstants.colorOperation_7 = sourceState.mSpecializationConstants.colorOperation_7;
+
+		targetState.mSpecializationConstants.colorArgument1_0 = sourceState.mSpecializationConstants.colorArgument1_0;
+		targetState.mSpecializationConstants.colorArgument1_1 = sourceState.mSpecializationConstants.colorArgument1_1;
+		targetState.mSpecializationConstants.colorArgument1_2 = sourceState.mSpecializationConstants.colorArgument1_2;
+		targetState.mSpecializationConstants.colorArgument1_3 = sourceState.mSpecializationConstants.colorArgument1_3;
+		targetState.mSpecializationConstants.colorArgument1_4 = sourceState.mSpecializationConstants.colorArgument1_4;
+		targetState.mSpecializationConstants.colorArgument1_5 = sourceState.mSpecializationConstants.colorArgument1_5;
+		targetState.mSpecializationConstants.colorArgument1_6 = sourceState.mSpecializationConstants.colorArgument1_6;
+		targetState.mSpecializationConstants.colorArgument1_7 = sourceState.mSpecializationConstants.colorArgument1_7;
+
+		targetState.mSpecializationConstants.colorArgument2_0 = sourceState.mSpecializationConstants.colorArgument2_0;
+		targetState.mSpecializationConstants.colorArgument2_1 = sourceState.mSpecializationConstants.colorArgument2_1;
+		targetState.mSpecializationConstants.colorArgument2_2 = sourceState.mSpecializationConstants.colorArgument2_2;
+		targetState.mSpecializationConstants.colorArgument2_3 = sourceState.mSpecializationConstants.colorArgument2_3;
+		targetState.mSpecializationConstants.colorArgument2_4 = sourceState.mSpecializationConstants.colorArgument2_4;
+		targetState.mSpecializationConstants.colorArgument2_5 = sourceState.mSpecializationConstants.colorArgument2_5;
+		targetState.mSpecializationConstants.colorArgument2_6 = sourceState.mSpecializationConstants.colorArgument2_6;
+		targetState.mSpecializationConstants.colorArgument2_7 = sourceState.mSpecializationConstants.colorArgument2_7;
+
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+
+		targetState.mSpecializationConstants.alphaOperation_0 = sourceState.mSpecializationConstants.alphaOperation_0;
+		targetState.mSpecializationConstants.alphaOperation_1 = sourceState.mSpecializationConstants.alphaOperation_1;
+		targetState.mSpecializationConstants.alphaOperation_2 = sourceState.mSpecializationConstants.alphaOperation_2;
+		targetState.mSpecializationConstants.alphaOperation_3 = sourceState.mSpecializationConstants.alphaOperation_3;
+		targetState.mSpecializationConstants.alphaOperation_4 = sourceState.mSpecializationConstants.alphaOperation_4;
+		targetState.mSpecializationConstants.alphaOperation_5 = sourceState.mSpecializationConstants.alphaOperation_5;
+		targetState.mSpecializationConstants.alphaOperation_6 = sourceState.mSpecializationConstants.alphaOperation_6;
+		targetState.mSpecializationConstants.alphaOperation_7 = sourceState.mSpecializationConstants.alphaOperation_7;
+
+		targetState.mSpecializationConstants.alphaArgument1_0 = sourceState.mSpecializationConstants.alphaArgument1_0;
+		targetState.mSpecializationConstants.alphaArgument1_1 = sourceState.mSpecializationConstants.alphaArgument1_1;
+		targetState.mSpecializationConstants.alphaArgument1_2 = sourceState.mSpecializationConstants.alphaArgument1_2;
+		targetState.mSpecializationConstants.alphaArgument1_3 = sourceState.mSpecializationConstants.alphaArgument1_3;
+		targetState.mSpecializationConstants.alphaArgument1_4 = sourceState.mSpecializationConstants.alphaArgument1_4;
+		targetState.mSpecializationConstants.alphaArgument1_5 = sourceState.mSpecializationConstants.alphaArgument1_5;
+		targetState.mSpecializationConstants.alphaArgument1_6 = sourceState.mSpecializationConstants.alphaArgument1_6;
+		targetState.mSpecializationConstants.alphaArgument1_7 = sourceState.mSpecializationConstants.alphaArgument1_7;
+
+		targetState.mSpecializationConstants.alphaArgument2_0 = sourceState.mSpecializationConstants.alphaArgument2_0;
+		targetState.mSpecializationConstants.alphaArgument2_1 = sourceState.mSpecializationConstants.alphaArgument2_1;
+		targetState.mSpecializationConstants.alphaArgument2_2 = sourceState.mSpecializationConstants.alphaArgument2_2;
+		targetState.mSpecializationConstants.alphaArgument2_3 = sourceState.mSpecializationConstants.alphaArgument2_3;
+		targetState.mSpecializationConstants.alphaArgument2_4 = sourceState.mSpecializationConstants.alphaArgument2_4;
+		targetState.mSpecializationConstants.alphaArgument2_5 = sourceState.mSpecializationConstants.alphaArgument2_5;
+		targetState.mSpecializationConstants.alphaArgument2_6 = sourceState.mSpecializationConstants.alphaArgument2_6;
+		targetState.mSpecializationConstants.alphaArgument2_7 = sourceState.mSpecializationConstants.alphaArgument2_7;
+
+		targetState.mSpecializationConstants.bumpMapMatrix00_0 = sourceState.mSpecializationConstants.bumpMapMatrix00_0;
+		targetState.mSpecializationConstants.bumpMapMatrix00_1 = sourceState.mSpecializationConstants.bumpMapMatrix00_1;
+		targetState.mSpecializationConstants.bumpMapMatrix00_2 = sourceState.mSpecializationConstants.bumpMapMatrix00_2;
+		targetState.mSpecializationConstants.bumpMapMatrix00_3 = sourceState.mSpecializationConstants.bumpMapMatrix00_3;
+		targetState.mSpecializationConstants.bumpMapMatrix00_4 = sourceState.mSpecializationConstants.bumpMapMatrix00_4;
+		targetState.mSpecializationConstants.bumpMapMatrix00_5 = sourceState.mSpecializationConstants.bumpMapMatrix00_5;
+		targetState.mSpecializationConstants.bumpMapMatrix00_6 = sourceState.mSpecializationConstants.bumpMapMatrix00_6;
+		targetState.mSpecializationConstants.bumpMapMatrix00_7 = sourceState.mSpecializationConstants.bumpMapMatrix00_7;
+
+		targetState.mSpecializationConstants.bumpMapMatrix01_0 = sourceState.mSpecializationConstants.bumpMapMatrix01_0;
+		targetState.mSpecializationConstants.bumpMapMatrix01_1 = sourceState.mSpecializationConstants.bumpMapMatrix01_1;
+		targetState.mSpecializationConstants.bumpMapMatrix01_2 = sourceState.mSpecializationConstants.bumpMapMatrix01_2;
+		targetState.mSpecializationConstants.bumpMapMatrix01_3 = sourceState.mSpecializationConstants.bumpMapMatrix01_3;
+		targetState.mSpecializationConstants.bumpMapMatrix01_4 = sourceState.mSpecializationConstants.bumpMapMatrix01_4;
+		targetState.mSpecializationConstants.bumpMapMatrix01_5 = sourceState.mSpecializationConstants.bumpMapMatrix01_5;
+		targetState.mSpecializationConstants.bumpMapMatrix01_6 = sourceState.mSpecializationConstants.bumpMapMatrix01_6;
+		targetState.mSpecializationConstants.bumpMapMatrix01_7 = sourceState.mSpecializationConstants.bumpMapMatrix01_7;
+
+		targetState.mSpecializationConstants.bumpMapMatrix10_0 = sourceState.mSpecializationConstants.bumpMapMatrix10_0;
+		targetState.mSpecializationConstants.bumpMapMatrix10_1 = sourceState.mSpecializationConstants.bumpMapMatrix10_1;
+		targetState.mSpecializationConstants.bumpMapMatrix10_2 = sourceState.mSpecializationConstants.bumpMapMatrix10_2;
+		targetState.mSpecializationConstants.bumpMapMatrix10_3 = sourceState.mSpecializationConstants.bumpMapMatrix10_3;
+		targetState.mSpecializationConstants.bumpMapMatrix10_4 = sourceState.mSpecializationConstants.bumpMapMatrix10_4;
+		targetState.mSpecializationConstants.bumpMapMatrix10_5 = sourceState.mSpecializationConstants.bumpMapMatrix10_5;
+		targetState.mSpecializationConstants.bumpMapMatrix10_6 = sourceState.mSpecializationConstants.bumpMapMatrix10_6;
+		targetState.mSpecializationConstants.bumpMapMatrix10_7 = sourceState.mSpecializationConstants.bumpMapMatrix10_7;
+
+		targetState.mSpecializationConstants.bumpMapMatrix11_0 = sourceState.mSpecializationConstants.bumpMapMatrix11_0;
+		targetState.mSpecializationConstants.bumpMapMatrix11_1 = sourceState.mSpecializationConstants.bumpMapMatrix11_1;
+		targetState.mSpecializationConstants.bumpMapMatrix11_2 = sourceState.mSpecializationConstants.bumpMapMatrix11_2;
+		targetState.mSpecializationConstants.bumpMapMatrix11_3 = sourceState.mSpecializationConstants.bumpMapMatrix11_3;
+		targetState.mSpecializationConstants.bumpMapMatrix11_4 = sourceState.mSpecializationConstants.bumpMapMatrix11_4;
+		targetState.mSpecializationConstants.bumpMapMatrix11_5 = sourceState.mSpecializationConstants.bumpMapMatrix11_5;
+		targetState.mSpecializationConstants.bumpMapMatrix11_6 = sourceState.mSpecializationConstants.bumpMapMatrix11_6;
+		targetState.mSpecializationConstants.bumpMapMatrix11_7 = sourceState.mSpecializationConstants.bumpMapMatrix11_7;
+
+		targetState.mSpecializationConstants.texureCoordinateIndex_0 = sourceState.mSpecializationConstants.texureCoordinateIndex_0;
+		targetState.mSpecializationConstants.texureCoordinateIndex_1 = sourceState.mSpecializationConstants.texureCoordinateIndex_1;
+		targetState.mSpecializationConstants.texureCoordinateIndex_2 = sourceState.mSpecializationConstants.texureCoordinateIndex_2;
+		targetState.mSpecializationConstants.texureCoordinateIndex_3 = sourceState.mSpecializationConstants.texureCoordinateIndex_3;
+		targetState.mSpecializationConstants.texureCoordinateIndex_4 = sourceState.mSpecializationConstants.texureCoordinateIndex_4;
+		targetState.mSpecializationConstants.texureCoordinateIndex_5 = sourceState.mSpecializationConstants.texureCoordinateIndex_5;
+		targetState.mSpecializationConstants.texureCoordinateIndex_6 = sourceState.mSpecializationConstants.texureCoordinateIndex_6;
+		targetState.mSpecializationConstants.texureCoordinateIndex_7 = sourceState.mSpecializationConstants.texureCoordinateIndex_7;
+
+		targetState.mSpecializationConstants.bumpMapScale_0 = sourceState.mSpecializationConstants.bumpMapScale_0;
+		targetState.mSpecializationConstants.bumpMapScale_1 = sourceState.mSpecializationConstants.bumpMapScale_1;
+		targetState.mSpecializationConstants.bumpMapScale_2 = sourceState.mSpecializationConstants.bumpMapScale_2;
+		targetState.mSpecializationConstants.bumpMapScale_3 = sourceState.mSpecializationConstants.bumpMapScale_3;
+		targetState.mSpecializationConstants.bumpMapScale_4 = sourceState.mSpecializationConstants.bumpMapScale_4;
+		targetState.mSpecializationConstants.bumpMapScale_5 = sourceState.mSpecializationConstants.bumpMapScale_5;
+		targetState.mSpecializationConstants.bumpMapScale_6 = sourceState.mSpecializationConstants.bumpMapScale_6;
+		targetState.mSpecializationConstants.bumpMapScale_7 = sourceState.mSpecializationConstants.bumpMapScale_7;
+
+		targetState.mSpecializationConstants.bumpMapOffset_0 = sourceState.mSpecializationConstants.bumpMapOffset_0;
+		targetState.mSpecializationConstants.bumpMapOffset_1 = sourceState.mSpecializationConstants.bumpMapOffset_1;
+		targetState.mSpecializationConstants.bumpMapOffset_2 = sourceState.mSpecializationConstants.bumpMapOffset_2;
+		targetState.mSpecializationConstants.bumpMapOffset_3 = sourceState.mSpecializationConstants.bumpMapOffset_3;
+		targetState.mSpecializationConstants.bumpMapOffset_4 = sourceState.mSpecializationConstants.bumpMapOffset_4;
+		targetState.mSpecializationConstants.bumpMapOffset_5 = sourceState.mSpecializationConstants.bumpMapOffset_5;
+		targetState.mSpecializationConstants.bumpMapOffset_6 = sourceState.mSpecializationConstants.bumpMapOffset_6;
+		targetState.mSpecializationConstants.bumpMapOffset_7 = sourceState.mSpecializationConstants.bumpMapOffset_7;
+
+		targetState.mSpecializationConstants.textureTransformationFlags_0 = sourceState.mSpecializationConstants.textureTransformationFlags_0;
+		targetState.mSpecializationConstants.textureTransformationFlags_1 = sourceState.mSpecializationConstants.textureTransformationFlags_1;
+		targetState.mSpecializationConstants.textureTransformationFlags_2 = sourceState.mSpecializationConstants.textureTransformationFlags_2;
+		targetState.mSpecializationConstants.textureTransformationFlags_3 = sourceState.mSpecializationConstants.textureTransformationFlags_3;
+		targetState.mSpecializationConstants.textureTransformationFlags_4 = sourceState.mSpecializationConstants.textureTransformationFlags_4;
+		targetState.mSpecializationConstants.textureTransformationFlags_5 = sourceState.mSpecializationConstants.textureTransformationFlags_5;
+		targetState.mSpecializationConstants.textureTransformationFlags_6 = sourceState.mSpecializationConstants.textureTransformationFlags_6;
+		targetState.mSpecializationConstants.textureTransformationFlags_7 = sourceState.mSpecializationConstants.textureTransformationFlags_7;
+
+		targetState.mSpecializationConstants.colorArgument0_0 = sourceState.mSpecializationConstants.colorArgument0_0;
+		targetState.mSpecializationConstants.colorArgument0_1 = sourceState.mSpecializationConstants.colorArgument0_1;
+		targetState.mSpecializationConstants.colorArgument0_2 = sourceState.mSpecializationConstants.colorArgument0_2;
+		targetState.mSpecializationConstants.colorArgument0_3 = sourceState.mSpecializationConstants.colorArgument0_3;
+		targetState.mSpecializationConstants.colorArgument0_4 = sourceState.mSpecializationConstants.colorArgument0_4;
+		targetState.mSpecializationConstants.colorArgument0_5 = sourceState.mSpecializationConstants.colorArgument0_5;
+		targetState.mSpecializationConstants.colorArgument0_6 = sourceState.mSpecializationConstants.colorArgument0_6;
+		targetState.mSpecializationConstants.colorArgument0_7 = sourceState.mSpecializationConstants.colorArgument0_7;
+
+		targetState.mSpecializationConstants.alphaArgument0_0 = sourceState.mSpecializationConstants.alphaArgument0_0;
+		targetState.mSpecializationConstants.alphaArgument0_1 = sourceState.mSpecializationConstants.alphaArgument0_1;
+		targetState.mSpecializationConstants.alphaArgument0_2 = sourceState.mSpecializationConstants.alphaArgument0_2;
+		targetState.mSpecializationConstants.alphaArgument0_3 = sourceState.mSpecializationConstants.alphaArgument0_3;
+		targetState.mSpecializationConstants.alphaArgument0_4 = sourceState.mSpecializationConstants.alphaArgument0_4;
+		targetState.mSpecializationConstants.alphaArgument0_5 = sourceState.mSpecializationConstants.alphaArgument0_5;
+		targetState.mSpecializationConstants.alphaArgument0_6 = sourceState.mSpecializationConstants.alphaArgument0_6;
+		targetState.mSpecializationConstants.alphaArgument0_7 = sourceState.mSpecializationConstants.alphaArgument0_7;
+
+		targetState.mSpecializationConstants.Result_0 = sourceState.mSpecializationConstants.Result_0;
+		targetState.mSpecializationConstants.Result_1 = sourceState.mSpecializationConstants.Result_1;
+		targetState.mSpecializationConstants.Result_2 = sourceState.mSpecializationConstants.Result_2;
+		targetState.mSpecializationConstants.Result_3 = sourceState.mSpecializationConstants.Result_3;
+		targetState.mSpecializationConstants.Result_4 = sourceState.mSpecializationConstants.Result_4;
+		targetState.mSpecializationConstants.Result_5 = sourceState.mSpecializationConstants.Result_5;
+		targetState.mSpecializationConstants.Result_6 = sourceState.mSpecializationConstants.Result_6;
+		targetState.mSpecializationConstants.Result_7 = sourceState.mSpecializationConstants.Result_7;
 	}
 
 	//IDirect3DDevice9::SetTransform

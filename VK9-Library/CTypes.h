@@ -323,7 +323,7 @@ struct DeviceState
 	boost::container::flat_map<DWORD, CTexture9*> mTextures;
 
 	//IDirect3DDevice9::SetTextureStageState
-	boost::container::flat_map<DWORD, boost::container::flat_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;
+	//boost::container::flat_map<DWORD, boost::container::flat_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;
 
 	//IDirect3DDevice9::SetTransform
 	boost::container::flat_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;

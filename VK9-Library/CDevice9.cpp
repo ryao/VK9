@@ -34,7 +34,7 @@ misrepresented as being the original software.
 #include "Utilities.h"
 
 CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
-	: 
+	:
 	mInstance(Instance),
 	mAdapter(Adapter),
 	mDeviceType(DeviceType),
@@ -72,7 +72,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		break;
 	case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
 		BOOST_LOG_TRIVIAL(info) << "GPU type: Virtual.";
-	break;
+		break;
 	case VK_PHYSICAL_DEVICE_TYPE_CPU:
 		BOOST_LOG_TRIVIAL(info) << "GPU type: CPU.";
 		break;
@@ -93,11 +93,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		else
 		{
 			BOOST_LOG_TRIVIAL(info) << "GPU heap (" << i << ") size:" << mDeviceMemoryProperties.memoryHeaps[i].size;
-		}	
+		}
 	}
 
 	//Fetch the queue properties.
-	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,NULL);
+	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount, NULL);
 	if (mQueueCount == 0)
 	{
 		mResult = VK_RESULT_MAX_ENUM;
@@ -109,12 +109,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkGetPhysicalDeviceQueueFamilyProperties returned " << mQueueCount << " results.";
 	}
 	mQueueFamilyProperties = new VkQueueFamilyProperties[mQueueCount];
-	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount,mQueueFamilyProperties);
+	vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &mQueueCount, mQueueFamilyProperties);
 
 	/*bool found = false;
-	for (unsigned int i = 0; i < mQueueCount; i++) 
+	for (unsigned int i = 0; i < mQueueCount; i++)
 	{
-		if (mQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+		if (mQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 		{
 			queue_info.queueFamilyIndex = i;
 			found = true;
@@ -122,25 +122,25 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		}
 	}*/
 
-	uint32_t extensionCount=0;
+	uint32_t extensionCount = 0;
 	vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &extensionCount, nullptr);
 	VkExtensionProperties* extension = new VkExtensionProperties[extensionCount];
 	vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &extensionCount, extension);
 
 	for (size_t i = 0; i < extensionCount; i++)
 	{
-		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 extension available: " << extension[i].extensionName;	
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 extension available: " << extension[i].extensionName;
 	}
 
 	delete[] extension;
 
 	mExtensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 #ifdef _DEBUG
-		mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif // _DEBUG
 
 	float queue_priorities[1] = { 0.0 };
-	VkDeviceQueueCreateInfo queue_info = {};	
+	VkDeviceQueueCreateInfo queue_info = {};
 	queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queue_info.pNext = nullptr;
 	queue_info.queueCount = 1;
@@ -288,8 +288,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	//Setup the descriptor pool for resource binding.
-	VkDescriptorPoolSize descriptorPoolSizes [11] = {};
-	#define MAX_DESCRIPTOR 2048
+	VkDescriptorPoolSize descriptorPoolSizes[11] = {};
+#define MAX_DESCRIPTOR 2048
 
 	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
 	descriptorPoolSizes[0].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetSamplers);
@@ -335,7 +335,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	descriptorPoolSizes[10].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, mDeviceProperties.limits.maxDescriptorSetInputAttachments);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 maxDescriptorSetInputAttachments = " << mDeviceProperties.limits.maxDescriptorSetInputAttachments;
 
-	
+
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = NULL;
@@ -344,13 +344,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
 
 	/*
-	This flag allows descriptors to return to the pool when they are freed. 
+	This flag allows descriptors to return to the pool when they are freed.
 	If not set we'll have to reset the pool and frankly I don't want to code for that.
 	The only reason I can think that you wouldn't want to do this is if it makes create/destroy cheaper but it hardly seems with it.
 	*/
 	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-	mResult = vkCreateDescriptorPool(mDevice, &descriptorPoolCreateInfo, nullptr,&mDescriptorPool);
+	mResult = vkCreateDescriptorPool(mDevice, &descriptorPoolCreateInfo, nullptr, &mDescriptorPool);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateDescriptorPool failed with return code of " << mResult;
@@ -364,7 +364,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mGarbageManager.mDescriptorPool = mDescriptorPool;
 
 	//Create queue so we can submit command buffers.
-	vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0,&mQueue);
+	vkGetDeviceQueue(mDevice, mGraphicsQueueIndex, 0, &mQueue);
 
 	/*
 	Now pull some information about the surface so we can create the swapchain correctly.
@@ -1001,7 +1001,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	{
 		mTransformFlags = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 	}
-	else 
+	else
 	{
 		mTransformFlags = mSurfaceCapabilities.currentTransform;
 	}
@@ -1075,7 +1075,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	swapchainCreateInfo.surface = mSurface;
 	swapchainCreateInfo.minImageCount = mSurfaceCapabilities.minImageCount + 1;
 	swapchainCreateInfo.imageFormat = mFormat;
-	swapchainCreateInfo.imageColorSpace  = mSurfaceFormats[0].colorSpace;
+	swapchainCreateInfo.imageColorSpace = mSurfaceFormats[0].colorSpace;
 	swapchainCreateInfo.imageExtent = mSwapchainExtent;
 	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swapchainCreateInfo.preTransform = mTransformFlags;
@@ -1148,7 +1148,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		color_image_view.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		color_image_view.flags = 0;
 
-		color_image_view.image = mSwapchainImages[i];	
+		color_image_view.image = mSwapchainImages[i];
 
 		mResult = vkCreateImageView(mDevice, &color_image_view, nullptr, &mSwapchainViews[i]);
 		if (mResult != VK_SUCCESS)
@@ -1235,7 +1235,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	GetMemoryTypeFromProperties(mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &mDepthMemoryAllocateInfo.memoryTypeIndex);
 
-	mResult = vkAllocateMemory(mDevice, &mDepthMemoryAllocateInfo, NULL,&mDepthDeviceMemory);
+	mResult = vkAllocateMemory(mDevice, &mDepthMemoryAllocateInfo, NULL, &mDepthDeviceMemory);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateMemory failed with return code of " << mResult;
@@ -1285,7 +1285,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	/*	
+	/*
 	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	*/
@@ -1424,7 +1424,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mRenderTargets.push_back(ptr2);
 
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
-} 
+}
 
 CDevice9::~CDevice9()
 {
@@ -1439,14 +1439,14 @@ CDevice9::~CDevice9()
 
 	delete mBufferManager;
 
-	if (mFramebuffers!= nullptr)
+	if (mFramebuffers != nullptr)
 	{
 		for (size_t i = 0; i < mSwapchainImageCount; i++)
 		{
 			if (mFramebuffers[i] != VK_NULL_HANDLE)
 			{
 				vkDestroyFramebuffer(mDevice, mFramebuffers[i], nullptr);
-			}		
+			}
 		}
 		delete[] mFramebuffers;
 	}
@@ -1456,7 +1456,7 @@ CDevice9::~CDevice9()
 		vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
 	}
 
-	if (mSwapchainBuffers!= nullptr)
+	if (mSwapchainBuffers != nullptr)
 	{
 		vkFreeCommandBuffers(mDevice, mCommandPool, mSwapchainImageCount, mSwapchainBuffers);
 		delete[] mSwapchainBuffers;
@@ -1476,11 +1476,11 @@ CDevice9::~CDevice9()
 	{
 		vkFreeMemory(mDevice, mDepthDeviceMemory, nullptr);
 	}
-	
+
 	if (mDescriptorPool != VK_NULL_HANDLE)
 	{
 		vkDestroyDescriptorPool(mDevice, mDescriptorPool, nullptr);
-	}	
+	}
 
 	if (mCommandPool != VK_NULL_HANDLE)
 	{
@@ -1490,7 +1490,7 @@ CDevice9::~CDevice9()
 	if (mSwapchain != VK_NULL_HANDLE)
 	{
 		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
-	}	
+	}
 
 	if (mSwapchainViews != nullptr)
 	{
@@ -1514,13 +1514,13 @@ CDevice9::~CDevice9()
 		//		vkDestroyImage(mDevice, mSwapchainImages[i], nullptr);
 		//	}	
 		//}
-		delete[] mSwapchainImages;
+	delete[] mSwapchainImages;
 	//}
 
 	if (mDevice != VK_NULL_HANDLE)
 	{
 		vkDestroyDevice(mDevice, nullptr);
-	}	
+	}
 
 	if (mSurface != VK_NULL_HANDLE)
 	{
@@ -1625,7 +1625,7 @@ ULONG STDMETHODCALLTYPE CDevice9::AddRef(void)
 	return InterlockedIncrement(&mReferenceCount);
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::QueryInterface(REFIID riid,void  **ppv)
+HRESULT STDMETHODCALLTYPE CDevice9::QueryInterface(REFIID riid, void  **ppv)
 {
 	if (ppv == nullptr)
 	{
@@ -1661,7 +1661,7 @@ ULONG STDMETHODCALLTYPE CDevice9::Release(void)
 	return ref;
 }
 
-	
+
 HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
 	this->mCurrentStateRecording = new CStateBlock9(this);
@@ -1673,7 +1673,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 
 
 
-HRESULT STDMETHODCALLTYPE CDevice9::ColorFill(IDirect3DSurface9 *pSurface,const RECT *pRect,D3DCOLOR color)
+HRESULT STDMETHODCALLTYPE CDevice9::ColorFill(IDirect3DSurface9 *pSurface, const RECT *pRect, D3DCOLOR color)
 {
 	//TODO: Implement.
 
@@ -1682,7 +1682,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::ColorFill(IDirect3DSurface9 *pSurface,const 
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters,IDirect3DSwapChain9 **ppSwapChain)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DSwapChain9 **ppSwapChain)
 {
 	//TODO: Implement.
 
@@ -1691,11 +1691,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateAdditionalSwapChain(D3DPRESENT_PARAMET
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DCubeTexture9 **ppCubeTexture,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateCubeTexture(UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DCubeTexture9 **ppCubeTexture, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
-	CCubeTexture9* obj = new CCubeTexture9(this, EdgeLength,Levels,Usage,Format,Pool,pSharedHandle);
+	CCubeTexture9* obj = new CCubeTexture9(this, EdgeLength, Levels, Usage, Format, Pool, pSharedHandle);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -1709,11 +1709,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateCubeTexture(UINT EdgeLength,UINT Level
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateDepthStencilSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Discard,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9 **ppSurface, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
-	CSurface9* obj = new CSurface9(this,nullptr,Width,Height,Format,MultiSample,MultisampleQuality,Discard,pSharedHandle);
+	CSurface9* obj = new CSurface9(this, nullptr, Width, Height, Format, MultiSample, MultisampleQuality, Discard, pSharedHandle);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -1727,11 +1727,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateDepthStencilSurface(UINT Width,UINT He
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DIndexBuffer9 **ppIndexBuffer,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DIndexBuffer9 **ppIndexBuffer, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
-	CIndexBuffer9* obj = new CIndexBuffer9(this,Length,Usage,Format,Pool,pSharedHandle);
+	CIndexBuffer9* obj = new CIndexBuffer9(this, Length, Usage, Format, Pool, pSharedHandle);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -1747,7 +1747,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D3
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width,UINT Height,D3DFORMAT Format,D3DPOOL Pool,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DPOOL Pool, IDirect3DSurface9 **ppSurface, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
@@ -1765,7 +1765,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width,UINT 
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction,IDirect3DPixelShader9 **ppShader)
+HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction, IDirect3DPixelShader9 **ppShader)
 {
 	HRESULT result = S_OK;
 
@@ -1783,14 +1783,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction,IDi
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9 **ppQuery)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type, IDirect3DQuery9 **ppQuery)
 {
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb174360(v=vs.85).aspx
 	*/
 
 	//If null is passed the call is checking to see if a query type is supported.
-	if (ppQuery==nullptr)
+	if (ppQuery == nullptr)
 	{
 		return D3DERR_NOTAVAILABLE;
 	}
@@ -1811,7 +1811,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width,UINT Height,D3DFORMAT Format,D3DMULTISAMPLE_TYPE MultiSample,DWORD MultisampleQuality,BOOL Lockable,IDirect3DSurface9 **ppSurface,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9 **ppSurface, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
@@ -1830,7 +1830,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width,UINT Height,D3
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDirect3DStateBlock9 **ppSB)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type, IDirect3DStateBlock9 **ppSB)
 {
 	HRESULT result = S_OK;
 
@@ -1850,7 +1850,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDir
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DTexture9 **ppTexture,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9 **ppTexture, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
@@ -1870,7 +1870,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width,UINT Height,UINT Le
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length,DWORD Usage,DWORD FVF,D3DPOOL Pool,IDirect3DVertexBuffer9 **ppVertexBuffer,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer9 **ppVertexBuffer, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
@@ -1890,7 +1890,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length,DWORD Usage,D
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements,IDirect3DVertexDeclaration9 **ppDecl)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements, IDirect3DVertexDeclaration9 **ppDecl)
 {
 	HRESULT result = S_OK;
 
@@ -1908,7 +1908,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexDeclaration(const D3DVERTEXELEME
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction,IDirect3DVertexShader9 **ppShader)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction, IDirect3DVertexShader9 **ppShader)
 {
 	HRESULT result = S_OK;
 
@@ -1926,7 +1926,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction,ID
 	return result;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DVolumeTexture9 **ppVolumeTexture,HANDLE *pSharedHandle)
+HRESULT STDMETHODCALLTYPE CDevice9::CreateVolumeTexture(UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DVolumeTexture9 **ppVolumeTexture, HANDLE *pSharedHandle)
 {
 	HRESULT result = S_OK;
 
@@ -1953,7 +1953,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinIndex,UINT NumVertices,UINT StartIndex,UINT PrimitiveCount)
+HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
 {
 	if (mDeviceState.mIndexBuffer == nullptr)
 	{
@@ -1974,7 +1974,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 	/*
 		https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 		https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
-	*/	
+	*/
 	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], min(mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
 
 	//BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
@@ -1982,7 +1982,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,I
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,const void *pIndexData,D3DFORMAT IndexDataFormat,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
+HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinVertexIndex, UINT NumVertices, UINT PrimitiveCount, const void *pIndexData, D3DFORMAT IndexDataFormat, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride)
 {
 	if (!mIsSceneStarted)
 	{
@@ -1993,10 +1993,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitiveUP is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT StartVertex,UINT PrimitiveCount)
+HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 {
 	if (!mIsSceneStarted)
 	{
@@ -2008,14 +2008,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 
 	mBufferManager->BeginDraw(context, resourceContext, PrimitiveType);
 
-	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType,PrimitiveCount)), 1, StartVertex, 0);
+	vkCmdDraw(mSwapchainBuffers[mCurrentBuffer], min(mBufferManager->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount)), 1, StartVertex, 0);
 
 	//Print(mDeviceState.mTransforms);
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT PrimitiveCount,const void *pVertexStreamZeroData,UINT VertexStreamZeroStride)
+HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride)
 {
 	if (!mIsSceneStarted)
 	{
@@ -2026,10 +2026,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveTy
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitiveUP is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::DrawRectPatch(UINT Handle,const float *pNumSegs,const D3DRECTPATCH_INFO *pRectPatchInfo)
+HRESULT STDMETHODCALLTYPE CDevice9::DrawRectPatch(UINT Handle, const float *pNumSegs, const D3DRECTPATCH_INFO *pRectPatchInfo)
 {
 	if (!mIsSceneStarted)
 	{
@@ -2043,7 +2043,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawRectPatch(UINT Handle,const float *pNumS
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle,const float *pNumSegs,const D3DTRIPATCH_INFO *pTriPatchInfo)
+HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle, const float *pNumSegs, const D3DTRIPATCH_INFO *pTriPatchInfo)
 {
 	if (!mIsSceneStarted)
 	{
@@ -2056,7 +2056,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle,const float *pNumSe
 
 	return E_NOTIMPL;
 }
-	
+
 HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
 {
 	(*ppSB) = this->mCurrentStateRecording;
@@ -2074,7 +2074,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::EvictManagedResources()
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::EvictManagedResources is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
 UINT STDMETHODCALLTYPE CDevice9::GetAvailableTextureMem()
@@ -2086,7 +2086,7 @@ UINT STDMETHODCALLTYPE CDevice9::GetAvailableTextureMem()
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetBackBuffer(UINT  iSwapChain,UINT BackBuffer,D3DBACKBUFFER_TYPE Type,IDirect3DSurface9 **ppBackBuffer)
+HRESULT STDMETHODCALLTYPE CDevice9::GetBackBuffer(UINT  iSwapChain, UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 **ppBackBuffer)
 {
 	//TODO: Implement.
 
@@ -2095,7 +2095,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetBackBuffer(UINT  iSwapChain,UINT BackBuff
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetClipPlane(DWORD Index,float *pPlane)
+HRESULT STDMETHODCALLTYPE CDevice9::GetClipPlane(DWORD Index, float *pPlane)
 {
 	//TODO: Implement.
 
@@ -2138,7 +2138,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDepthStencilSurface(IDirect3DSurface9 **p
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetDepthStencilSurface is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
@@ -2241,7 +2241,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDirect3D(IDirect3D9 **ppD3D9)
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMODE *pMode)
+HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain, D3DDISPLAYMODE *pMode)
 {
 	if (iSwapChain)
 	{
@@ -2264,23 +2264,23 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain,D3DDISPLAYMO
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetFrontBufferData(UINT  iSwapChain,IDirect3DSurface9 *pDestSurface)
+HRESULT STDMETHODCALLTYPE CDevice9::GetFrontBufferData(UINT  iSwapChain, IDirect3DSurface9 *pDestSurface)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetFrontBufferData is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetFVF(DWORD *pFVF)
 {
 	(*pFVF) = mDeviceState.mFVF;
 
-	return S_OK;	
+	return S_OK;
 }
 
-void STDMETHODCALLTYPE CDevice9::GetGammaRamp(UINT  iSwapChain,D3DGAMMARAMP *pRamp)
+void STDMETHODCALLTYPE CDevice9::GetGammaRamp(UINT  iSwapChain, D3DGAMMARAMP *pRamp)
 {
 	//TODO: Implement.
 
@@ -2298,18 +2298,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexDa
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index,D3DLIGHT9 *pLight)
+HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
 {
 	(*pLight) = mDeviceState.mLights[Index];
 
 	return S_OK;
-} 
+}
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetLightEnable(DWORD Index,BOOL *pEnable)
+HRESULT STDMETHODCALLTYPE CDevice9::GetLightEnable(DWORD Index, BOOL *pEnable)
 {
 	(*pEnable) = mDeviceState.mLightSettings[Index];
 
-	return S_OK;		
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetMaterial(D3DMATERIAL9 *pMaterial)
@@ -2333,7 +2333,7 @@ UINT STDMETHODCALLTYPE CDevice9::GetNumberOfSwapChains()
 	return 0;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetPaletteEntries(UINT PaletteNumber,PALETTEENTRY *pEntries)
+HRESULT STDMETHODCALLTYPE CDevice9::GetPaletteEntries(UINT PaletteNumber, PALETTEENTRY *pEntries)
 {
 	//TODO: Implement.
 
@@ -2349,7 +2349,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppSha
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
 	//TODO: Implement.
 
@@ -2358,7 +2358,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister,B
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
 	//TODO: Implement.
 
@@ -2367,7 +2367,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister,f
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
 	//TODO: Implement.
 
@@ -2376,7 +2376,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister,i
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain,D3DRASTER_STATUS *pRasterStatus)
+HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain, D3DRASTER_STATUS *pRasterStatus)
 {
 	//TODO: Implement.
 
@@ -2385,30 +2385,30 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain,D3DRASTER_S
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State,DWORD *pValue)
+HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWORD *pValue)
 {
 	(*pValue) = mDeviceState.mRenderStates[State];
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 **ppRenderTarget)
+HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 **ppRenderTarget)
 {
 	(*ppRenderTarget) = mRenderTargets[RenderTargetIndex];
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTargetData(IDirect3DSurface9 *pRenderTarget,IDirect3DSurface9 *pDestSurface)
+HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTargetData(IDirect3DSurface9 *pRenderTarget, IDirect3DSurface9 *pDestSurface)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetRenderTargetData is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD *pValue)
+HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD *pValue)
 {
 	(*pValue) = mDeviceState.mSamplerStates[Sampler][Type];
 
@@ -2431,7 +2431,7 @@ BOOL STDMETHODCALLTYPE CDevice9::GetSoftwareVertexProcessing()
 	return true;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 **ppStreamData,UINT *pOffsetInBytes,UINT *pStride)
+HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9 **ppStreamData, UINT *pOffsetInBytes, UINT *pStride)
 {
 	StreamSource& value = mDeviceState.mStreamSources[StreamNumber];
 
@@ -2446,7 +2446,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber,IDirect3DV
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSourceFreq(UINT StreamNumber,UINT *pDivider)
+HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSourceFreq(UINT StreamNumber, UINT *pDivider)
 {
 	//TODO: Implement.
 
@@ -2455,30 +2455,603 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSourceFreq(UINT StreamNumber,UINT *
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetSwapChain(UINT  iSwapChain,IDirect3DSwapChain9 **ppSwapChain)
+HRESULT STDMETHODCALLTYPE CDevice9::GetSwapChain(UINT  iSwapChain, IDirect3DSwapChain9 **ppSwapChain)
 {
 	(*ppSwapChain) = (IDirect3DSwapChain9*)mSwapChains[iSwapChain];
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetTexture(DWORD Stage,IDirect3DBaseTexture9 **ppTexture)
+HRESULT STDMETHODCALLTYPE CDevice9::GetTexture(DWORD Stage, IDirect3DBaseTexture9 **ppTexture)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetTexture is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD *pValue)
+HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD *pValue)
 {
-	(*pValue) = mDeviceState.mTextureStageStates[Stage][Type];
+	DeviceState* state = nullptr;
+
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		state = &this->mCurrentStateRecording->mDeviceState;
+	}
+	else
+	{
+		state = &mDeviceState;
+	}
+
+	switch (Type)
+	{
+	case D3DTSS_COLOROP:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.colorOperation_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.colorOperation_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.colorOperation_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.colorOperation_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.colorOperation_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.colorOperation_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.colorOperation_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.colorOperation_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_COLORARG1:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.colorArgument1_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_COLORARG2:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.colorArgument2_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAOP:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.alphaOperation_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAARG1:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAARG2:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT00:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT01:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT10:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT11:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_TEXCOORDINDEX:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVLSCALE:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVLOFFSET:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_TEXTURETRANSFORMFLAGS:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_COLORARG0:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.colorArgument0_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAARG0:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_RESULTARG:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.Result_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.Result_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.Result_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.Result_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.Result_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.Result_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.Result_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.Result_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_CONSTANT:
+		switch (Stage)
+		{
+		case 0:
+			(*pValue) = state->mSpecializationConstants.Constant_0 ;
+			break;
+		case 1:
+			(*pValue) = state->mSpecializationConstants.Constant_1 ;
+			break;
+		case 2:
+			(*pValue) = state->mSpecializationConstants.Constant_2 ;
+			break;
+		case 3:
+			(*pValue) = state->mSpecializationConstants.Constant_3 ;
+			break;
+		case 4:
+			(*pValue) = state->mSpecializationConstants.Constant_4 ;
+			break;
+		case 5:
+			(*pValue) = state->mSpecializationConstants.Constant_5 ;
+			break;
+		case 6:
+			(*pValue) = state->mSpecializationConstants.Constant_6 ;
+			break;
+		case 7:
+			(*pValue) = state->mSpecializationConstants.Constant_7 ;
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State,D3DMATRIX* pMatrix)
+HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State, D3DMATRIX* pMatrix)
 {
 	(*pMatrix) = mDeviceState.mTransforms[State];
 
@@ -2499,7 +3072,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9 **ppS
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister,BOOL *pConstantData,UINT BoolCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
 	//TODO: Implement.
 
@@ -2508,7 +3081,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister,
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister,float *pConstantData,UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
 	//TODO: Implement.
 
@@ -2517,7 +3090,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister,
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister,int *pConstantData,UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
 	//TODO: Implement.
 
@@ -2530,10 +3103,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
 {
 	(*pViewport) = mDeviceState.m9Viewport;
 
-	return S_OK;		
+	return S_OK;
 }
-	
-HRESULT STDMETHODCALLTYPE CDevice9::LightEnable(DWORD LightIndex,BOOL bEnable)
+
+HRESULT STDMETHODCALLTYPE CDevice9::LightEnable(DWORD LightIndex, BOOL bEnable)
 {
 	if (this->mCurrentStateRecording != nullptr)
 	{
@@ -2547,7 +3120,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::LightEnable(DWORD LightIndex,BOOL bEnable)
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
+HRESULT STDMETHODCALLTYPE CDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE State, const D3DMATRIX *pMatrix)
 {
 	//TODO: Implement.
 
@@ -2556,7 +3129,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE Stat
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::ProcessVertices(UINT SrcStartIndex,UINT DestIndex,UINT VertexCount,IDirect3DVertexBuffer9 *pDestBuffer,IDirect3DVertexDeclaration9 *pVertexDecl,DWORD Flags)
+HRESULT STDMETHODCALLTYPE CDevice9::ProcessVertices(UINT SrcStartIndex, UINT DestIndex, UINT VertexCount, IDirect3DVertexBuffer9 *pDestBuffer, IDirect3DVertexDeclaration9 *pVertexDecl, DWORD Flags)
 {
 	//TODO: Implement.
 
@@ -2566,21 +3139,21 @@ HRESULT STDMETHODCALLTYPE CDevice9::ProcessVertices(UINT SrcStartIndex,UINT Dest
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters)
-{	
+{
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::Reset is not implemented!";
 
-	return S_OK;		
+	return S_OK;
 }
 
-HRESULT CDevice9::SetClipPlane(DWORD Index,const float *pPlane)
+HRESULT CDevice9::SetClipPlane(DWORD Index, const float *pPlane)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetClipPlane is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetClipStatus(const D3DCLIPSTATUS9 *pClipStatus)
@@ -2601,7 +3174,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetCurrentTexturePalette(UINT PaletteNumber)
 	return E_NOTIMPL;
 }
 
-void STDMETHODCALLTYPE CDevice9::SetCursorPosition(INT X,INT Y,DWORD Flags)
+void STDMETHODCALLTYPE CDevice9::SetCursorPosition(INT X, INT Y, DWORD Flags)
 {
 	//TODO: Implement.
 
@@ -2610,7 +3183,7 @@ void STDMETHODCALLTYPE CDevice9::SetCursorPosition(INT X,INT Y,DWORD Flags)
 	return;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetCursorProperties(UINT XHotSpot,UINT YHotSpot,IDirect3DSurface9 *pCursorBitmap)
+HRESULT STDMETHODCALLTYPE CDevice9::SetCursorProperties(UINT XHotSpot, UINT YHotSpot, IDirect3DSurface9 *pCursorBitmap)
 {
 	//TODO: Implement.
 
@@ -2649,13 +3222,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 	{
 		mDeviceState.mFVF = FVF;
 		mDeviceState.mHasFVF = true;
-		mDeviceState.mHasVertexDeclaration = false;	
+		mDeviceState.mHasVertexDeclaration = false;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
-void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain,DWORD Flags,const D3DGAMMARAMP *pRamp)
+void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain, DWORD Flags, const D3DGAMMARAMP *pRamp)
 {
 	//TODO: Implement.
 
@@ -2678,7 +3251,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight)
+HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLight)
 {
 	if (this->mCurrentStateRecording != nullptr)
 	{
@@ -2692,7 +3265,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight
 			this->mCurrentStateRecording->mDeviceState.mLights[Index] = (*pLight);
 			this->mCurrentStateRecording->mDeviceState.mAreLightsDirty = true;
 		}
-		
+
 	}
 	else
 	{
@@ -2705,10 +3278,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index,const D3DLIGHT9 *pLight
 		{
 			mDeviceState.mLights[Index] = (*pLight);
 			mDeviceState.mAreLightsDirty = true;
-		}		
+		}
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
@@ -2724,12 +3297,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
 		mDeviceState.mIsMaterialDirty = true;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 {
-	if (nSegments>0.0f)
+	if (nSegments > 0.0f)
 	{
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetNPatchMode nPatch greater than zero not supported.";
 	}
@@ -2747,7 +3320,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber,const PALETTEENTRY *pEntries)
+HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber, const PALETTEENTRY *pEntries)
 {
 	//TODO: Implement.
 
@@ -2758,11 +3331,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber,const P
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShader)
 {
-	if (pShader!=nullptr)
+	if (pShader != nullptr)
 	{
 		pShader->AddRef();
 	}
-	
+
 	if (this->mCurrentStateRecording != nullptr)
 	{
 		this->mCurrentStateRecording->mDeviceState.mPixelShader = (CPixelShader9*)pShader;
@@ -2779,37 +3352,37 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShade
 		mDeviceState.mHasPixelShader = true;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetPixelShaderConstantB is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetPixelShaderConstantF is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetPixelShaderConstantI is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
+HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 {
 	if (this->mCurrentStateRecording != nullptr)
 	{
@@ -2820,17 +3393,17 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWOR
 		mDeviceState.mRenderStates[State] = Value;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex,IDirect3DSurface9 *pRenderTarget)
+HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 *pRenderTarget)
 {
 	mRenderTargets[RenderTargetIndex] = (CRenderTargetSurface9*)pRenderTarget;
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Type,DWORD Value)
+HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value)
 {
 	if (this->mCurrentStateRecording != nullptr)
 	{
@@ -2867,7 +3440,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT *pRect)
 		mDeviceState.mScissor.offset.y = mDeviceState.m9Scissor.top;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
@@ -2879,8 +3452,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9 *pStreamData,UINT OffsetInBytes,UINT Stride)
-{	
+HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9 *pStreamData, UINT OffsetInBytes, UINT Stride)
+{
 	CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
 
 	if (this->mCurrentStateRecording != nullptr)
@@ -2895,7 +3468,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber,IDirect3DV
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT FrequencyParameter)
+HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber, UINT FrequencyParameter)
 {
 	//TODO: Implement.
 
@@ -2904,7 +3477,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT F
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTexture9 *pTexture)
+HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTexture9 *pTexture)
 {
 	auto texture = (CTexture9*)pTexture; //Check for compiler bugs.
 
@@ -2919,29 +3492,593 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler,IDirect3DBaseTextur
 
 	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTexture handle: " << pTexture << " sampler: " << Sampler;
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value)
+HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value)
 {
+	DeviceState* state = nullptr;
+
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		this->mCurrentStateRecording->mDeviceState.mTextureStageStates[Stage][Type] = Value;
+		state = &this->mCurrentStateRecording->mDeviceState;
 	}
 	else
 	{
-		mDeviceState.mTextureStageStates[Stage][Type] = Value;
+		state = &mDeviceState;
 	}
 
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTextureStageState Stage:" << Stage << " Type:" << Type << " Value:" << Value;
+	switch (Type)
+	{
+	case D3DTSS_COLOROP:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.colorOperation_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.colorOperation_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.colorOperation_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.colorOperation_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.colorOperation_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.colorOperation_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.colorOperation_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.colorOperation_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_COLORARG1:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.colorArgument1_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.colorArgument1_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.colorArgument1_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.colorArgument1_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.colorArgument1_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.colorArgument1_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.colorArgument1_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.colorArgument1_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_COLORARG2:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.colorArgument2_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.colorArgument2_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.colorArgument2_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.colorArgument2_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.colorArgument2_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.colorArgument2_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.colorArgument2_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.colorArgument2_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAOP:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.alphaOperation_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.alphaOperation_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.alphaOperation_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.alphaOperation_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.alphaOperation_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.alphaOperation_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.alphaOperation_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.alphaOperation_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAARG1:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.alphaArgument1_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.alphaArgument1_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.alphaArgument1_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.alphaArgument1_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.alphaArgument1_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.alphaArgument1_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.alphaArgument1_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.alphaArgument1_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAARG2:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.alphaArgument2_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.alphaArgument2_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.alphaArgument2_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.alphaArgument2_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.alphaArgument2_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.alphaArgument2_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.alphaArgument2_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.alphaArgument2_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT00:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.bumpMapMatrix00_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.bumpMapMatrix00_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.bumpMapMatrix00_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.bumpMapMatrix00_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.bumpMapMatrix00_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.bumpMapMatrix00_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.bumpMapMatrix00_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.bumpMapMatrix00_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT01:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.bumpMapMatrix01_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.bumpMapMatrix01_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.bumpMapMatrix01_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.bumpMapMatrix01_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.bumpMapMatrix01_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.bumpMapMatrix01_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.bumpMapMatrix01_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.bumpMapMatrix01_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT10:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.bumpMapMatrix10_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.bumpMapMatrix10_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.bumpMapMatrix10_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.bumpMapMatrix10_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.bumpMapMatrix10_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.bumpMapMatrix10_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.bumpMapMatrix10_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.bumpMapMatrix10_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVMAT11:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.bumpMapMatrix11_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.bumpMapMatrix11_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.bumpMapMatrix11_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.bumpMapMatrix11_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.bumpMapMatrix11_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.bumpMapMatrix11_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.bumpMapMatrix11_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.bumpMapMatrix11_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_TEXCOORDINDEX:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.texureCoordinateIndex_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.texureCoordinateIndex_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.texureCoordinateIndex_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.texureCoordinateIndex_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.texureCoordinateIndex_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.texureCoordinateIndex_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.texureCoordinateIndex_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.texureCoordinateIndex_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVLSCALE:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.bumpMapScale_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.bumpMapScale_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.bumpMapScale_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.bumpMapScale_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.bumpMapScale_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.bumpMapScale_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.bumpMapScale_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.bumpMapScale_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_BUMPENVLOFFSET:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.bumpMapOffset_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.bumpMapOffset_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.bumpMapOffset_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.bumpMapOffset_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.bumpMapOffset_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.bumpMapOffset_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.bumpMapOffset_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.bumpMapOffset_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_TEXTURETRANSFORMFLAGS:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.textureTransformationFlags_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.textureTransformationFlags_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.textureTransformationFlags_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.textureTransformationFlags_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.textureTransformationFlags_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.textureTransformationFlags_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.textureTransformationFlags_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.textureTransformationFlags_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_COLORARG0:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.colorArgument0_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.colorArgument0_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.colorArgument0_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.colorArgument0_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.colorArgument0_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.colorArgument0_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.colorArgument0_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.colorArgument0_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_ALPHAARG0:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.alphaArgument0_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.alphaArgument0_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.alphaArgument0_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.alphaArgument0_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.alphaArgument0_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.alphaArgument0_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.alphaArgument0_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.alphaArgument0_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_RESULTARG:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.Result_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.Result_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.Result_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.Result_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.Result_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.Result_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.Result_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.Result_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	case D3DTSS_CONSTANT:
+		switch (Stage)
+		{
+		case 0:
+			state->mSpecializationConstants.Constant_0 = Value;
+			break;
+		case 1:
+			state->mSpecializationConstants.Constant_1 = Value;
+			break;
+		case 2:
+			state->mSpecializationConstants.Constant_2 = Value;
+			break;
+		case 3:
+			state->mSpecializationConstants.Constant_3 = Value;
+			break;
+		case 4:
+			state->mSpecializationConstants.Constant_4 = Value;
+			break;
+		case 5:
+			state->mSpecializationConstants.Constant_5 = Value;
+			break;
+		case 6:
+			state->mSpecializationConstants.Constant_6 = Value;
+			break;
+		case 7:
+			state->mSpecializationConstants.Constant_7 = Value;
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,const D3DMATRIX *pMatrix)
+HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State, const D3DMATRIX *pMatrix)
 {
 	if (this->mCurrentStateRecording != nullptr)
-	{	
+	{
 		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
 		this->mCurrentStateRecording->mDeviceState.mHasTransformsChanged = true;
 	}
@@ -2951,7 +4088,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,con
 		mDeviceState.mHasTransformsChanged = true;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
@@ -2971,7 +4108,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclarat
 		mDeviceState.mHasFVF = false;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pShader)
@@ -3001,16 +4138,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pSha
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister,const BOOL *pConstantData,UINT BoolCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetVertexShaderConstantB is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,const float *pConstantData,UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
 	//TODO: Implement.
 
@@ -3019,13 +4156,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister,const int *pConstantData,UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetVertexShaderConstantI is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
@@ -3049,7 +4186,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 		mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 	}
 
-	return S_OK;	
+	return S_OK;
 }
 
 BOOL STDMETHODCALLTYPE CDevice9::ShowCursor(BOOL bShow)
@@ -3058,16 +4195,16 @@ BOOL STDMETHODCALLTYPE CDevice9::ShowCursor(BOOL bShow)
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::ShowCursor is not implemented!";
 
-	return TRUE;	
+	return TRUE;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::StretchRect(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestSurface,const RECT *pDestRect,D3DTEXTUREFILTERTYPE Filter)
+HRESULT STDMETHODCALLTYPE CDevice9::StretchRect(IDirect3DSurface9 *pSourceSurface, const RECT *pSourceRect, IDirect3DSurface9 *pDestSurface, const RECT *pDestRect, D3DTEXTUREFILTERTYPE Filter)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::StretchRect is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::TestCooperativeLevel()
@@ -3076,10 +4213,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::TestCooperativeLevel()
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::TestCooperativeLevel is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestinationSurface,const POINT *pDestinationPoint)
+HRESULT STDMETHODCALLTYPE CDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurface, const RECT *pSourceRect, IDirect3DSurface9 *pDestinationSurface, const POINT *pDestinationPoint)
 {
 	//TODO: Implement.
 
@@ -3088,7 +4225,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurf
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture,IDirect3DBaseTexture9* pDestinationTexture)
+HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture)
 {
 	//TODO: Implement.
 
@@ -3103,7 +4240,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::ValidateDevice(DWORD *pNumPasses)
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::ValidateDevice is not implemented!";
 
-	return S_OK;	
+	return S_OK;
 }
 
 void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex)
@@ -3116,7 +4253,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 
-	if (aspectMask==0)
+	if (aspectMask == 0)
 	{
 		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
@@ -3273,7 +4410,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		return;
 	}
 
-	vkFreeCommandBuffers(mDevice,mCommandPool, 1, commandBuffers);
+	vkFreeCommandBuffers(mDevice, mCommandPool, 1, commandBuffers);
 }
 
 void CDevice9::StartScene()
@@ -3333,7 +4470,7 @@ void CDevice9::StartScene()
 	mImageMemoryBarrier.image = mSwapchainImages[mCurrentBuffer];
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
+	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
 
@@ -3372,7 +4509,7 @@ void CDevice9::StopScene()
 
 	mPrePresentBarrier.image = mSwapchainImages[mCurrentBuffer];
 	VkImageMemoryBarrier* memoryBarrier = &mPrePresentBarrier;
-	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,nullptr, 1, memoryBarrier);
+	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, memoryBarrier);
 
 	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
 	if (result != VK_SUCCESS)

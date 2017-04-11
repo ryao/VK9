@@ -95,10 +95,8 @@ struct DrawContext
 	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
 
 	//D3d9 State - Lights
-	BOOL IsLightingEnabled = false;
-	size_t LightCount = 1;
-	size_t TextureCount = 1;
 	D3DSHADEMODE ShadeMode = D3DSHADE_FORCE_DWORD;
+	SpecializationConstants mSpecializationConstants = {};	
 
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
