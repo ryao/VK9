@@ -354,7 +354,7 @@ void main()
 	texcoord1 = attr3;
 	texcoord2 = attr4;
 
-	/*if(isLightingEnabled)
+	if(isLightingEnabled)
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
 		{
@@ -364,6 +364,5 @@ void main()
 			}
 		}
 		color *= lightColor;
-	}*/
-
+	}
 }

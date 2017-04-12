@@ -300,6 +300,25 @@ void getPhongLight( int lightIndex, vec3 position1, vec4 norm, out vec4 ambient,
 	spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power ); 
 }
 
+vec4 Convert(int rgba)
+{
+	vec4 unpacked = vec4(0);
+
+	/*
+	unpacked.w = float(rgba.w);
+	unpacked.z = float(rgba.z);
+	unpacked.y = float(rgba.y);
+	unpacked.x = float(rgba.x);
+
+	unpacked.x = unpacked.x / 255;
+	unpacked.y = unpacked.y / 255;
+	unpacked.z = unpacked.z / 255;
+	unpacked.w = unpacked.w / 255;
+	*/
+
+	return unpacked;
+}
+
 layout(binding = 0) uniform sampler2D textures[textureCount];
 
 layout (location = 0) in vec4 normal;
@@ -309,6 +328,78 @@ layout (location = 3) in vec2 texcoord2;
 layout (location = 4) in vec4 pos;
 
 layout (location = 0) out vec4 uFragColor;
+
+vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
+{
+	switch(argument)
+	{
+		case D3DTA_CONSTANT:
+			return Convert(constant);
+		break;
+		case D3DTA_CURRENT:
+			return result;
+		break;
+		case D3DTA_DIFFUSE:
+			return color;
+		break;
+		case D3DTA_SELECTMASK:
+			return vec4(0);
+		break;
+		case D3DTA_SPECULAR:
+			return vec4(0);
+		break;
+		case D3DTA_TEMP:
+			return temp;
+		break;
+		case D3DTA_TEXTURE:
+			return vec4(0);
+		break;
+		case D3DTA_TFACTOR:
+			return vec4(0);
+		break;
+		default:
+			return vec4(0);
+		break;
+	}
+}
+
+void processStage(sampler2D texture,vec2 texcoord, int constant, int resultArgument,
+vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
+int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
+int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
+{
+	vec4 temp = tempIn;
+	vec4 result = resultIn;
+	vec4 tempResult = vec4(0); //This is the result regardless if selected target.
+
+	vec4 colorArg1 = getStageArgument(colorArgument1,tempIn,constant,resultIn);
+	vec4 colorArg2 = getStageArgument(colorArgument2,tempIn,constant,resultIn);
+	vec4 colorArg0 = getStageArgument(colorArgument0,tempIn,constant,resultIn);
+
+	vec4 alphaArg1 = getStageArgument(alphaArgument1,tempIn,constant,resultIn);
+	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn);
+	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn);
+
+
+	//TODO
+
+
+	switch(resultArgument)
+	{
+		case D3DTA_CURRENT:
+			result = tempResult;
+		break;
+		case D3DTA_TEMP:
+			temp = tempResult;
+		break;
+		default:
+			//Nothing
+		break;
+	}
+
+	resultOut = result;
+	tempOut = temp;
+}
 
 void main() 
 {

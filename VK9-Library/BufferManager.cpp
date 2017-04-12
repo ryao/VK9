@@ -804,15 +804,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->mSpecializationConstants.colorArgument2_7 == context->mSpecializationConstants.colorArgument2_7
 
 			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
-
-			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_0 == context->mSpecializationConstants.alphaOperation_0
 			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_1 == context->mSpecializationConstants.alphaOperation_1
 			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_2 == context->mSpecializationConstants.alphaOperation_2
 			&& mDrawBuffer[i]->mSpecializationConstants.alphaOperation_3 == context->mSpecializationConstants.alphaOperation_3
@@ -937,7 +928,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->mSpecializationConstants.Result_5 == context->mSpecializationConstants.Result_5
 			&& mDrawBuffer[i]->mSpecializationConstants.Result_6 == context->mSpecializationConstants.Result_6
 			&& mDrawBuffer[i]->mSpecializationConstants.Result_7 == context->mSpecializationConstants.Result_7
-
 			) //&& mDrawBuffer[i]->TextureCount == context->TextureCount  texture count should be part of vertex declaration or FVF.
 		{
 			BOOL isMatch = true;
