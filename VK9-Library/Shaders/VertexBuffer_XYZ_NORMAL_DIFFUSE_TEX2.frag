@@ -363,6 +363,75 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 	}
 }
 
+vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argument0)
+{
+	vec4 result;
+
+	switch(operation)
+	{
+		case D3DTOP_DISABLE:
+		break;
+		case D3DTOP_SELECTARG1:
+			result = argument1;
+		break;
+		case D3DTOP_SELECTARG2:
+			result = argument2;
+		break;
+		case D3DTOP_MODULATE:
+			result = argument1 * argument2;
+		break;
+		case D3DTOP_MODULATE2X:
+		break;
+		case D3DTOP_MODULATE4X:
+		break;
+		case D3DTOP_ADD:
+		break;
+		case D3DTOP_ADDSIGNED:
+		break;
+		case D3DTOP_ADDSIGNED2X:
+		break;
+		case D3DTOP_SUBTRACT:
+		break;
+		case D3DTOP_ADDSMOOTH:
+		break;
+		case D3DTOP_BLENDDIFFUSEALPHA:
+		break;
+		case D3DTOP_BLENDTEXTUREALPHA:
+		break;
+		case D3DTOP_BLENDFACTORALPHA:
+		break;
+		case D3DTOP_BLENDTEXTUREALPHAPM:
+		break;
+		case D3DTOP_BLENDCURRENTALPHA:
+		break;
+		case D3DTOP_PREMODULATE:
+		break;
+		case D3DTOP_MODULATEALPHA_ADDCOLOR:
+		break;
+		case D3DTOP_MODULATECOLOR_ADDALPHA:
+		break;
+		case D3DTOP_MODULATEINVALPHA_ADDCOLOR:
+		break;
+		case D3DTOP_MODULATEINVCOLOR_ADDALPHA:
+		break;
+		case D3DTOP_BUMPENVMAP:
+		break;
+		case D3DTOP_BUMPENVMAPLUMINANCE:
+		break;
+		case D3DTOP_DOTPRODUCT3:
+		break;
+		case D3DTOP_MULTIPLYADD:
+		break;
+		case D3DTOP_LERP:
+		break;
+		default:
+			//Nothing
+		break;
+	}
+
+	return result;
+}
+
 void processStage(sampler2D texture,vec2 texcoord, int constant, int resultArgument,
 vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
 int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
@@ -380,9 +449,8 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn);
 
-
-	//TODO
-
+	tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0).rbg;
+	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0).a;
 
 	switch(resultArgument)
 	{
@@ -403,7 +471,21 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 
 void main() 
 {
-	uFragColor = texture(textures[0], texcoord1.xy) * texture(textures[1], texcoord2.xy) * color;
+	vec4 temp;
+	vec4 result;
+
+	processStage(textures[0],texcoord1, Constant_0, Result_0,
+	result, temp, result, temp,
+	colorOperation_0, colorArgument1_0, colorArgument2_0, colorArgument0_0,
+	alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
+
+	processStage(textures[0],texcoord1, Constant_1, Result_1,
+	result, temp, result, temp,
+	colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
+	alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
+
+
+	//uFragColor = texture(textures[0], texcoord1.xy) * texture(textures[1], texcoord2.xy) * color;
 
 	if(isLightingEnabled)
 	{

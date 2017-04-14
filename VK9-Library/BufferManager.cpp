@@ -743,7 +743,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Check for existing pipeline. Create one if there isn't a matching one.
 	**********************************************/
-
+	 
 	for (size_t i = 0; i < mDrawBuffer.size(); i++)
 	{
 		if (mDrawBuffer[i]->PrimitiveType == context->PrimitiveType
