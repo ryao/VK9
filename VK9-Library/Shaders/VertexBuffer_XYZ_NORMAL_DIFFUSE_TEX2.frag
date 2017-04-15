@@ -363,7 +363,8 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 	}
 }
 
-vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argument0)
+//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172616(v=vs.85).aspx
+vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argument0, float alpha, float factorAlpha)
 {
 	vec4 result;
 
@@ -381,48 +382,73 @@ vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argumen
 			result = argument1 * argument2;
 		break;
 		case D3DTOP_MODULATE2X:
+			result = (argument1 * argument2) * 2;
 		break;
 		case D3DTOP_MODULATE4X:
+			result = (argument1 * argument2) * 4;
 		break;
 		case D3DTOP_ADD:
+			result = argument1 + argument2;
 		break;
 		case D3DTOP_ADDSIGNED:
+			result = argument1 + argument2 - 0.5;
 		break;
 		case D3DTOP_ADDSIGNED2X:
+			result = (argument1 + argument2 - 0.5) * 2;
 		break;
 		case D3DTOP_SUBTRACT:
+			result = argument1 - argument2;
 		break;
 		case D3DTOP_ADDSMOOTH:
+			result = argument1 + argument2 - argument1 * argument2;
 		break;
 		case D3DTOP_BLENDDIFFUSEALPHA:
+			result = argument1 * (alpha) + argument2 * (1 - alpha);
 		break;
 		case D3DTOP_BLENDTEXTUREALPHA:
-		break;
+			result = argument1 * (alpha) + argument2 * (1 - alpha);
+		break;  
 		case D3DTOP_BLENDFACTORALPHA:
+			result = argument1 * (factorAlpha) + argument2 * (1 - factorAlpha);
 		break;
 		case D3DTOP_BLENDTEXTUREALPHAPM:
+			result = argument1 + argument2 * (1 - alpha);
 		break;
 		case D3DTOP_BLENDCURRENTALPHA:
+			result = argument1 * (alpha) + argument2 * (1 - alpha);
 		break;
 		case D3DTOP_PREMODULATE:
+			result = argument1; //TODO figure out n+1 logic.
 		break;
 		case D3DTOP_MODULATEALPHA_ADDCOLOR:
+			result.rgb = argument1.rgb + argument1.a * argument2.rgb;
 		break;
 		case D3DTOP_MODULATECOLOR_ADDALPHA:
+			result.rgb = argument1.rgb * argument2.rgb + argument1.a;
 		break;
 		case D3DTOP_MODULATEINVALPHA_ADDCOLOR:
+			result.rgb = (1 - argument1.a) * argument2.rgb + argument1.rgb;
 		break;
 		case D3DTOP_MODULATEINVCOLOR_ADDALPHA:
+			result.rgb = (1 - argument1.rgb) * argument2.rgb + argument1.a;
 		break;
 		case D3DTOP_BUMPENVMAP:
+			//TODO: figure out per-pixel bump mapping.
 		break;
 		case D3DTOP_BUMPENVMAPLUMINANCE:
+			//TODO: figure out per-pixel bump mapping.
 		break;
 		case D3DTOP_DOTPRODUCT3:
+			result.a = (argument1.r * argument2.r) + (argument1.g * argument2.g) + (argument1.b * argument2.b);
+			result.r = result.a;
+			result.g = result.a;
+			result.b = result.a;
 		break;
 		case D3DTOP_MULTIPLYADD:
+			result = argument0 + argument1 * argument2;
 		break;
 		case D3DTOP_LERP:
+			result = (argument0) * argument1 + (1 - argument0) * argument2;
 		break;
 		default:
 			//Nothing
@@ -449,8 +475,9 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn);
 
-	tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0).rbg;
-	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0).a;
+	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+	//TODO: review alpha factor logic.
+	tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rbg;	
 
 	switch(resultArgument)
 	{
@@ -484,6 +511,7 @@ void main()
 	colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
 	alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
 
+	uFragColor = result;
 
 	//uFragColor = texture(textures[0], texcoord1.xy) * texture(textures[1], texcoord2.xy) * color;
 
