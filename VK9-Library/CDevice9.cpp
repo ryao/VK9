@@ -1412,6 +1412,12 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
 	mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
+	D3DLIGHT9 light = {};
+	mDeviceState.mLights.push_back(light);
+	//mDeviceState.mLights.push_back(light);
+	//mDeviceState.mLights.push_back(light);
+	//mDeviceState.mLights.push_back(light);
+
 	mBufferManager = new BufferManager(this);
 
 	mGarbageManager.mDevice = mDevice;
@@ -1422,6 +1428,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mSwapchainExtent.width, mSwapchainExtent.height, ConvertFormat(mFormat));
 	mRenderTargets.push_back(ptr2);
+
+	#ifdef _DEBUG
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DLIGHT9): " << sizeof(D3DLIGHT9);
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DMATERIAL9): " << sizeof(D3DMATERIAL9);
+	#endif	
 
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
 }

@@ -272,14 +272,14 @@ struct Material
 	float  Power;          /* Sharpness if specular highlight */
 };
 
-layout(binding = 1) uniform MaterialBlock
-{
-	Material material;
-};
-
-layout(binding = 2) uniform LightBlock
+layout(binding = 1) uniform LightBlock
 {
 	Light lights[lightCount];
+};
+
+layout(binding = 2) uniform MaterialBlock
+{
+	Material material;
 };
 
 vec4 getGouradLight( int lightIndex, vec4 position1, vec4 norm )

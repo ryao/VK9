@@ -595,7 +595,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 {
 	VkResult result = VK_SUCCESS;
 	boost::container::flat_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
-
+ 
 	/**********************************************
 	* Update the textures that are currently mapped.
 	**********************************************/
@@ -1329,7 +1329,6 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 			}
 
 			//D3DFVF_PSIZE
-
 			if ((context->FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 			{
 				mVertexInputAttributeDescription[attributeIndex].binding = i;
@@ -1491,7 +1490,7 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	{
 		mDescriptorBufferInfo[0].buffer = mLightBuffer;
 		mDescriptorBufferInfo[0].offset = 0;
-		mDescriptorBufferInfo[0].range = sizeof(D3DLIGHT9) * mDevice->mDeviceState.mLights.size();
+		mDescriptorBufferInfo[0].range = sizeof(D3DLIGHT9) * mDevice->mDeviceState.mLights.size(); //4; 
 
 		mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
 		mDescriptorBufferInfo[1].offset = 0;
@@ -1563,7 +1562,7 @@ void BufferManager::UpdateUniformBuffer(std::shared_ptr<DrawContext> context)
 
 	if (mDevice->mDeviceState.mAreLightsDirty)
 	{
-		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(D3DLIGHT9)*context->mSpecializationConstants.lightCount, mDevice->mDeviceState.mLights.data());
+		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(D3DLIGHT9)*4, mDevice->mDeviceState.mLights.data()); //context->mSpecializationConstants.lightCount
 		mDevice->mDeviceState.mAreLightsDirty = false;
 	}
 

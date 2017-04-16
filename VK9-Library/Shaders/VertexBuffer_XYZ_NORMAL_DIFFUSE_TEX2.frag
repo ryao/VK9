@@ -272,14 +272,14 @@ struct Material
 	float  Power;          /* Sharpness if specular highlight */
 };
 
-layout(binding = 1) uniform MaterialBlock
-{
-	Material material;
-};
-
-layout(binding = 2) uniform LightBlock
+layout(binding = 1) uniform LightBlock
 {
 	Light lights[lightCount];
+};
+
+layout(binding = 2) uniform MaterialBlock
+{
+	Material material;
 };
 
 void getPhongLight( int lightIndex, vec3 position1, vec4 norm, out vec4 ambient, out vec4 diffuse, out vec4 spec )
@@ -366,7 +366,7 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 //https://msdn.microsoft.com/en-us/library/windows/desktop/bb172616(v=vs.85).aspx
 vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argument0, float alpha, float factorAlpha)
 {
-	vec4 result;
+	vec4 result = vec4(1.0,1.0,1.0,1.0);
 
 	switch(operation)
 	{
