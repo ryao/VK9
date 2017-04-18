@@ -322,14 +322,15 @@ vec4 Convert(int rgba)
 layout(binding = 0) uniform sampler2D textures[textureCount];
 
 layout (location = 0) in vec4 normal;
-layout (location = 1) in vec4 color;
-layout (location = 2) in vec2 texcoord1;
-layout (location = 3) in vec2 texcoord2;
-layout (location = 4) in vec4 pos;
+layout (location = 1) in vec4 frontColor;
+layout (location = 2) in vec4 backColor;
+layout (location = 3) in vec2 texcoord1;
+layout (location = 4) in vec2 texcoord2;
+layout (location = 5) in vec4 pos;
 
 layout (location = 0) out vec4 uFragColor;
 
-vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
+vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D tex,vec2 texcoord)
 {
 	switch(argument)
 	{
@@ -340,7 +341,14 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 			return result;
 		break;
 		case D3DTA_DIFFUSE:
-			return color;
+			if ( gl_FrontFacing )
+			{
+				return frontColor;
+			}
+			else 
+			{
+				return backColor;
+			}
 		break;
 		case D3DTA_SELECTMASK:
 			return vec4(0);
@@ -352,7 +360,7 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 			return temp;
 		break;
 		case D3DTA_TEXTURE:
-			return vec4(0);
+			return texture(tex, texcoord.xy);
 		break;
 		case D3DTA_TFACTOR:
 			return vec4(0);
@@ -458,22 +466,22 @@ vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argumen
 	return result;
 }
 
-void processStage(sampler2D texture,vec2 texcoord, int constant, int resultArgument,
+void processStage(sampler2D tex,vec2 texcoord, int constant, int resultArgument,
 vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
 int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
 int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 {
 	vec4 temp = tempIn;
 	vec4 result = resultIn;
-	vec4 tempResult = vec4(0); //This is the result regardless if selected target.
+	vec4 tempResult = vec4(1); //This is the result regardless if selected target.
 
-	vec4 colorArg1 = getStageArgument(colorArgument1,tempIn,constant,resultIn);
-	vec4 colorArg2 = getStageArgument(colorArgument2,tempIn,constant,resultIn);
-	vec4 colorArg0 = getStageArgument(colorArgument0,tempIn,constant,resultIn);
+	vec4 colorArg1 = getStageArgument(colorArgument1,tempIn,constant,resultIn, tex, texcoord);
+	vec4 colorArg2 = getStageArgument(colorArgument2,tempIn,constant,resultIn, tex, texcoord);
+	vec4 colorArg0 = getStageArgument(colorArgument0,tempIn,constant,resultIn, tex, texcoord);
 
-	vec4 alphaArg1 = getStageArgument(alphaArgument1,tempIn,constant,resultIn);
-	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn);
-	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn);
+	vec4 alphaArg1 = getStageArgument(alphaArgument1,tempIn,constant,resultIn, tex, texcoord);
+	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn, tex, texcoord);
+	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn, tex, texcoord);
 
 	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
 	//TODO: review alpha factor logic.
@@ -501,15 +509,21 @@ void main()
 	vec4 temp;
 	vec4 result;
 
-	processStage(textures[0],texcoord1, Constant_0, Result_0,
-	result, temp, result, temp,
-	colorOperation_0, colorArgument1_0, colorArgument2_0, colorArgument0_0,
-	alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
+	if(textureCount>0)
+	{
+		processStage(textures[0],texcoord1, Constant_0, Result_0,
+		result, temp, result, temp,
+		colorOperation_0, colorArgument1_0, colorArgument2_0, colorArgument0_0,
+		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
+	}
 
-	processStage(textures[0],texcoord1, Constant_1, Result_1,
-	result, temp, result, temp,
-	colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
-	alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
+	if(textureCount>1)
+	{
+		processStage(textures[1],texcoord2, Constant_1, Result_1,
+		result, temp, result, temp,
+		colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
+		alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
+	}
 
 	uFragColor = result;
 

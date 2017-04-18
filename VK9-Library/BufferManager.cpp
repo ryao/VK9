@@ -1481,7 +1481,7 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	}
 
 	mUsedResourceBuffer.push_back(resourceContext);
-
+  
 	mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
 	mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size();
 	mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;

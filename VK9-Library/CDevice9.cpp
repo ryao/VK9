@@ -1412,7 +1412,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
 	mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
-	D3DLIGHT9 light = {};
+	D3DLIGHT9 light = {}; 
 	mDeviceState.mLights.push_back(light);
 	//mDeviceState.mLights.push_back(light);
 	//mDeviceState.mLights.push_back(light);
@@ -3491,17 +3491,29 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber, UINT 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTexture9 *pTexture)
 {
 	auto texture = (CTexture9*)pTexture; //Check for compiler bugs.
+	DeviceState* state = NULL;
 
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		this->mCurrentStateRecording->mDeviceState.mTextures[Sampler] = texture;
+		state = &this->mCurrentStateRecording->mDeviceState;
 	}
 	else
 	{
-		mDeviceState.mTextures[Sampler] = texture;
+		state = &mDeviceState;
 	}
 
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetTexture handle: " << pTexture << " sampler: " << Sampler;
+	if (pTexture == nullptr)
+	{
+		auto it = state->mTextures.find(Sampler);
+		if (it != state->mTextures.end())
+		{
+			state->mTextures.erase(it);
+		}
+	}
+	else
+	{
+		state->mTextures[Sampler] = texture;
+	}
 
 	return S_OK;
 }

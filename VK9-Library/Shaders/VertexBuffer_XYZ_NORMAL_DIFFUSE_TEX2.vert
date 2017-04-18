@@ -314,10 +314,11 @@ layout (location = 3) in vec2 attr3; //tex1
 layout (location = 4) in vec2 attr4; //tex2
 
 layout (location = 0) out vec4 normal;
-layout (location = 1) out vec4 color;
-layout (location = 2) out vec2 texcoord1;
-layout (location = 3) out vec2 texcoord2;
-layout (location = 4) out vec4 pos;
+layout (location = 1) out vec4 frontColor;
+layout (location = 2) out vec4 backColor;
+layout (location = 3) out vec2 texcoord1;
+layout (location = 4) out vec2 texcoord2;
+layout (location = 5) out vec4 pos;
 
 out gl_PerVertex 
 {
@@ -343,14 +344,15 @@ vec4 Convert(uvec4 rgba)
 
 void main() 
 {
-	vec4 lightColor = vec4(1.0,1.0,1.0,1);
+	vec4 frontLightColor = vec4(0);
+	vec4 backLightColor = vec4(0);
 
 	pos = ubo.totalTransformation * position * vec4(1.0,-1.0,1.0,1.0);
 
 	gl_Position = pos;
-
+	frontColor = Convert(attr2);
+	backColor = frontColor;
 	normal = attr1;
-	color = Convert(attr2);
 	texcoord1 = attr3;
 	texcoord2 = attr4;
 
@@ -360,9 +362,13 @@ void main()
 		{
 			for( int i=0; i<lightCount; ++i )
 			{
-				lightColor += getGouradLight( i, pos, normal);
+				frontLightColor += getGouradLight( i, pos, normal);
+				backLightColor += getGouradLight( i, pos, -normal);
 			}
+			frontColor *= frontLightColor;
+			backColor *= backLightColor;
 		}
-		color *= lightColor;
+		frontColor.a = 1;
+		backColor.a = 1;
 	}
 }
