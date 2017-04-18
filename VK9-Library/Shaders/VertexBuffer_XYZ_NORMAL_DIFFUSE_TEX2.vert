@@ -282,9 +282,14 @@ layout(binding = 2) uniform MaterialBlock
 	Material material;
 };
 
+layout(push_constant) uniform UniformBufferObject {
+    mat4 totalTransformation;
+} ubo;
+
 vec4 getGouradLight( int lightIndex, vec4 position1, vec4 norm )
 {
-	vec3 lightPosition = lights[lightIndex].Position * vec3(1.0,-1.0,1.0);
+	vec4 temp = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0) * vec4(1.0,-1.0,1.0,1.0);
+	vec3 lightPosition = temp.xyz;
 
 	vec3 s = normalize( vec3( lightPosition.xyz - position1.xyz ) );
 	vec3 v = normalize( -position1.xyz );
@@ -301,11 +306,6 @@ vec4 getGouradLight( int lightIndex, vec4 position1, vec4 norm )
  
 	return ambient + diffuse + spec;
 }
-
-
-layout(push_constant) uniform UniformBufferObject {
-    mat4 totalTransformation;
-} ubo;
 
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec4 attr1; //normal

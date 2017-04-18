@@ -282,9 +282,14 @@ layout(binding = 2) uniform MaterialBlock
 	Material material;
 };
 
+layout(push_constant) uniform UniformBufferObject {
+    mat4 totalTransformation;
+} ubo;
+
 void getPhongLight( int lightIndex, vec3 position1, vec4 norm, out vec4 ambient, out vec4 diffuse, out vec4 spec )
 {
-	vec3 lightPosition = lights[lightIndex].Position * vec3(1.0,-1.0,1.0);
+	vec4 temp = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0) * vec4(1.0,-1.0,1.0,1.0);
+	vec3 lightPosition = temp.xyz;
 
 	vec3 n = normalize( norm.xyz );
 	vec3 s = normalize( lightPosition - position1 );

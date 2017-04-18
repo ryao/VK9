@@ -3513,6 +3513,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTextu
 	else
 	{
 		state->mTextures[Sampler] = texture;
+		//texture->AddRef();
 	}
 
 	return S_OK;

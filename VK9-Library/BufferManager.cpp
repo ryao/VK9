@@ -200,7 +200,6 @@ BufferManager::BufferManager(CDevice9* device)
 	/*
 	Setup the texture to be written into the descriptor set.
 	*/
-
 	const VkFormat textureFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	VkFormatProperties formatProperties;
 	const uint32_t textureColors[2] = { 0xffff0000, 0xff00ff00 };
@@ -708,6 +707,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	{
 		mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled = false;
 	}
+	context->mSpecializationConstants.isLightingEnabled = mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled;
 
 	context->mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size();
 	mDevice->mDeviceState.mSpecializationConstants.lightCount = context->mSpecializationConstants.lightCount;
@@ -757,6 +757,8 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->mSpecializationConstants.isLightingEnabled == context->mSpecializationConstants.isLightingEnabled
 			&& mDrawBuffer[i]->ShadeMode == context->ShadeMode
 			&& mDrawBuffer[i]->mSpecializationConstants.lightCount == context->mSpecializationConstants.lightCount
+
+			&& mDrawBuffer[i]->mSpecializationConstants.textureCount == context->mSpecializationConstants.textureCount
 
 			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_0 == context->mSpecializationConstants.texureCoordinateIndex_0
 			&& mDrawBuffer[i]->mSpecializationConstants.texureCoordinateIndex_1 == context->mSpecializationConstants.texureCoordinateIndex_1
@@ -928,7 +930,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& mDrawBuffer[i]->mSpecializationConstants.Result_5 == context->mSpecializationConstants.Result_5
 			&& mDrawBuffer[i]->mSpecializationConstants.Result_6 == context->mSpecializationConstants.Result_6
 			&& mDrawBuffer[i]->mSpecializationConstants.Result_7 == context->mSpecializationConstants.Result_7
-			) //&& mDrawBuffer[i]->TextureCount == context->TextureCount  texture count should be part of vertex declaration or FVF.
+			)
 		{
 			BOOL isMatch = true;
 			BOOST_FOREACH(const auto& pair, context->Bindings)
