@@ -3425,8 +3425,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTA
 		mDeviceState.mSamplerStates[Sampler][Type] = Value;
 	}
 
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::SetSamplerState Sampler:" << Sampler << " Type:" << Type << " Value:" << Value;
-
 	return S_OK;
 }
 

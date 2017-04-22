@@ -286,23 +286,20 @@ layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
 } ubo;
 
-vec4 getGouradLight( int lightIndex, vec4 position1, vec4 norm )
+vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
 {
-	vec4 temp = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0) * vec4(1.0,-1.0,1.0,1.0);
-	vec3 lightPosition = temp.xyz;
-
-	vec3 s = normalize( vec3( lightPosition.xyz - position1.xyz ) );
+	vec3 s = normalize( vec3( lights[lightIndex].Position - position1 ) );
 	vec3 v = normalize( -position1.xyz );
-	vec3 r = reflect( -s, norm.xyz );
+	vec3 r = reflect( -s, norm );
  
-	vec4 ambient = lights[lightIndex].Ambient * material.Ambient;
+	vec3 ambient = lights[lightIndex].Ambient.xyz * material.Ambient.xyz;
  
-	float sDotN = max( dot( s, norm.xyz ), 0.0 );
-	vec4 diffuse = lights[lightIndex].Diffuse * material.Diffuse * sDotN;
+	float sDotN = max( dot( s, norm ), 0.0 );
+	vec3 diffuse = lights[lightIndex].Diffuse.xyz * material.Diffuse.xyz * sDotN;
  
-	vec4 spec = vec4( 0.0 );
+	vec3 spec = vec3( 0.0 );
 	if ( sDotN > 0.0 )
-		spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power );
+		spec = lights[lightIndex].Specular.xyz * material.Specular.xyz * pow( max( dot(r,v) , 0.0 ), material.Power );
  
 	return ambient + diffuse + spec;
 }
@@ -344,8 +341,8 @@ vec4 Convert(uvec4 rgba)
 
 void main() 
 {
-	vec4 frontLightColor = vec4(0);
-	vec4 backLightColor = vec4(0);
+	vec3 frontLightColor = vec3(0);
+	vec3 backLightColor = vec3(0);
 
 	pos = ubo.totalTransformation * position * vec4(1.0,-1.0,1.0,1.0);
 
@@ -362,13 +359,15 @@ void main()
 		{
 			for( int i=0; i<lightCount; ++i )
 			{
-				frontLightColor += getGouradLight( i, pos, normal);
-				backLightColor += getGouradLight( i, pos, -normal);
+				frontLightColor += getGouradLight( i, position.xyz, normal.xyz);
+				backLightColor += getGouradLight( i, position.xyz, -normal.xyz);
 			}
-			frontColor *= frontLightColor;
-			backColor *= backLightColor;
 		}
-		frontColor.a = 1;
-		backColor.a = 1;
+
+		frontColor *= vec4(frontLightColor,1);
+		backColor *= vec4(backLightColor,1);
 	}
+
+
+
 }

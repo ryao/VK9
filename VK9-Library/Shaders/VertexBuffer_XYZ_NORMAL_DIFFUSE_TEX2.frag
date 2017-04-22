@@ -335,6 +335,22 @@ layout (location = 5) in vec4 pos;
 
 layout (location = 0) out vec4 uFragColor;
 
+vec2 getTextureCoord(int index)
+{
+	switch(index)
+	{
+		case 1:
+			return texcoord1;
+		break;
+		case 2:
+			return texcoord2;
+		break;
+		default:
+			return vec2(0,0);
+		break;
+	}
+}
+
 vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D tex,vec2 texcoord)
 {
 	switch(argument)
@@ -452,7 +468,9 @@ vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argumen
 			//TODO: figure out per-pixel bump mapping.
 		break;
 		case D3DTOP_DOTPRODUCT3:
-			result.a = (argument1.r * argument2.r) + (argument1.g * argument2.g) + (argument1.b * argument2.b);
+			//result.a = (argument1.r * argument2.r) + (argument1.g * argument2.g) + (argument1.b * argument2.b);
+
+			result.a = 4*((argument1.r - 0.5)*(argument2.r - 0.5) + (argument1.g - 0.5)*(argument2.g - 0.5) + (argument1.b - 0.5)*(argument2.b - 0.5));
 			result.r = result.a;
 			result.g = result.a;
 			result.b = result.a;
@@ -471,7 +489,7 @@ vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argumen
 	return result;
 }
 
-void processStage(sampler2D tex,vec2 texcoord, int constant, int resultArgument,
+void processStage(sampler2D tex,int textureIndex, int constant, int resultArgument,
 vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
 int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
 int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
@@ -479,6 +497,7 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	vec4 temp = tempIn;
 	vec4 result = resultIn;
 	vec4 tempResult = vec4(1); //This is the result regardless if selected target.
+	vec2 texcoord = getTextureCoord(textureIndex);
 
 	vec4 colorArg1 = getStageArgument(colorArgument1,tempIn,constant,resultIn, tex, texcoord);
 	vec4 colorArg2 = getStageArgument(colorArgument2,tempIn,constant,resultIn, tex, texcoord);
@@ -501,7 +520,7 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 			temp = tempResult;
 		break;
 		default:
-			//Nothing
+			result = tempResult;
 		break;
 	}
 
@@ -514,9 +533,19 @@ void main()
 	vec4 temp;
 	vec4 result;
 
+	//On stage 0 CURRENT is the same as DIFFUSE
+	if ( gl_FrontFacing )
+	{
+		result =  frontColor;
+	}
+	else 
+	{
+		result =  backColor;
+	}
+
 	if(textureCount>0)
 	{
-		processStage(textures[0],texcoord1, Constant_0, Result_0,
+		processStage(textures[0],texureCoordinateIndex_0, Constant_0, Result_0,
 		result, temp, result, temp,
 		colorOperation_0, colorArgument1_0, colorArgument2_0, colorArgument0_0,
 		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
@@ -524,15 +553,13 @@ void main()
 
 	if(textureCount>1)
 	{
-		processStage(textures[1],texcoord2, Constant_1, Result_1,
+		processStage(textures[1],texureCoordinateIndex_1, Constant_1, Result_1,
 		result, temp, result, temp,
 		colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
 		alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
 	}
 
 	uFragColor = result;
-
-	//uFragColor = texture(textures[0], texcoord1.xy) * texture(textures[1], texcoord2.xy) * color;
 
 	if(isLightingEnabled)
 	{
