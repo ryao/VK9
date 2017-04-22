@@ -84,7 +84,7 @@ misrepresented as being the original software.
 layout(constant_id = 0) const int lightCount = 1;
 layout(constant_id = 1) const int shadeMode = D3DSHADE_GOURAUD;
 layout(constant_id = 2) const bool isLightingEnabled = true;
-layout(constant_id = 3) const int textureCount = 1;
+layout(constant_id = 3) const int textureCount = 2;
 
 //Texture Stage _0
 layout(constant_id = 4) const int Constant_0 = 0;
@@ -362,12 +362,12 @@ void main()
 				frontLightColor += getGouradLight( i, position.xyz, normal.xyz);
 				backLightColor += getGouradLight( i, position.xyz, -normal.xyz);
 			}
+			frontColor *= vec4(frontLightColor,1);
+			backColor *= vec4(backLightColor,1);
 		}
 
-		frontColor *= vec4(frontLightColor,1);
-		backColor *= vec4(backLightColor,1);
+		//frontColor.a = 1;
+		//backColor.a = 1;
 	}
-
-
 
 }

@@ -81,7 +81,7 @@ misrepresented as being the original software.
 #define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR          0x00030000
 #define D3DTSS_TCI_SPHEREMAP                            0x00040000
 
-layout(constant_id = 0) const int lightCount = 2;
+layout(constant_id = 0) const int lightCount = 1;
 layout(constant_id = 1) const int shadeMode = D3DSHADE_GOURAUD;
 layout(constant_id = 2) const bool isLightingEnabled = true;
 layout(constant_id = 3) const int textureCount = 2;
@@ -339,10 +339,10 @@ vec2 getTextureCoord(int index)
 {
 	switch(index)
 	{
-		case 1:
+		case 0:
 			return texcoord1;
 		break;
-		case 2:
+		case 1:
 			return texcoord2;
 		break;
 		default:
