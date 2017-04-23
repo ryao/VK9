@@ -756,7 +756,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& drawBuffer.StreamCount == context->StreamCount
 			&& drawBuffer.FillMode == context->FillMode
 			&& drawBuffer.CullMode == context->CullMode
-			&& drawBuffer.mSpecializationConstants.lighting == context->mSpecializationConstants.lighting
 			&& drawBuffer.ShadeMode == context->ShadeMode
 			&& drawBuffer.mSpecializationConstants.lightCount == context->mSpecializationConstants.lightCount
 			   

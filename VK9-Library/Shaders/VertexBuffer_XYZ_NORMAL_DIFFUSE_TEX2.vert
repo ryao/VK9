@@ -81,6 +81,96 @@ misrepresented as being the original software.
 #define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR          0x00030000
 #define D3DTSS_TCI_SPHEREMAP                            0x00040000
 
+#define D3DZB_FALSE 0
+#define D3DZB_TRUE 1 // Z buffering
+#define D3DZB_USEW 2 // W buffering
+
+#define D3DFILL_POINT 1
+#define D3DFILL_WIREFRAME 2
+#define D3DFILL_SOLID 3
+
+#define D3DBLEND_ZERO 1
+#define D3DBLEND_ONE 2
+#define D3DBLEND_SRCCOLOR 3
+#define D3DBLEND_INVSRCCOLOR 4
+#define D3DBLEND_SRCALPHA 5
+#define D3DBLEND_INVSRCALPHA 6
+#define D3DBLEND_DESTALPHA 7
+#define D3DBLEND_INVDESTALPHA 8
+#define D3DBLEND_DESTCOLOR 9
+#define D3DBLEND_INVDESTCOLOR 10
+#define D3DBLEND_SRCALPHASAT 11
+#define D3DBLEND_BOTHSRCALPHA 12
+#define D3DBLEND_BOTHINVSRCALPHA 13
+#define D3DBLEND_BLENDFACTOR 14
+#define D3DBLEND_INVBLENDFACTOR 15
+#define D3DBLEND_SRCCOLOR2 16
+#define D3DBLEND_INVSRCCOLOR2 17
+
+#define D3DCULL_NONE 1
+#define D3DCULL_CW 2
+#define D3DCULL_CCW 3
+
+#define D3DCMP_NEVER 1
+#define D3DCMP_LESS 2
+#define D3DCMP_EQUAL 3
+#define D3DCMP_LESSEQUAL 4
+#define D3DCMP_GREATER 5
+#define D3DCMP_NOTEQUAL 6
+#define D3DCMP_GREATEREQUAL 7
+#define D3DCMP_ALWAYS 8
+
+#define D3DCMP_NEVER 1
+#define D3DCMP_LESS 2
+#define D3DCMP_EQUAL 3
+#define D3DCMP_LESSEQUAL 4
+#define D3DCMP_GREATER 5
+#define D3DCMP_NOTEQUAL 6
+#define D3DCMP_GREATEREQUAL 7
+#define D3DCMP_ALWAYS 8
+
+#define D3DFOG_NONE 0
+#define D3DFOG_EXP 1
+#define D3DFOG_EXP2 2
+#define D3DFOG_LINEAR 3
+
+#define D3DSTENCILOP_KEEP 1
+#define D3DSTENCILOP_ZERO 2
+#define D3DSTENCILOP_REPLACE 3
+#define D3DSTENCILOP_INCRSAT 4
+#define D3DSTENCILOP_DECRSAT 5
+#define D3DSTENCILOP_INVERT 6
+#define D3DSTENCILOP_INCR 7
+#define D3DSTENCILOP_DECR 8
+
+#define D3DMCS_MATERIAL 0
+#define D3DMCS_COLOR1 1
+#define D3DMCS_COLOR2 2
+
+#define D3DVBF_DISABLE 0
+#define D3DVBF_1WEIGHTS 1
+#define D3DVBF_2WEIGHTS 2
+#define D3DVBF_3WEIGHTS 3
+#define D3DVBF_TWEENING 255
+#define D3DVBF_0WEIGHTS 256
+
+#define D3DPATCHEDGE_DISCRETE 0
+#define D3DPATCHEDGE_CONTINUOUS 1
+
+#define D3DDMT_ENABLE 0
+#define D3DDMT_DISABLE 1
+
+#define D3DBLENDOP_ADD 1
+#define D3DBLENDOP_SUBTRACT 2
+#define D3DBLENDOP_REVSUBTRACT 3
+#define D3DBLENDOP_MIN 4
+#define D3DBLENDOP_MAX 5
+
+#define D3DDEGREE_LINEAR 1
+#define D3DDEGREE_QUADRATIC 2
+#define D3DDEGREE_CUBIC 3
+#define D3DDEGREE_QUINTIC 5
+
 layout(constant_id = 0) const int lightCount = 1;
 layout(constant_id = 1) const int reserved1 = 0;
 layout(constant_id = 2) const int reserved2 = 0;
@@ -247,109 +337,109 @@ layout(constant_id = 146) const float bumpMapScale_7 = 0.0;
 layout(constant_id = 147) const float bumpMapOffset_7 = 0.0;
 
 //Render State
-layout(constant_id = 148) const int zEnable = 7;
-layout(constant_id = 149) const int fillMode = 8;
-layout(constant_id = 150) const int shadeMode = 9;
-layout(constant_id = 151) const int zWriteEnable = 14;
-layout(constant_id = 152) const int alphaTestEnable = 15;
-layout(constant_id = 153) const int lastPixel = 16;
-layout(constant_id = 154) const int sourceBlend = 19;
-layout(constant_id = 155) const int destinationBlend = 20;
-layout(constant_id = 156) const int cullMode = 22;
-layout(constant_id = 157) const int zFunction = 23;
-layout(constant_id = 158) const int alphaReference = 24;
-layout(constant_id = 159) const int alphaFunction = 25;
-layout(constant_id = 160) const int ditherEnable = 26;
-layout(constant_id = 161) const int alphaBlendEnable = 27;
-layout(constant_id = 162) const int fogEnable = 28;
-layout(constant_id = 163) const int specularEnable = 29;
-layout(constant_id = 164) const int fogColor = 34;
-layout(constant_id = 165) const int fogTableMode = 35;
-layout(constant_id = 166) const int fogStart = 36;
-layout(constant_id = 167) const int fogEnd = 37;
-layout(constant_id = 168) const int fogDensity = 38;
-layout(constant_id = 169) const int rangeFogEnable = 48;
-layout(constant_id = 170) const int stencilEnable = 52;
-layout(constant_id = 171) const int stencilFail = 53;
-layout(constant_id = 172) const int stencilZFail = 54;
-layout(constant_id = 173) const int stencilPass = 55;
-layout(constant_id = 174) const int stencilFunction = 56;
-layout(constant_id = 175) const int stencilReference = 57;
-layout(constant_id = 176) const int stencilMask = 58;
-layout(constant_id = 177) const int stencilWriteMask = 59;
-layout(constant_id = 178) const int textureFactor = 60;
-layout(constant_id = 179) const int wrap0 = 128;
-layout(constant_id = 180) const int wrap1 = 129;
-layout(constant_id = 181) const int wrap2 = 130;
-layout(constant_id = 182) const int wrap3 = 131;
-layout(constant_id = 183) const int wrap4 = 132;
-layout(constant_id = 184) const int wrap5 = 133;
-layout(constant_id = 185) const int wrap6 = 134;
-layout(constant_id = 186) const int wrap7 = 135;
-layout(constant_id = 187) const int clipping = 136;
+layout(constant_id = 148) const int zEnable = D3DZB_FALSE;
+layout(constant_id = 149) const int fillMode = D3DFILL_SOLID;
+layout(constant_id = 150) const int shadeMode = D3DSHADE_GOURAUD;
+layout(constant_id = 151) const bool zWriteEnable = true;
+layout(constant_id = 152) const bool alphaTestEnable = false;
+layout(constant_id = 153) const bool lastPixel = true;
+layout(constant_id = 154) const int sourceBlend = D3DBLEND_ONE;
+layout(constant_id = 155) const int destinationBlend = D3DBLEND_ZERO;
+layout(constant_id = 156) const int cullMode = D3DCULL_CCW;
+layout(constant_id = 157) const int zFunction = D3DCMP_LESSEQUAL;
+layout(constant_id = 158) const int alphaReference = 0;
+layout(constant_id = 159) const int alphaFunction = D3DCMP_ALWAYS;
+layout(constant_id = 160) const bool ditherEnable = false;
+layout(constant_id = 161) const bool alphaBlendEnable = false;
+layout(constant_id = 162) const bool fogEnable = false;
+layout(constant_id = 163) const bool specularEnable = false;
+layout(constant_id = 164) const int fogColor = 0;
+layout(constant_id = 165) const int fogTableMode = D3DFOG_NONE;
+layout(constant_id = 166) const float fogStart = 0.0f;
+layout(constant_id = 167) const float fogEnd = 1.0f;
+layout(constant_id = 168) const float fogDensity = 1.0f;
+layout(constant_id = 169) const bool rangeFogEnable = false;
+layout(constant_id = 170) const bool stencilEnable = false;
+layout(constant_id = 171) const int stencilFail = D3DSTENCILOP_KEEP;
+layout(constant_id = 172) const int stencilZFail = D3DSTENCILOP_KEEP;
+layout(constant_id = 173) const int stencilPass = D3DSTENCILOP_KEEP;
+layout(constant_id = 174) const int stencilFunction = D3DCMP_ALWAYS;
+layout(constant_id = 175) const int stencilReference = 0;
+layout(constant_id = 176) const int stencilMask = 0xFFFFFFFF;
+layout(constant_id = 177) const int stencilWriteMask = 0xFFFFFFFF;
+layout(constant_id = 178) const int textureFactor = 0xFFFFFFFF;
+layout(constant_id = 179) const int wrap0 = 0;
+layout(constant_id = 180) const int wrap1 = 0;
+layout(constant_id = 181) const int wrap2 = 0;
+layout(constant_id = 182) const int wrap3 = 0;
+layout(constant_id = 183) const int wrap4 = 0;
+layout(constant_id = 184) const int wrap5 = 0;
+layout(constant_id = 185) const int wrap6 = 0;
+layout(constant_id = 186) const int wrap7 = 0;
+layout(constant_id = 187) const bool clipping = true;
 layout(constant_id = 188) const bool lighting = true;
-layout(constant_id = 189) const int ambient = 139;
-layout(constant_id = 190) const int fogVertexMode = 140;
-layout(constant_id = 191) const int colorVertex = 141;
-layout(constant_id = 192) const int localViewer = 142;
-layout(constant_id = 193) const int normalizeNormals = 143;
-layout(constant_id = 194) const int diffuseMaterialSource = 145;
-layout(constant_id = 195) const int specularMaterialSource = 146;
-layout(constant_id = 196) const int ambientMaterialSource = 147;
-layout(constant_id = 197) const int emissiveMaterialSource = 148;
-layout(constant_id = 198) const int vertexBlend = 151;
-layout(constant_id = 199) const int clipPlaneEnable = 152;
-layout(constant_id = 200) const int pointSize = 154;
-layout(constant_id = 201) const int pointSizeMinimum = 155;
-layout(constant_id = 202) const int pointSpriteEnable = 156;
-layout(constant_id = 203) const int pointScaleEnable = 157;
-layout(constant_id = 204) const int pointScaleA = 158;
-layout(constant_id = 205) const int pointScaleB = 159;
-layout(constant_id = 206) const int pointScaleC = 160;
-layout(constant_id = 207) const int multisampleAntiAlias = 161;
-layout(constant_id = 208) const int multisampleMask = 162;
-layout(constant_id = 209) const int patchEdgeStyle = 163;
-layout(constant_id = 210) const int debugMonitorToken = 165;
-layout(constant_id = 211) const int pointSizeMaximum = 166;
-layout(constant_id = 212) const int indexedVertexBlendEnable = 167;
-layout(constant_id = 213) const int colorWriteEnable = 168;
-layout(constant_id = 214) const int tweenFactor = 170;
-layout(constant_id = 215) const int blendOperation = 171;
-layout(constant_id = 216) const int positionDegree = 172;
-layout(constant_id = 217) const int normalDegree = 173;
-layout(constant_id = 218) const int scissorTestEnable = 174;
-layout(constant_id = 219) const int slopeScaleDepthBias = 175;
-layout(constant_id = 220) const int antiAliasedLineEnable = 176;
-layout(constant_id = 221) const int minimumTessellationLevel = 178;
-layout(constant_id = 222) const int maximumTessellationLevel = 179;
-layout(constant_id = 223) const int adaptivetessX = 180;
-layout(constant_id = 224) const int adaptivetessY = 181;
-layout(constant_id = 225) const int adaptivetessZ = 182;
-layout(constant_id = 226) const int adaptivetessW = 183;
-layout(constant_id = 227) const int enableAdaptiveTessellation = 184;
-layout(constant_id = 228) const int twoSidedStencilMode = 185;
-layout(constant_id = 229) const int ccwStencilFail = 186;
-layout(constant_id = 230) const int ccwStencilZFail = 187;
-layout(constant_id = 231) const int ccwStencilPass = 188;
-layout(constant_id = 232) const int ccwStencilFunction = 189;
-layout(constant_id = 233) const int colorWriteEnable1 = 190;
-layout(constant_id = 234) const int colorWriteEnable2 = 191;
-layout(constant_id = 235) const int colorWriteEnable3 = 192;
-layout(constant_id = 236) const int blendFactor = 193;
-layout(constant_id = 237) const int srgbWriteEnable = 194;
-layout(constant_id = 238) const int depthBias = 195;
-layout(constant_id = 239) const int wrap8 = 198;
-layout(constant_id = 240) const int wrap9 = 199;
-layout(constant_id = 241) const int wrap10 = 200;
-layout(constant_id = 242) const int wrap11 = 201;
-layout(constant_id = 243) const int wrap12 = 202;
-layout(constant_id = 244) const int wrap13 = 203;
-layout(constant_id = 245) const int wrap14 = 204;
-layout(constant_id = 246) const int wrap15 = 205;
-layout(constant_id = 247) const int separateAlphaBlendEnable = 206;
-layout(constant_id = 248) const int sourceBlendAlpha = 207;
-layout(constant_id = 249) const int destinationBlendAlpha = 208;
-layout(constant_id = 250) const int blendOperationAlpha = 209;
+layout(constant_id = 189) const int ambient = 0;
+layout(constant_id = 190) const int fogVertexMode = D3DFOG_NONE;
+layout(constant_id = 191) const bool colorVertex = true;
+layout(constant_id = 192) const bool localViewer = true;
+layout(constant_id = 193) const bool normalizeNormals = false;
+layout(constant_id = 194) const int diffuseMaterialSource = D3DMCS_COLOR1;
+layout(constant_id = 195) const int specularMaterialSource = D3DMCS_COLOR2;
+layout(constant_id = 196) const int ambientMaterialSource = D3DMCS_MATERIAL;
+layout(constant_id = 197) const int emissiveMaterialSource = D3DMCS_MATERIAL;
+layout(constant_id = 198) const int vertexBlend = D3DVBF_DISABLE;
+layout(constant_id = 199) const int clipPlaneEnable = 0;
+layout(constant_id = 200) const int pointSize = 64;
+layout(constant_id = 201) const float pointSizeMinimum = 1.0f;
+layout(constant_id = 202) const bool pointSpriteEnable = false;
+layout(constant_id = 203) const bool pointScaleEnable = false;
+layout(constant_id = 204) const float pointScaleA = 1.0f;
+layout(constant_id = 205) const float pointScaleB = 0.0f;
+layout(constant_id = 206) const float pointScaleC = 0.0f;
+layout(constant_id = 207) const bool multisampleAntiAlias = true;
+layout(constant_id = 208) const int multisampleMask = 0xFFFFFFFF;
+layout(constant_id = 209) const int patchEdgeStyle = D3DPATCHEDGE_DISCRETE;
+layout(constant_id = 210) const int debugMonitorToken = D3DDMT_ENABLE;
+layout(constant_id = 211) const float pointSizeMaximum = 64.0f;
+layout(constant_id = 212) const bool indexedVertexBlendEnable = false;
+layout(constant_id = 213) const int colorWriteEnable = 0x0000000F;
+layout(constant_id = 214) const float tweenFactor = 0.0f;
+layout(constant_id = 215) const int blendOperation = D3DBLENDOP_ADD;
+layout(constant_id = 216) const int positionDegree = D3DDEGREE_CUBIC;
+layout(constant_id = 217) const int normalDegree = D3DDEGREE_LINEAR;
+layout(constant_id = 218) const bool scissorTestEnable = false;
+layout(constant_id = 219) const int slopeScaleDepthBias = 0;
+layout(constant_id = 220) const bool antiAliasedLineEnable = false;
+layout(constant_id = 221) const float minimumTessellationLevel = 1.0f;
+layout(constant_id = 222) const float maximumTessellationLevel = 1.0f;
+layout(constant_id = 223) const float adaptivetessX = 0.0f;
+layout(constant_id = 224) const float adaptivetessY = 0.0f;
+layout(constant_id = 225) const float adaptivetessZ = 1.0f;
+layout(constant_id = 226) const float adaptivetessW = 0.0f;
+layout(constant_id = 227) const bool enableAdaptiveTessellation = false;
+layout(constant_id = 228) const bool twoSidedStencilMode = false;
+layout(constant_id = 229) const int ccwStencilFail = D3DSTENCILOP_KEEP;
+layout(constant_id = 230) const int ccwStencilZFail = D3DSTENCILOP_KEEP;
+layout(constant_id = 231) const int ccwStencilPass = D3DSTENCILOP_KEEP;
+layout(constant_id = 232) const int ccwStencilFunction = D3DCMP_ALWAYS;
+layout(constant_id = 233) const int colorWriteEnable1 = 0x0000000f;
+layout(constant_id = 234) const int colorWriteEnable2 = 0x0000000f;
+layout(constant_id = 235) const int colorWriteEnable3 = 0x0000000f;
+layout(constant_id = 236) const int blendFactor = 0xffffffff;
+layout(constant_id = 237) const int srgbWriteEnable = 0;
+layout(constant_id = 238) const float depthBias = 0;
+layout(constant_id = 239) const int wrap8 = 0;
+layout(constant_id = 240) const int wrap9 = 0;
+layout(constant_id = 241) const int wrap10 = 0;
+layout(constant_id = 242) const int wrap11 = 0;
+layout(constant_id = 243) const int wrap12 = 0;
+layout(constant_id = 244) const int wrap13 = 0;
+layout(constant_id = 245) const int wrap14 = 0;
+layout(constant_id = 246) const int wrap15 = 0;
+layout(constant_id = 247) const bool separateAlphaBlendEnable = false;
+layout(constant_id = 248) const int sourceBlendAlpha = D3DBLEND_ONE;
+layout(constant_id = 249) const int destinationBlendAlpha = D3DBLEND_ZERO;
+layout(constant_id = 250) const int blendOperationAlpha = D3DBLENDOP_ADD;
 
 struct Light
 {
