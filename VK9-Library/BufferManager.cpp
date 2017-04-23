@@ -702,13 +702,13 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_LIGHTING);
 	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
 	{
-		mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled = (BOOL)searchResult->second;
+		mDevice->mDeviceState.mSpecializationConstants.lighting = (BOOL)searchResult->second;
 	}
 	else
 	{
-		mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled = false;
+		mDevice->mDeviceState.mSpecializationConstants.lighting = false;
 	}
-	context->mSpecializationConstants.isLightingEnabled = mDevice->mDeviceState.mSpecializationConstants.isLightingEnabled;
+	context->mSpecializationConstants.lighting = mDevice->mDeviceState.mSpecializationConstants.lighting;
 
 	context->mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size();
 	mDevice->mDeviceState.mSpecializationConstants.lightCount = context->mSpecializationConstants.lightCount;
@@ -743,7 +743,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Check for existing pipeline. Create one if there isn't a matching one.
 	**********************************************/	 
-	''
+
 	for (size_t i = 0; i < mDrawBuffer.size(); i++)
 	{
 		auto& drawBuffer = (*mDrawBuffer[i]);
@@ -756,7 +756,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& drawBuffer.StreamCount == context->StreamCount
 			&& drawBuffer.FillMode == context->FillMode
 			&& drawBuffer.CullMode == context->CullMode
-			&& drawBuffer.mSpecializationConstants.isLightingEnabled == context->mSpecializationConstants.isLightingEnabled
+			&& drawBuffer.mSpecializationConstants.lighting == context->mSpecializationConstants.lighting
 			&& drawBuffer.ShadeMode == context->ShadeMode
 			&& drawBuffer.mSpecializationConstants.lightCount == context->mSpecializationConstants.lightCount
 			   
@@ -914,6 +914,110 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& drawBuffer.mSpecializationConstants.Result_5 == context->mSpecializationConstants.Result_5
 			&& drawBuffer.mSpecializationConstants.Result_6 == context->mSpecializationConstants.Result_6
 			&& drawBuffer.mSpecializationConstants.Result_7 == context->mSpecializationConstants.Result_7
+
+			&& drawBuffer.mSpecializationConstants.zEnable == context->mSpecializationConstants.zEnable
+			&& drawBuffer.mSpecializationConstants.fillMode == context->mSpecializationConstants.fillMode
+			&& drawBuffer.mSpecializationConstants.shadeMode == context->mSpecializationConstants.shadeMode
+			&& drawBuffer.mSpecializationConstants.zWriteEnable == context->mSpecializationConstants.zWriteEnable
+			&& drawBuffer.mSpecializationConstants.alphaTestEnable == context->mSpecializationConstants.alphaTestEnable
+			&& drawBuffer.mSpecializationConstants.lastPixel == context->mSpecializationConstants.lastPixel
+			&& drawBuffer.mSpecializationConstants.sourceBlend == context->mSpecializationConstants.sourceBlend
+			&& drawBuffer.mSpecializationConstants.destinationBlend == context->mSpecializationConstants.destinationBlend
+			&& drawBuffer.mSpecializationConstants.cullMode == context->mSpecializationConstants.cullMode
+			&& drawBuffer.mSpecializationConstants.zFunction == context->mSpecializationConstants.zFunction
+			&& drawBuffer.mSpecializationConstants.alphaReference == context->mSpecializationConstants.alphaReference
+			&& drawBuffer.mSpecializationConstants.alphaFunction == context->mSpecializationConstants.alphaFunction
+			&& drawBuffer.mSpecializationConstants.ditherEnable == context->mSpecializationConstants.ditherEnable
+			&& drawBuffer.mSpecializationConstants.alphaBlendEnable == context->mSpecializationConstants.alphaBlendEnable
+			&& drawBuffer.mSpecializationConstants.fogEnable == context->mSpecializationConstants.fogEnable
+			&& drawBuffer.mSpecializationConstants.specularEnable == context->mSpecializationConstants.specularEnable
+			&& drawBuffer.mSpecializationConstants.fogColor == context->mSpecializationConstants.fogColor
+			&& drawBuffer.mSpecializationConstants.fogTableMode == context->mSpecializationConstants.fogTableMode
+			&& drawBuffer.mSpecializationConstants.fogStart == context->mSpecializationConstants.fogStart
+			&& drawBuffer.mSpecializationConstants.fogEnd == context->mSpecializationConstants.fogEnd
+			&& drawBuffer.mSpecializationConstants.fogDensity == context->mSpecializationConstants.fogDensity
+			&& drawBuffer.mSpecializationConstants.rangeFogEnable == context->mSpecializationConstants.rangeFogEnable
+			&& drawBuffer.mSpecializationConstants.stencilEnable == context->mSpecializationConstants.stencilEnable
+			&& drawBuffer.mSpecializationConstants.stencilFail == context->mSpecializationConstants.stencilFail
+			&& drawBuffer.mSpecializationConstants.stencilZFail == context->mSpecializationConstants.stencilZFail
+			&& drawBuffer.mSpecializationConstants.stencilPass == context->mSpecializationConstants.stencilPass
+			&& drawBuffer.mSpecializationConstants.stencilFunction == context->mSpecializationConstants.stencilFunction
+			&& drawBuffer.mSpecializationConstants.stencilReference == context->mSpecializationConstants.stencilReference
+			&& drawBuffer.mSpecializationConstants.stencilMask == context->mSpecializationConstants.stencilMask
+			&& drawBuffer.mSpecializationConstants.stencilWriteMask == context->mSpecializationConstants.stencilWriteMask
+			&& drawBuffer.mSpecializationConstants.textureFactor == context->mSpecializationConstants.textureFactor
+			&& drawBuffer.mSpecializationConstants.wrap0 == context->mSpecializationConstants.wrap0
+			&& drawBuffer.mSpecializationConstants.wrap1 == context->mSpecializationConstants.wrap1
+			&& drawBuffer.mSpecializationConstants.wrap2 == context->mSpecializationConstants.wrap2
+			&& drawBuffer.mSpecializationConstants.wrap3 == context->mSpecializationConstants.wrap3
+			&& drawBuffer.mSpecializationConstants.wrap4 == context->mSpecializationConstants.wrap4
+			&& drawBuffer.mSpecializationConstants.wrap5 == context->mSpecializationConstants.wrap5
+			&& drawBuffer.mSpecializationConstants.wrap6 == context->mSpecializationConstants.wrap6
+			&& drawBuffer.mSpecializationConstants.wrap7 == context->mSpecializationConstants.wrap7
+			&& drawBuffer.mSpecializationConstants.clipping == context->mSpecializationConstants.clipping
+			&& drawBuffer.mSpecializationConstants.lighting == context->mSpecializationConstants.lighting
+			&& drawBuffer.mSpecializationConstants.ambient == context->mSpecializationConstants.ambient
+			&& drawBuffer.mSpecializationConstants.fogVertexMode == context->mSpecializationConstants.fogVertexMode
+			&& drawBuffer.mSpecializationConstants.colorVertex == context->mSpecializationConstants.colorVertex
+			&& drawBuffer.mSpecializationConstants.localViewer == context->mSpecializationConstants.localViewer
+			&& drawBuffer.mSpecializationConstants.normalizeNormals == context->mSpecializationConstants.normalizeNormals
+			&& drawBuffer.mSpecializationConstants.diffuseMaterialSource == context->mSpecializationConstants.diffuseMaterialSource
+			&& drawBuffer.mSpecializationConstants.specularMaterialSource == context->mSpecializationConstants.specularMaterialSource
+			&& drawBuffer.mSpecializationConstants.ambientMaterialSource == context->mSpecializationConstants.ambientMaterialSource
+			&& drawBuffer.mSpecializationConstants.emissiveMaterialSource == context->mSpecializationConstants.emissiveMaterialSource
+			&& drawBuffer.mSpecializationConstants.vertexBlend == context->mSpecializationConstants.vertexBlend
+			&& drawBuffer.mSpecializationConstants.clipPlaneEnable == context->mSpecializationConstants.clipPlaneEnable
+			&& drawBuffer.mSpecializationConstants.pointSize == context->mSpecializationConstants.pointSize
+			&& drawBuffer.mSpecializationConstants.pointSizeMinimum == context->mSpecializationConstants.pointSizeMinimum
+			&& drawBuffer.mSpecializationConstants.pointSpriteEnable == context->mSpecializationConstants.pointSpriteEnable
+			&& drawBuffer.mSpecializationConstants.pointScaleEnable == context->mSpecializationConstants.pointScaleEnable
+			&& drawBuffer.mSpecializationConstants.pointScaleA == context->mSpecializationConstants.pointScaleA
+			&& drawBuffer.mSpecializationConstants.pointScaleB == context->mSpecializationConstants.pointScaleB
+			&& drawBuffer.mSpecializationConstants.pointScaleC == context->mSpecializationConstants.pointScaleC
+			&& drawBuffer.mSpecializationConstants.multisampleAntiAlias == context->mSpecializationConstants.multisampleAntiAlias
+			&& drawBuffer.mSpecializationConstants.multisampleMask == context->mSpecializationConstants.multisampleMask
+			&& drawBuffer.mSpecializationConstants.patchEdgeStyle == context->mSpecializationConstants.patchEdgeStyle
+			&& drawBuffer.mSpecializationConstants.debugMonitorToken == context->mSpecializationConstants.debugMonitorToken
+			&& drawBuffer.mSpecializationConstants.pointSizeMaximum == context->mSpecializationConstants.pointSizeMaximum
+			&& drawBuffer.mSpecializationConstants.indexedVertexBlendEnable == context->mSpecializationConstants.indexedVertexBlendEnable
+			&& drawBuffer.mSpecializationConstants.colorWriteEnable == context->mSpecializationConstants.colorWriteEnable
+			&& drawBuffer.mSpecializationConstants.tweenFactor == context->mSpecializationConstants.tweenFactor
+			&& drawBuffer.mSpecializationConstants.blendOperation == context->mSpecializationConstants.blendOperation
+			&& drawBuffer.mSpecializationConstants.positionDegree == context->mSpecializationConstants.positionDegree
+			&& drawBuffer.mSpecializationConstants.normalDegree == context->mSpecializationConstants.normalDegree
+			&& drawBuffer.mSpecializationConstants.scissorTestEnable == context->mSpecializationConstants.scissorTestEnable
+			&& drawBuffer.mSpecializationConstants.slopeScaleDepthBias == context->mSpecializationConstants.slopeScaleDepthBias
+			&& drawBuffer.mSpecializationConstants.antiAliasedLineEnable == context->mSpecializationConstants.antiAliasedLineEnable
+			&& drawBuffer.mSpecializationConstants.minimumTessellationLevel == context->mSpecializationConstants.minimumTessellationLevel
+			&& drawBuffer.mSpecializationConstants.maximumTessellationLevel == context->mSpecializationConstants.maximumTessellationLevel
+			&& drawBuffer.mSpecializationConstants.adaptivetessX == context->mSpecializationConstants.adaptivetessX
+			&& drawBuffer.mSpecializationConstants.adaptivetessY == context->mSpecializationConstants.adaptivetessY
+			&& drawBuffer.mSpecializationConstants.adaptivetessZ == context->mSpecializationConstants.adaptivetessZ
+			&& drawBuffer.mSpecializationConstants.adaptivetessW == context->mSpecializationConstants.adaptivetessW
+			&& drawBuffer.mSpecializationConstants.enableAdaptiveTessellation == context->mSpecializationConstants.enableAdaptiveTessellation
+			&& drawBuffer.mSpecializationConstants.twoSidedStencilMode == context->mSpecializationConstants.twoSidedStencilMode
+			&& drawBuffer.mSpecializationConstants.ccwStencilFail == context->mSpecializationConstants.ccwStencilFail
+			&& drawBuffer.mSpecializationConstants.ccwStencilZFail == context->mSpecializationConstants.ccwStencilZFail
+			&& drawBuffer.mSpecializationConstants.ccwStencilPass == context->mSpecializationConstants.ccwStencilPass
+			&& drawBuffer.mSpecializationConstants.ccwStencilFunction == context->mSpecializationConstants.ccwStencilFunction
+			&& drawBuffer.mSpecializationConstants.colorWriteEnable1 == context->mSpecializationConstants.colorWriteEnable1
+			&& drawBuffer.mSpecializationConstants.colorWriteEnable2 == context->mSpecializationConstants.colorWriteEnable2
+			&& drawBuffer.mSpecializationConstants.colorWriteEnable3 == context->mSpecializationConstants.colorWriteEnable3
+			&& drawBuffer.mSpecializationConstants.blendFactor == context->mSpecializationConstants.blendFactor
+			&& drawBuffer.mSpecializationConstants.srgbWriteEnable == context->mSpecializationConstants.srgbWriteEnable
+			&& drawBuffer.mSpecializationConstants.depthBias == context->mSpecializationConstants.depthBias
+			&& drawBuffer.mSpecializationConstants.wrap8 == context->mSpecializationConstants.wrap8
+			&& drawBuffer.mSpecializationConstants.wrap9 == context->mSpecializationConstants.wrap9
+			&& drawBuffer.mSpecializationConstants.wrap10 == context->mSpecializationConstants.wrap10
+			&& drawBuffer.mSpecializationConstants.wrap11 == context->mSpecializationConstants.wrap11
+			&& drawBuffer.mSpecializationConstants.wrap12 == context->mSpecializationConstants.wrap12
+			&& drawBuffer.mSpecializationConstants.wrap13 == context->mSpecializationConstants.wrap13
+			&& drawBuffer.mSpecializationConstants.wrap14 == context->mSpecializationConstants.wrap14
+			&& drawBuffer.mSpecializationConstants.wrap15 == context->mSpecializationConstants.wrap15
+			&& drawBuffer.mSpecializationConstants.separateAlphaBlendEnable == context->mSpecializationConstants.separateAlphaBlendEnable
+			&& drawBuffer.mSpecializationConstants.sourceBlendAlpha == context->mSpecializationConstants.sourceBlendAlpha
+			&& drawBuffer.mSpecializationConstants.destinationBlendAlpha == context->mSpecializationConstants.destinationBlendAlpha
+			&& drawBuffer.mSpecializationConstants.blendOperationAlpha == context->mSpecializationConstants.blendOperationAlpha
 			)
 		{
 			BOOL isMatch = true;
@@ -1040,7 +1144,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
-	BOOL isLightingEnabled = context->mSpecializationConstants.isLightingEnabled;
+	BOOL isLightingEnabled = context->mSpecializationConstants.lighting;
 
 	if (context->VertexDeclaration != nullptr)
 	{
