@@ -679,51 +679,10 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
 
-	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_FILLMODE);
-	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
-	{
-		context->FillMode = (D3DFILLMODE)mDevice->mDeviceState.mRenderStates[D3DRS_FILLMODE];
-	}
-	else
-	{
-		context->FillMode = D3DFILL_SOLID;
-	}
-
-	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_CULLMODE);
-	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
-	{
-		context->CullMode = (D3DCULL)searchResult->second;
-	}
-	else
-	{
-		context->CullMode = D3DCULL_CW;
-	}
-
-	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_LIGHTING);
-	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
-	{
-		mDevice->mDeviceState.mSpecializationConstants.lighting = (BOOL)searchResult->second;
-	}
-	else
-	{
-		mDevice->mDeviceState.mSpecializationConstants.lighting = false;
-	}
-	context->mSpecializationConstants.lighting = mDevice->mDeviceState.mSpecializationConstants.lighting;
+	context->mSpecializationConstants = mDevice->mDeviceState.mSpecializationConstants;
 
 	context->mSpecializationConstants.lightCount = mDevice->mDeviceState.mLights.size();
 	mDevice->mDeviceState.mSpecializationConstants.lightCount = context->mSpecializationConstants.lightCount;
-
-	searchResult = mDevice->mDeviceState.mRenderStates.find(D3DRS_SHADEMODE);
-	if (searchResult != mDevice->mDeviceState.mRenderStates.end())
-	{
-		context->ShadeMode = (D3DSHADEMODE)searchResult->second;
-		mDevice->mDeviceState.mSpecializationConstants.shadeMode = searchResult->second;
-	}
-	else
-	{
-		context->ShadeMode = D3DSHADE_GOURAUD;
-		mDevice->mDeviceState.mSpecializationConstants.shadeMode = D3DSHADE_GOURAUD;
-	}
 
 	context->mSpecializationConstants.textureCount = mDevice->mDeviceState.mTextures.size();
 	mDevice->mDeviceState.mSpecializationConstants.textureCount = context->mSpecializationConstants.textureCount;
@@ -754,9 +713,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& drawBuffer.VertexShader == context->VertexShader
 			&& drawBuffer.PixelShader == context->PixelShader
 			&& drawBuffer.StreamCount == context->StreamCount
-			&& drawBuffer.FillMode == context->FillMode
-			&& drawBuffer.CullMode == context->CullMode
-			&& drawBuffer.ShadeMode == context->ShadeMode
 			&& drawBuffer.mSpecializationConstants.lightCount == context->mSpecializationConstants.lightCount
 			   
 			&& drawBuffer.mSpecializationConstants.textureCount == context->mSpecializationConstants.textureCount
@@ -1247,8 +1203,8 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	}
 	*/
 
-	SetCulling(mPipelineRasterizationStateCreateInfo, context->CullMode);
-	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode(context->FillMode);
+	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)context->mSpecializationConstants.cullMode);
+	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)context->mSpecializationConstants.fillMode);
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context->PrimitiveType);
 
 	/**********************************************

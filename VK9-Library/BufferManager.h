@@ -91,11 +91,8 @@ struct DrawContext
 	CVertexShader9* VertexShader = nullptr;
 	CPixelShader9* PixelShader = nullptr;
 	int32_t StreamCount = 0;
-	D3DFILLMODE FillMode = D3DFILL_FORCE_DWORD;
-	D3DCULL CullMode = D3DCULL_FORCE_DWORD;
 
 	//D3d9 State - Lights
-	D3DSHADEMODE ShadeMode = D3DSHADE_FORCE_DWORD;
 	SpecializationConstants mSpecializationConstants = {};	
 
 	//Resource Handling.

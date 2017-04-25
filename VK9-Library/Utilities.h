@@ -775,10 +775,6 @@ inline void Print(DeviceState& deviceState)
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
 	//IDirect3DDevice9::SetRenderState
-	BOOST_FOREACH(const auto& pair1, deviceState.mRenderStates)
-	{
-		BOOST_LOG_TRIVIAL(info) << "RenderState: " << pair1.first << " " << pair1.second;
-	}
 
 	//IDirect3DDevice9::SetSamplerState
 	BOOST_FOREACH(const auto& pair1, deviceState.mSamplerStates)

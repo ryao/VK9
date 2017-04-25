@@ -412,7 +412,7 @@ struct DeviceState
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
 	//IDirect3DDevice9::SetRenderState
-	boost::container::flat_map<D3DRENDERSTATETYPE, DWORD> mRenderStates;
+	//uses specialization constant.
 
 	//IDirect3DDevice9::SetSamplerState
 	boost::container::flat_map<DWORD, boost::container::flat_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;

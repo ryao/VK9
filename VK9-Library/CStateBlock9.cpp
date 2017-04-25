@@ -250,135 +250,121 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
 	//IDirect3DDevice9::SetRenderState
-	if (sourceState.mRenderStates.size())
+	if (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE)
 	{
-		BOOST_FOREACH(const auto& pair1, sourceState.mRenderStates)
-		{
-			if (!onlyIfExists || targetState.mRenderStates.count(pair1.first) > 0)
-			{
-				if 
-				(
-					(type == D3DSBT_ALL) || 
-					(type == D3DSBT_VERTEXSTATE && 
-						(
-							pair1.first == D3DRS_CULLMODE || 
-							pair1.first == D3DRS_FOGCOLOR || 
-							pair1.first == D3DRS_FOGTABLEMODE ||
-							pair1.first == D3DRS_FOGSTART ||
-							pair1.first == D3DRS_FOGEND ||
-							pair1.first == D3DRS_FOGDENSITY ||
-							pair1.first == D3DRS_RANGEFOGENABLE ||
-							pair1.first == D3DRS_AMBIENT ||
-							pair1.first == D3DRS_COLORVERTEX ||
-							pair1.first == D3DRS_FOGVERTEXMODE ||
-							pair1.first == D3DRS_CLIPPING ||
-							pair1.first == D3DRS_LIGHTING ||
-							pair1.first == D3DRS_LOCALVIEWER ||
-							pair1.first == D3DRS_EMISSIVEMATERIALSOURCE ||
-							pair1.first == D3DRS_AMBIENTMATERIALSOURCE ||
-							pair1.first == D3DRS_DIFFUSEMATERIALSOURCE ||
-							pair1.first == D3DRS_SPECULARMATERIALSOURCE ||
-							pair1.first == D3DRS_VERTEXBLEND ||
-							pair1.first == D3DRS_CLIPPLANEENABLE ||
-							pair1.first == D3DRS_POINTSIZE ||
-							pair1.first == D3DRS_POINTSIZE_MIN ||
-							pair1.first == D3DRS_POINTSPRITEENABLE ||
-							pair1.first == D3DRS_POINTSCALEENABLE ||
-							pair1.first == D3DRS_POINTSCALE_A ||
-							pair1.first == D3DRS_POINTSCALE_B ||
-							pair1.first == D3DRS_POINTSCALE_C ||
-							pair1.first == D3DRS_MULTISAMPLEANTIALIAS ||
-							pair1.first == D3DRS_MULTISAMPLEMASK ||
-							pair1.first == D3DRS_PATCHEDGESTYLE ||
-							pair1.first == D3DRS_POINTSIZE_MAX ||
-							pair1.first == D3DRS_INDEXEDVERTEXBLENDENABLE ||
-							pair1.first == D3DRS_TWEENFACTOR ||
-							pair1.first == D3DRS_POSITIONDEGREE ||
-							pair1.first == D3DRS_NORMALDEGREE ||
-							pair1.first == D3DRS_MINTESSELLATIONLEVEL ||
-							pair1.first == D3DRS_MAXTESSELLATIONLEVEL ||
-							pair1.first == D3DRS_ADAPTIVETESS_X ||
-							pair1.first == D3DRS_ADAPTIVETESS_Y ||
-							pair1.first == D3DRS_ADAPTIVETESS_Z ||
-							pair1.first == D3DRS_ADAPTIVETESS_W ||
-							pair1.first == D3DRS_ENABLEADAPTIVETESSELLATION
-						)) ||
-					(type == D3DSBT_PIXELSTATE && 
-						(
-							pair1.first == D3DRS_ZENABLE ||
-							pair1.first == D3DRS_SPECULARENABLE ||
-							//pair1.first == D3DFILLMODE ||
-							//pair1.first == D3DSHADEMODE ||
-							pair1.first == D3DRS_ZWRITEENABLE ||
-							pair1.first == D3DRS_ALPHATESTENABLE ||
-							pair1.first == D3DRS_LASTPIXEL ||
-							pair1.first == D3DRS_SRCBLEND ||
-							pair1.first == D3DRS_DESTBLEND ||
-							pair1.first == D3DRS_ZFUNC ||
-							pair1.first == D3DRS_ALPHAREF ||
-							pair1.first == D3DRS_ALPHAFUNC ||
-							pair1.first == D3DRS_DITHERENABLE ||
-							pair1.first == D3DRS_FOGSTART ||
-							pair1.first == D3DRS_FOGEND ||
-							pair1.first == D3DRS_FOGDENSITY ||
-							pair1.first == D3DRS_ALPHABLENDENABLE ||
-							pair1.first == D3DRS_DEPTHBIAS ||
-							pair1.first == D3DRS_STENCILENABLE ||
-							pair1.first == D3DRS_STENCILFAIL ||
-							pair1.first == D3DRS_STENCILZFAIL ||
-							pair1.first == D3DRS_STENCILPASS ||
-							pair1.first == D3DRS_STENCILFUNC ||
-							pair1.first == D3DRS_STENCILREF ||
-							pair1.first == D3DRS_STENCILMASK ||
-							pair1.first == D3DRS_STENCILWRITEMASK ||
-							pair1.first == D3DRS_TEXTUREFACTOR ||
-							pair1.first == D3DRS_WRAP0 ||
-							pair1.first == D3DRS_WRAP1 ||
-							pair1.first == D3DRS_WRAP2 ||
-							pair1.first == D3DRS_WRAP3 ||
-							pair1.first == D3DRS_WRAP4 ||
-							pair1.first == D3DRS_WRAP5 ||
-							pair1.first == D3DRS_WRAP6 ||
-							pair1.first == D3DRS_WRAP7 ||
-							pair1.first == D3DRS_WRAP8 ||
-							pair1.first == D3DRS_WRAP9 ||
-							pair1.first == D3DRS_WRAP10 ||
-							pair1.first == D3DRS_WRAP11 ||
-							pair1.first == D3DRS_WRAP12 ||
-							pair1.first == D3DRS_WRAP13 ||
-							pair1.first == D3DRS_WRAP14 ||
-							pair1.first == D3DRS_WRAP15 ||
-							pair1.first == D3DRS_LOCALVIEWER ||
-							pair1.first == D3DRS_EMISSIVEMATERIALSOURCE ||
-							pair1.first == D3DRS_AMBIENTMATERIALSOURCE ||
-							pair1.first == D3DRS_DIFFUSEMATERIALSOURCE ||
-							pair1.first == D3DRS_SPECULARMATERIALSOURCE ||
-							pair1.first == D3DRS_COLORWRITEENABLE ||
-							//pair1.first == D3DBLENDOP ||
-							pair1.first == D3DRS_SCISSORTESTENABLE ||
-							pair1.first == D3DRS_SLOPESCALEDEPTHBIAS ||
-							pair1.first == D3DRS_ANTIALIASEDLINEENABLE ||
-							pair1.first == D3DRS_TWOSIDEDSTENCILMODE ||
-							pair1.first == D3DRS_CCW_STENCILFAIL ||
-							pair1.first == D3DRS_CCW_STENCILZFAIL ||
-							pair1.first == D3DRS_CCW_STENCILPASS ||
-							pair1.first == D3DRS_CCW_STENCILFUNC ||
-							pair1.first == D3DRS_COLORWRITEENABLE1 ||
-							pair1.first == D3DRS_COLORWRITEENABLE2 ||
-							pair1.first == D3DRS_COLORWRITEENABLE3 ||
-							pair1.first == D3DRS_BLENDFACTOR ||
-							pair1.first == D3DRS_SRGBWRITEENABLE ||
-							pair1.first == D3DRS_SEPARATEALPHABLENDENABLE ||
-							pair1.first == D3DRS_SRCBLENDALPHA ||
-							pair1.first == D3DRS_DESTBLENDALPHA ||
-							pair1.first == D3DRS_BLENDOPALPHA
-						))
-				)
-				{
-					targetState.mRenderStates[pair1.first] = pair1.second;
-				}
-			}	
-		}
+		targetState.mSpecializationConstants.cullMode = sourceState.mSpecializationConstants.cullMode;
+		targetState.mSpecializationConstants.fogColor = sourceState.mSpecializationConstants.fogColor;
+		targetState.mSpecializationConstants.fogTableMode = sourceState.mSpecializationConstants.fogTableMode;
+		targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
+		targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
+		targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
+		targetState.mSpecializationConstants.rangeFogEnable = sourceState.mSpecializationConstants.rangeFogEnable;
+		targetState.mSpecializationConstants.ambient = sourceState.mSpecializationConstants.ambient;
+		targetState.mSpecializationConstants.colorVertex = sourceState.mSpecializationConstants.colorVertex;
+		targetState.mSpecializationConstants.fogVertexMode = sourceState.mSpecializationConstants.fogVertexMode;
+		targetState.mSpecializationConstants.clipping = sourceState.mSpecializationConstants.clipping;
+		targetState.mSpecializationConstants.lighting = sourceState.mSpecializationConstants.lighting;
+		targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
+		targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
+		targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
+		targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
+		targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
+		targetState.mSpecializationConstants.vertexBlend = sourceState.mSpecializationConstants.vertexBlend;
+		targetState.mSpecializationConstants.clipPlaneEnable = sourceState.mSpecializationConstants.clipPlaneEnable;
+		targetState.mSpecializationConstants.pointSize = sourceState.mSpecializationConstants.pointSize;
+		targetState.mSpecializationConstants.pointSizeMinimum = sourceState.mSpecializationConstants.pointSizeMinimum;
+		targetState.mSpecializationConstants.pointSpriteEnable = sourceState.mSpecializationConstants.pointSpriteEnable;
+		targetState.mSpecializationConstants.pointScaleEnable = sourceState.mSpecializationConstants.pointScaleEnable;
+		targetState.mSpecializationConstants.pointScaleA = sourceState.mSpecializationConstants.pointScaleA;
+		targetState.mSpecializationConstants.pointScaleB = sourceState.mSpecializationConstants.pointScaleB;
+		targetState.mSpecializationConstants.pointScaleC = sourceState.mSpecializationConstants.pointScaleC;
+		targetState.mSpecializationConstants.multisampleAntiAlias = sourceState.mSpecializationConstants.multisampleAntiAlias;
+		targetState.mSpecializationConstants.multisampleMask = sourceState.mSpecializationConstants.multisampleMask;
+		targetState.mSpecializationConstants.patchEdgeStyle = sourceState.mSpecializationConstants.patchEdgeStyle;
+		targetState.mSpecializationConstants.pointSizeMaximum = sourceState.mSpecializationConstants.pointSizeMaximum;
+		targetState.mSpecializationConstants.indexedVertexBlendEnable = sourceState.mSpecializationConstants.indexedVertexBlendEnable;
+		targetState.mSpecializationConstants.tweenFactor = sourceState.mSpecializationConstants.tweenFactor;
+		targetState.mSpecializationConstants.positionDegree = sourceState.mSpecializationConstants.positionDegree;
+		targetState.mSpecializationConstants.normalDegree = sourceState.mSpecializationConstants.normalDegree;
+		targetState.mSpecializationConstants.minimumTessellationLevel = sourceState.mSpecializationConstants.minimumTessellationLevel;
+		targetState.mSpecializationConstants.maximumTessellationLevel = sourceState.mSpecializationConstants.maximumTessellationLevel;
+		targetState.mSpecializationConstants.adaptivetessX = sourceState.mSpecializationConstants.adaptivetessX;
+		targetState.mSpecializationConstants.adaptivetessY = sourceState.mSpecializationConstants.adaptivetessY;
+		targetState.mSpecializationConstants.adaptivetessZ = sourceState.mSpecializationConstants.adaptivetessZ;
+		targetState.mSpecializationConstants.adaptivetessW = sourceState.mSpecializationConstants.adaptivetessW;
+		targetState.mSpecializationConstants.enableAdaptiveTessellation = sourceState.mSpecializationConstants.enableAdaptiveTessellation;
+
+	}
+
+	if (type == D3DSBT_ALL || type == D3DSBT_PIXELSTATE)
+	{
+		targetState.mSpecializationConstants.zEnable = sourceState.mSpecializationConstants.zEnable;
+		targetState.mSpecializationConstants.specularEnable = sourceState.mSpecializationConstants.specularEnable;
+		targetState.mSpecializationConstants.fillMode = sourceState.mSpecializationConstants.fillMode;
+		targetState.mSpecializationConstants.shadeMode = sourceState.mSpecializationConstants.shadeMode;
+		targetState.mSpecializationConstants.zWriteEnable = sourceState.mSpecializationConstants.zWriteEnable;
+		targetState.mSpecializationConstants.alphaTestEnable = sourceState.mSpecializationConstants.alphaTestEnable;
+		targetState.mSpecializationConstants.lastPixel = sourceState.mSpecializationConstants.lastPixel;
+		targetState.mSpecializationConstants.sourceBlend = sourceState.mSpecializationConstants.sourceBlend;
+		targetState.mSpecializationConstants.destinationBlend = sourceState.mSpecializationConstants.destinationBlend;
+		targetState.mSpecializationConstants.zFunction = sourceState.mSpecializationConstants.zFunction;
+		targetState.mSpecializationConstants.alphaReference = sourceState.mSpecializationConstants.alphaReference;
+		targetState.mSpecializationConstants.alphaFunction = sourceState.mSpecializationConstants.alphaFunction;
+		targetState.mSpecializationConstants.ditherEnable = sourceState.mSpecializationConstants.ditherEnable;
+		targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
+		targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
+		targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
+		targetState.mSpecializationConstants.alphaBlendEnable = sourceState.mSpecializationConstants.alphaBlendEnable;
+		targetState.mSpecializationConstants.depthBias = sourceState.mSpecializationConstants.depthBias;
+		targetState.mSpecializationConstants.stencilEnable = sourceState.mSpecializationConstants.stencilEnable;
+		targetState.mSpecializationConstants.stencilFail = sourceState.mSpecializationConstants.stencilFail;
+		targetState.mSpecializationConstants.stencilZFail = sourceState.mSpecializationConstants.stencilZFail;
+		targetState.mSpecializationConstants.stencilPass = sourceState.mSpecializationConstants.stencilPass;
+		targetState.mSpecializationConstants.stencilFunction = sourceState.mSpecializationConstants.stencilFunction;
+		targetState.mSpecializationConstants.stencilReference = sourceState.mSpecializationConstants.stencilReference;
+		targetState.mSpecializationConstants.stencilMask = sourceState.mSpecializationConstants.stencilMask;
+		targetState.mSpecializationConstants.stencilWriteMask = sourceState.mSpecializationConstants.stencilWriteMask;
+		targetState.mSpecializationConstants.textureFactor = sourceState.mSpecializationConstants.textureFactor;
+		targetState.mSpecializationConstants.wrap0 = sourceState.mSpecializationConstants.wrap0;
+		targetState.mSpecializationConstants.wrap1 = sourceState.mSpecializationConstants.wrap1;
+		targetState.mSpecializationConstants.wrap2 = sourceState.mSpecializationConstants.wrap2;
+		targetState.mSpecializationConstants.wrap3 = sourceState.mSpecializationConstants.wrap3;
+		targetState.mSpecializationConstants.wrap4 = sourceState.mSpecializationConstants.wrap4;
+		targetState.mSpecializationConstants.wrap5 = sourceState.mSpecializationConstants.wrap5;
+		targetState.mSpecializationConstants.wrap6 = sourceState.mSpecializationConstants.wrap6;
+		targetState.mSpecializationConstants.wrap7 = sourceState.mSpecializationConstants.wrap7;
+		targetState.mSpecializationConstants.wrap8 = sourceState.mSpecializationConstants.wrap8;
+		targetState.mSpecializationConstants.wrap9 = sourceState.mSpecializationConstants.wrap9;
+		targetState.mSpecializationConstants.wrap10 = sourceState.mSpecializationConstants.wrap10;
+		targetState.mSpecializationConstants.wrap11 = sourceState.mSpecializationConstants.wrap11;
+		targetState.mSpecializationConstants.wrap12 = sourceState.mSpecializationConstants.wrap12;
+		targetState.mSpecializationConstants.wrap13 = sourceState.mSpecializationConstants.wrap13;
+		targetState.mSpecializationConstants.wrap14 = sourceState.mSpecializationConstants.wrap14;
+		targetState.mSpecializationConstants.wrap15 = sourceState.mSpecializationConstants.wrap15;
+		targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
+		targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
+		targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
+		targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
+		targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
+		targetState.mSpecializationConstants.colorWriteEnable = sourceState.mSpecializationConstants.colorWriteEnable;
+		targetState.mSpecializationConstants.blendOperation = sourceState.mSpecializationConstants.blendOperation;
+		targetState.mSpecializationConstants.scissorTestEnable = sourceState.mSpecializationConstants.scissorTestEnable;
+		targetState.mSpecializationConstants.slopeScaleDepthBias = sourceState.mSpecializationConstants.slopeScaleDepthBias;
+		targetState.mSpecializationConstants.antiAliasedLineEnable = sourceState.mSpecializationConstants.antiAliasedLineEnable;
+		targetState.mSpecializationConstants.twoSidedStencilMode = sourceState.mSpecializationConstants.twoSidedStencilMode;
+		targetState.mSpecializationConstants.ccwStencilFail = sourceState.mSpecializationConstants.ccwStencilFail;
+		targetState.mSpecializationConstants.ccwStencilZFail = sourceState.mSpecializationConstants.ccwStencilZFail;
+		targetState.mSpecializationConstants.ccwStencilPass = sourceState.mSpecializationConstants.ccwStencilPass;
+		targetState.mSpecializationConstants.ccwStencilFunction = sourceState.mSpecializationConstants.ccwStencilFunction;
+		targetState.mSpecializationConstants.colorWriteEnable1 = sourceState.mSpecializationConstants.colorWriteEnable1;
+		targetState.mSpecializationConstants.colorWriteEnable2 = sourceState.mSpecializationConstants.colorWriteEnable2;
+		targetState.mSpecializationConstants.colorWriteEnable3 = sourceState.mSpecializationConstants.colorWriteEnable3;
+		targetState.mSpecializationConstants.blendFactor = sourceState.mSpecializationConstants.blendFactor;
+		targetState.mSpecializationConstants.srgbWriteEnable = sourceState.mSpecializationConstants.srgbWriteEnable;
+		targetState.mSpecializationConstants.separateAlphaBlendEnable = sourceState.mSpecializationConstants.separateAlphaBlendEnable;
+		targetState.mSpecializationConstants.sourceBlendAlpha = sourceState.mSpecializationConstants.sourceBlendAlpha;
+		targetState.mSpecializationConstants.destinationBlendAlpha = sourceState.mSpecializationConstants.destinationBlendAlpha;
+		targetState.mSpecializationConstants.blendOperationAlpha = sourceState.mSpecializationConstants.blendOperationAlpha;
 	}
 
 	//IDirect3DDevice9::SetSamplerState

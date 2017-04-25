@@ -1412,7 +1412,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
 	mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
-	D3DLIGHT9 light = {}; 
+	D3DLIGHT9 light = {};
 	mDeviceState.mLights.push_back(light);
 	//mDeviceState.mLights.push_back(light);
 	//mDeviceState.mLights.push_back(light);
@@ -1429,10 +1429,10 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mSwapchainExtent.width, mSwapchainExtent.height, ConvertFormat(mFormat));
 	mRenderTargets.push_back(ptr2);
 
-	#ifdef _DEBUG
-		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DLIGHT9): " << sizeof(D3DLIGHT9);
-		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DMATERIAL9): " << sizeof(D3DMATERIAL9);
-	#endif	
+#ifdef _DEBUG
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DLIGHT9): " << sizeof(D3DLIGHT9);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DMATERIAL9): " << sizeof(D3DMATERIAL9);
+#endif	
 
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
 }
@@ -2501,28 +2501,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.colorOperation_0 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.colorOperation_1 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.colorOperation_2 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.colorOperation_3 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.colorOperation_4 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.colorOperation_5 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.colorOperation_6 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.colorOperation_7 ;
+			(*pValue) = state->mSpecializationConstants.colorOperation_7;
 			break;
 		default:
 			break;
@@ -2532,28 +2532,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_0 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_1 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_2 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_3 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_4 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_5 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_6 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.colorArgument1_7 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument1_7;
 			break;
 		default:
 			break;
@@ -2563,28 +2563,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_0 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_1 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_2 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_3 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_4 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_5 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_6 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.colorArgument2_7 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument2_7;
 			break;
 		default:
 			break;
@@ -2594,28 +2594,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_0 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_1 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_2 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_3 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_4 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_5 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_6 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.alphaOperation_7 ;
+			(*pValue) = state->mSpecializationConstants.alphaOperation_7;
 			break;
 		default:
 			break;
@@ -2625,28 +2625,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_0 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_1 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_2 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_3 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_4 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_5 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_6 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.alphaArgument1_7 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument1_7;
 			break;
 		default:
 			break;
@@ -2656,28 +2656,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_0 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_1 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_2 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_3 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_4 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_5 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_6 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.alphaArgument2_7 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument2_7;
 			break;
 		default:
 			break;
@@ -2687,28 +2687,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_0 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_1 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_2 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_3 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_4 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_5 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_6 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_7 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_7;
 			break;
 		default:
 			break;
@@ -2718,28 +2718,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_0 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_1 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_2 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_3 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_4 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_5 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_6 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_7 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_7;
 			break;
 		default:
 			break;
@@ -2749,28 +2749,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_0 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_1 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_2 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_3 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_4 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_5 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_6 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_7 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_7;
 			break;
 		default:
 			break;
@@ -2780,28 +2780,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_0 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_1 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_2 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_3 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_4 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_5 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_6 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_7 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_7;
 			break;
 		default:
 			break;
@@ -2811,28 +2811,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_0 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_1 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_2 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_3 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_4 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_5 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_6 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_7 ;
+			(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_7;
 			break;
 		default:
 			break;
@@ -2842,28 +2842,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_0 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_1 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_2 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_3 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_4 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_5 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_6 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_7 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapScale_7;
 			break;
 		default:
 			break;
@@ -2873,28 +2873,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_0 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_1 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_2 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_3 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_4 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_5 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_6 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_7 ;
+			(*pValue) = state->mSpecializationConstants.bumpMapOffset_7;
 			break;
 		default:
 			break;
@@ -2904,28 +2904,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_0 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_1 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_2 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_3 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_4 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_5 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_6 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_7 ;
+			(*pValue) = state->mSpecializationConstants.textureTransformationFlags_7;
 			break;
 		default:
 			break;
@@ -2935,28 +2935,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_0 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_1 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_2 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_3 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_4 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_5 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_6 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.colorArgument0_7 ;
+			(*pValue) = state->mSpecializationConstants.colorArgument0_7;
 			break;
 		default:
 			break;
@@ -2966,28 +2966,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_0 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_1 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_2 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_3 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_4 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_5 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_6 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.alphaArgument0_7 ;
+			(*pValue) = state->mSpecializationConstants.alphaArgument0_7;
 			break;
 		default:
 			break;
@@ -2997,28 +2997,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.Result_0 ;
+			(*pValue) = state->mSpecializationConstants.Result_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.Result_1 ;
+			(*pValue) = state->mSpecializationConstants.Result_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.Result_2 ;
+			(*pValue) = state->mSpecializationConstants.Result_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.Result_3 ;
+			(*pValue) = state->mSpecializationConstants.Result_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.Result_4 ;
+			(*pValue) = state->mSpecializationConstants.Result_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.Result_5 ;
+			(*pValue) = state->mSpecializationConstants.Result_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.Result_6 ;
+			(*pValue) = state->mSpecializationConstants.Result_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.Result_7 ;
+			(*pValue) = state->mSpecializationConstants.Result_7;
 			break;
 		default:
 			break;
@@ -3028,28 +3028,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.Constant_0 ;
+			(*pValue) = state->mSpecializationConstants.Constant_0;
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.Constant_1 ;
+			(*pValue) = state->mSpecializationConstants.Constant_1;
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.Constant_2 ;
+			(*pValue) = state->mSpecializationConstants.Constant_2;
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.Constant_3 ;
+			(*pValue) = state->mSpecializationConstants.Constant_3;
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.Constant_4 ;
+			(*pValue) = state->mSpecializationConstants.Constant_4;
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.Constant_5 ;
+			(*pValue) = state->mSpecializationConstants.Constant_5;
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.Constant_6 ;
+			(*pValue) = state->mSpecializationConstants.Constant_6;
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.Constant_7 ;
+			(*pValue) = state->mSpecializationConstants.Constant_7;
 			break;
 		default:
 			break;
@@ -3395,13 +3395,228 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 {
+	SpecializationConstants* constants = nullptr;
+
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		this->mCurrentStateRecording->mDeviceState.mRenderStates[State] = Value;
+		constants = &this->mCurrentStateRecording->mDeviceState.mSpecializationConstants;
 	}
 	else
 	{
-		mDeviceState.mRenderStates[State] = Value;
+		constants = &mDeviceState.mSpecializationConstants;
+	}
+
+	switch (State)
+	{
+	case D3DRS_ZENABLE:
+		break;
+	case D3DRS_FILLMODE:
+		break;
+	case D3DRS_SHADEMODE:
+		break;
+	case D3DRS_ZWRITEENABLE:
+		break;
+	case D3DRS_ALPHATESTENABLE:
+		break;
+	case D3DRS_LASTPIXEL:
+		break;
+	case D3DRS_SRCBLEND:
+		break;
+	case D3DRS_DESTBLEND:
+		break;
+	case D3DRS_CULLMODE:
+		break;
+	case D3DRS_ZFUNC:
+		break;
+	case D3DRS_ALPHAREF:
+		break;
+	case D3DRS_ALPHAFUNC:
+		break;
+	case D3DRS_DITHERENABLE:
+		break;
+	case D3DRS_ALPHABLENDENABLE:
+		break;
+	case D3DRS_FOGENABLE:
+		break;
+	case D3DRS_SPECULARENABLE:
+		break;
+	case D3DRS_FOGCOLOR:
+		break;
+	case D3DRS_FOGTABLEMODE:
+		break;
+	case D3DRS_FOGSTART:
+		break;
+	case D3DRS_FOGEND:
+		break;
+	case D3DRS_FOGDENSITY:
+		break;
+	case D3DRS_RANGEFOGENABLE:
+		break;
+	case D3DRS_STENCILENABLE:
+		break;
+	case D3DRS_STENCILFAIL:
+		break;
+	case D3DRS_STENCILZFAIL:
+		break;
+	case D3DRS_STENCILPASS:
+		break;
+	case D3DRS_STENCILFUNC:
+		break;
+	case D3DRS_STENCILREF:
+		break;
+	case D3DRS_STENCILMASK:
+		break;
+	case D3DRS_STENCILWRITEMASK:
+		break;
+	case D3DRS_TEXTUREFACTOR:
+		break;
+	case D3DRS_WRAP0:
+		break;
+	case D3DRS_WRAP1:
+		break;
+	case D3DRS_WRAP2:
+		break;
+	case D3DRS_WRAP3:
+		break;
+	case D3DRS_WRAP4:
+		break;
+	case D3DRS_WRAP5:
+		break;
+	case D3DRS_WRAP6:
+		break;
+	case D3DRS_WRAP7:
+		break;
+	case D3DRS_CLIPPING:
+		break;
+	case D3DRS_LIGHTING:
+		break;
+	case D3DRS_AMBIENT:
+		break;
+	case D3DRS_FOGVERTEXMODE:
+		break;
+	case D3DRS_COLORVERTEX:
+		break;
+	case D3DRS_LOCALVIEWER:
+		break;
+	case D3DRS_NORMALIZENORMALS:
+		break;
+	case D3DRS_DIFFUSEMATERIALSOURCE:
+		break;
+	case D3DRS_SPECULARMATERIALSOURCE:
+		break;
+	case D3DRS_AMBIENTMATERIALSOURCE:
+		break;
+	case D3DRS_EMISSIVEMATERIALSOURCE:
+		break;
+	case D3DRS_VERTEXBLEND:
+		break;
+	case D3DRS_CLIPPLANEENABLE:
+		break;
+	case D3DRS_POINTSIZE:
+		break;
+	case D3DRS_POINTSIZE_MIN:
+		break;
+	case D3DRS_POINTSPRITEENABLE:
+		break;
+	case D3DRS_POINTSCALEENABLE:
+		break;
+	case D3DRS_POINTSCALE_A:
+		break;
+	case D3DRS_POINTSCALE_B:
+		break;
+	case D3DRS_POINTSCALE_C:
+		break;
+	case D3DRS_MULTISAMPLEANTIALIAS:
+		break;
+	case D3DRS_MULTISAMPLEMASK:
+		break;
+	case D3DRS_PATCHEDGESTYLE:
+		break;
+	case D3DRS_DEBUGMONITORTOKEN:
+		break;
+	case D3DRS_POINTSIZE_MAX:
+		break;
+	case D3DRS_INDEXEDVERTEXBLENDENABLE:
+		break;
+	case D3DRS_COLORWRITEENABLE:
+		break;
+	case D3DRS_TWEENFACTOR:
+		break;
+	case D3DRS_BLENDOP:
+		break;
+	case D3DRS_POSITIONDEGREE:
+		break;
+	case D3DRS_NORMALDEGREE:
+		break;
+	case D3DRS_SCISSORTESTENABLE:
+		break;
+	case D3DRS_SLOPESCALEDEPTHBIAS:
+		break;
+	case D3DRS_ANTIALIASEDLINEENABLE:
+		break;
+	case D3DRS_MINTESSELLATIONLEVEL:
+		break;
+	case D3DRS_MAXTESSELLATIONLEVEL:
+		break;
+	case D3DRS_ADAPTIVETESS_X:
+		break;
+	case D3DRS_ADAPTIVETESS_Y:
+		break;
+	case D3DRS_ADAPTIVETESS_Z:
+		break;
+	case D3DRS_ADAPTIVETESS_W:
+		break;
+	case D3DRS_ENABLEADAPTIVETESSELLATION:
+		break;
+	case D3DRS_TWOSIDEDSTENCILMODE:
+		break;
+	case D3DRS_CCW_STENCILFAIL:
+		break;
+	case D3DRS_CCW_STENCILZFAIL:
+		break;
+	case D3DRS_CCW_STENCILPASS:
+		break;
+	case D3DRS_CCW_STENCILFUNC:
+		break;
+	case D3DRS_COLORWRITEENABLE1:
+		break;
+	case D3DRS_COLORWRITEENABLE2:
+		break;
+	case D3DRS_COLORWRITEENABLE3:
+		break;
+	case D3DRS_BLENDFACTOR:
+		break;
+	case D3DRS_SRGBWRITEENABLE:
+		break;
+	case D3DRS_DEPTHBIAS:
+		break;
+	case D3DRS_WRAP8:
+		break;
+	case D3DRS_WRAP9:
+		break;
+	case D3DRS_WRAP10:
+		break;
+	case D3DRS_WRAP11:
+		break;
+	case D3DRS_WRAP12:
+		break;
+	case D3DRS_WRAP13:
+		break;
+	case D3DRS_WRAP14:
+		break;
+	case D3DRS_WRAP15:
+		break;
+	case D3DRS_SEPARATEALPHABLENDENABLE:
+		break;
+	case D3DRS_SRCBLENDALPHA:
+		break;
+	case D3DRS_DESTBLENDALPHA:
+		break;
+	case D3DRS_BLENDOPALPHA:
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetRenderState unknown state! " << State;
+		break;
 	}
 
 	return S_OK;
