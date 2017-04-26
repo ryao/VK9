@@ -281,7 +281,7 @@ struct SpecializationConstants
 	int lastPixel = true;
 	int sourceBlend = D3DBLEND_ONE;
 	int destinationBlend = D3DBLEND_ZERO;
-	int cullMode = D3DCULL_CCW;
+	int cullMode = D3DCULL_CW; //D3DCULL_CCW
 	int zFunction = D3DCMP_LESSEQUAL;
 	int alphaReference = 0;
 	int alphaFunction = D3DCMP_ALWAYS;
