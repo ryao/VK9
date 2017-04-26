@@ -19,6 +19,7 @@ misrepresented as being the original software.
 */
 
 #include <algorithm>
+#include <limits>
 
 #include "C9.h"
 #include "CDevice9.h"
@@ -1551,12 +1552,15 @@ CDevice9::~CDevice9()
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
-	//VK_FORMAT_B8G8R8A8_UNORM 
-	//Revisit the byte order could be difference based on the surface format so I need a better way to handle this.
-	mClearColorValue.float32[0] = D3DCOLOR_B(Color);
-	mClearColorValue.float32[1] = D3DCOLOR_G(Color);
-	mClearColorValue.float32[2] = D3DCOLOR_R(Color);
-	mClearColorValue.float32[3] = D3DCOLOR_A(Color);
+	if ((Flags & D3DCLEAR_TARGET) == D3DCLEAR_TARGET)
+	{
+		//VK_FORMAT_B8G8R8A8_UNORM 
+		//Revisit the byte order could be difference based on the surface format so I need a better way to handle this.
+		mClearColorValue.float32[3] = FLT_MAX; //D3DCOLOR_A(Color);
+		mClearColorValue.float32[2] = D3DCOLOR_B(Color);
+		mClearColorValue.float32[1] = D3DCOLOR_G(Color);
+		mClearColorValue.float32[0] = D3DCOLOR_R(Color);		
+	}
 
 	if (Count > 0 && pRects != nullptr)
 	{
