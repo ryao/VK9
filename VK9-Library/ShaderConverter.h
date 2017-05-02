@@ -40,7 +40,7 @@ struct VersionToken
 {
 	char MinorVersion=0;
 	char MajorVersion=0;
-	uint16_t ShaderType; //Pixel 0xFFFF & Vertex 0xFFFE
+	uint16_t ShaderType = 0xFFFE; //Pixel 0xFFFF & Vertex 0xFFFE
 };
 
 

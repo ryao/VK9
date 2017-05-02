@@ -496,7 +496,9 @@ public:
 	void CreateDescriptorSet(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext);
 	void CreateSampler(std::shared_ptr<SamplerRequest> request);
 
-	void UpdateUniformBuffer(std::shared_ptr<DrawContext> context);
+	void UpdateBuffer();
+
+	void UpdatePushConstants(std::shared_ptr<DrawContext> context);
 	void FlushDrawBufffer();
 
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory);

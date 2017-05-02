@@ -3593,32 +3593,26 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLight)
 {
+	DeviceState* state = nullptr;
+
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		if (this->mCurrentStateRecording->mDeviceState.mLights.size() == Index)
-		{
-			this->mCurrentStateRecording->mDeviceState.mLights.push_back((*pLight));
-			this->mCurrentStateRecording->mDeviceState.mAreLightsDirty = true;
-		}
-		else
-		{
-			this->mCurrentStateRecording->mDeviceState.mLights[Index] = (*pLight);
-			this->mCurrentStateRecording->mDeviceState.mAreLightsDirty = true;
-		}
-
+		state = &this->mCurrentStateRecording->mDeviceState;
 	}
 	else
 	{
-		if (mDeviceState.mLights.size() == Index)
-		{
-			mDeviceState.mLights.push_back((*pLight));
-			mDeviceState.mAreLightsDirty = true;
-		}
-		else
-		{
-			mDeviceState.mLights[Index] = (*pLight);
-			mDeviceState.mAreLightsDirty = true;
-		}
+		state = &mDeviceState;
+	}
+
+	if (state->mLights.size() == Index)
+	{
+		state->mLights.push_back((*pLight));
+		state->mAreLightsDirty = true;
+	}
+	else
+	{
+		state->mLights[Index] = (*pLight);
+		state->mAreLightsDirty = true;
 	}
 
 	return S_OK;
@@ -5140,6 +5134,13 @@ void CDevice9::StartScene()
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
 	vkCmdPipelineBarrier(mSwapchainBuffers[mCurrentBuffer], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
+
+	/*
+	The Vulkan spec doesn't allow updating buffers inside of a render pass so we need to put as much buffer update logic into this method to reduce violations.
+	The previous UBO implementation was updating inside of a render pass and it seemed to work on Desktop but that may vary from driver to driver.
+	In addition performance is not guaranteed in case of spec violation.
+	*/
+	mBufferManager->UpdateBuffer();
 
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
 

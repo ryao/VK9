@@ -522,11 +522,12 @@ vec4 Convert(int rgba)
 layout(binding = 0) uniform sampler2D textures[textureCount];
 
 layout (location = 0) in vec4 normal;
-layout (location = 1) in vec4 frontColor;
-layout (location = 2) in vec4 backColor;
-layout (location = 3) in vec2 texcoord1;
-layout (location = 4) in vec2 texcoord2;
-layout (location = 5) in vec4 pos;
+layout (location = 1) in vec4 frontLight;
+layout (location = 2) in vec4 backLight;
+layout (location = 3) in vec4 color;
+layout (location = 4) in vec2 texcoord1;
+layout (location = 5) in vec2 texcoord2;
+layout (location = 6) in vec4 pos;
 
 layout (location = 0) out vec4 uFragColor;
 
@@ -557,14 +558,7 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D 
 			return result;
 		break;
 		case D3DTA_DIFFUSE:
-			if ( gl_FrontFacing )
-			{
-				return frontColor;
-			}
-			else 
-			{
-				return backColor;
-			}
+			return color;
 		break;
 		case D3DTA_SELECTMASK:
 			return vec4(0);
@@ -726,17 +720,7 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 void main() 
 {
 	vec4 temp;
-	vec4 result;
-
-	//On stage 0 CURRENT is the same as DIFFUSE
-	if ( gl_FrontFacing )
-	{
-		result =  frontColor;
-	}
-	else 
-	{
-		result =  backColor;
-	}
+	vec4 result = color; //On stage 0 CURRENT is the same as DIFFUSE
 
 	if(textureCount>0)
 	{
@@ -758,7 +742,18 @@ void main()
 
 	if(lighting)
 	{
-		if(shadeMode == D3DSHADE_PHONG)
+		if(shadeMode == D3DSHADE_GOURAUD)
+		{
+			if ( gl_FrontFacing )
+			{
+				uFragColor *= frontLight;
+			}
+			else 
+			{
+				uFragColor *= backLight;
+			}
+		}
+		else if(shadeMode == D3DSHADE_PHONG)
 		{
 			vec4 ambientSum = vec4(0);
 			vec4 diffuseSum = vec4(0);

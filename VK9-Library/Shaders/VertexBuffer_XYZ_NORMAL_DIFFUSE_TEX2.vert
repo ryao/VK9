@@ -506,11 +506,12 @@ layout (location = 3) in vec2 attr3; //tex1
 layout (location = 4) in vec2 attr4; //tex2
 
 layout (location = 0) out vec4 normal;
-layout (location = 1) out vec4 frontColor;
-layout (location = 2) out vec4 backColor;
-layout (location = 3) out vec2 texcoord1;
-layout (location = 4) out vec2 texcoord2;
-layout (location = 5) out vec4 pos;
+layout (location = 1) out vec4 frontLight;
+layout (location = 2) out vec4 backLight;
+layout (location = 3) out vec4 color;
+layout (location = 4) out vec2 texcoord1;
+layout (location = 5) out vec2 texcoord2;
+layout (location = 6) out vec4 pos;
 
 out gl_PerVertex 
 {
@@ -536,14 +537,25 @@ vec4 Convert(uvec4 rgba)
 
 void main() 
 {
-	vec3 frontLightColor = vec3(0);
-	vec3 backLightColor = vec3(0);
-
 	pos = ubo.totalTransformation * position * vec4(1.0,-1.0,1.0,1.0);
-
 	gl_Position = pos;
-	frontColor = Convert(attr2);
-	backColor = frontColor;
+
+	switch(diffuseMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			color = material.Diffuse;
+		break;
+		case D3DMCS_COLOR1:
+			color = Convert(attr2);
+		break;
+		case D3DMCS_COLOR2:
+			color = vec4(0);
+		break;
+		default:
+			color = vec4(0);
+		break;
+	}
+
 	normal = attr1;
 	texcoord1 = attr3;
 	texcoord2 = attr4;
@@ -552,13 +564,15 @@ void main()
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
 		{
+			vec3 frontLightColor = vec3(0);
+			vec3 backLightColor = vec3(0);
 			for( int i=0; i<lightCount; ++i )
 			{
 				frontLightColor += getGouradLight( i, position.xyz, normal.xyz);
 				backLightColor += getGouradLight( i, position.xyz, -normal.xyz);
 			}
-			frontColor *= vec4(frontLightColor,1);
-			backColor *= vec4(backLightColor,1);
+			frontLight = vec4(frontLightColor,1);
+			backLight = vec4(backLightColor,1);
 		}
 	}
 
