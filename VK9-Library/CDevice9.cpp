@@ -1413,7 +1413,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
 	mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
-	D3DLIGHT9 light = {};
+	Light light = {};
 	mDeviceState.mLights.push_back(light);
 	//mDeviceState.mLights.push_back(light);
 	//mDeviceState.mLights.push_back(light);
@@ -1432,6 +1432,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 #ifdef _DEBUG
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DLIGHT9): " << sizeof(D3DLIGHT9);
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(Light): " << sizeof(Light);
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 sizeof(D3DMATERIAL9): " << sizeof(D3DMATERIAL9);
 #endif	
 
@@ -2315,7 +2316,22 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexDa
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
 {
-	(*pLight) = mDeviceState.mLights[Index];
+	auto& light = mDeviceState.mLights[Index];
+
+	pLight->Diffuse = (*(D3DCOLORVALUE*)light.Diffuse.data());
+	pLight->Specular = (*(D3DCOLORVALUE*)light.Specular.data());
+	pLight->Ambient = (*(D3DCOLORVALUE*)light.Ambient.data());
+
+	pLight->Position = (*(D3DVECTOR*)light.Position.data());
+	pLight->Direction = (*(D3DVECTOR*)light.Direction.data());
+
+	pLight->Range = light.Range;
+	pLight->Falloff = light.Falloff;
+	pLight->Attenuation0 = light.Attenuation0;
+	pLight->Attenuation1 = light.Attenuation1;
+	pLight->Attenuation2 = light.Attenuation2;
+	pLight->Theta = light.Theta;
+	pLight->Phi = light.Phi;
 
 	return S_OK;
 }
@@ -3604,14 +3620,47 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLigh
 		state = &mDeviceState;
 	}
 
+	Light light = {};
+
+	light.Diffuse << pLight->Diffuse.r
+	,pLight->Diffuse.g
+	,pLight->Diffuse.b
+	,pLight->Diffuse.a;
+
+	light.Specular << pLight->Specular.r
+	,pLight->Specular.g
+	,pLight->Specular.b
+	,pLight->Specular.a;
+
+	light.Ambient << pLight->Ambient.r
+	,pLight->Ambient.g
+	,pLight->Ambient.b
+	,pLight->Ambient.a;
+
+	light.Position << pLight->Position.x
+	,pLight->Position.y
+	,pLight->Position.z;
+
+	light.Direction << pLight->Direction.x
+	,pLight->Direction.y
+	,pLight->Direction.z;
+
+	light.Range = pLight->Range;
+	light.Falloff = pLight->Falloff;
+	light.Attenuation0 = pLight->Attenuation0;
+	light.Attenuation1 = pLight->Attenuation1;
+	light.Attenuation2 = pLight->Attenuation2;
+	light.Theta = pLight->Theta;
+	light.Phi = pLight->Phi;
+
 	if (state->mLights.size() == Index)
 	{
-		state->mLights.push_back((*pLight));
+		state->mLights.push_back(light);
 		state->mAreLightsDirty = true;
 	}
 	else
 	{
-		state->mLights[Index] = (*pLight);
+		state->mLights[Index] = light;
 		state->mAreLightsDirty = true;
 	}
 

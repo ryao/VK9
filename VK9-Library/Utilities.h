@@ -41,6 +41,8 @@ misrepresented as being the original software.
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
+#include <Eigen/Dense>
+
 #include <cstring>
 #include <fstream>
 

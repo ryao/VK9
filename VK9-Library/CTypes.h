@@ -26,8 +26,11 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 
+#include <vector>
 #include <boost/container/small_vector.hpp>
 #include <boost/container/flat_map.hpp>
+
+#include <Eigen/Dense>
 
 class CVertexBuffer9;
 class CVertexDeclaration9;
@@ -84,6 +87,27 @@ struct UniformBufferObject {
 		,0.0 ,1.0 ,0.0 ,0.0
 		,0.0 ,0.0 ,1.0 ,0.0
 		,0.0 ,0.0 ,0.0 ,1.0 };
+};
+
+/*
+We need this structure because the compiler reduces the size of the native structure so we're missing bytes on the GPU size.
+If we weren't using this for passing to the GPU this would actually be a good thing because more information could fit on a cache line.
+*/
+struct Light
+{
+	int        Type;            /* Type of light source */
+	Eigen::Vector4f       Diffuse;         /* Diffuse color of light */
+	Eigen::Vector4f       Specular;        /* Specular color of light */
+	Eigen::Vector4f       Ambient;         /* Ambient color of light */
+	Eigen::Vector3f       Position;        /* Position in world space */
+	Eigen::Vector3f       Direction;       /* Direction in world space */
+	float      Range;           /* Cutoff range */
+	float      Falloff;         /* Falloff */
+	float      Attenuation0;    /* Constant attenuation */
+	float      Attenuation1;    /* Linear attenuation */
+	float      Attenuation2;    /* Quadratic attenuation */
+	float      Theta;           /* Inner angle of spotlight cone */
+	float      Phi;             /* Outer angle of spotlight cone */
 };
 
 class StreamSource
@@ -394,7 +418,8 @@ struct DeviceState
 	BOOL mHasIndexBuffer = 0;
 
 	//IDirect3DDevice9::SetLight
-	boost::container::small_vector<D3DLIGHT9, 4> mLights;
+	//boost::container::small_vector<Light, 4> mLights;
+	std::vector<Light> mLights;
 	BOOL mAreLightsDirty = true;
 
 	//IDirect3DDevice9::SetMaterial

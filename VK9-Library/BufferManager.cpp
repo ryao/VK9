@@ -438,7 +438,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mSubmitInfo.pCommandBuffers = &mCommandBuffer;
 
 	//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
-	CreateBuffer(sizeof(D3DLIGHT9)*4, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mLightBuffer, mLightBufferMemory);
+	CreateBuffer(sizeof(Light)*4, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mLightBuffer, mLightBufferMemory);
 	CreateBuffer(sizeof(D3DMATERIAL9), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mMaterialBuffer, mMaterialBufferMemory);
 }
 
@@ -1541,7 +1541,7 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	{
 		mDescriptorBufferInfo[0].buffer = mLightBuffer;
 		mDescriptorBufferInfo[0].offset = 0;
-		mDescriptorBufferInfo[0].range = sizeof(D3DLIGHT9) * mDevice->mDeviceState.mLights.size(); //4; 
+		mDescriptorBufferInfo[0].range = sizeof(Light) * mDevice->mDeviceState.mLights.size(); //4; 
 
 		mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
 		mDescriptorBufferInfo[1].offset = 0;
@@ -1614,7 +1614,7 @@ void BufferManager::UpdateBuffer()
 {
 	if (mDevice->mDeviceState.mAreLightsDirty)
 	{
-		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(D3DLIGHT9)*mDevice->mDeviceState.mLights.size(), mDevice->mDeviceState.mLights.data()); //context->mSpecializationConstants.lightCount
+		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(Light)*mDevice->mDeviceState.mLights.size(), mDevice->mDeviceState.mLights.data()); //context->mSpecializationConstants.lightCount
 		mDevice->mDeviceState.mAreLightsDirty = false;
 	}
 
