@@ -456,6 +456,8 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
+
+	bool       IsEnabled;
 };
  
 struct Material
@@ -762,10 +764,13 @@ void main()
 
 			for( int i=0; i<lightCount; ++i )
 			{
-				getPhongLight( i, pos.xyz, normal, ambient, diffuse, spec );
-				ambientSum += ambient;
-				diffuseSum += diffuse;
-				specSum += spec;
+				if(lights[i].IsEnabled)
+				{
+					getPhongLight( i, pos.xyz, normal, ambient, diffuse, spec );
+					ambientSum += ambient;
+					diffuseSum += diffuse;
+					specSum += spec;
+				}
 			}
 
 			ambientSum /= lightCount;

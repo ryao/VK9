@@ -174,16 +174,16 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	*/
 
 	//IDirect3DDevice9::LightEnable
-	if ((type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
-	{
-		BOOST_FOREACH(const auto& pair1, sourceState.mLightSettings)
-		{
-			if (!onlyIfExists || targetState.mLightSettings.count(pair1.first) > 0)
-			{
-				targetState.mLightSettings[pair1.first] = pair1.second;
-			}
-		}
-	}
+	//if ((type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
+	//{
+	//	BOOST_FOREACH(const auto& pair1, sourceState.mLightSettings)
+	//	{
+	//		if (!onlyIfExists || targetState.mLightSettings.count(pair1.first) > 0)
+	//		{
+	//			targetState.mLightSettings[pair1.first] = pair1.second;
+	//		}
+	//	}
+	//}
 
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette

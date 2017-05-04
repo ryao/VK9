@@ -1612,6 +1612,11 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 
 void BufferManager::UpdateBuffer()
 {
+	/*
+	Vulkan doesn't allow vkCmdUpdateBuffer inside of a render pass.
+	The dirty flag for lights can be set by enable light or set light.
+	*/
+
 	if (mDevice->mDeviceState.mAreLightsDirty)
 	{
 		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(Light)*mDevice->mDeviceState.mLights.size(), mDevice->mDeviceState.mLights.data()); //context->mSpecializationConstants.lightCount

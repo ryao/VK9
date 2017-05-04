@@ -456,6 +456,8 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
+
+	bool       IsEnabled;
 };
  
 struct Material
@@ -568,12 +570,14 @@ void main()
 			vec3 backLightColor = vec3(0);
 			for( int i=0; i<lightCount; ++i )
 			{
-				frontLightColor += getGouradLight( i, position.xyz, normal.xyz);
-				backLightColor += getGouradLight( i, position.xyz, -normal.xyz);
+				if(lights[i].IsEnabled)
+				{
+					frontLightColor += getGouradLight( i, position.xyz, normal.xyz);
+					backLightColor += getGouradLight( i, position.xyz, -normal.xyz);
+				}
 			}
 			frontLight = vec4(frontLightColor,1);
 			backLight = vec4(backLightColor,1);
 		}
 	}
-
 }

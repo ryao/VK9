@@ -95,19 +95,21 @@ If we weren't using this for passing to the GPU this would actually be a good th
 */
 struct Light
 {
-	int        Type;            /* Type of light source */
+	int                   Type;            /* Type of light source */
 	Eigen::Vector4f       Diffuse;         /* Diffuse color of light */
 	Eigen::Vector4f       Specular;        /* Specular color of light */
 	Eigen::Vector4f       Ambient;         /* Ambient color of light */
 	Eigen::Vector3f       Position;        /* Position in world space */
 	Eigen::Vector3f       Direction;       /* Direction in world space */
-	float      Range;           /* Cutoff range */
-	float      Falloff;         /* Falloff */
-	float      Attenuation0;    /* Constant attenuation */
-	float      Attenuation1;    /* Linear attenuation */
-	float      Attenuation2;    /* Quadratic attenuation */
-	float      Theta;           /* Inner angle of spotlight cone */
-	float      Phi;             /* Outer angle of spotlight cone */
+	float                 Range;           /* Cutoff range */
+	float                 Falloff;         /* Falloff */
+	float                 Attenuation0;    /* Constant attenuation */
+	float                 Attenuation1;    /* Linear attenuation */
+	float                 Attenuation2;    /* Quadratic attenuation */
+	float                 Theta;           /* Inner angle of spotlight cone */
+	float                 Phi;             /* Outer angle of spotlight cone */
+
+	bool                  IsEnabled;       /*Replaces separate enable structure.*/
 };
 
 class StreamSource
@@ -405,7 +407,6 @@ struct SpecializationConstants
 struct DeviceState
 {
 	//IDirect3DDevice9::LightEnable
-	boost::container::flat_map<DWORD, BOOL> mLightSettings;
 
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette

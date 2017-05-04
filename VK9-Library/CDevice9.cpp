@@ -2338,7 +2338,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLightEnable(DWORD Index, BOOL *pEnable)
 {
-	(*pEnable) = mDeviceState.mLightSettings[Index];
+	(*pEnable) = mDeviceState.mLights[Index].IsEnabled;
 
 	return S_OK;
 }
@@ -3464,13 +3464,29 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
 
 HRESULT STDMETHODCALLTYPE CDevice9::LightEnable(DWORD LightIndex, BOOL bEnable)
 {
+	DeviceState* state = nullptr;
+
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		this->mCurrentStateRecording->mDeviceState.mLightSettings[LightIndex] = bEnable;
+		state = &this->mCurrentStateRecording->mDeviceState;
 	}
 	else
 	{
-		mDeviceState.mLightSettings[LightIndex] = bEnable;
+		state = &mDeviceState;
+	}
+
+	Light light = {};
+
+	if (state->mLights.size() == LightIndex)
+	{
+		light.IsEnabled = bEnable;
+		state->mLights.push_back(light);
+		state->mAreLightsDirty = true;
+	}
+	else
+	{
+		state->mLights[LightIndex].IsEnabled = bEnable;
+		state->mAreLightsDirty = true;
 	}
 
 	return S_OK;
@@ -3660,6 +3676,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLigh
 	}
 	else
 	{
+		light.IsEnabled = state->mLights[Index].IsEnabled;
+
 		state->mLights[Index] = light;
 		state->mAreLightsDirty = true;
 	}
