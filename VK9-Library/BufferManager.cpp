@@ -76,7 +76,7 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mPushConstantRanges[0].offset = 0;
 	mPushConstantRanges[0].size = UBO_SIZE;
-	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS; //VK_SHADER_STAGE_VERTEX_BIT
 
 	mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
 	mSpecializationInfo.dataSize = sizeof(SpecializationConstants);
@@ -588,6 +588,8 @@ BufferManager::~BufferManager()
 		mPipelineCache = VK_NULL_HANDLE;
 	}
 
+	//Empty cached objects. (destructors should take care of their resources.
+
 	mDrawBuffer.clear();
 	mSamplerRequests.clear();
 
@@ -671,14 +673,16 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		context->FVF = mDevice->mDeviceState.mFVF;
 	}
 
+	//TODO: revisit if it's valid to have declaration or FVF with either shader type.
+
 	if (mDevice->mDeviceState.mHasVertexShader)
 	{
-		context->VertexShader = mDevice->mDeviceState.mVertexShader;
+		context->VertexShader = mDevice->mDeviceState.mVertexShader; //vert
 	}
 
 	if (mDevice->mDeviceState.mHasPixelShader)
 	{
-		context->PixelShader = mDevice->mDeviceState.mPixelShader;
+		context->PixelShader = mDevice->mDeviceState.mPixelShader; //pixel
 	}
 
 	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
@@ -1002,7 +1006,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	if (context->Pipeline == VK_NULL_HANDLE)
 	{
-		CreatePipe(context);
+		CreatePipe(context); //If we didn't find a matching pipeline then create a new one.
 	}
 
 	/**********************************************
@@ -1013,8 +1017,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
-
-	//Copy information into resource context.
 
 	if (context->DescriptorSetLayout != VK_NULL_HANDLE)
 	{
@@ -1062,6 +1064,8 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Setup bindings
 	**********************************************/
+
+	//TODO: I need to find a way to prevent binding on every draw call.
 
 	//if (!mIsDirty || mLastVkPipeline != context->Pipeline)
 	//{
@@ -1196,18 +1200,6 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	//	//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
 	//	//}
 	//}
-
-	/*
-	// D3DRS_ZBIAS is not defined.
-	if (mDevice->mRenderStates[D3DRS_ZBIAS] > 0)
-	{
-	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
-	}
-	else
-	{
-	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
-	}
-	*/
 
 	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)constants.cullMode);
 	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)constants.fillMode);
@@ -1448,15 +1440,16 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 	if (textureCount)
 	{
-		if (lightCount)
-		{
-			mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
-		}
-		else
-		{
-			mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.	
-		}	
+		//if (lightCount)
+		//{
+		//	mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
+		//}
+		//else
+		//{
+		//	mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.	
+		//}	
 
+		mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
 		result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
@@ -1611,17 +1604,16 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 }
 
 void BufferManager::UpdateBuffer()
-{
-	/*
-	Vulkan doesn't allow vkCmdUpdateBuffer inside of a render pass.
-	The dirty flag for lights can be set by enable light or set light.
-	*/
+{ //Vulkan doesn't allow vkCmdUpdateBuffer inside of a render pass.
+
+	//The dirty flag for lights can be set by enable light or set light.
 	if (mDevice->mDeviceState.mAreLightsDirty)
 	{
 		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(Light)*mDevice->mDeviceState.mLights.size(), mDevice->mDeviceState.mLights.data()); //context->mSpecializationConstants.lightCount
 		mDevice->mDeviceState.mAreLightsDirty = false;
 	}
 
+	//
 	if (mDevice->mDeviceState.mIsMaterialDirty)
 	{
 		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mMaterialBuffer, 0, sizeof(D3DMATERIAL9), &mDevice->mDeviceState.mMaterial);
@@ -1634,10 +1626,10 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 	VkResult result = VK_SUCCESS;
 	void* data = nullptr;
 
-	if (!mDevice->mDeviceState.mHasTransformsChanged)
-	{
-		return;
-	}
+	//if (!mDevice->mDeviceState.mHasTransformsChanged)
+	//{
+	//	return;
+	//}
 
 	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTransforms)
 	{
@@ -1679,7 +1671,8 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 	mTotalTransformation = mProjection * mView * mModel;
 	//mTotalTransformation = mModel * mView * mProjection;
 
-	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, UBO_SIZE, mTotalTransformation.data());
+	//vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, UBO_SIZE, mTotalTransformation.data());
+	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE, mTotalTransformation.data());
 }
 
 void BufferManager::FlushDrawBufffer()

@@ -120,15 +120,6 @@ misrepresented as being the original software.
 #define D3DCMP_GREATEREQUAL 7
 #define D3DCMP_ALWAYS 8
 
-#define D3DCMP_NEVER 1
-#define D3DCMP_LESS 2
-#define D3DCMP_EQUAL 3
-#define D3DCMP_LESSEQUAL 4
-#define D3DCMP_GREATER 5
-#define D3DCMP_NOTEQUAL 6
-#define D3DCMP_GREATEREQUAL 7
-#define D3DCMP_ALWAYS 8
-
 #define D3DFOG_NONE 0
 #define D3DFOG_EXP 1
 #define D3DFOG_EXP2 2
@@ -180,7 +171,7 @@ layout(constant_id = 3) const int textureCount = 2;
 layout(constant_id = 4) const int Constant_0 = 0;
 layout(constant_id = 5) const int Result_0 = D3DTA_CURRENT;
 layout(constant_id = 6) const int textureTransformationFlags_0 = D3DTTFF_DISABLE;
-layout(constant_id = 7) const int texureCoordinateIndex_0 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 7) const int texureCoordinateIndex_0 = 0;
 layout(constant_id = 8) const int colorOperation_0 = D3DTOP_MODULATE;
 layout(constant_id = 9) const int colorArgument0_0 = D3DTA_CURRENT;
 layout(constant_id = 10) const int colorArgument1_0 = D3DTA_TEXTURE;
@@ -200,7 +191,7 @@ layout(constant_id = 21) const float bumpMapOffset_0 = 0.0;
 layout(constant_id = 22) const int Constant_1 = 0;
 layout(constant_id = 23) const int Result_1 = D3DTA_CURRENT;
 layout(constant_id = 24) const int textureTransformationFlags_1 = D3DTTFF_DISABLE;
-layout(constant_id = 25) const int texureCoordinateIndex_1 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 25) const int texureCoordinateIndex_1 = 1;
 layout(constant_id = 26) const int colorOperation_1 = D3DTOP_DISABLE;
 layout(constant_id = 27) const int colorArgument0_1 = D3DTA_CURRENT;
 layout(constant_id = 28) const int colorArgument1_1 = D3DTA_TEXTURE;
@@ -220,7 +211,7 @@ layout(constant_id = 39) const float bumpMapOffset_1 = 0.0;
 layout(constant_id = 40) const int Constant_2 = 0;
 layout(constant_id = 41) const int Result_2 = D3DTA_CURRENT;
 layout(constant_id = 42) const int textureTransformationFlags_2 = D3DTTFF_DISABLE;
-layout(constant_id = 43) const int texureCoordinateIndex_2 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 43) const int texureCoordinateIndex_2 = 2;
 layout(constant_id = 44) const int colorOperation_2 = D3DTOP_DISABLE;
 layout(constant_id = 45) const int colorArgument0_2 = D3DTA_CURRENT;
 layout(constant_id = 46) const int colorArgument1_2 = D3DTA_TEXTURE;
@@ -240,7 +231,7 @@ layout(constant_id = 57) const float bumpMapOffset_2 = 0.0;
 layout(constant_id = 58) const int Constant_3 = 0;
 layout(constant_id = 59) const int Result_3 = D3DTA_CURRENT;
 layout(constant_id = 60) const int textureTransformationFlags_3 = D3DTTFF_DISABLE;
-layout(constant_id = 61) const int texureCoordinateIndex_3 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 61) const int texureCoordinateIndex_3 = 3;
 layout(constant_id = 62) const int colorOperation_3 = D3DTOP_DISABLE;
 layout(constant_id = 63) const int colorArgument0_3 = D3DTA_CURRENT;
 layout(constant_id = 64) const int colorArgument1_3 = D3DTA_TEXTURE;
@@ -260,7 +251,7 @@ layout(constant_id = 75) const float bumpMapOffset_3 = 0.0;
 layout(constant_id = 76) const int Constant_4 = 0;
 layout(constant_id = 77) const int Result_4 = D3DTA_CURRENT;
 layout(constant_id = 78) const int textureTransformationFlags_4 = D3DTTFF_DISABLE;
-layout(constant_id = 79) const int texureCoordinateIndex_4 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 79) const int texureCoordinateIndex_4 = 4;
 layout(constant_id = 80) const int colorOperation_4 = D3DTOP_DISABLE;
 layout(constant_id = 81) const int colorArgument0_4 = D3DTA_CURRENT;
 layout(constant_id = 82) const int colorArgument1_4 = D3DTA_TEXTURE;
@@ -280,7 +271,7 @@ layout(constant_id = 93) const float bumpMapOffset_4 = 0.0;
 layout(constant_id = 94 ) const int Constant_5 = 0;
 layout(constant_id = 95 ) const int Result_5 = D3DTA_CURRENT;
 layout(constant_id = 96 ) const int textureTransformationFlags_5 = D3DTTFF_DISABLE;
-layout(constant_id = 97 ) const int texureCoordinateIndex_5 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 97 ) const int texureCoordinateIndex_5 = 5;
 layout(constant_id = 98 ) const int colorOperation_5 = D3DTOP_DISABLE;
 layout(constant_id = 99 ) const int colorArgument0_5 = D3DTA_CURRENT;
 layout(constant_id = 100) const int colorArgument1_5 = D3DTA_TEXTURE;
@@ -300,7 +291,7 @@ layout(constant_id = 111) const float bumpMapOffset_5 = 0.0;
 layout(constant_id = 112) const int Constant_6 = 0;
 layout(constant_id = 113) const int Result_6 = D3DTA_CURRENT;
 layout(constant_id = 114) const int textureTransformationFlags_6 = D3DTTFF_DISABLE;
-layout(constant_id = 115) const int texureCoordinateIndex_6 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 115) const int texureCoordinateIndex_6 = 6;
 layout(constant_id = 116) const int colorOperation_6 = D3DTOP_DISABLE;
 layout(constant_id = 117) const int colorArgument0_6 = D3DTA_CURRENT;
 layout(constant_id = 118) const int colorArgument1_6 = D3DTA_TEXTURE;
@@ -320,7 +311,7 @@ layout(constant_id = 129) const float bumpMapOffset_6 = 0.0;
 layout(constant_id = 130) const int Constant_7 = 0;
 layout(constant_id = 131) const int Result_7 = D3DTA_CURRENT;
 layout(constant_id = 132) const int textureTransformationFlags_7 = D3DTTFF_DISABLE;
-layout(constant_id = 133) const int texureCoordinateIndex_7 = D3DTSS_TCI_PASSTHRU;
+layout(constant_id = 133) const int texureCoordinateIndex_7 = 7;
 layout(constant_id = 134) const int colorOperation_7 = D3DTOP_DISABLE;
 layout(constant_id = 135) const int colorArgument0_7 = D3DTA_CURRENT;
 layout(constant_id = 136) const int colorArgument1_7 = D3DTA_TEXTURE;

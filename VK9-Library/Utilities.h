@@ -284,6 +284,7 @@ inline VkFilter ConvertFilter(D3DTEXTUREFILTERTYPE input)
 		output = VK_FILTER_LINEAR;
 		break;
 	case D3DTEXF_ANISOTROPIC:	// anisotropic
+		//output = VK_FILTER_LINEAR;
 		output = VK_FILTER_CUBIC_IMG; //revisit
 		break;
 	case D3DTEXF_PYRAMIDALQUAD:	// 4-sample tent

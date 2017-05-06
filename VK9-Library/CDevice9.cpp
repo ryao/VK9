@@ -4124,14 +4124,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDi
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value)
 {
+	DeviceState* state = NULL;
+
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		this->mCurrentStateRecording->mDeviceState.mSamplerStates[Sampler][Type] = Value;
+		state = &this->mCurrentStateRecording->mDeviceState;
 	}
 	else
 	{
-		mDeviceState.mSamplerStates[Sampler][Type] = Value;
+		state = &mDeviceState;
 	}
+
+	state->mSamplerStates[Sampler][Type] = Value;
 
 	return S_OK;
 }

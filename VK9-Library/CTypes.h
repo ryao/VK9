@@ -142,7 +142,7 @@ struct SpecializationConstants
 	int Constant_0 = 0;
 	int Result_0 = D3DTA_CURRENT;
 	int textureTransformationFlags_0 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_0 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_0 = 0;
 	int colorOperation_0 = D3DTOP_MODULATE;
 	int colorArgument0_0 = D3DTA_CURRENT;
 	int colorArgument1_0 = D3DTA_TEXTURE;
@@ -162,7 +162,7 @@ struct SpecializationConstants
 	int Constant_1 = 0;
 	int Result_1 = D3DTA_CURRENT;
 	int textureTransformationFlags_1 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_1 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_1 = 1;
 	int colorOperation_1 = D3DTOP_DISABLE;
 	int colorArgument0_1 = D3DTA_CURRENT;
 	int colorArgument1_1 = D3DTA_TEXTURE;
@@ -182,7 +182,7 @@ struct SpecializationConstants
 	int Constant_2 = 0;
 	int Result_2 = D3DTA_CURRENT;
 	int textureTransformationFlags_2 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_2 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_2 = 2;
 	int colorOperation_2 = D3DTOP_DISABLE;
 	int colorArgument0_2 = D3DTA_CURRENT;
 	int colorArgument1_2 = D3DTA_TEXTURE;
@@ -202,7 +202,7 @@ struct SpecializationConstants
 	int Constant_3 = 0;
 	int Result_3 = D3DTA_CURRENT;
 	int textureTransformationFlags_3 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_3 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_3 = 3;
 	int colorOperation_3 = D3DTOP_DISABLE;
 	int colorArgument0_3 = D3DTA_CURRENT;
 	int colorArgument1_3 = D3DTA_TEXTURE;
@@ -222,7 +222,7 @@ struct SpecializationConstants
 	int Constant_4 = 0;
 	int Result_4 = D3DTA_CURRENT;
 	int textureTransformationFlags_4 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_4 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_4 = 4;
 	int colorOperation_4 = D3DTOP_DISABLE;
 	int colorArgument0_4 = D3DTA_CURRENT;
 	int colorArgument1_4 = D3DTA_TEXTURE;
@@ -242,7 +242,7 @@ struct SpecializationConstants
 	int Constant_5 = 0;
 	int Result_5 = D3DTA_CURRENT;
 	int textureTransformationFlags_5 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_5 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_5 = 5;
 	int colorOperation_5 = D3DTOP_DISABLE;
 	int colorArgument0_5 = D3DTA_CURRENT;
 	int colorArgument1_5 = D3DTA_TEXTURE;
@@ -262,7 +262,7 @@ struct SpecializationConstants
 	int Constant_6 = 0;
 	int Result_6 = D3DTA_CURRENT;
 	int textureTransformationFlags_6 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_6 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_6 = 6;
 	int colorOperation_6 = D3DTOP_DISABLE;
 	int colorArgument0_6 = D3DTA_CURRENT;
 	int colorArgument1_6 = D3DTA_TEXTURE;
@@ -282,7 +282,7 @@ struct SpecializationConstants
 	int Constant_7 = 0;
 	int Result_7 = D3DTA_CURRENT;
 	int textureTransformationFlags_7 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_7 = D3DTSS_TCI_PASSTHRU;
+	int texureCoordinateIndex_7 = 7;
 	int colorOperation_7 = D3DTOP_DISABLE;
 	int colorArgument0_7 = D3DTA_CURRENT;
 	int colorArgument1_7 = D3DTA_TEXTURE;
@@ -407,7 +407,6 @@ struct SpecializationConstants
 struct DeviceState
 {
 	//IDirect3DDevice9::LightEnable
-
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
 	//IDirect3DDevice9::SetFVF
