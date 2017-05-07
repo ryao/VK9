@@ -1994,6 +1994,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, 
 	vkCmdDrawIndexed(mSwapchainBuffers[mCurrentBuffer], min(mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
 
 	//BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive";
+	//Print(mDeviceState.mTransforms);
 
 	return S_OK;
 }

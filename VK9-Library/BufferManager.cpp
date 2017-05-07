@@ -1631,6 +1631,24 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 	//	return;
 	//}
 
+	mModel <<
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
+
+	mView <<
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
+
+	mProjection <<
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
+
 	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTransforms)
 	{
 		switch (pair1.first)

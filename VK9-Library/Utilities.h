@@ -194,11 +194,11 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 		break;
 	case D3DCULL_CW:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		break;
 	case D3DCULL_CCW:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		break;
 	default:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
@@ -848,7 +848,7 @@ inline void Print(DeviceState& deviceState)
 }
 
 /*
-d3d9 has a 32bit format where alpha is ignored but so far vulkan does not so to handle that I need to set alpha to be opacity
+d3d9 has a 32bit format where alpha is ignored but so far vulkan does not so to handle that I need to set alpha to be opaque.
 */
 inline void SetAlpha(char* imageData, uint32_t height, uint32_t width, uint32_t rowPitch)
 {
