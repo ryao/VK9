@@ -138,6 +138,8 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineDepthStencilStateCreateInfo.back.compareOp = VK_COMPARE_OP_ALWAYS;
 	mPipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
 	mPipelineDepthStencilStateCreateInfo.front = mPipelineDepthStencilStateCreateInfo.back;
+	mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
+	mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
 
 	mPipelineMultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	mPipelineMultisampleStateCreateInfo.pSampleMask = NULL;
@@ -173,7 +175,6 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &mSpecializationInfo;
 
 	mGraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	//mGraphicsPipelineCreateInfo.layout = mPipelineLayout;
 	mGraphicsPipelineCreateInfo.pVertexInputState = &mPipelineVertexInputStateCreateInfo;
 	mGraphicsPipelineCreateInfo.pInputAssemblyState = &mPipelineInputAssemblyStateCreateInfo;
 	mGraphicsPipelineCreateInfo.pRasterizationState = &mPipelineRasterizationStateCreateInfo;
@@ -1012,6 +1013,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Update transformation structure.
 	**********************************************/
+	//UpdateBuffer(); //Illegal
 	UpdatePushConstants(context);
 
 	/**********************************************
@@ -1067,29 +1069,29 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	//TODO: I need to find a way to prevent binding on every draw call.
 
+	if (resourceContext->DescriptorSet != VK_NULL_HANDLE)
+	{
+		vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
+		//mLastDescriptorSet = resourceContext->DescriptorSet;
+	}
+
 	//if (!mIsDirty || mLastVkPipeline != context->Pipeline)
 	//{
 	vkCmdBindPipeline(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->Pipeline);
 	//	mLastVkPipeline = context->Pipeline;
 	//}
 
-	if (resourceContext->DescriptorSet != VK_NULL_HANDLE)
-	{
-		vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
-		mLastDescriptorSet = resourceContext->DescriptorSet;
-	}
-
 	mVertexCount = 0;
+
+	if (mDevice->mDeviceState.mIndexBuffer != nullptr)
+	{
+		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
+	}
 
 	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
 	{
 		vkCmdBindVertexBuffers(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
 		mVertexCount += source.second.StreamData->mSize;
-	}
-
-	if (mDevice->mDeviceState.mIndexBuffer != nullptr)
-	{
-		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
 	}
 
 	mIsDirty = false;
@@ -1570,7 +1572,6 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	samplerCreateInfo.addressModeU = ConvertTextureAddress(request->AddressModeU);
 	samplerCreateInfo.addressModeV = ConvertTextureAddress(request->AddressModeV);
 	samplerCreateInfo.addressModeW = ConvertTextureAddress(request->AddressModeW);
-	samplerCreateInfo.maxAnisotropy = request->MaxAnisotropy;  //16 D3DSAMP_MAXANISOTROPY
 	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request->MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.mipLodBias = request->MipLodBias;
 

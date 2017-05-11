@@ -1557,7 +1557,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 	{
 		//VK_FORMAT_B8G8R8A8_UNORM 
 		//Revisit the byte order could be difference based on the surface format so I need a better way to handle this.
-		mClearColorValue.float32[3] = FLT_MAX; //D3DCOLOR_A(Color);
+		mClearColorValue.float32[3] = D3DCOLOR_A(Color); //FLT_MAX; 
 		mClearColorValue.float32[2] = D3DCOLOR_B(Color);
 		mClearColorValue.float32[1] = D3DCOLOR_G(Color);
 		mClearColorValue.float32[0] = D3DCOLOR_R(Color);		
@@ -3610,16 +3610,19 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain, DWORD Flags, con
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
 {
+	DeviceState* state = nullptr;
+
 	if (this->mCurrentStateRecording != nullptr)
 	{
-		this->mCurrentStateRecording->mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
-		this->mCurrentStateRecording->mDeviceState.mHasIndexBuffer = true;
+		state = &this->mCurrentStateRecording->mDeviceState;
 	}
 	else
 	{
-		mDeviceState.mIndexBuffer = (CIndexBuffer9*)pIndexData;
-		mDeviceState.mHasIndexBuffer = true;
+		state = &mDeviceState;
 	}
+
+	state->mIndexBuffer = (CIndexBuffer9*)pIndexData;
+	state->mHasIndexBuffer = true;
 
 	return S_OK;
 }

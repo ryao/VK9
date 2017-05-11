@@ -501,7 +501,7 @@ vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
 	return ambient + diffuse + spec;
 }
 
-layout (location = 0) in vec4 position;
+layout (location = 0) in vec3 position;
 layout (location = 1) in uvec4 attr1;
 layout (location = 2) in vec2 attr2;
 layout (location = 3) in vec2 attr3;
@@ -534,7 +534,8 @@ vec4 Convert(uvec4 rgba)
 
 void main() 
 {	
-	gl_Position = ubo.totalTransformation * position * vec4(1.0,-1.0,1.0,1.0);
+	gl_Position = ubo.totalTransformation * vec4(position,1.0);
+	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 
 	switch(diffuseMaterialSource)
 	{

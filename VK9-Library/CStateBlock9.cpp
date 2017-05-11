@@ -250,121 +250,349 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetPixelShaderConstantF
 	//IDirect3DDevice9::SetPixelShaderConstantI
 	//IDirect3DDevice9::SetRenderState
+	if (type == D3DSBT_ALL)
+	{
+		if (sourceState.hasFogEnable && (targetState.hasFogEnable || !onlyIfExists)) {
+			targetState.hasFogEnable = true; targetState.mSpecializationConstants.fogEnable = sourceState.mSpecializationConstants.fogEnable;
+		}
+		if (sourceState.hasNormalizeNormals && (targetState.hasNormalizeNormals || !onlyIfExists)) {
+			targetState.hasNormalizeNormals = true; targetState.mSpecializationConstants.normalizeNormals = sourceState.mSpecializationConstants.normalizeNormals;
+		}
+		if (sourceState.hasDebugMonitorToken && (targetState.hasDebugMonitorToken || !onlyIfExists)) {
+			targetState.hasDebugMonitorToken = true; targetState.mSpecializationConstants.debugMonitorToken = sourceState.mSpecializationConstants.debugMonitorToken;
+		}
+	}
+
 	if (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE)
 	{
-		targetState.mSpecializationConstants.cullMode = sourceState.mSpecializationConstants.cullMode;
-		targetState.mSpecializationConstants.fogColor = sourceState.mSpecializationConstants.fogColor;
-		targetState.mSpecializationConstants.fogTableMode = sourceState.mSpecializationConstants.fogTableMode;
-		targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
-		targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
-		targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
-		targetState.mSpecializationConstants.rangeFogEnable = sourceState.mSpecializationConstants.rangeFogEnable;
-		targetState.mSpecializationConstants.ambient = sourceState.mSpecializationConstants.ambient;
-		targetState.mSpecializationConstants.colorVertex = sourceState.mSpecializationConstants.colorVertex;
-		targetState.mSpecializationConstants.fogVertexMode = sourceState.mSpecializationConstants.fogVertexMode;
-		targetState.mSpecializationConstants.clipping = sourceState.mSpecializationConstants.clipping;
-		targetState.mSpecializationConstants.lighting = sourceState.mSpecializationConstants.lighting;
-		targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
-		targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
-		targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
-		targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
-		targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
-		targetState.mSpecializationConstants.vertexBlend = sourceState.mSpecializationConstants.vertexBlend;
-		targetState.mSpecializationConstants.clipPlaneEnable = sourceState.mSpecializationConstants.clipPlaneEnable;
-		targetState.mSpecializationConstants.pointSize = sourceState.mSpecializationConstants.pointSize;
-		targetState.mSpecializationConstants.pointSizeMinimum = sourceState.mSpecializationConstants.pointSizeMinimum;
-		targetState.mSpecializationConstants.pointSpriteEnable = sourceState.mSpecializationConstants.pointSpriteEnable;
-		targetState.mSpecializationConstants.pointScaleEnable = sourceState.mSpecializationConstants.pointScaleEnable;
-		targetState.mSpecializationConstants.pointScaleA = sourceState.mSpecializationConstants.pointScaleA;
-		targetState.mSpecializationConstants.pointScaleB = sourceState.mSpecializationConstants.pointScaleB;
-		targetState.mSpecializationConstants.pointScaleC = sourceState.mSpecializationConstants.pointScaleC;
-		targetState.mSpecializationConstants.multisampleAntiAlias = sourceState.mSpecializationConstants.multisampleAntiAlias;
-		targetState.mSpecializationConstants.multisampleMask = sourceState.mSpecializationConstants.multisampleMask;
-		targetState.mSpecializationConstants.patchEdgeStyle = sourceState.mSpecializationConstants.patchEdgeStyle;
-		targetState.mSpecializationConstants.pointSizeMaximum = sourceState.mSpecializationConstants.pointSizeMaximum;
-		targetState.mSpecializationConstants.indexedVertexBlendEnable = sourceState.mSpecializationConstants.indexedVertexBlendEnable;
-		targetState.mSpecializationConstants.tweenFactor = sourceState.mSpecializationConstants.tweenFactor;
-		targetState.mSpecializationConstants.positionDegree = sourceState.mSpecializationConstants.positionDegree;
-		targetState.mSpecializationConstants.normalDegree = sourceState.mSpecializationConstants.normalDegree;
-		targetState.mSpecializationConstants.minimumTessellationLevel = sourceState.mSpecializationConstants.minimumTessellationLevel;
-		targetState.mSpecializationConstants.maximumTessellationLevel = sourceState.mSpecializationConstants.maximumTessellationLevel;
-		targetState.mSpecializationConstants.adaptivetessX = sourceState.mSpecializationConstants.adaptivetessX;
-		targetState.mSpecializationConstants.adaptivetessY = sourceState.mSpecializationConstants.adaptivetessY;
-		targetState.mSpecializationConstants.adaptivetessZ = sourceState.mSpecializationConstants.adaptivetessZ;
-		targetState.mSpecializationConstants.adaptivetessW = sourceState.mSpecializationConstants.adaptivetessW;
-		targetState.mSpecializationConstants.enableAdaptiveTessellation = sourceState.mSpecializationConstants.enableAdaptiveTessellation;
-
+		if (sourceState.hasCullMode && (targetState.hasCullMode || !onlyIfExists)) {
+			targetState.hasCullMode = true;  targetState.mSpecializationConstants.cullMode = sourceState.mSpecializationConstants.cullMode;
+		}
+		if (sourceState.hasFogColor && (targetState.hasFogColor || !onlyIfExists)) {
+			targetState.hasFogColor = true;  targetState.mSpecializationConstants.fogColor = sourceState.mSpecializationConstants.fogColor;
+		}
+		if (sourceState.hasFogTableMode && (targetState.hasFogTableMode || !onlyIfExists)) {
+			targetState.hasFogTableMode = true; targetState.mSpecializationConstants.fogTableMode = sourceState.mSpecializationConstants.fogTableMode;
+		}
+		if (sourceState.hasFogStart && (targetState.hasFogStart || !onlyIfExists)) {
+			targetState.hasFogStart = true; targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
+		}
+		if (sourceState.hasFogEnd && (targetState.hasFogEnd || !onlyIfExists)) {
+			targetState.hasFogEnd = true;  targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
+		}
+		if (sourceState.hasFogDensity && (targetState.hasFogDensity || !onlyIfExists)) {
+			targetState.hasFogDensity = true; targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
+		}
+		if (sourceState.hasRangeFogEnable && (targetState.hasRangeFogEnable || !onlyIfExists)) {
+			targetState.hasRangeFogEnable = true; targetState.mSpecializationConstants.rangeFogEnable = sourceState.mSpecializationConstants.rangeFogEnable;
+		}
+		if (sourceState.hasAmbient && (targetState.hasAmbient || !onlyIfExists)) {
+			targetState.hasAmbient = true;  targetState.mSpecializationConstants.ambient = sourceState.mSpecializationConstants.ambient;
+		}
+		if (sourceState.hasColorVertex && (targetState.hasColorVertex || !onlyIfExists)) {
+			targetState.hasColorVertex = true; targetState.mSpecializationConstants.colorVertex = sourceState.mSpecializationConstants.colorVertex;
+		}
+		if (sourceState.hasFogVertexMode && (targetState.hasFogVertexMode || !onlyIfExists)) {
+			targetState.hasFogVertexMode = true;  targetState.mSpecializationConstants.fogVertexMode = sourceState.mSpecializationConstants.fogVertexMode;
+		}
+		if (sourceState.hasClipping && (targetState.hasClipping || !onlyIfExists)) {
+			targetState.hasClipping = true;  targetState.mSpecializationConstants.clipping = sourceState.mSpecializationConstants.clipping;
+		}
+		if (sourceState.hasLighting && (targetState.hasLighting || !onlyIfExists)) {
+			targetState.hasLighting = true;  targetState.mSpecializationConstants.lighting = sourceState.mSpecializationConstants.lighting;
+		}
+		if (sourceState.hasLocalViewer && (targetState.hasLocalViewer || !onlyIfExists)) {
+			targetState.hasLocalViewer = true;  targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
+		}
+		if (sourceState.hasEmissiveMaterialSource && (targetState.hasEmissiveMaterialSource || !onlyIfExists)) {
+			targetState.hasEmissiveMaterialSource = true;  targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
+		}
+		if (sourceState.hasAmbientMaterialSource && (targetState.hasAmbientMaterialSource || !onlyIfExists)) {
+			targetState.hasAmbientMaterialSource = true;  targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
+		}
+		if (sourceState.hasDiffuseMaterialSource && (targetState.hasDiffuseMaterialSource || !onlyIfExists)) {
+			targetState.hasDiffuseMaterialSource = true;  targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
+		}
+		if (sourceState.hasSpecularMaterialSource && (targetState.hasSpecularMaterialSource || !onlyIfExists)) {
+			targetState.hasSpecularMaterialSource = true; targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
+		}
+		if (sourceState.hasVertexBlend && (targetState.hasVertexBlend || !onlyIfExists)) {
+			targetState.hasVertexBlend = true;  targetState.mSpecializationConstants.vertexBlend = sourceState.mSpecializationConstants.vertexBlend;
+		}
+		if (sourceState.hasClipPlaneEnable && (targetState.hasClipPlaneEnable || !onlyIfExists)) {
+			targetState.hasClipPlaneEnable = true;  targetState.mSpecializationConstants.clipPlaneEnable = sourceState.mSpecializationConstants.clipPlaneEnable;
+		}
+		if (sourceState.hasPointSize && (targetState.hasPointSize || !onlyIfExists)) {
+			targetState.hasPointSize = true;  targetState.mSpecializationConstants.pointSize = sourceState.mSpecializationConstants.pointSize;
+		}
+		if (sourceState.hasPointSizeMinimum && (targetState.hasPointSizeMinimum || !onlyIfExists)) {
+			targetState.hasPointSizeMinimum = true;  targetState.mSpecializationConstants.pointSizeMinimum = sourceState.mSpecializationConstants.pointSizeMinimum;
+		}
+		if (sourceState.hasPointSpriteEnable && (targetState.hasPointSpriteEnable || !onlyIfExists)) {
+			targetState.hasPointSpriteEnable = true;  targetState.mSpecializationConstants.pointSpriteEnable = sourceState.mSpecializationConstants.pointSpriteEnable;
+		}
+		if (sourceState.hasPointScaleEnable && (targetState.hasPointScaleEnable || !onlyIfExists)) {
+			targetState.hasPointScaleEnable = true; targetState.mSpecializationConstants.pointScaleEnable = sourceState.mSpecializationConstants.pointScaleEnable;
+		}
+		if (sourceState.hasPointScaleA && (targetState.hasPointScaleA || !onlyIfExists)) {
+			targetState.hasPointScaleA = true; targetState.mSpecializationConstants.pointScaleA = sourceState.mSpecializationConstants.pointScaleA;
+		}
+		if (sourceState.hasPointScaleB && (targetState.hasPointScaleB || !onlyIfExists)) {
+			targetState.hasPointScaleB = true; targetState.mSpecializationConstants.pointScaleB = sourceState.mSpecializationConstants.pointScaleB;
+		}
+		if (sourceState.hasPointScaleC && (targetState.hasPointScaleC || !onlyIfExists)) {
+			targetState.hasPointScaleC = true; targetState.mSpecializationConstants.pointScaleC = sourceState.mSpecializationConstants.pointScaleC;
+		}
+		if (sourceState.hasMultisampleAntiAlias && (targetState.hasMultisampleAntiAlias || !onlyIfExists)) {
+			targetState.hasMultisampleAntiAlias = true; targetState.mSpecializationConstants.multisampleAntiAlias = sourceState.mSpecializationConstants.multisampleAntiAlias;
+		}
+		if (sourceState.hasMultisampleMask && (targetState.hasMultisampleMask || !onlyIfExists)) {
+			targetState.hasMultisampleMask = true;  targetState.mSpecializationConstants.multisampleMask = sourceState.mSpecializationConstants.multisampleMask;
+		}
+		if (sourceState.hasPatchEdgeStyle && (targetState.hasPatchEdgeStyle || !onlyIfExists)) {
+			targetState.hasPatchEdgeStyle = true;  targetState.mSpecializationConstants.patchEdgeStyle = sourceState.mSpecializationConstants.patchEdgeStyle;
+		}
+		if (sourceState.hasPointSizeMaximum && (targetState.hasPointSizeMaximum || !onlyIfExists)) {
+			targetState.hasPointSizeMaximum = true; targetState.mSpecializationConstants.pointSizeMaximum = sourceState.mSpecializationConstants.pointSizeMaximum;
+		}
+		if (sourceState.hasIndexedVertexBlendEnable && (targetState.hasIndexedVertexBlendEnable || !onlyIfExists)) {
+			targetState.hasIndexedVertexBlendEnable = true; targetState.mSpecializationConstants.indexedVertexBlendEnable = sourceState.mSpecializationConstants.indexedVertexBlendEnable;
+		}
+		if (sourceState.hasTweenFactor && (targetState.hasTweenFactor || !onlyIfExists)) {
+			targetState.hasTweenFactor = true;  targetState.mSpecializationConstants.tweenFactor = sourceState.mSpecializationConstants.tweenFactor;
+		}
+		if (sourceState.hasPositionDegree && (targetState.hasPositionDegree || !onlyIfExists)) {
+			targetState.hasPositionDegree = true; targetState.mSpecializationConstants.positionDegree = sourceState.mSpecializationConstants.positionDegree;
+		}
+		if (sourceState.hasNormalDegree && (targetState.hasNormalDegree || !onlyIfExists)) {
+			targetState.hasNormalDegree = true;  targetState.mSpecializationConstants.normalDegree = sourceState.mSpecializationConstants.normalDegree;
+		}
+		if (sourceState.hasMinimumTessellationLevel && (targetState.hasMinimumTessellationLevel || !onlyIfExists)) {
+			targetState.hasMinimumTessellationLevel = true; targetState.mSpecializationConstants.minimumTessellationLevel = sourceState.mSpecializationConstants.minimumTessellationLevel;
+		}
+		if (sourceState.hasMaximumTessellationLevel && (targetState.hasMaximumTessellationLevel || !onlyIfExists)) {
+			targetState.hasMaximumTessellationLevel = true; targetState.mSpecializationConstants.maximumTessellationLevel = sourceState.mSpecializationConstants.maximumTessellationLevel;
+		}
+		if (sourceState.hasAdaptivetessX && (targetState.hasAdaptivetessX || !onlyIfExists)) {
+			targetState.hasAdaptivetessX = true; targetState.mSpecializationConstants.adaptivetessX = sourceState.mSpecializationConstants.adaptivetessX;
+		}
+		if (sourceState.hasAdaptivetessY && (targetState.hasAdaptivetessY || !onlyIfExists)) {
+			targetState.hasAdaptivetessY = true;  targetState.mSpecializationConstants.adaptivetessY = sourceState.mSpecializationConstants.adaptivetessY;
+		}
+		if (sourceState.hasAdaptivetessZ && (targetState.hasAdaptivetessZ || !onlyIfExists)) {
+			targetState.hasAdaptivetessZ = true;  targetState.mSpecializationConstants.adaptivetessZ = sourceState.mSpecializationConstants.adaptivetessZ;
+		}
+		if (sourceState.hasAdaptivetessW && (targetState.hasAdaptivetessW || !onlyIfExists)) {
+			targetState.hasAdaptivetessW = true; targetState.mSpecializationConstants.adaptivetessW = sourceState.mSpecializationConstants.adaptivetessW;
+		}
+		if (sourceState.hasEnableAdaptiveTessellation && (targetState.hasEnableAdaptiveTessellation || !onlyIfExists)) {
+			targetState.hasEnableAdaptiveTessellation = true;  targetState.mSpecializationConstants.enableAdaptiveTessellation = sourceState.mSpecializationConstants.enableAdaptiveTessellation;
+		}
 	}
 
 	if (type == D3DSBT_ALL || type == D3DSBT_PIXELSTATE)
 	{
-		targetState.mSpecializationConstants.zEnable = sourceState.mSpecializationConstants.zEnable;
-		targetState.mSpecializationConstants.specularEnable = sourceState.mSpecializationConstants.specularEnable;
-		targetState.mSpecializationConstants.fillMode = sourceState.mSpecializationConstants.fillMode;
-		targetState.mSpecializationConstants.shadeMode = sourceState.mSpecializationConstants.shadeMode;
-		targetState.mSpecializationConstants.zWriteEnable = sourceState.mSpecializationConstants.zWriteEnable;
-		targetState.mSpecializationConstants.alphaTestEnable = sourceState.mSpecializationConstants.alphaTestEnable;
-		targetState.mSpecializationConstants.lastPixel = sourceState.mSpecializationConstants.lastPixel;
-		targetState.mSpecializationConstants.sourceBlend = sourceState.mSpecializationConstants.sourceBlend;
-		targetState.mSpecializationConstants.destinationBlend = sourceState.mSpecializationConstants.destinationBlend;
-		targetState.mSpecializationConstants.zFunction = sourceState.mSpecializationConstants.zFunction;
-		targetState.mSpecializationConstants.alphaReference = sourceState.mSpecializationConstants.alphaReference;
-		targetState.mSpecializationConstants.alphaFunction = sourceState.mSpecializationConstants.alphaFunction;
-		targetState.mSpecializationConstants.ditherEnable = sourceState.mSpecializationConstants.ditherEnable;
-		targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
-		targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
-		targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
-		targetState.mSpecializationConstants.alphaBlendEnable = sourceState.mSpecializationConstants.alphaBlendEnable;
-		targetState.mSpecializationConstants.depthBias = sourceState.mSpecializationConstants.depthBias;
-		targetState.mSpecializationConstants.stencilEnable = sourceState.mSpecializationConstants.stencilEnable;
-		targetState.mSpecializationConstants.stencilFail = sourceState.mSpecializationConstants.stencilFail;
-		targetState.mSpecializationConstants.stencilZFail = sourceState.mSpecializationConstants.stencilZFail;
-		targetState.mSpecializationConstants.stencilPass = sourceState.mSpecializationConstants.stencilPass;
-		targetState.mSpecializationConstants.stencilFunction = sourceState.mSpecializationConstants.stencilFunction;
-		targetState.mSpecializationConstants.stencilReference = sourceState.mSpecializationConstants.stencilReference;
-		targetState.mSpecializationConstants.stencilMask = sourceState.mSpecializationConstants.stencilMask;
-		targetState.mSpecializationConstants.stencilWriteMask = sourceState.mSpecializationConstants.stencilWriteMask;
-		targetState.mSpecializationConstants.textureFactor = sourceState.mSpecializationConstants.textureFactor;
-		targetState.mSpecializationConstants.wrap0 = sourceState.mSpecializationConstants.wrap0;
-		targetState.mSpecializationConstants.wrap1 = sourceState.mSpecializationConstants.wrap1;
-		targetState.mSpecializationConstants.wrap2 = sourceState.mSpecializationConstants.wrap2;
-		targetState.mSpecializationConstants.wrap3 = sourceState.mSpecializationConstants.wrap3;
-		targetState.mSpecializationConstants.wrap4 = sourceState.mSpecializationConstants.wrap4;
-		targetState.mSpecializationConstants.wrap5 = sourceState.mSpecializationConstants.wrap5;
-		targetState.mSpecializationConstants.wrap6 = sourceState.mSpecializationConstants.wrap6;
-		targetState.mSpecializationConstants.wrap7 = sourceState.mSpecializationConstants.wrap7;
-		targetState.mSpecializationConstants.wrap8 = sourceState.mSpecializationConstants.wrap8;
-		targetState.mSpecializationConstants.wrap9 = sourceState.mSpecializationConstants.wrap9;
-		targetState.mSpecializationConstants.wrap10 = sourceState.mSpecializationConstants.wrap10;
-		targetState.mSpecializationConstants.wrap11 = sourceState.mSpecializationConstants.wrap11;
-		targetState.mSpecializationConstants.wrap12 = sourceState.mSpecializationConstants.wrap12;
-		targetState.mSpecializationConstants.wrap13 = sourceState.mSpecializationConstants.wrap13;
-		targetState.mSpecializationConstants.wrap14 = sourceState.mSpecializationConstants.wrap14;
-		targetState.mSpecializationConstants.wrap15 = sourceState.mSpecializationConstants.wrap15;
-		targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
-		targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
-		targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
-		targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
-		targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
-		targetState.mSpecializationConstants.colorWriteEnable = sourceState.mSpecializationConstants.colorWriteEnable;
-		targetState.mSpecializationConstants.blendOperation = sourceState.mSpecializationConstants.blendOperation;
-		targetState.mSpecializationConstants.scissorTestEnable = sourceState.mSpecializationConstants.scissorTestEnable;
-		targetState.mSpecializationConstants.slopeScaleDepthBias = sourceState.mSpecializationConstants.slopeScaleDepthBias;
-		targetState.mSpecializationConstants.antiAliasedLineEnable = sourceState.mSpecializationConstants.antiAliasedLineEnable;
-		targetState.mSpecializationConstants.twoSidedStencilMode = sourceState.mSpecializationConstants.twoSidedStencilMode;
-		targetState.mSpecializationConstants.ccwStencilFail = sourceState.mSpecializationConstants.ccwStencilFail;
-		targetState.mSpecializationConstants.ccwStencilZFail = sourceState.mSpecializationConstants.ccwStencilZFail;
-		targetState.mSpecializationConstants.ccwStencilPass = sourceState.mSpecializationConstants.ccwStencilPass;
-		targetState.mSpecializationConstants.ccwStencilFunction = sourceState.mSpecializationConstants.ccwStencilFunction;
-		targetState.mSpecializationConstants.colorWriteEnable1 = sourceState.mSpecializationConstants.colorWriteEnable1;
-		targetState.mSpecializationConstants.colorWriteEnable2 = sourceState.mSpecializationConstants.colorWriteEnable2;
-		targetState.mSpecializationConstants.colorWriteEnable3 = sourceState.mSpecializationConstants.colorWriteEnable3;
-		targetState.mSpecializationConstants.blendFactor = sourceState.mSpecializationConstants.blendFactor;
-		targetState.mSpecializationConstants.srgbWriteEnable = sourceState.mSpecializationConstants.srgbWriteEnable;
-		targetState.mSpecializationConstants.separateAlphaBlendEnable = sourceState.mSpecializationConstants.separateAlphaBlendEnable;
-		targetState.mSpecializationConstants.sourceBlendAlpha = sourceState.mSpecializationConstants.sourceBlendAlpha;
-		targetState.mSpecializationConstants.destinationBlendAlpha = sourceState.mSpecializationConstants.destinationBlendAlpha;
-		targetState.mSpecializationConstants.blendOperationAlpha = sourceState.mSpecializationConstants.blendOperationAlpha;
+		if (sourceState.hasZEnable && (targetState.hasZEnable || !onlyIfExists)) {
+			targetState.hasZEnable = true;  targetState.mSpecializationConstants.zEnable = sourceState.mSpecializationConstants.zEnable;
+		}
+		if (sourceState.hasSpecularEnable && (targetState.hasSpecularEnable || !onlyIfExists)) {
+			targetState.hasSpecularEnable = true;  targetState.mSpecializationConstants.specularEnable = sourceState.mSpecializationConstants.specularEnable;
+		}
+		if (sourceState.hasFillMode && (targetState.hasFillMode || !onlyIfExists)) {
+			targetState.hasFillMode = true;  targetState.mSpecializationConstants.fillMode = sourceState.mSpecializationConstants.fillMode;
+		}
+		if (sourceState.hasShadeMode && (targetState.hasShadeMode || !onlyIfExists)) {
+			targetState.hasShadeMode = true;  targetState.mSpecializationConstants.shadeMode = sourceState.mSpecializationConstants.shadeMode;
+		}
+		if (sourceState.hasZWriteEnable && (targetState.hasZWriteEnable || !onlyIfExists)) {
+			targetState.hasZWriteEnable = true;  targetState.mSpecializationConstants.zWriteEnable = sourceState.mSpecializationConstants.zWriteEnable;
+		}
+		if (sourceState.hasAlphaTestEnable && (targetState.hasAlphaTestEnable || !onlyIfExists)) {
+			targetState.hasAlphaTestEnable = true; targetState.mSpecializationConstants.alphaTestEnable = sourceState.mSpecializationConstants.alphaTestEnable;
+		}
+		if (sourceState.hasLastPixel && (targetState.hasLastPixel || !onlyIfExists)) {
+			targetState.hasLastPixel = true; targetState.mSpecializationConstants.lastPixel = sourceState.mSpecializationConstants.lastPixel;
+		}
+		if (sourceState.hasSourceBlend && (targetState.hasSourceBlend || !onlyIfExists)) {
+			targetState.hasSourceBlend = true;  targetState.mSpecializationConstants.sourceBlend = sourceState.mSpecializationConstants.sourceBlend;
+		}
+		if (sourceState.hasDestinationBlend && (targetState.hasDestinationBlend || !onlyIfExists)) {
+			targetState.hasDestinationBlend = true; targetState.mSpecializationConstants.destinationBlend = sourceState.mSpecializationConstants.destinationBlend;
+		}
+		if (sourceState.hasZFunction && (targetState.hasZFunction || !onlyIfExists)) {
+			targetState.hasZFunction = true; targetState.mSpecializationConstants.zFunction = sourceState.mSpecializationConstants.zFunction;
+		}
+		if (sourceState.hasAlphaReference && (targetState.hasAlphaReference || !onlyIfExists)) {
+			targetState.hasAlphaReference = true;  targetState.mSpecializationConstants.alphaReference = sourceState.mSpecializationConstants.alphaReference;
+		}
+		if (sourceState.hasAlphaFunction && (targetState.hasAlphaFunction || !onlyIfExists)) {
+			targetState.hasAlphaFunction = true;  targetState.mSpecializationConstants.alphaFunction = sourceState.mSpecializationConstants.alphaFunction;
+		}
+		if (sourceState.hasDitherEnable && (targetState.hasDitherEnable || !onlyIfExists)) {
+			targetState.hasDitherEnable = true;  targetState.mSpecializationConstants.ditherEnable = sourceState.mSpecializationConstants.ditherEnable;
+		}
+		if (sourceState.hasFogStart && (targetState.hasFogStart || !onlyIfExists)) {
+			targetState.hasFogStart = true; targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
+		}
+		if (sourceState.hasFogEnd && (targetState.hasFogEnd || !onlyIfExists)) {
+			targetState.hasFogEnd = true;  targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
+		}
+		if (sourceState.hasFogDensity && (targetState.hasFogDensity || !onlyIfExists)) {
+			targetState.hasFogDensity = true; targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
+		}
+		if (sourceState.hasAlphaBlendEnable && (targetState.hasAlphaBlendEnable || !onlyIfExists)) {
+			targetState.hasAlphaBlendEnable = true;  targetState.mSpecializationConstants.alphaBlendEnable = sourceState.mSpecializationConstants.alphaBlendEnable;
+		}
+		if (sourceState.hasDepthBias && (targetState.hasDepthBias || !onlyIfExists)) {
+			targetState.hasDepthBias = true;  targetState.mSpecializationConstants.depthBias = sourceState.mSpecializationConstants.depthBias;
+		}
+		if (sourceState.hasStencilEnable && (targetState.hasStencilEnable || !onlyIfExists)) {
+			targetState.hasStencilEnable = true;  targetState.mSpecializationConstants.stencilEnable = sourceState.mSpecializationConstants.stencilEnable;
+		}
+		if (sourceState.hasStencilFail && (targetState.hasStencilFail || !onlyIfExists)) {
+			targetState.hasStencilFail = true;  targetState.mSpecializationConstants.stencilFail = sourceState.mSpecializationConstants.stencilFail;
+		}
+		if (sourceState.hasStencilZFail && (targetState.hasStencilZFail || !onlyIfExists)) {
+			targetState.hasStencilZFail = true;  targetState.mSpecializationConstants.stencilZFail = sourceState.mSpecializationConstants.stencilZFail;
+		}
+		if (sourceState.hasStencilPass && (targetState.hasStencilPass || !onlyIfExists)) {
+			targetState.hasStencilPass = true;  targetState.mSpecializationConstants.stencilPass = sourceState.mSpecializationConstants.stencilPass;
+		}
+		if (sourceState.hasStencilFunction && (targetState.hasStencilFunction || !onlyIfExists)) {
+			targetState.hasStencilFunction = true;  targetState.mSpecializationConstants.stencilFunction = sourceState.mSpecializationConstants.stencilFunction;
+		}
+		if (sourceState.hasStencilReference && (targetState.hasStencilReference || !onlyIfExists)) {
+			targetState.hasStencilReference = true; targetState.mSpecializationConstants.stencilReference = sourceState.mSpecializationConstants.stencilReference;
+		}
+		if (sourceState.hasStencilMask && (targetState.hasStencilMask || !onlyIfExists)) {
+			targetState.hasStencilMask = true; targetState.mSpecializationConstants.stencilMask = sourceState.mSpecializationConstants.stencilMask;
+		}
+		if (sourceState.hasStencilWriteMask && (targetState.hasStencilWriteMask || !onlyIfExists)) {
+			targetState.hasStencilWriteMask = true; targetState.mSpecializationConstants.stencilWriteMask = sourceState.mSpecializationConstants.stencilWriteMask;
+		}
+		if (sourceState.hasTextureFactor && (targetState.hasTextureFactor || !onlyIfExists)) {
+			targetState.hasTextureFactor = true;  targetState.mSpecializationConstants.textureFactor = sourceState.mSpecializationConstants.textureFactor;
+		}
+		if (sourceState.hasWrap0 && (targetState.hasWrap0 || !onlyIfExists)) {
+			targetState.hasWrap0 = true;  targetState.mSpecializationConstants.wrap0 = sourceState.mSpecializationConstants.wrap0;
+		}
+		if (sourceState.hasWrap1 && (targetState.hasWrap1 || !onlyIfExists)) {
+			targetState.hasWrap1 = true; targetState.mSpecializationConstants.wrap1 = sourceState.mSpecializationConstants.wrap1;
+		}
+		if (sourceState.hasWrap2 && (targetState.hasWrap2 || !onlyIfExists)) {
+			targetState.hasWrap2 = true;  targetState.mSpecializationConstants.wrap2 = sourceState.mSpecializationConstants.wrap2;
+		}
+		if (sourceState.hasWrap3 && (targetState.hasWrap3 || !onlyIfExists)) {
+			targetState.hasWrap3 = true;  targetState.mSpecializationConstants.wrap3 = sourceState.mSpecializationConstants.wrap3;
+		}
+		if (sourceState.hasWrap4 && (targetState.hasWrap4 || !onlyIfExists)) {
+			targetState.hasWrap4 = true;  targetState.mSpecializationConstants.wrap4 = sourceState.mSpecializationConstants.wrap4;
+		}
+		if (sourceState.hasWrap5 && (targetState.hasWrap5 || !onlyIfExists)) {
+			targetState.hasWrap5 = true; targetState.mSpecializationConstants.wrap5 = sourceState.mSpecializationConstants.wrap5;
+		}
+		if (sourceState.hasWrap6 && (targetState.hasWrap6 || !onlyIfExists)) {
+			targetState.hasWrap6 = true; targetState.mSpecializationConstants.wrap6 = sourceState.mSpecializationConstants.wrap6;
+		}
+		if (sourceState.hasWrap7 && (targetState.hasWrap7 || !onlyIfExists)) {
+			targetState.hasWrap7 = true; targetState.mSpecializationConstants.wrap7 = sourceState.mSpecializationConstants.wrap7;
+		}
+		if (sourceState.hasWrap8 && (targetState.hasWrap8 || !onlyIfExists)) {
+			targetState.hasWrap8 = true;  targetState.mSpecializationConstants.wrap8 = sourceState.mSpecializationConstants.wrap8;
+		}
+		if (sourceState.hasWrap9 && (targetState.hasWrap9 || !onlyIfExists)) {
+			targetState.hasWrap9 = true; targetState.mSpecializationConstants.wrap9 = sourceState.mSpecializationConstants.wrap9;
+		}
+		if (sourceState.hasWrap10 && (targetState.hasWrap10 || !onlyIfExists)) {
+			targetState.hasWrap10 = true; targetState.mSpecializationConstants.wrap10 = sourceState.mSpecializationConstants.wrap10;
+		}
+		if (sourceState.hasWrap11 && (targetState.hasWrap11 || !onlyIfExists)) {
+			targetState.hasWrap11 = true;  targetState.mSpecializationConstants.wrap11 = sourceState.mSpecializationConstants.wrap11;
+		}
+		if (sourceState.hasWrap12 && (targetState.hasWrap12 || !onlyIfExists)) {
+			targetState.hasWrap12 = true;  targetState.mSpecializationConstants.wrap12 = sourceState.mSpecializationConstants.wrap12;
+		}
+		if (sourceState.hasWrap13 && (targetState.hasWrap13 || !onlyIfExists)) {
+			targetState.hasWrap13 = true; targetState.mSpecializationConstants.wrap13 = sourceState.mSpecializationConstants.wrap13;
+		}
+		if (sourceState.hasWrap14 && (targetState.hasWrap14 || !onlyIfExists)) {
+			targetState.hasWrap14 = true; targetState.mSpecializationConstants.wrap14 = sourceState.mSpecializationConstants.wrap14;
+		}
+		if (sourceState.hasWrap15 && (targetState.hasWrap15 || !onlyIfExists)) {
+			targetState.hasWrap15 = true;  targetState.mSpecializationConstants.wrap15 = sourceState.mSpecializationConstants.wrap15;
+		}
+		if (sourceState.hasLocalViewer && (targetState.hasLocalViewer || !onlyIfExists)) {
+			targetState.hasLocalViewer = true;  targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
+		}
+		if (sourceState.hasEmissiveMaterialSource && (targetState.hasEmissiveMaterialSource || !onlyIfExists)) {
+			targetState.hasEmissiveMaterialSource = true;  targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
+		}
+		if (sourceState.hasAmbientMaterialSource && (targetState.hasAmbientMaterialSource || !onlyIfExists)) {
+			targetState.hasAmbientMaterialSource = true;  targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
+		}
+		if (sourceState.hasDiffuseMaterialSource && (targetState.hasDiffuseMaterialSource || !onlyIfExists)) {
+			targetState.hasDiffuseMaterialSource = true;  targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
+		}
+		if (sourceState.hasSpecularMaterialSource && (targetState.hasSpecularMaterialSource || !onlyIfExists)) {
+			targetState.hasSpecularMaterialSource = true; targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
+		}
+		if (sourceState.hasColorWriteEnable && (targetState.hasColorWriteEnable || !onlyIfExists)) {
+			targetState.hasColorWriteEnable = true; targetState.mSpecializationConstants.colorWriteEnable = sourceState.mSpecializationConstants.colorWriteEnable;
+		}
+		if (sourceState.hasBlendOperation && (targetState.hasBlendOperation || !onlyIfExists)) {
+			targetState.hasBlendOperation = true; targetState.mSpecializationConstants.blendOperation = sourceState.mSpecializationConstants.blendOperation;
+		}
+		if (sourceState.hasScissorTestEnable && (targetState.hasScissorTestEnable || !onlyIfExists)) {
+			targetState.hasScissorTestEnable = true; targetState.mSpecializationConstants.scissorTestEnable = sourceState.mSpecializationConstants.scissorTestEnable;
+		}
+		if (sourceState.hasSlopeScaleDepthBias && (targetState.hasSlopeScaleDepthBias || !onlyIfExists)) {
+			targetState.hasSlopeScaleDepthBias = true;  targetState.mSpecializationConstants.slopeScaleDepthBias = sourceState.mSpecializationConstants.slopeScaleDepthBias;
+		}
+		if (sourceState.hasAntiAliasedLineEnable && (targetState.hasAntiAliasedLineEnable || !onlyIfExists)) {
+			targetState.hasAntiAliasedLineEnable = true;  targetState.mSpecializationConstants.antiAliasedLineEnable = sourceState.mSpecializationConstants.antiAliasedLineEnable;
+		}
+		if (sourceState.hasTwoSidedStencilMode && (targetState.hasTwoSidedStencilMode || !onlyIfExists)) {
+			targetState.hasTwoSidedStencilMode = true; targetState.mSpecializationConstants.twoSidedStencilMode = sourceState.mSpecializationConstants.twoSidedStencilMode;
+		}
+		if (sourceState.hasCcwStencilFail && (targetState.hasCcwStencilFail || !onlyIfExists)) {
+			targetState.hasCcwStencilFail = true;  targetState.mSpecializationConstants.ccwStencilFail = sourceState.mSpecializationConstants.ccwStencilFail;
+		}
+		if (sourceState.hasCcwStencilZFail && (targetState.hasCcwStencilZFail || !onlyIfExists)) {
+			targetState.hasCcwStencilZFail = true; targetState.mSpecializationConstants.ccwStencilZFail = sourceState.mSpecializationConstants.ccwStencilZFail;
+		}
+		if (sourceState.hasCcwStencilPass && (targetState.hasCcwStencilPass || !onlyIfExists)) {
+			targetState.hasCcwStencilPass = true;  targetState.mSpecializationConstants.ccwStencilPass = sourceState.mSpecializationConstants.ccwStencilPass;
+		}
+		if (sourceState.hasCcwStencilFunction && (targetState.hasCcwStencilFunction || !onlyIfExists)) {
+			targetState.hasCcwStencilFunction = true; targetState.mSpecializationConstants.ccwStencilFunction = sourceState.mSpecializationConstants.ccwStencilFunction;
+		}
+		if (sourceState.hasColorWriteEnable1 && (targetState.hasColorWriteEnable1 || !onlyIfExists)) {
+			targetState.hasColorWriteEnable1 = true; targetState.mSpecializationConstants.colorWriteEnable1 = sourceState.mSpecializationConstants.colorWriteEnable1;
+		}
+		if (sourceState.hasColorWriteEnable2 && (targetState.hasColorWriteEnable2 || !onlyIfExists)) {
+			targetState.hasColorWriteEnable2 = true; targetState.mSpecializationConstants.colorWriteEnable2 = sourceState.mSpecializationConstants.colorWriteEnable2;
+		}
+		if (sourceState.hasColorWriteEnable3 && (targetState.hasColorWriteEnable3 || !onlyIfExists)) {
+			targetState.hasColorWriteEnable3 = true;  targetState.mSpecializationConstants.colorWriteEnable3 = sourceState.mSpecializationConstants.colorWriteEnable3;
+		}
+		if (sourceState.hasBlendFactor && (targetState.hasBlendFactor || !onlyIfExists)) {
+			targetState.hasBlendFactor = true;  targetState.mSpecializationConstants.blendFactor = sourceState.mSpecializationConstants.blendFactor;
+		}
+		if (sourceState.hasSrgbWriteEnable && (targetState.hasSrgbWriteEnable || !onlyIfExists)) {
+			targetState.hasSrgbWriteEnable = true;  targetState.mSpecializationConstants.srgbWriteEnable = sourceState.mSpecializationConstants.srgbWriteEnable;
+		}
+		if (sourceState.hasSeparateAlphaBlendEnable && (targetState.hasSeparateAlphaBlendEnable || !onlyIfExists)) {
+			targetState.hasSeparateAlphaBlendEnable = true; targetState.mSpecializationConstants.separateAlphaBlendEnable = sourceState.mSpecializationConstants.separateAlphaBlendEnable;
+		}
+		if (sourceState.hasSourceBlendAlpha && (targetState.hasSourceBlendAlpha || !onlyIfExists)) {
+			targetState.hasSourceBlendAlpha = true;  targetState.mSpecializationConstants.sourceBlendAlpha = sourceState.mSpecializationConstants.sourceBlendAlpha;
+		}
+		if (sourceState.hasDestinationBlendAlpha && (targetState.hasDestinationBlendAlpha || !onlyIfExists)) {
+			targetState.hasDestinationBlendAlpha = true;  targetState.mSpecializationConstants.destinationBlendAlpha = sourceState.mSpecializationConstants.destinationBlendAlpha;
+		}
+		if (sourceState.hasBlendOperationAlpha && (targetState.hasBlendOperationAlpha || !onlyIfExists)) {
+			targetState.hasBlendOperationAlpha = true;  targetState.mSpecializationConstants.blendOperationAlpha = sourceState.mSpecializationConstants.blendOperationAlpha;
+		}
 	}
 
 	//IDirect3DDevice9::SetSamplerState

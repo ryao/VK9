@@ -186,19 +186,24 @@ inline int32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType,
 
 inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
 {
+	//pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
+	//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+
 	switch (input)
 	{
 	case D3DCULL_NONE:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		break;
 	case D3DCULL_CW:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		break;
 	case D3DCULL_CCW:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		break;
 	default:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
@@ -317,7 +322,7 @@ inline VkPolygonMode ConvertFillMode(D3DFILLMODE input)
 		output = VK_POLYGON_MODE_LINE;
 		break;
 	default:
-		output = VK_POLYGON_MODE_POINT;
+		output = VK_POLYGON_MODE_FILL;
 		break;
 	}
 
