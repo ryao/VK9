@@ -693,10 +693,14 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn, tex, texcoord);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn, tex, texcoord);
 
-	if(alphaOperation != D3DTOP_DISABLE)
+	if(alphaBlendEnable)
 	{
 		//TODO: review alpha factor logic.
 		tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+	}
+	else
+	{
+		tempResult.a = 1.0;
 	}
 
 	if(colorOperation != D3DTOP_DISABLE)

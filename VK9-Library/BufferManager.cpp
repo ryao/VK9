@@ -1164,44 +1164,16 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	/**********************************************
 	* Figure out render states & texture states
 	**********************************************/
-	/*
-	I'll need to review this because d3d9 looks like these are per texture but it appears to be per pipeline in vulkan.
-	For now I'll use the first texture and go from there.
-	*/
+	mPipelineColorBlendAttachmentState[0].colorWriteMask = constants.colorWriteEnable;
+	//mPipelineColorBlendAttachmentState[0].blendEnable = constants.alphaBlendEnable;
 
-	//auto stageSearchResult = mDevice->mDeviceState.mTextureStageStates.find(0);
-	//if (stageSearchResult != mDevice->mDeviceState.mTextureStageStates.end())
-	//{
-	//	auto firstTextureStage = mDevice->mDeviceState.mTextureStageStates[0];
-	//	auto stageSearchResult = firstTextureStage.find(D3DTSS_COLOROP);
-	//	if (stageSearchResult != firstTextureStage.end())
-	//	{
-	//		//mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_COLOROP]);
+	mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(constants.blendOperation);
+	mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = ConvertColorFactor(constants.sourceBlend);
+	mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = ConvertColorFactor(constants.destinationBlend);
 
-	//	}
-
-	//	stageSearchResult = firstTextureStage.find(D3DTSS_ALPHAOP);
-	//	if (stageSearchResult != firstTextureStage.end())
-	//	{
-	//		//mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(mDevice->mDeviceState.mTextureStageStates[0][D3DTSS_ALPHAOP]);
-
-	//	}
-
-	//	//mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA; //revisit
-	//	//mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE; //revisit
-	//	//mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; //revisit
-	//	//mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; //revisit
-
-
-	//	//if (mPipelineColorBlendAttachmentState[0].colorBlendOp  != VK_BLEND_OP_MAX_ENUM || mPipelineColorBlendAttachmentState[0].alphaBlendOp != VK_BLEND_OP_MAX_ENUM)
-	//	//{
-	//	//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
-	//	//}
-	//	//else
-	//	//{
-	//	//	mPipelineColorBlendAttachmentState[0].blendEnable = VK_FALSE;
-	//	//}
-	//}
+	mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(constants.blendOperationAlpha);
+	mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = ConvertColorFactor(constants.sourceBlendAlpha);
+	mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = ConvertColorFactor(constants.destinationBlendAlpha);
 
 	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)constants.cullMode);
 	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)constants.fillMode);

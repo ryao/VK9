@@ -73,11 +73,11 @@ inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryPropertie
 	return 0;
 }
 
-inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits,VkFlags requirements_mask,uint32_t *typeIndex)
+inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex)
 {
-	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++) 
+	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)
 	{
-		if ((typeBits & 1) == 1) 
+		if ((typeBits & 1) == 1)
 		{
 			if ((memoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask)
 			{
@@ -186,9 +186,6 @@ inline int32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType,
 
 inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
 {
-	//pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
-	//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
-
 	switch (input)
 	{
 	case D3DCULL_NONE:
@@ -197,16 +194,16 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 		break;
 	case D3DCULL_CW:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		break;
 	case D3DCULL_CCW:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		//pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		break;
 	default:
-		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
 		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		break;
 	}
@@ -318,7 +315,7 @@ inline VkPolygonMode ConvertFillMode(D3DFILLMODE input)
 	case D3DFILL_POINT:
 		output = VK_POLYGON_MODE_POINT;
 		break;
-	case D3DFILL_WIREFRAME:	
+	case D3DFILL_WIREFRAME:
 		output = VK_POLYGON_MODE_LINE;
 		break;
 	default:
@@ -369,13 +366,13 @@ inline VkPrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input)
 	return output;
 }
 
-inline bool GetMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& deviceMemoryProperties, uint32_t typeBits,VkFlags requirements_mask,uint32_t *typeIndex)
+inline bool GetMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& deviceMemoryProperties, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex)
 {
 	// Search memtypes to find first index with those properties
 	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
 		if ((typeBits & 1) == 1) {
 			// Type is available, does it match user properties?
-			if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask) 
+			if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask)
 			{
 				*typeIndex = i;
 				return true;
@@ -526,14 +523,14 @@ inline VkFormat ConvertFormat(D3DFORMAT format)
 		return VK_FORMAT_R8G8_SNORM;
 #if !defined(D3D_DISABLE_9EX)
 	case D3DFMT_A1:
-			return VK_FORMAT_UNDEFINED;
+		return VK_FORMAT_UNDEFINED;
 	case D3DFMT_A2B10G10R10_XR_BIAS:
-			return VK_FORMAT_UNDEFINED;
+		return VK_FORMAT_UNDEFINED;
 	case D3DFMT_BINARYBUFFER:
-			return VK_FORMAT_UNDEFINED;
+		return VK_FORMAT_UNDEFINED;
 #endif // !D3D_DISABLE_9EX
 	case D3DFMT_FORCE_DWORD:
-			return VK_FORMAT_UNDEFINED;
+		return VK_FORMAT_UNDEFINED;
 	default:
 		return VK_FORMAT_UNDEFINED;
 	}
@@ -601,91 +598,96 @@ inline D3DFORMAT ConvertFormat(VkFormat format)
 	}
 }
 
-inline VkBlendOp ConvertColorOperation(D3DTEXTUREOP  input)
+inline VkBlendFactor ConvertColorFactor(D3DBLEND input)
 {
-	VkBlendOp output; //TODO: review there are only two that match this doesn't seem right.
+	VkBlendFactor output;
 
 	switch (input)
 	{
-	case D3DTOP_DISABLE:
-		output = VK_BLEND_OP_MAX_ENUM;
+	case D3DBLEND_ZERO:
+		output = VK_BLEND_FACTOR_ZERO;
 		break;
-	case D3DTOP_SELECTARG1:
+	case D3DBLEND_ONE:
+		output = VK_BLEND_FACTOR_ONE;
+		break;
+	case D3DBLEND_SRCCOLOR:
+		output = VK_BLEND_FACTOR_SRC_COLOR;
+		break;
+	case D3DBLEND_INVSRCCOLOR:
+		output = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+		break;
+	case D3DBLEND_SRCALPHA:
+		output = VK_BLEND_FACTOR_SRC_ALPHA;
+		break;
+	case D3DBLEND_INVSRCALPHA:
+		output = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		break;
+	case D3DBLEND_DESTALPHA:
+		output = VK_BLEND_FACTOR_DST_ALPHA;
+		break;
+	case D3DBLEND_INVDESTALPHA:
+		output = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+		break;
+	case D3DBLEND_DESTCOLOR:
+		output = VK_BLEND_FACTOR_DST_COLOR;
+		break;
+	case D3DBLEND_INVDESTCOLOR:
+		output = VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+		break;
+	case D3DBLEND_SRCALPHASAT:
+		output = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+		break;
+	case D3DBLEND_BOTHSRCALPHA:
+		output = VK_BLEND_FACTOR_CONSTANT_ALPHA;
+		break;
+	case D3DBLEND_BOTHINVSRCALPHA:
+		output = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
+		break;
+	case D3DBLEND_BLENDFACTOR:
+		output = VK_BLEND_FACTOR_CONSTANT_COLOR;
+		break;
+	case D3DBLEND_INVBLENDFACTOR:
+		output = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
+		break;
+		//Revisit
+#if !defined(D3D_DISABLE_9EX)
+	case D3DBLEND_SRCCOLOR2:
+		output = VK_BLEND_FACTOR_SRC1_COLOR;
+		break;
+	case D3DBLEND_INVSRCCOLOR2:
+		output = VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
+		break;
+#endif // !D3D_DISABLE_9EX
+	default:
+		output = VK_BLEND_FACTOR_ONE;
+		break;
+	}
+
+	return output;
+}
+
+inline VkBlendOp ConvertColorOperation(D3DBLENDOP  input)
+{
+	VkBlendOp output;
+
+	switch (input)
+	{
+	case D3DBLENDOP_ADD:
 		output = VK_BLEND_OP_ADD;
 		break;
-	case D3DTOP_SELECTARG2:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MODULATE:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MODULATE2X:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MODULATE4X:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_ADD:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_ADDSIGNED:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_ADDSIGNED2X:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_SUBTRACT:
+	case D3DBLENDOP_SUBTRACT:
 		output = VK_BLEND_OP_SUBTRACT;
 		break;
-	case D3DTOP_ADDSMOOTH:
-		output = VK_BLEND_OP_ADD;
+	case D3DBLENDOP_REVSUBTRACT:
+		output = VK_BLEND_OP_REVERSE_SUBTRACT;
 		break;
-	case D3DTOP_BLENDDIFFUSEALPHA:
-		output = VK_BLEND_OP_ADD;
+	case D3DBLENDOP_MIN:
+		output = VK_BLEND_OP_MIN;
 		break;
-	case D3DTOP_BLENDTEXTUREALPHA:
-		output = VK_BLEND_OP_ADD;
+	case D3DBLENDOP_MAX:
+		output = VK_BLEND_OP_MAX;
 		break;
-	case D3DTOP_BLENDFACTORALPHA:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_BLENDTEXTUREALPHAPM:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_BLENDCURRENTALPHA:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_PREMODULATE:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MODULATEALPHA_ADDCOLOR:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MODULATECOLOR_ADDALPHA:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MODULATEINVALPHA_ADDCOLOR:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MODULATEINVCOLOR_ADDALPHA:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_BUMPENVMAP:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_BUMPENVMAPLUMINANCE:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_DOTPRODUCT3:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_MULTIPLYADD:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_LERP:
-		output = VK_BLEND_OP_ADD;
-		break;
-	case D3DTOP_FORCE_DWORD:
+	case D3DBLENDOP_FORCE_DWORD:
 		output = VK_BLEND_OP_MAX_ENUM;
 		break;
 	default:
@@ -696,10 +698,16 @@ inline VkBlendOp ConvertColorOperation(D3DTEXTUREOP  input)
 	return output;
 }
 
+inline VkBlendFactor ConvertColorFactor(DWORD input)
+{
+	return ConvertColorFactor((D3DBLEND)input);
+}
+
 inline VkBlendOp ConvertColorOperation(DWORD  input)
 {
-	return ConvertColorOperation((D3DTEXTUREOP)input);
+	return ConvertColorOperation((D3DBLENDOP)input);
 }
+
 inline uint32_t ConvertFormat(DWORD fvf)
 {
 	//TODO: This should be able to be simplified by bitwise operators.
@@ -870,7 +878,7 @@ inline void SetAlpha(char* imageData, uint32_t height, uint32_t width, uint32_t 
 	}
 }
 
-inline void SaveImage(const char *filename,char* imageData,uint32_t height, uint32_t width, uint32_t rowPitch)
+inline void SaveImage(const char *filename, char* imageData, uint32_t height, uint32_t width, uint32_t rowPitch)
 {
 	std::ofstream file(filename, std::ios::out | std::ios::binary);
 
