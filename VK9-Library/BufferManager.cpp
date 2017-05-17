@@ -1165,7 +1165,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	* Figure out render states & texture states
 	**********************************************/
 	mPipelineColorBlendAttachmentState[0].colorWriteMask = constants.colorWriteEnable;
-	//mPipelineColorBlendAttachmentState[0].blendEnable = constants.alphaBlendEnable;
+	mPipelineColorBlendAttachmentState[0].blendEnable = constants.alphaBlendEnable;
 
 	mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(constants.blendOperation);
 	mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = ConvertColorFactor(constants.sourceBlend);
@@ -1178,6 +1178,25 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	SetCulling(mPipelineRasterizationStateCreateInfo, (D3DCULL)constants.cullMode);
 	mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)constants.fillMode);
 	mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context->PrimitiveType);
+
+	mPipelineDepthStencilStateCreateInfo.depthTestEnable = constants.zEnable; //= VK_TRUE;
+	mPipelineDepthStencilStateCreateInfo.depthWriteEnable = constants.zWriteEnable; //VK_TRUE;
+	mPipelineDepthStencilStateCreateInfo.depthCompareOp = ConvertCompareOperation(constants.zFunction);  //VK_COMPARE_OP_LESS_OR_EQUAL;
+	//mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = constants.bound
+	mPipelineDepthStencilStateCreateInfo.stencilTestEnable = constants.stencilEnable; //VK_FALSE;
+
+	mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.stencilFail);
+	mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.stencilPass);
+	mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.stencilFunction);
+	
+	mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.ccwStencilFail);
+	mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.ccwStencilPass);
+	mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+
+	//mPipelineDepthStencilStateCreateInfo.front = mPipelineDepthStencilStateCreateInfo.back;
+
+	//mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
+	//mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
 
 	/**********************************************
 	* Figure out correct shader

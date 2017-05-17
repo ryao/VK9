@@ -698,6 +698,82 @@ inline VkBlendOp ConvertColorOperation(D3DBLENDOP  input)
 	return output;
 }
 
+inline VkStencilOp ConvertStencilOperation(D3DSTENCILOP input)
+{
+	VkStencilOp output;
+
+	switch (input)
+	{
+	case D3DSTENCILOP_KEEP:
+		output = VK_STENCIL_OP_KEEP;
+		break;
+	case D3DSTENCILOP_ZERO:
+		output = VK_STENCIL_OP_ZERO;
+		break;
+	case D3DSTENCILOP_REPLACE:
+		output = VK_STENCIL_OP_REPLACE;
+		break;
+	case D3DSTENCILOP_INCRSAT:
+		output = VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+		break;
+	case D3DSTENCILOP_DECRSAT:
+		output = VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+		break;
+	case D3DSTENCILOP_INVERT:
+		output = VK_STENCIL_OP_INVERT;
+		break;
+	case D3DSTENCILOP_INCR:
+		output = VK_STENCIL_OP_INCREMENT_AND_WRAP;
+		break;
+	case D3DSTENCILOP_DECR:
+		output = VK_STENCIL_OP_DECREMENT_AND_WRAP;
+		break;
+	default:
+		output = VK_STENCIL_OP_MAX_ENUM;
+		break;
+	}
+
+	return output;
+}
+
+inline VkCompareOp ConvertCompareOperation(D3DCMPFUNC input)
+{
+	VkCompareOp output;
+
+	switch (input)
+	{
+	case D3DCMP_NEVER:
+		output = VK_COMPARE_OP_NEVER;
+		break;
+	case D3DCMP_LESS:
+		output = VK_COMPARE_OP_LESS;
+		break;
+	case D3DCMP_EQUAL:
+		output = VK_COMPARE_OP_EQUAL;
+		break;
+	case D3DCMP_LESSEQUAL:
+		output = VK_COMPARE_OP_LESS_OR_EQUAL;
+		break;
+	case D3DCMP_GREATER:
+		output = VK_COMPARE_OP_GREATER;
+		break;
+	case D3DCMP_NOTEQUAL:
+		output = VK_COMPARE_OP_NOT_EQUAL;
+		break;
+	case D3DCMP_GREATEREQUAL:
+		output = VK_COMPARE_OP_GREATER_OR_EQUAL;
+		break;
+	case D3DCMP_ALWAYS:
+		output = VK_COMPARE_OP_ALWAYS;
+		break;
+	default:
+		output = VK_COMPARE_OP_MAX_ENUM;
+		break;
+	}
+
+	return output;
+}
+
 inline VkBlendFactor ConvertColorFactor(DWORD input)
 {
 	return ConvertColorFactor((D3DBLEND)input);
@@ -706,6 +782,16 @@ inline VkBlendFactor ConvertColorFactor(DWORD input)
 inline VkBlendOp ConvertColorOperation(DWORD  input)
 {
 	return ConvertColorOperation((D3DBLENDOP)input);
+}
+
+inline VkStencilOp ConvertStencilOperation(DWORD input)
+{
+	return ConvertStencilOperation((D3DSTENCILOP)input);
+}
+
+inline VkCompareOp ConvertCompareOperation(DWORD input)
+{
+	return ConvertCompareOperation((D3DCMPFUNC)input);
 }
 
 inline uint32_t ConvertFormat(DWORD fvf)
