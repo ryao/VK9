@@ -71,6 +71,9 @@ BufferManager::BufferManager(CDevice9* device)
 	mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
 	mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
 
+	mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
+	mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
+
 	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
 	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
 
@@ -569,6 +572,18 @@ BufferManager::~BufferManager()
 	{
 		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_NORMAL, NULL);
 		mFragShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
+	}
+
+	if (mVertShaderModule_XYZ_NORMAL_TEX1 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_NORMAL_TEX1, NULL);
+		mVertShaderModule_XYZ_NORMAL_TEX1 = VK_NULL_HANDLE;
+	}
+
+	if (mFragShaderModule_XYZ_NORMAL_TEX1 != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_NORMAL_TEX1, NULL);
+		mFragShaderModule_XYZ_NORMAL_TEX1 = VK_NULL_HANDLE;
 	}
 
 	if (mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 != VK_NULL_HANDLE)
@@ -1193,8 +1208,6 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.ccwStencilPass);
 	mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
 
-	//mPipelineDepthStencilStateCreateInfo.front = mPipelineDepthStencilStateCreateInfo.back;
-
 	//mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
 	//mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
 
@@ -1262,6 +1275,10 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		case 0:
 			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
+			break;
+		case 1:
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_TEX1;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_TEX1;
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;

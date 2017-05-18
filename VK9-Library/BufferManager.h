@@ -174,6 +174,9 @@ public:
 	VkShaderModule mVertShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
 	VkShaderModule mFragShaderModule_XYZ_NORMAL = VK_NULL_HANDLE;
 
+	VkShaderModule mVertShaderModule_XYZ_NORMAL_TEX1 = VK_NULL_HANDLE;
+	VkShaderModule mFragShaderModule_XYZ_NORMAL_TEX1 = VK_NULL_HANDLE;
+
 	VkShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
 	VkShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = VK_NULL_HANDLE;
 
