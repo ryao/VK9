@@ -18,6 +18,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+/*
+"Honor the LORD with your wealth and with the firstfruits of all your produce; then your barns will be filled with plenty, and your vats will be bursting with wine." (Proverbs 3:9-10, ESV)
+*/
+
 #include <iostream>
 #include "wtypes.h"
 

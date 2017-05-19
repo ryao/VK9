@@ -504,8 +504,9 @@ vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 attr1;
 layout (location = 2) in vec2 attr2;
-layout (location = 0) out vec2 texcoord1;
-layout (location = 1) out vec2 texcoord2;
+layout (location = 0) out vec4 color;
+layout (location = 1) out vec2 texcoord1;
+layout (location = 2) out vec2 texcoord2;
 
 out gl_PerVertex 
 {
@@ -519,4 +520,20 @@ void main()
 
 	texcoord1 = attr1;
 	texcoord2 = attr2;
+
+	switch(diffuseMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			color = material.Diffuse;
+		break;
+		case D3DMCS_COLOR1:
+			color = vec4(1.0);
+		break;
+		case D3DMCS_COLOR2:
+			color = vec4(0);
+		break;
+		default:
+			color = vec4(0);
+		break;
+	}
 }

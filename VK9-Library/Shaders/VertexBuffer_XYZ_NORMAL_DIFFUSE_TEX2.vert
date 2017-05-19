@@ -507,10 +507,10 @@ layout (location = 2) in uvec4 attr2; //color
 layout (location = 3) in vec2 attr3; //tex1
 layout (location = 4) in vec2 attr4; //tex2
 
-layout (location = 0) out vec4 normal;
-layout (location = 1) out vec4 frontLight;
-layout (location = 2) out vec4 backLight;
-layout (location = 3) out vec4 color;
+layout (location = 0) out vec4 color;
+layout (location = 1) out vec4 normal;
+layout (location = 2) out vec4 frontLight;
+layout (location = 3) out vec4 backLight;
 layout (location = 4) out vec2 texcoord1;
 layout (location = 5) out vec2 texcoord2;
 layout (location = 6) out vec4 pos;
@@ -563,6 +563,7 @@ void main()
 	texcoord1 = attr3;
 	texcoord2 = attr4;
 
+	normal.y = -normal.y;
 	if(lighting)
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
@@ -573,8 +574,8 @@ void main()
 			{
 				if(lights[i].IsEnabled)
 				{
-					frontLightColor += getGouradLight( i, position.xyz, normal.xyz);
-					backLightColor += getGouradLight( i, position.xyz, -normal.xyz);
+					frontLightColor += getGouradLight( i, pos.xyz, normal.xyz);
+					backLightColor += getGouradLight( i, pos.xyz, -normal.xyz);
 				}
 			}
 			frontLight = vec4(frontLightColor,1);

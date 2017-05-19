@@ -514,7 +514,8 @@ vec4 Convert(int rgba)
 
 layout(binding = 0) uniform sampler2D textures[1];
 
-layout (location = 0) in vec2 texcoord;
+layout (location = 0) in vec4 color;
+layout (location = 1) in vec2 texcoord;
 layout (location = 0) out vec4 uFragColor;
 
 vec2 getTextureCoord(int index)
@@ -544,7 +545,7 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D 
 			return result;
 		break;
 		case D3DTA_DIFFUSE:
-			return vec4(1.0,1.0,1.0,1.0);
+			return color;
 		break;
 		case D3DTA_SELECTMASK:
 			return vec4(0);

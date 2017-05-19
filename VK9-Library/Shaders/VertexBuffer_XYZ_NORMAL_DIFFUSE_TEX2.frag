@@ -523,10 +523,10 @@ vec4 Convert(int rgba)
 
 layout(binding = 0) uniform sampler2D textures[textureCount];
 
-layout (location = 0) in vec4 normal;
-layout (location = 1) in vec4 frontLight;
-layout (location = 2) in vec4 backLight;
-layout (location = 3) in vec4 color;
+layout (location = 0) in vec4 color;
+layout (location = 1) in vec4 normal;
+layout (location = 2) in vec4 frontLight;
+layout (location = 3) in vec4 backLight;
 layout (location = 4) in vec2 texcoord1;
 layout (location = 5) in vec2 texcoord2;
 layout (location = 6) in vec4 pos;

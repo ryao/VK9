@@ -495,11 +495,12 @@ vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec4 attr1;
 layout (location = 2) in vec2 attr2;
-layout (location = 0) out vec4 normal;
-layout (location = 1) out vec2 texcoord;
-layout (location = 2) out vec4 frontLight;
-layout (location = 3) out vec4 backLight;
-layout (location = 4) out vec4 pos;
+layout (location = 0) out vec4 color;
+layout (location = 1) out vec4 normal;
+layout (location = 2) out vec2 texcoord;
+layout (location = 3) out vec4 frontLight;
+layout (location = 4) out vec4 backLight;
+layout (location = 5) out vec4 pos;
 
 out gl_PerVertex 
 {
@@ -532,6 +533,23 @@ void main()
 	normal = attr1;
 	texcoord = attr2;
 
+	switch(diffuseMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			color = material.Diffuse;
+		break;
+		case D3DMCS_COLOR1:
+			color = vec4(1.0);
+		break;
+		case D3DMCS_COLOR2:
+			color = vec4(0);
+		break;
+		default:
+			color = vec4(0);
+		break;
+	}
+
+	normal.y = -normal.y;
 	if(lighting)
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
@@ -542,8 +560,8 @@ void main()
 			{
 				if(lights[i].IsEnabled)
 				{
-					frontLightColor += getGouradLight( i, position.xyz, normal.xyz);
-					backLightColor += getGouradLight( i, position.xyz, -normal.xyz);
+					frontLightColor += getGouradLight( i, pos.xyz, normal.xyz);
+					backLightColor += getGouradLight( i, pos.xyz, -normal.xyz);
 				}
 			}
 			frontLight = vec4(frontLightColor,1);
