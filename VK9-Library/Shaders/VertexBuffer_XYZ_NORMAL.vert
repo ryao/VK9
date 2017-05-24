@@ -505,6 +505,9 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec4 attr;
 layout (location = 0) out vec4 color;
 layout (location = 1) out vec4 normal;
+layout (location = 2) out vec4 frontLight;
+layout (location = 3) out vec4 backLight;
+layout (location = 4) out vec4 pos;
 
 out gl_PerVertex 
 {
@@ -515,9 +518,8 @@ void main()
 {
 	gl_Position = ubo.totalTransformation * vec4(position,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
-
+	pos = gl_Position;
 	normal = attr;
-	normal.y = -normal.y;
 
 	switch(diffuseMaterialSource)
 	{
@@ -533,5 +535,25 @@ void main()
 		default:
 			color = vec4(0);
 		break;
+	}
+
+	normal.y = -normal.y;
+	if(lighting)
+	{
+		if(shadeMode == D3DSHADE_GOURAUD)
+		{
+			vec3 frontLightColor = vec3(0);
+			vec3 backLightColor = vec3(0);
+			for( int i=0; i<lightCount; ++i )
+			{
+				if(lights[i].IsEnabled)
+				{
+					frontLightColor += getGouradLight( i, pos.xyz, normal.xyz);
+					backLightColor += getGouradLight( i, pos.xyz, -normal.xyz);
+				}
+			}
+			frontLight = vec4(frontLightColor,1);
+			backLight = vec4(backLightColor,1);
+		}
 	}
 }

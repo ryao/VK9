@@ -496,11 +496,14 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec4 attr1;
 layout (location = 2) in vec2 attr2;
 layout (location = 0) out vec4 color;
-layout (location = 1) out vec4 normal;
-layout (location = 2) out vec2 texcoord;
-layout (location = 3) out vec4 frontLight;
-layout (location = 4) out vec4 backLight;
-layout (location = 5) out vec4 pos;
+layout (location = 1) out vec4 ambientColor;
+layout (location = 2) out vec4 specularColor;
+layout (location = 3) out vec4 emissiveColor;
+layout (location = 4) out vec4 normal;
+layout (location = 5) out vec2 texcoord;
+layout (location = 6) out vec4 frontLight;
+layout (location = 7) out vec4 backLight;
+layout (location = 8) out vec4 pos;
 
 out gl_PerVertex 
 {
@@ -546,6 +549,54 @@ void main()
 		break;
 		default:
 			color = vec4(0);
+		break;
+	}
+
+	switch(ambientMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			ambientColor = material.Diffuse;
+		break;
+		case D3DMCS_COLOR1:
+			ambientColor = vec4(1.0);
+		break;
+		case D3DMCS_COLOR2:
+			ambientColor = vec4(0);
+		break;
+		default:
+			ambientColor = vec4(0);
+		break;
+	}
+
+	switch(specularMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			specularColor = material.Diffuse;
+		break;
+		case D3DMCS_COLOR1:
+			specularColor = vec4(1.0);
+		break;
+		case D3DMCS_COLOR2:
+			specularColor = vec4(0);
+		break;
+		default:
+			specularColor = vec4(0);
+		break;
+	}
+
+	switch(emissiveMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			emissiveColor = material.Diffuse;
+		break;
+		case D3DMCS_COLOR1:
+			emissiveColor = vec4(1.0);
+		break;
+		case D3DMCS_COLOR2:
+			emissiveColor = vec4(0);
+		break;
+		default:
+			emissiveColor = vec4(0);
 		break;
 	}
 

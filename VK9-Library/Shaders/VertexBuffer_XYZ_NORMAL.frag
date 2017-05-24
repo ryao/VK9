@@ -523,6 +523,9 @@ vec4 Convert(int rgba)
 
 layout (location = 0) in vec4 color;
 layout (location = 1) in vec4 normal;
+layout (location = 2) in vec4 frontLight;
+layout (location = 3) in vec4 backLight;
+layout (location = 4) in vec4 pos;
 layout (location = 0) out vec4 uFragColor;
 
 vec2 getTextureCoord(int index)
@@ -725,4 +728,41 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 void main() 
 {
    uFragColor = vec4(1.0,1.0,1.0,1.0);
+
+   	if(lighting)
+	{
+		if(shadeMode == D3DSHADE_GOURAUD)
+		{
+			if ( gl_FrontFacing )
+			{
+				uFragColor.xyz *= frontLight.xyz;
+			}
+			else 
+			{
+				uFragColor.xyz *= backLight.xyz;
+			}
+		}
+		else if(shadeMode == D3DSHADE_PHONG)
+		{
+			vec4 ambientSum = vec4(0);
+			vec4 diffuseSum = vec4(0);
+			vec4 specSum = vec4(0);
+			vec4 ambient, diffuse, spec;
+
+			for( int i=0; i<lightCount; ++i )
+			{
+				if(lights[i].IsEnabled)
+				{
+					getPhongLight( i, pos.xyz, normal, ambient, diffuse, spec );
+					ambientSum += ambient;
+					diffuseSum += diffuse;
+					specSum += spec;
+				}
+			}
+
+			ambientSum /= lightCount;
+
+			uFragColor = vec4( ambientSum + diffuseSum) * uFragColor + vec4( specSum);
+		}
+	}
 }

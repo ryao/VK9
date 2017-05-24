@@ -759,11 +759,11 @@ void main()
 		{
 			if ( gl_FrontFacing )
 			{
-				uFragColor *= frontLight;
+				uFragColor.xyz *= frontLight.xyz;
 			}
 			else 
 			{
-				uFragColor *= backLight;
+				uFragColor.xyz *= backLight.xyz;
 			}
 		}
 		else if(shadeMode == D3DSHADE_PHONG)
