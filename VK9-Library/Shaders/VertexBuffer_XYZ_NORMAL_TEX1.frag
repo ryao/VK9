@@ -736,14 +736,31 @@ vec4 GetColorWithLight(vec4 color)
 
 	for( int i=0; i<lightCount; ++i )
 	{
-		float distance = distance(lights[i].Position * vec3(1.0,-1.0,1.0) ,pos.xyz);
+		lightPosition = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0);
+		lightPosition *= vec4(1.0,-1.0,1.0,1.0);
+		float distance = distance(lightPosition.xyz ,pos.xyz);
 		if(lights[i].IsEnabled && lights[i].Range >= distance)
 		{		
-			float attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * distance + lights[i].Attenuation2 * pow(distance,2));
-			
 			//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
-			//float spot = 
-			//temp1 += attenuation * spot
+			float attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * distance + lights[i].Attenuation2 * pow(distance,2));
+			float rho = normalize(lightPosition.xyz - pos.xyz) * normalize(normal);
+			float spot;
+
+			if(lights[i].Type <> D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
+			{
+				spot = 1;
+			}
+			else if(rho < cos(lights[i].Phi/2))
+			{
+				spot = 0;
+			}
+			else
+			{
+				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
+			}
+
+
+			temp1 += attenuation * spot
 		}
 	}
 
@@ -765,13 +782,14 @@ void main()
 		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
 	}
 
-	uFragColor = GetColorWithLight(result);
+	//uFragColor = GetColorWithLight(result);
+	uFragColor = result;
 
 	if(lighting)
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
 		{
-			if ( !gl_FrontFacing )
+			if ( gl_FrontFacing )
 			{
 				uFragColor.xyz *= frontLight.xyz;
 			}

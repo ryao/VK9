@@ -476,7 +476,11 @@ layout(push_constant) uniform UniformBufferObject {
 
 vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
 {
-	vec3 s = normalize( vec3( lights[lightIndex].Position - position1 ) );
+	vec4 lightPosition;
+	lightPosition = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0);
+	lightPosition *= vec4(1.0,-1.0,1.0,1.0);
+
+	vec3 s = normalize( vec3( lightPosition.xyz - position1 ) );
 	vec3 v = normalize( -position1.xyz );
 	vec3 r = reflect( -s, norm );
  
@@ -533,7 +537,9 @@ void main()
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
-	normal = attr1;
+	normal = ubo.totalTransformation * attr1;
+	normal *= vec4(1.0,-1.0,1.0,1.0);
+
 	texcoord = attr2;
 
 	switch(diffuseMaterialSource)
@@ -600,7 +606,6 @@ void main()
 		break;
 	}
 
-	normal.y = -normal.y;
 	if(lighting)
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
@@ -615,8 +620,8 @@ void main()
 					backLightColor += getGouradLight( i, pos.xyz, -normal.xyz);
 				}
 			}
-			frontLight = vec4(frontLightColor,1);
-			backLight = vec4(backLightColor,1);
+			frontLight = vec4(frontLightColor,1.0);
+			backLight = vec4(backLightColor,1.0);
 		}
 	}
 }
