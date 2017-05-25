@@ -518,11 +518,12 @@ layout (location = 0) in vec4 color;
 layout (location = 1) in vec4 ambientColor;
 layout (location = 2) in vec4 specularColor;
 layout (location = 3) in vec4 emissiveColor;
-layout (location = 4) in vec4 normal;
-layout (location = 5) in vec2 texcoord;
-layout (location = 6) in vec4 frontLight;
-layout (location = 7) in vec4 backLight;
-layout (location = 8) in vec4 pos;
+layout (location = 4) in vec4 globalIllumination;
+layout (location = 5) in vec4 normal;
+layout (location = 6) in vec2 texcoord;
+layout (location = 7) in vec4 frontLight;
+layout (location = 8) in vec4 backLight;
+layout (location = 9) in vec4 pos;
 layout (location = 0) out vec4 uFragColor;
 
 vec2 getTextureCoord(int index)
@@ -722,52 +723,6 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	tempOut = temp;
 }
 
-/*
-https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
-*/
-vec4 GetColorWithLight(vec4 color)
-{
-	vec4 ambient;
-	vec4 diffuse;
-	vec4 specular;
-	vec4 emissive;
-
-	vec4 temp1 = vec4(0);
-
-	for( int i=0; i<lightCount; ++i )
-	{
-		lightPosition = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0);
-		lightPosition *= vec4(1.0,-1.0,1.0,1.0);
-		float distance = distance(lightPosition.xyz ,pos.xyz);
-		if(lights[i].IsEnabled && lights[i].Range >= distance)
-		{		
-			//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
-			float attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * distance + lights[i].Attenuation2 * pow(distance,2));
-			float rho = normalize(lightPosition.xyz - pos.xyz) * normalize(normal);
-			float spot;
-
-			if(lights[i].Type <> D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
-			{
-				spot = 1;
-			}
-			else if(rho < cos(lights[i].Phi/2))
-			{
-				spot = 0;
-			}
-			else
-			{
-				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
-			}
-
-
-			temp1 += attenuation * spot
-		}
-	}
-
-	ambient = ambientColor * ( + temp1);
-
-	return ambient + diffuse + specular + emissive;
-}
 
 void main() 
 {
@@ -781,44 +736,15 @@ void main()
 		colorOperation_0, colorArgument1_0, colorArgument2_0, colorArgument0_0,
 		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
 	}
-
-	//uFragColor = GetColorWithLight(result);
+	
 	uFragColor = result;
+	
 
 	if(lighting)
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
 		{
-			if ( gl_FrontFacing )
-			{
-				uFragColor.xyz *= frontLight.xyz;
-			}
-			else 
-			{
-				uFragColor.xyz *= backLight.xyz;
-			}
-		}
-		else if(shadeMode == D3DSHADE_PHONG)
-		{
-			vec4 ambientSum = vec4(0);
-			vec4 diffuseSum = vec4(0);
-			vec4 specSum = vec4(0);
-			vec4 ambient, diffuse, spec;
-
-			for( int i=0; i<lightCount; ++i )
-			{
-				if(lights[i].IsEnabled)
-				{
-					getPhongLight( i, pos.xyz, normal, ambient, diffuse, spec );
-					ambientSum += ambient;
-					diffuseSum += diffuse;
-					specSum += spec;
-				}
-			}
-
-			ambientSum /= lightCount;
-
-			uFragColor = vec4( ambientSum + diffuseSum) * uFragColor + vec4( specSum);
+			//uFragColor.xyz *= globalIllumination.xyz;
 		}
 	}
 }
