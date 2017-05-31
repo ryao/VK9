@@ -3642,6 +3642,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLigh
 
 	Light light = {};
 
+	light.Type = pLight->Type;
+
 	light.Diffuse << pLight->Diffuse.r
 	,pLight->Diffuse.g
 	,pLight->Diffuse.b

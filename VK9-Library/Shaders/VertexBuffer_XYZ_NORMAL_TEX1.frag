@@ -744,7 +744,7 @@ void main()
 	{
 		if(shadeMode == D3DSHADE_GOURAUD)
 		{
-			//uFragColor.xyz *= globalIllumination.xyz;
+			uFragColor.xyz *= globalIllumination.xyz;
 		}
 	}
 }

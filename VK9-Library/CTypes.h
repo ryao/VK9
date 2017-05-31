@@ -109,7 +109,7 @@ struct Light
 	float                 Theta;           /* Inner angle of spotlight cone */
 	float                 Phi;             /* Outer angle of spotlight cone */
 
-	bool                  IsEnabled;       /*Replaces separate enable structure.*/
+	bool                  IsEnabled=0;       /*Replaces separate enable structure.*/
 };
 
 class StreamSource

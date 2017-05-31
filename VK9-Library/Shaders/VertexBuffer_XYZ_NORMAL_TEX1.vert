@@ -537,29 +537,52 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 */
 void SetGlobalIllumination()
 {
-	vec4 ambient;
-	vec4 diffuse;
+	vec4 ambient = vec4(0);
+	vec4 diffuse = vec4(0);
 	vec4 specular = vec4(0);
-	vec4 emissive;
-
+	vec4 emissive = vec4(0);	
 	vec4 attenuationTemp = vec4(0);
 	vec4 diffuseTemp = vec4(0);
 	vec4 specularTemp = vec4(0);
+	vec3 cameraPosition = vec3(0);
 
+	float lightDistance = 0;
+	vec4 lightPosition = vec4(0);
+	vec4 lightDirection = vec4(0);
+	float attenuation = 0;
+	vec3 ldir = vec3(0);
+	float rho = 0;
+	float spot = 0;
+
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
 	for( int i=0; i<lightCount; ++i )
-	{
-		vec4 lightPosition = ubo.totalTransformation * vec4(lights[i].Position,1.0);
-		lightPosition *= vec4(1.0,-1.0,1.0,1.0);
-		float distance = distance(lightPosition.xyz ,pos.xyz);
-		if(lights[i].IsEnabled && lights[i].Range >= distance)
+	{		
+		if(lights[i].IsEnabled)
 		{		
-			//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
-			float attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * distance + lights[i].Attenuation2 * pow(distance,2));
-			vec3 ldir = lightPosition.xyz - pos.xyz;
-			float rho = dot(normalize(ldir),normalize(normal).xyz);
-			float spot;
-			vec3 cameraPosition = vec3(0.0);
+			lightPosition = ubo.totalTransformation * vec4(lights[i].Position,1.0);
+			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
 
+			lightDirection = ubo.totalTransformation * vec4(lights[i].Direction,1.0);
+			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
+
+			lightDistance = distance(pos.xyz,lightPosition.xyz);
+
+			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
+			{
+				attenuation = 1;
+			}
+			else if(lights[i].Range < lightDistance)
+			{
+				attenuation = 0;
+			}
+			else
+			{
+				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
+			}
+	
+			ldir = lightDirection.xyz;
+			rho = dot(normalize(ldir),normal.xyz);			
+			
 			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
 			{
 				spot = 1;
@@ -573,7 +596,6 @@ void SetGlobalIllumination()
 				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
 			}
 
-
 			attenuationTemp += (attenuation * spot * lights[i].Ambient);
 			diffuseTemp += (color * lights[i].Diffuse * dot(normal.xyz,ldir) * attenuation * spot);
 
@@ -581,7 +603,6 @@ void SetGlobalIllumination()
 			{
 				specularTemp += (lights[i].Specular * pow(dot(normal.xyz, normalize(normalize(cameraPosition - pos.xyz) + ldir) ),material.Power) * attenuation * spot);
 			}
-
 		}
 	}
 
@@ -596,6 +617,7 @@ void SetGlobalIllumination()
 
 
 	globalIllumination = (ambient + diffuse + specular + emissive);
+	//globalIllumination.x = attenuation;
 }
 
 void main() 
@@ -615,13 +637,13 @@ void main()
 			color = material.Diffuse;
 		break;
 		case D3DMCS_COLOR1:
-			color = vec4(1.0);
+			color = material.Diffuse;
 		break;
 		case D3DMCS_COLOR2:
-			color = vec4(0);
+			color = material.Diffuse;
 		break;
 		default:
-			color = vec4(0);
+			color = material.Diffuse;
 		break;
 	}
 
@@ -631,13 +653,13 @@ void main()
 			ambientColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR1:
-			ambientColor = vec4(1.0);
+			ambientColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR2:
-			ambientColor = vec4(0);
+			ambientColor = material.Diffuse;
 		break;
 		default:
-			ambientColor = vec4(0);
+			ambientColor = material.Diffuse;
 		break;
 	}
 
@@ -647,13 +669,13 @@ void main()
 			specularColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR1:
-			specularColor = vec4(1.0);
+			specularColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR2:
-			specularColor = vec4(0);
+			specularColor = material.Diffuse;
 		break;
 		default:
-			specularColor = vec4(0);
+			specularColor = material.Diffuse;
 		break;
 	}
 
@@ -663,13 +685,13 @@ void main()
 			emissiveColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR1:
-			emissiveColor = vec4(1.0);
+			emissiveColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR2:
-			emissiveColor = vec4(0);
+			emissiveColor = material.Diffuse;
 		break;
 		default:
-			emissiveColor = vec4(0);
+			emissiveColor = material.Diffuse;
 		break;
 	}
 
