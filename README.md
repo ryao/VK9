@@ -7,5 +7,6 @@ Please refer to the Github wiki for current state and details about the project.
 
 VK9 is released under a zlib style license refer to the LICENSE.md file for more information.
 
-
 Join the discord server (VKx) to communicate with the community. https://discord.gg/EMc4Kak
+
+For the latest project news visit my blog. http://techtinker.blogspot.com/
