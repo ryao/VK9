@@ -565,7 +565,7 @@ void SetGlobalIllumination()
 			lightDirection = ubo.totalTransformation * vec4(lights[i].Direction,1.0);
 			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
 
-			lightDistance = distance(pos.xyz,lightPosition.xyz);
+			lightDistance = abs(distance(pos.xyz,lightPosition.xyz));
 
 			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
 			{
