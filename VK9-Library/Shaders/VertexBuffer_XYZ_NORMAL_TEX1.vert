@@ -499,16 +499,13 @@ vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec4 attr1;
 layout (location = 2) in vec2 attr2;
-layout (location = 0) out vec4 color;
+layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 ambientColor;
 layout (location = 2) out vec4 specularColor;
 layout (location = 3) out vec4 emissiveColor;
-layout (location = 4) out vec4 globalIllumination;
-layout (location = 5) out vec4 normal;
-layout (location = 6) out vec2 texcoord;
-layout (location = 7) out vec4 frontLight;
-layout (location = 8) out vec4 backLight;
-layout (location = 9) out vec4 pos;
+layout (location = 4) out vec4 normal;
+layout (location = 5) out vec2 texcoord;
+layout (location = 6) out vec4 pos;
 
 out gl_PerVertex 
 {
@@ -532,94 +529,6 @@ vec4 Convert(uvec4 rgba)
 	return unpacked;
 }
 
-/*
-https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
-*/
-void SetGlobalIllumination()
-{
-	vec4 ambient = vec4(0);
-	vec4 diffuse = vec4(0);
-	vec4 specular = vec4(0);
-	vec4 emissive = vec4(0);	
-	vec4 attenuationTemp = vec4(0);
-	vec4 diffuseTemp = vec4(0);
-	vec4 specularTemp = vec4(0);
-	vec3 cameraPosition = vec3(0);
-
-	float lightDistance = 0;
-	vec4 lightPosition = vec4(0);
-	vec4 lightDirection = vec4(0);
-	float attenuation = 0;
-	vec3 ldir = vec3(0);
-	float rho = 0;
-	float spot = 0;
-
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
-	for( int i=0; i<lightCount; ++i )
-	{		
-		if(lights[i].IsEnabled)
-		{		
-			lightPosition = ubo.totalTransformation * vec4(lights[i].Position,1.0);
-			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
-
-			lightDirection = ubo.totalTransformation * vec4(lights[i].Direction,1.0);
-			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
-
-			lightDistance = abs(distance(pos.xyz,lightPosition.xyz));
-
-			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
-			{
-				attenuation = 1;
-			}
-			else if(lights[i].Range < lightDistance)
-			{
-				attenuation = 0;
-			}
-			else
-			{
-				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
-			}
-	
-			ldir = lightDirection.xyz;
-			rho = dot(normalize(ldir),normal.xyz);			
-			
-			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
-			{
-				spot = 1;
-			}
-			else if(rho < cos(lights[i].Phi/2))
-			{
-				spot = 0;
-			}
-			else
-			{
-				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
-			}
-
-			attenuationTemp += (attenuation * spot * lights[i].Ambient);
-			diffuseTemp += (color * lights[i].Diffuse * dot(normal.xyz,ldir) * attenuation * spot);
-
-			if(specularEnable)
-			{
-				specularTemp += (lights[i].Specular * pow(dot(normal.xyz, normalize(normalize(cameraPosition - pos.xyz) + ldir) ),material.Power) * attenuation * spot);
-			}
-		}
-	}
-
-	ambient = material.Ambient * (ambientColor + attenuationTemp);
-	diffuse = diffuseTemp;
-	emissive = material.Emissive;
-
-	if(specularEnable)
-	{
-		specular = specularColor * specularTemp;
-	}
-
-
-	globalIllumination = (ambient + diffuse + specular + emissive);
-	//globalIllumination.x = attenuation;
-}
-
 void main() 
 {	
 	gl_Position = ubo.totalTransformation * vec4(position,1.0);
@@ -634,16 +543,16 @@ void main()
 	switch(diffuseMaterialSource)
 	{
 		case D3DMCS_MATERIAL:
-			color = material.Diffuse;
+			diffuseColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR1:
-			color = material.Diffuse;
+			diffuseColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR2:
-			color = material.Diffuse;
+			diffuseColor = material.Diffuse;
 		break;
 		default:
-			color = material.Diffuse;
+			diffuseColor = material.Diffuse;
 		break;
 	}
 
@@ -693,26 +602,5 @@ void main()
 		default:
 			emissiveColor = material.Diffuse;
 		break;
-	}
-
-	if(lighting)
-	{
-		if(shadeMode == D3DSHADE_GOURAUD)
-		{
-			SetGlobalIllumination();
-
-			vec3 frontLightColor = vec3(0);
-			vec3 backLightColor = vec3(0);
-			for( int i=0; i<lightCount; ++i )
-			{
-				if(lights[i].IsEnabled)
-				{
-					frontLightColor += getGouradLight( i, pos.xyz, normal.xyz);
-					backLightColor += getGouradLight( i, pos.xyz, -normal.xyz);
-				}
-			}
-			frontLight = vec4(frontLightColor,1.0);
-			backLight = vec4(backLightColor,1.0);
-		}
 	}
 }
