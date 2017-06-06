@@ -369,7 +369,7 @@ layout(constant_id = 185) const int wrap6 = 0;
 layout(constant_id = 186) const int wrap7 = 0;
 layout(constant_id = 187) const bool clipping = true;
 layout(constant_id = 188) const bool lighting = true;
-layout(constant_id = 189) const int ambient = 0;
+layout(constant_id = 189) const int globalAmbient = 0;
 layout(constant_id = 190) const int fogVertexMode = D3DFOG_NONE;
 layout(constant_id = 191) const bool colorVertex = true;
 layout(constant_id = 192) const bool localViewer = true;
@@ -474,28 +474,6 @@ layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
 } ubo;
 
-vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
-{
-	vec4 lightPosition;
-	lightPosition = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0);
-	lightPosition *= vec4(1.0,-1.0,1.0,1.0);
-
-	vec3 s = normalize( vec3( lightPosition.xyz - position1 ) );
-	vec3 v = normalize( -position1.xyz );
-	vec3 r = reflect( -s, norm );
- 
-	vec3 ambient = lights[lightIndex].Ambient.xyz * material.Ambient.xyz;
- 
-	float sDotN = max( dot( s, norm ), 0.0 );
-	vec3 diffuse = lights[lightIndex].Diffuse.xyz * material.Diffuse.xyz * sDotN;
- 
-	vec3 spec = vec3( 0.0 );
-	if ( sDotN > 0.0 )
-		spec = lights[lightIndex].Specular.xyz * material.Specular.xyz * pow( max( dot(r,v) , 0.0 ), material.Power );
- 
-	return ambient + diffuse + spec;
-}
-
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec4 attr1;
 layout (location = 2) in vec2 attr2;
@@ -506,6 +484,7 @@ layout (location = 3) out vec4 emissiveColor;
 layout (location = 4) out vec4 normal;
 layout (location = 5) out vec2 texcoord;
 layout (location = 6) out vec4 pos;
+layout (location = 7) out vec4 globalIllumination;
 
 out gl_PerVertex 
 {
@@ -527,6 +506,106 @@ vec4 Convert(uvec4 rgba)
 	unpacked.w = unpacked.w / 255;	
 
 	return unpacked;
+}
+
+vec4 Convert(uint rgba)
+{
+	vec4 unpacked = vec4(0);
+
+	unpacked.x = float((rgba & uint(0xff000000)) >> 24);
+	unpacked.y = float((rgba & uint(0x00ff0000)) >> 16);
+	unpacked.z = float((rgba & uint(0x0000ff00)) >> 8);
+	unpacked.w = float((rgba & uint(0x000000ff)) >> 0);
+
+	return unpacked;
+}
+
+/*
+https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
+*/
+vec4 GetGlobalIllumination()
+{
+	vec4 ambient = vec4(0);
+	vec4 diffuse = vec4(0);
+	vec4 specular = vec4(0);
+	vec4 emissive = vec4(0);	
+	vec4 attenuationTemp = vec4(0);
+	vec4 diffuseTemp = vec4(0);
+	vec4 specularTemp = vec4(0);
+	vec3 cameraPosition = vec3(0);
+
+	float lightDistance = 0;
+	vec4 lightPosition = vec4(0);
+	vec4 lightDirection = vec4(0);
+	float attenuation = 0;
+	vec3 ldir = vec3(0);
+	float rho = 0;
+	float spot = 0;
+
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
+	for( int i=0; i<lightCount; ++i )
+	{		
+		if(lights[i].IsEnabled)
+		{		
+			lightPosition = ubo.totalTransformation * vec4(lights[i].Position,1.0);
+			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
+
+			lightDirection = ubo.totalTransformation * vec4(lights[i].Direction,1.0);
+			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
+
+			lightDistance = abs(distance(pos.xyz,lightPosition.xyz));
+
+			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
+			{
+				attenuation = 1;
+			}
+			else if(lights[i].Range < lightDistance)
+			{
+				attenuation = 0;
+			}
+			else
+			{
+				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
+			}
+
+			ldir = normalize(lightPosition.xyz- pos.xyz);
+			
+			rho = dot(normalize(lightDirection.xyz),normalize(ldir));
+
+			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
+			{
+				spot = 1;
+			}
+			else if(rho < cos(lights[i].Phi/2))
+			{
+				spot = 0;
+			}
+			else
+			{
+				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
+			}
+
+			attenuationTemp += (attenuation * spot * lights[i].Ambient);
+			diffuseTemp += (diffuseColor * lights[i].Diffuse * dot(normal.xyz,ldir) * attenuation * spot);
+
+			if(specularEnable)
+			{
+				specularTemp += (lights[i].Specular * pow(max(dot(normal.xyz, normalize(normalize(cameraPosition - pos.xyz) + ldir)),0.0),material.Power) * attenuation * spot);
+			}
+		}
+	}
+
+	ambient = material.Ambient * (Convert(globalAmbient) + attenuationTemp);
+	diffuse = diffuseTemp;
+	emissive = material.Emissive;
+
+	if(specularEnable)
+	{
+		specular = specularColor * specularTemp;
+	}
+
+
+	return (ambient + diffuse + specular + emissive);
 }
 
 void main() 
@@ -559,48 +638,50 @@ void main()
 	switch(ambientMaterialSource)
 	{
 		case D3DMCS_MATERIAL:
-			ambientColor = material.Diffuse;
+			ambientColor = material.Ambient;
 		break;
 		case D3DMCS_COLOR1:
-			ambientColor = material.Diffuse;
+			ambientColor = material.Ambient;
 		break;
 		case D3DMCS_COLOR2:
-			ambientColor = material.Diffuse;
+			ambientColor = material.Ambient;
 		break;
 		default:
-			ambientColor = material.Diffuse;
+			ambientColor = material.Ambient;
 		break;
 	}
 
 	switch(specularMaterialSource)
 	{
 		case D3DMCS_MATERIAL:
-			specularColor = material.Diffuse;
+			specularColor = material.Specular;
 		break;
 		case D3DMCS_COLOR1:
-			specularColor = material.Diffuse;
+			specularColor = material.Specular;
 		break;
 		case D3DMCS_COLOR2:
-			specularColor = material.Diffuse;
+			specularColor = material.Specular;
 		break;
 		default:
-			specularColor = material.Diffuse;
+			specularColor = material.Specular;
 		break;
 	}
 
 	switch(emissiveMaterialSource)
 	{
 		case D3DMCS_MATERIAL:
-			emissiveColor = material.Diffuse;
+			emissiveColor = material.Emissive;
 		break;
 		case D3DMCS_COLOR1:
-			emissiveColor = material.Diffuse;
+			emissiveColor = material.Emissive;
 		break;
 		case D3DMCS_COLOR2:
-			emissiveColor = material.Diffuse;
+			emissiveColor = material.Emissive;
 		break;
 		default:
-			emissiveColor = material.Diffuse;
+			emissiveColor = material.Emissive;
 		break;
 	}
+
+	globalIllumination = GetGlobalIllumination();
 }

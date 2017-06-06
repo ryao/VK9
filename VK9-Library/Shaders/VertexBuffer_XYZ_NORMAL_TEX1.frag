@@ -369,7 +369,7 @@ layout(constant_id = 185) const int wrap6 = 0;
 layout(constant_id = 186) const int wrap7 = 0;
 layout(constant_id = 187) const bool clipping = true;
 layout(constant_id = 188) const bool lighting = true;
-layout(constant_id = 189) const int ambient = 0;
+layout(constant_id = 189) const int globalAmbient = 0;
 layout(constant_id = 190) const int fogVertexMode = D3DFOG_NONE;
 layout(constant_id = 191) const bool colorVertex = true;
 layout(constant_id = 192) const bool localViewer = true;
@@ -474,44 +474,6 @@ layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
 } ubo;
 
-void getPhongLight( int lightIndex, vec3 position1, vec4 norm, out vec4 ambient, out vec4 diffuse, out vec4 spec )
-{
-	vec4 temp = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0) * vec4(1.0,-1.0,1.0,1.0);
-	vec3 lightPosition = temp.xyz;
-
-	vec3 n = normalize( norm.xyz );
-	vec3 s = normalize( lightPosition - position1 );
-	vec3 v = normalize( -position1 );
-	vec3 r = reflect( -s, n );
- 
-	ambient = lights[lightIndex].Ambient * material.Ambient;
- 
-	float sDotN = max( dot( s, n ), 0.0 );
-	diffuse = lights[lightIndex].Diffuse * material.Diffuse * sDotN;
- 
- 
-	spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power ); 
-}
-
-vec4 Convert(int rgba)
-{
-	vec4 unpacked = vec4(0);
-
-	/*
-	unpacked.w = float(rgba.w);
-	unpacked.z = float(rgba.z);
-	unpacked.y = float(rgba.y);
-	unpacked.x = float(rgba.x);
-
-	unpacked.x = unpacked.x / 255;
-	unpacked.y = unpacked.y / 255;
-	unpacked.z = unpacked.z / 255;
-	unpacked.w = unpacked.w / 255;
-	*/
-
-	return unpacked;
-}
-
 layout(binding = 0) uniform sampler2D textures[1];
 
 layout (location = 0) in vec4 diffuseColor;
@@ -521,7 +483,20 @@ layout (location = 3) in vec4 emissiveColor;
 layout (location = 4) in vec4 normal;
 layout (location = 5) in vec2 texcoord;
 layout (location = 6) in vec4 pos;
+layout (location = 7) in vec4 globalIllumination;
 layout (location = 0) out vec4 uFragColor;
+
+vec4 Convert(uint rgba)
+{
+	vec4 unpacked = vec4(0);
+
+	unpacked.x = float((rgba & uint(0xff000000)) >> 24);
+	unpacked.y = float((rgba & uint(0x00ff0000)) >> 16);
+	unpacked.z = float((rgba & uint(0x0000ff00)) >> 8);
+	unpacked.w = float((rgba & uint(0x000000ff)) >> 0);
+
+	return unpacked;
+}
 
 vec2 getTextureCoord(int index)
 {
@@ -720,96 +695,6 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	tempOut = temp;
 }
 
-/*
-https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
-*/
-vec4 GetGlobalIllumination(vec4 color)
-{
-	vec4 ambient = vec4(0);
-	vec4 diffuse = vec4(0);
-	vec4 specular = vec4(0);
-	vec4 emissive = vec4(0);	
-	vec4 attenuationTemp = vec4(0);
-	vec4 diffuseTemp = vec4(0);
-	vec4 specularTemp = vec4(0);
-	vec3 cameraPosition = vec3(0);
-
-	float lightDistance = 0;
-	vec4 lightPosition = vec4(0);
-	vec4 lightDirection = vec4(0);
-	float attenuation = 0;
-	vec3 ldir = vec3(0);
-	float rho = 0;
-	float spot = 0;
-
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
-	for( int i=0; i<lightCount; ++i )
-	{		
-		if(lights[i].IsEnabled)
-		{		
-			lightPosition = ubo.totalTransformation * vec4(lights[i].Position,1.0);
-			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
-
-			lightDirection = ubo.totalTransformation * vec4(lights[i].Direction,1.0);
-			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
-
-			lightDistance = abs(distance(pos.xyz,lightPosition.xyz));
-
-			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
-			{
-				attenuation = 1;
-			}
-			else if(lights[i].Range < lightDistance)
-			{
-				attenuation = 0;
-			}
-			else
-			{
-				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
-			}
-
-			ldir = normalize(lightPosition.xyz- pos.xyz);
-
-			//rho = max(dot(ldir,normal.xyz),0.0);	
-			rho = max(dot(normal.xyz,ldir),0.0);
-			
-			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
-			{
-				spot = 1;
-			}
-			else if(rho < cos(lights[i].Phi/2))
-			{
-				spot = 0;
-			}
-			else
-			{
-				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
-			}
-
-			attenuationTemp += (attenuation * spot * lights[i].Ambient);
-			diffuseTemp += (color * lights[i].Diffuse * rho * attenuation * spot);
-
-			if(specularEnable)
-			{
-				specularTemp += (lights[i].Specular * pow(max(dot(normal.xyz, normalize(normalize(cameraPosition - pos.xyz) + ldir)),0.0),material.Power) * attenuation * spot);
-			}
-		}
-	}
-
-	ambient = material.Ambient * (ambientColor + attenuationTemp);
-	diffuse = diffuseTemp;
-	emissive = material.Emissive;
-
-	if(specularEnable)
-	{
-		specular = specularColor * specularTemp;
-	}
-
-
-	return (ambient + diffuse + specular + emissive);
-	//return diffuse;
-}
-
 void main() 
 {
 	vec4 temp;
@@ -823,16 +708,14 @@ void main()
 		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
 	}
 
+	uFragColor = result;
+	
 	if(lighting)
 	{	
 		if(shadeMode == D3DSHADE_GOURAUD)
 		{
-			uFragColor.rgb = GetGlobalIllumination(result).rgb;	
-			uFragColor.a = result.a;
+			uFragColor.rgb *= globalIllumination.rgb;
 		}
 	}
-	else
-	{
-		uFragColor = result;
-	}
+
 }
