@@ -557,6 +557,15 @@ vec4 GetGlobalIllumination()
 
 			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
 			{
+				ldir = normalize(-lightDirection).xyz;
+			}
+			else
+			{
+				ldir = normalize(lightPosition.xyz - pos.xyz);
+			}
+
+			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
+			{
 				attenuation = 1;
 			}
 			else if(lights[i].Range < lightDistance)
@@ -568,9 +577,7 @@ vec4 GetGlobalIllumination()
 				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
 			}
 
-			ldir = normalize(lightPosition.xyz- pos.xyz);
-			
-			rho = dot(normalize(lightDirection.xyz),normalize(ldir));
+			rho = dot(normalize(lightDirection.xyz),normalize(lightDirection.xyz));
 
 			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
 			{
@@ -586,7 +593,7 @@ vec4 GetGlobalIllumination()
 			}
 
 			attenuationTemp += (attenuation * spot * lights[i].Ambient);
-			diffuseTemp += (diffuseColor * lights[i].Diffuse * dot(normal.xyz,ldir) * attenuation * spot);
+			diffuseTemp += (diffuseColor * lights[i].Diffuse * dot(normalize(normal.xyz),ldir) * attenuation * spot);
 
 			if(specularEnable)
 			{
@@ -614,8 +621,9 @@ void main()
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
-	normal = ubo.totalTransformation * attr1;
-	normal *= vec4(1.0,-1.0,1.0,1.0);
+	//normal = ubo.totalTransformation * attr1;
+	//normal *= vec4(1.0,-1.0,1.0,1.0);
+	normal = attr1;
 
 	texcoord = attr2;
 
