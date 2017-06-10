@@ -89,18 +89,14 @@ struct UniformBufferObject {
 		,0.0 ,0.0 ,0.0 ,1.0 };
 };
 
-/*
-We need this structure because the compiler reduces the size of the native structure so we're missing bytes on the GPU size.
-If we weren't using this for passing to the GPU this would actually be a good thing because more information could fit on a cache line.
-*/
 struct Light
 {
+	float                 Diffuse[4];         /* Diffuse color of light */
+	float                 Specular[4];        /* Specular color of light */
+	float                 Ambient[4];         /* Ambient color of light */
+	float                 Position[4];        /* Position in world space */
+	float                 Direction[4];       /* Direction in world space */
 	int                   Type;            /* Type of light source */
-	Eigen::Vector4f       Diffuse;         /* Diffuse color of light */
-	Eigen::Vector4f       Specular;        /* Specular color of light */
-	Eigen::Vector4f       Ambient;         /* Ambient color of light */
-	Eigen::Vector3f       Position;        /* Position in world space */
-	Eigen::Vector3f       Direction;       /* Direction in world space */
 	float                 Range;           /* Cutoff range */
 	float                 Falloff;         /* Falloff */
 	float                 Attenuation0;    /* Constant attenuation */
@@ -108,8 +104,10 @@ struct Light
 	float                 Attenuation2;    /* Quadratic attenuation */
 	float                 Theta;           /* Inner angle of spotlight cone */
 	float                 Phi;             /* Outer angle of spotlight cone */
-
-	bool                  IsEnabled=0;       /*Replaces separate enable structure.*/
+	int                   IsEnabled = 0;       /*Replaces separate enable structure.*/
+	int                   Filler1;
+	int                   Filler2;
+	int                   Filler3;
 };
 
 class StreamSource

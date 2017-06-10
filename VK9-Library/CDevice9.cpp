@@ -2319,12 +2319,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
 {
 	auto& light = mDeviceState.mLights[Index];
 
-	pLight->Diffuse = (*(D3DCOLORVALUE*)light.Diffuse.data());
-	pLight->Specular = (*(D3DCOLORVALUE*)light.Specular.data());
-	pLight->Ambient = (*(D3DCOLORVALUE*)light.Ambient.data());
+	pLight->Type = (*(D3DLIGHTTYPE*)light.Type);
+	pLight->Diffuse = (*(D3DCOLORVALUE*)light.Diffuse);
+	pLight->Specular = (*(D3DCOLORVALUE*)light.Specular);
+	pLight->Ambient = (*(D3DCOLORVALUE*)light.Ambient);
 
-	pLight->Position = (*(D3DVECTOR*)light.Position.data());
-	pLight->Direction = (*(D3DVECTOR*)light.Direction.data());
+	pLight->Position = (*(D3DVECTOR*)light.Position);
+	pLight->Direction = (*(D3DVECTOR*)light.Direction);
 
 	pLight->Range = light.Range;
 	pLight->Falloff = light.Falloff;
@@ -3643,29 +3644,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLigh
 	Light light = {};
 
 	light.Type = pLight->Type;
+	light.Diffuse[0] = pLight->Diffuse.r;
+	light.Diffuse[1] = pLight->Diffuse.g;
+	light.Diffuse[2] = pLight->Diffuse.b;
+	light.Diffuse[3] = pLight->Diffuse.a;
 
-	light.Diffuse << pLight->Diffuse.r
-	,pLight->Diffuse.g
-	,pLight->Diffuse.b
-	,pLight->Diffuse.a;
+	light.Specular[0] = pLight->Specular.r;
+	light.Specular[1] = pLight->Specular.g;
+	light.Specular[2] = pLight->Specular.b;
+	light.Specular[3] = pLight->Specular.a;
 
-	light.Specular << pLight->Specular.r
-	,pLight->Specular.g
-	,pLight->Specular.b
-	,pLight->Specular.a;
+	light.Ambient[0] = pLight->Ambient.r;
+	light.Ambient[1] = pLight->Ambient.g;
+	light.Ambient[2] = pLight->Ambient.b;
+	light.Ambient[3] = pLight->Ambient.a;
 
-	light.Ambient << pLight->Ambient.r
-	,pLight->Ambient.g
-	,pLight->Ambient.b
-	,pLight->Ambient.a;
+	light.Position[0] = pLight->Position.x;
+	light.Position[1] = pLight->Position.y;
+	light.Position[2] = pLight->Position.z;
 
-	light.Position << pLight->Position.x
-	,pLight->Position.y
-	,pLight->Position.z;
-
-	light.Direction << pLight->Direction.x
-	,pLight->Direction.y
-	,pLight->Direction.z;
+	light.Direction[0] = pLight->Direction.x;
+	light.Direction[1] = pLight->Direction.y;
+	light.Direction[2] = pLight->Direction.z;
 
 	light.Range = pLight->Range;
 	light.Falloff = pLight->Falloff;

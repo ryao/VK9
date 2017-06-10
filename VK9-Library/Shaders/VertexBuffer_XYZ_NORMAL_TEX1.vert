@@ -434,12 +434,12 @@ layout(constant_id = 250) const int blendOperationAlpha = D3DBLENDOP_ADD;
 
 struct Light
 {
-	int        Type;            /* Type of light source */
 	vec4       Diffuse;         /* Diffuse color of light */
 	vec4       Specular;        /* Specular color of light */
 	vec4       Ambient;         /* Ambient color of light */
-	vec3       Position;        /* Position in world space */
-	vec3       Direction;       /* Direction in world space */
+	vec4       Position;        /* Position in world space */
+	vec4       Direction;       /* Direction in world space */
+	int        Type;            /* Type of light source */
 	float      Range;           /* Cutoff range */
 	float      Falloff;         /* Falloff */
 	float      Attenuation0;    /* Constant attenuation */
@@ -447,8 +447,10 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
-
 	bool       IsEnabled;
+	int        filler1;
+	int        filler2;
+	int        filler3;	
 };
  
 struct Material
@@ -460,7 +462,7 @@ struct Material
 	float  Power;          /* Sharpness if specular highlight */
 };
 
-layout(binding = 1) uniform LightBlock
+layout(std140,binding = 1) uniform LightBlock
 {
 	Light lights[lightCount];
 };
@@ -472,10 +474,11 @@ layout(binding = 2) uniform MaterialBlock
 
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
+	mat4 modelTransformation;
 } ubo;
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec4 attr1;
+layout (location = 1) in vec3 attr1;
 layout (location = 2) in vec2 attr2;
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 ambientColor;
@@ -535,33 +538,41 @@ vec4 GetGlobalIllumination()
 	vec3 cameraPosition = vec3(0);
 
 	float lightDistance = 0;
+	vec4 vectorPosition = vec4(0);
 	vec4 lightPosition = vec4(0);
 	vec4 lightDirection = vec4(0);
 	float attenuation = 0;
-	vec3 ldir = vec3(0);
+	vec4 ldir = vec4(0);
 	float rho = 0;
 	float spot = 0;
+
+	normal = ubo.modelTransformation * vec4(attr1,0);
+	normal = normalize(normal);
+	//normal *= vec4(1.0,-1.0,1.0,1.0);
+
+	vectorPosition = ubo.modelTransformation * vec4(position,1.0);
+	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
 	for( int i=0; i<lightCount; ++i )
 	{		
 		if(lights[i].IsEnabled)
 		{		
-			lightPosition = ubo.totalTransformation * vec4(lights[i].Position,1.0);
+			lightPosition = ubo.modelTransformation * lights[i].Position;
 			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
 
-			lightDirection = ubo.totalTransformation * vec4(lights[i].Direction,1.0);
-			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
+			lightDirection = lights[i].Direction;
+			//lightDirection *= vec4(1.0,-1.0,1.0,1.0);
 
 			lightDistance = abs(distance(pos.xyz,lightPosition.xyz));
 
 			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
 			{
-				ldir = normalize(-lightDirection).xyz;
+				ldir = normalize(lightDirection * vec4(-1.0,-1.0,-1.0,-1.0));
 			}
 			else
 			{
-				ldir = normalize(lightPosition.xyz - pos.xyz);
+				ldir = normalize(lightPosition - vectorPosition);
 			}
 
 			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
@@ -593,18 +604,18 @@ vec4 GetGlobalIllumination()
 			}
 
 			attenuationTemp += (attenuation * spot * lights[i].Ambient);
-			diffuseTemp += (diffuseColor * lights[i].Diffuse * dot(normalize(normal.xyz),ldir) * attenuation * spot);
+			diffuseTemp += (diffuseColor * lights[i].Diffuse * max(dot(normal,ldir),0.0) * attenuation * spot);
 
 			if(specularEnable)
 			{
-				specularTemp += (lights[i].Specular * pow(max(dot(normal.xyz, normalize(normalize(cameraPosition - pos.xyz) + ldir)),0.0),material.Power) * attenuation * spot);
+				specularTemp += (lights[i].Specular * pow(max(dot(normal.xyz, normalize(normalize(cameraPosition - pos.xyz) + ldir.xyz)),0.0),material.Power) * attenuation * spot);
 			}
 		}
 	}
 
 	ambient = material.Ambient * (Convert(globalAmbient) + attenuationTemp);
 	diffuse = diffuseTemp;
-	emissive = material.Emissive;
+	//emissive = material.Emissive;
 
 	if(specularEnable)
 	{
@@ -620,10 +631,6 @@ void main()
 	gl_Position = ubo.totalTransformation * vec4(position,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
-
-	//normal = ubo.totalTransformation * attr1;
-	//normal *= vec4(1.0,-1.0,1.0,1.0);
-	normal = attr1;
 
 	texcoord = attr2;
 

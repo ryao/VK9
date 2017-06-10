@@ -434,12 +434,12 @@ layout(constant_id = 250) const int blendOperationAlpha = D3DBLENDOP_ADD;
 
 struct Light
 {
-	int        Type;            /* Type of light source */
 	vec4       Diffuse;         /* Diffuse color of light */
 	vec4       Specular;        /* Specular color of light */
 	vec4       Ambient;         /* Ambient color of light */
-	vec3       Position;        /* Position in world space */
-	vec3       Direction;       /* Direction in world space */
+	vec4       Position;        /* Position in world space */
+	vec4       Direction;       /* Direction in world space */
+	int        Type;            /* Type of light source */
 	float      Range;           /* Cutoff range */
 	float      Falloff;         /* Falloff */
 	float      Attenuation0;    /* Constant attenuation */
@@ -447,8 +447,10 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
-
 	bool       IsEnabled;
+	int        filler1;
+	int        filler2;
+	int        filler3;	
 };
  
 struct Material
@@ -460,7 +462,7 @@ struct Material
 	float  Power;          /* Sharpness if specular highlight */
 };
 
-layout(binding = 1) uniform LightBlock
+layout(std140,binding = 1) uniform LightBlock
 {
 	Light lights[lightCount];
 };
@@ -472,6 +474,7 @@ layout(binding = 2) uniform MaterialBlock
 
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
+	mat4 modelTransformation;
 } ubo;
 
 layout(binding = 0) uniform sampler2D textures[1];

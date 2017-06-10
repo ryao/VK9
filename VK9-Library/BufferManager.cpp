@@ -83,7 +83,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
 
 	mPushConstantRanges[0].offset = 0;
-	mPushConstantRanges[0].size = UBO_SIZE;
+	mPushConstantRanges[0].size = UBO_SIZE*2;
 	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS; //VK_SHADER_STAGE_VERTEX_BIT
 
 	mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
@@ -1645,19 +1645,19 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 	//	return;
 	//}
 
-	mModel <<
+	mTransformations.mModel <<
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1;
 
-	mView <<
+	mTransformations.mView <<
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1;
 
-	mProjection <<
+	mTransformations.mProjection <<
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
@@ -1669,7 +1669,7 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 		{
 		case D3DTS_WORLD:
 
-			mModel <<
+			mTransformations.mModel <<
 				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
 				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
 				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
@@ -1678,7 +1678,7 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 			break;
 		case D3DTS_VIEW:
 
-			mView <<
+			mTransformations.mView <<
 				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
 				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
 				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
@@ -1687,7 +1687,7 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 			break;
 		case D3DTS_PROJECTION:
 
-			mProjection <<
+			mTransformations.mProjection <<
 				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
 				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
 				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
@@ -1700,11 +1700,11 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 		}
 	}
 
-	mTotalTransformation = mProjection * mView * mModel;
+	mTransformations.mTotalTransformation = mTransformations.mProjection * mTransformations.mView * mTransformations.mModel;
 	//mTotalTransformation = mModel * mView * mProjection;
 
 	//vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, UBO_SIZE, mTotalTransformation.data());
-	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE, mTotalTransformation.data());
+	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE*2, &mTransformations);
 }
 
 void BufferManager::FlushDrawBufffer()

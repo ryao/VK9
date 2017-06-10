@@ -102,6 +102,15 @@ struct DrawContext
 	~DrawContext();
 };
 
+struct Transformations
+{
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	Eigen::Matrix4f mTotalTransformation;
+	Eigen::Matrix4f mModel;
+	Eigen::Matrix4f mView;
+	Eigen::Matrix4f mProjection;	
+};
+
 class BufferManager
 {
 public:
@@ -487,10 +496,7 @@ public:
 	VkDescriptorSet mLastDescriptorSet = VK_NULL_HANDLE;
 	VkPipeline mLastVkPipeline = VK_NULL_HANDLE;
 
-	Eigen::Matrix4f mModel;
-	Eigen::Matrix4f mView;
-	Eigen::Matrix4f mProjection;
-	Eigen::Matrix4f mTotalTransformation;
+	Transformations mTransformations;
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();
 
