@@ -57,38 +57,12 @@ struct Vertex
 	DWORD color;   // Color of vertex
 };
 
-union Matrix
-{
-	float Value[4][4];
-	float FlatValue[16];
-};
-
-struct UniformBufferObject {
-	//glm::mat4 model;// = glm::mat4(1.0);
-	////glm::mat4 view;// = glm::mat4(1.0);
-	////glm::mat4 proj;// = glm::mat4(1.0);
-
-	//Eigen::Matrix4f Model;
-	//Eigen::Matrix4f View;
-	//Eigen::Matrix4f Projection;
-
-	Matrix Model = {
-		 1.0 ,0.0 ,0.0 ,0.0
-		,0.0 ,1.0 ,0.0 ,0.0
-		,0.0 ,0.0 ,1.0 ,0.0
-		,0.0 ,0.0 ,0.0 ,1.0 };
-	Matrix View = {
-		 1.0 ,0.0 ,0.0 ,0.0
-		,0.0 ,1.0 ,0.0 ,0.0
-		,0.0 ,0.0 ,1.0 ,0.0
-		,0.0 ,0.0 ,0.0 ,1.0 };
-	Matrix Projection = {
-		 1.0 ,0.0 ,0.0 ,0.0
-		,0.0 ,1.0 ,0.0 ,0.0
-		,0.0 ,0.0 ,1.0 ,0.0
-		,0.0 ,0.0 ,0.0 ,1.0 };
-};
-
+/*
+The structure below is using vec4 for position and direction because some implementations handle vec3 strange. 
+The alignment requirements are different for vec4 versus int/float so I moved "Type" after the vec4 variables to prevent strange padding in the middle of the structure.
+In addition if the structure isn't a multiple of 16 the stride between elements in an array can be different. That is why the filler variables are included.
+This structure is exactly 128 bytes.
+*/
 struct Light
 {
 	float                 Diffuse[4];         /* Diffuse color of light */

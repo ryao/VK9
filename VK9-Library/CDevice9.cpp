@@ -3662,10 +3662,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLigh
 	light.Position[0] = pLight->Position.x;
 	light.Position[1] = pLight->Position.y;
 	light.Position[2] = pLight->Position.z;
+	//No need to set [3] because structure is init with {} so it's already 0.
 
 	light.Direction[0] = pLight->Direction.x;
 	light.Direction[1] = pLight->Direction.y;
 	light.Direction[2] = pLight->Direction.z;
+	//No need to set [3] because structure is init with {} so it's already 0.
 
 	light.Range = pLight->Range;
 	light.Falloff = pLight->Falloff;

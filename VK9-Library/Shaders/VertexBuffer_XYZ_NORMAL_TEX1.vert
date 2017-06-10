@@ -615,7 +615,7 @@ vec4 GetGlobalIllumination()
 
 	ambient = material.Ambient * (Convert(globalAmbient) + attenuationTemp);
 	diffuse = diffuseTemp;
-	//emissive = material.Emissive;
+	emissive = material.Emissive;
 
 	if(specularEnable)
 	{

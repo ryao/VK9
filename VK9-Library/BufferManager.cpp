@@ -83,7 +83,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
 
 	mPushConstantRanges[0].offset = 0;
-	mPushConstantRanges[0].size = UBO_SIZE*2;
+	mPushConstantRanges[0].size = UBO_SIZE*2; //There are 2 matrices one for world transform and one for all transforms.
 	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS; //VK_SHADER_STAGE_VERTEX_BIT
 
 	mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
