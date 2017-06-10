@@ -95,22 +95,22 @@
       <Profile>true</Profile>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -150,20 +150,22 @@
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslangValidator.exe" -V -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

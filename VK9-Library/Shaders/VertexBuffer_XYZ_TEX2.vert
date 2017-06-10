@@ -443,12 +443,12 @@ layout(constant_id = 250) const int blendOperationAlpha = D3DBLENDOP_ADD;
 
 struct Light
 {
-	int        Type;            /* Type of light source */
 	vec4       Diffuse;         /* Diffuse color of light */
 	vec4       Specular;        /* Specular color of light */
 	vec4       Ambient;         /* Ambient color of light */
-	vec3       Position;        /* Position in world space */
-	vec3       Direction;       /* Direction in world space */
+	vec4       Position;        /* Position in world space */
+	vec4       Direction;       /* Direction in world space */
+	int        Type;            /* Type of light source */
 	float      Range;           /* Cutoff range */
 	float      Falloff;         /* Falloff */
 	float      Attenuation0;    /* Constant attenuation */
@@ -456,8 +456,10 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
-
 	bool       IsEnabled;
+	int        filler1;
+	int        filler2;
+	int        filler3;	
 };
  
 struct Material
@@ -469,7 +471,7 @@ struct Material
 	float  Power;          /* Sharpness if specular highlight */
 };
 
-layout(binding = 1) uniform LightBlock
+layout(std140,binding = 1) uniform LightBlock
 {
 	Light lights[lightCount];
 };
@@ -481,32 +483,18 @@ layout(binding = 2) uniform MaterialBlock
 
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
+	mat4 modelTransformation;
 } ubo;
-
-vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
-{
-	vec3 s = normalize( vec3( lights[lightIndex].Position - position1 ) );
-	vec3 v = normalize( -position1.xyz );
-	vec3 r = reflect( -s, norm );
- 
-	vec3 ambient = lights[lightIndex].Ambient.xyz * material.Ambient.xyz;
- 
-	float sDotN = max( dot( s, norm ), 0.0 );
-	vec3 diffuse = lights[lightIndex].Diffuse.xyz * material.Diffuse.xyz * sDotN;
- 
-	vec3 spec = vec3( 0.0 );
-	if ( sDotN > 0.0 )
-		spec = lights[lightIndex].Specular.xyz * material.Specular.xyz * pow( max( dot(r,v) , 0.0 ), material.Power );
- 
-	return ambient + diffuse + spec;
-}
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 attr1;
 layout (location = 2) in vec2 attr2;
-layout (location = 0) out vec4 color;
-layout (location = 1) out vec2 texcoord1;
-layout (location = 2) out vec2 texcoord2;
+layout (location = 0) out vec4 diffuseColor;
+layout (location = 1) out vec4 ambientColor;
+layout (location = 2) out vec4 specularColor;
+layout (location = 3) out vec4 emissiveColor;
+layout (location = 4) out vec2 texcoord1;
+layout (location = 5) out vec2 texcoord2;
 
 out gl_PerVertex 
 {
@@ -524,16 +512,64 @@ void main()
 	switch(diffuseMaterialSource)
 	{
 		case D3DMCS_MATERIAL:
-			color = material.Diffuse;
+			diffuseColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR1:
-			color = vec4(1.0);
+			diffuseColor = vec4(1.0);
 		break;
 		case D3DMCS_COLOR2:
-			color = vec4(0);
+			diffuseColor = vec4(0);
 		break;
 		default:
-			color = vec4(0);
+			diffuseColor = vec4(0);
+		break;
+	}
+
+	switch(ambientMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			ambientColor = material.Ambient;
+		break;
+		case D3DMCS_COLOR1:
+			ambientColor = material.Ambient;
+		break;
+		case D3DMCS_COLOR2:
+			ambientColor = material.Ambient;
+		break;
+		default:
+			ambientColor = material.Ambient;
+		break;
+	}
+
+	switch(specularMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			specularColor = material.Specular;
+		break;
+		case D3DMCS_COLOR1:
+			specularColor = material.Specular;
+		break;
+		case D3DMCS_COLOR2:
+			specularColor = material.Specular;
+		break;
+		default:
+			specularColor = material.Specular;
+		break;
+	}
+
+	switch(emissiveMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			emissiveColor = material.Emissive;
+		break;
+		case D3DMCS_COLOR1:
+			emissiveColor = material.Emissive;
+		break;
+		case D3DMCS_COLOR2:
+			emissiveColor = material.Emissive;
+		break;
+		default:
+			emissiveColor = material.Emissive;
 		break;
 	}
 }

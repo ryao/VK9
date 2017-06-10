@@ -720,5 +720,4 @@ void main()
 			uFragColor.rgb *= globalIllumination.rgb;
 		}
 	}
-
 }

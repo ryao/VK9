@@ -378,7 +378,7 @@ layout(constant_id = 185) const int wrap6 = 0;
 layout(constant_id = 186) const int wrap7 = 0;
 layout(constant_id = 187) const bool clipping = true;
 layout(constant_id = 188) const bool lighting = true;
-layout(constant_id = 189) const int ambient = 0;
+layout(constant_id = 189) const int globalAmbient = 0;
 layout(constant_id = 190) const int fogVertexMode = D3DFOG_NONE;
 layout(constant_id = 191) const bool colorVertex = true;
 layout(constant_id = 192) const bool localViewer = true;
@@ -443,12 +443,12 @@ layout(constant_id = 250) const int blendOperationAlpha = D3DBLENDOP_ADD;
 
 struct Light
 {
-	int        Type;            /* Type of light source */
 	vec4       Diffuse;         /* Diffuse color of light */
 	vec4       Specular;        /* Specular color of light */
 	vec4       Ambient;         /* Ambient color of light */
-	vec3       Position;        /* Position in world space */
-	vec3       Direction;       /* Direction in world space */
+	vec4       Position;        /* Position in world space */
+	vec4       Direction;       /* Direction in world space */
+	int        Type;            /* Type of light source */
 	float      Range;           /* Cutoff range */
 	float      Falloff;         /* Falloff */
 	float      Attenuation0;    /* Constant attenuation */
@@ -456,8 +456,10 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
-
 	bool       IsEnabled;
+	int        filler1;
+	int        filler2;
+	int        filler3;	
 };
  
 struct Material
@@ -469,7 +471,7 @@ struct Material
 	float  Power;          /* Sharpness if specular highlight */
 };
 
-layout(binding = 1) uniform LightBlock
+layout(std140,binding = 1) uniform LightBlock
 {
 	Light lights[lightCount];
 };
@@ -481,79 +483,226 @@ layout(binding = 2) uniform MaterialBlock
 
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
+	mat4 modelTransformation;
 } ubo;
 
-vec3 getGouradLight( int lightIndex, vec3 position1, vec3 norm )
-{
-	vec3 s = normalize( vec3( lights[lightIndex].Position - position1 ) );
-	vec3 v = normalize( -position1.xyz );
-	vec3 r = reflect( -s, norm );
- 
-	vec3 ambient = lights[lightIndex].Ambient.xyz * material.Ambient.xyz;
- 
-	float sDotN = max( dot( s, norm ), 0.0 );
-	vec3 diffuse = lights[lightIndex].Diffuse.xyz * material.Diffuse.xyz * sDotN;
- 
-	vec3 spec = vec3( 0.0 );
-	if ( sDotN > 0.0 )
-		spec = lights[lightIndex].Specular.xyz * material.Specular.xyz * pow( max( dot(r,v) , 0.0 ), material.Power );
- 
-	return ambient + diffuse + spec;
-}
-
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec4 attr;
-layout (location = 0) out vec4 color;
-layout (location = 1) out vec4 normal;
-layout (location = 2) out vec4 frontLight;
-layout (location = 3) out vec4 backLight;
-layout (location = 4) out vec4 pos;
+layout (location = 1) in vec3 attr;
+
+layout (location = 0) out vec4 diffuseColor;
+layout (location = 1) out vec4 ambientColor;
+layout (location = 2) out vec4 specularColor;
+layout (location = 3) out vec4 emissiveColor;
+layout (location = 4) out vec4 normal;
+layout (location = 5) out vec4 pos;
+layout (location = 6) out vec4 globalIllumination;
 
 out gl_PerVertex 
 {
         vec4 gl_Position;
 };
 
+vec4 Convert(uvec4 rgba)
+{
+	vec4 unpacked;
+
+	unpacked.w = float(rgba.w);
+	unpacked.z = float(rgba.z);
+	unpacked.y = float(rgba.y);
+	unpacked.x = float(rgba.x);
+
+	unpacked.x = unpacked.x / 255;
+	unpacked.y = unpacked.y / 255;
+	unpacked.z = unpacked.z / 255;
+	unpacked.w = unpacked.w / 255;	
+
+	return unpacked;
+}
+
+vec4 Convert(uint rgba)
+{
+	vec4 unpacked = vec4(0);
+
+	unpacked.x = float((rgba & uint(0xff000000)) >> 24);
+	unpacked.y = float((rgba & uint(0x00ff0000)) >> 16);
+	unpacked.z = float((rgba & uint(0x0000ff00)) >> 8);
+	unpacked.w = float((rgba & uint(0x000000ff)) >> 0);
+
+	return unpacked;
+}
+
+/*
+https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
+*/
+vec4 GetGlobalIllumination()
+{
+	vec4 ambient = vec4(0);
+	vec4 diffuse = vec4(0);
+	vec4 specular = vec4(0);
+	vec4 emissive = vec4(0);	
+	vec4 attenuationTemp = vec4(0);
+	vec4 diffuseTemp = vec4(0);
+	vec4 specularTemp = vec4(0);
+	vec3 cameraPosition = vec3(0);
+
+	float lightDistance = 0;
+	vec4 vectorPosition = vec4(0);
+	vec4 lightPosition = vec4(0);
+	vec4 lightDirection = vec4(0);
+	float attenuation = 0;
+	vec4 ldir = vec4(0);
+	float rho = 0;
+	float spot = 0;
+
+	normal = ubo.modelTransformation * vec4(attr,0);
+	normal = normalize(normal);
+	//normal *= vec4(1.0,-1.0,1.0,1.0);
+
+	vectorPosition = ubo.modelTransformation * vec4(position,1.0);
+	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
+
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
+	for( int i=0; i<lightCount; ++i )
+	{		
+		if(lights[i].IsEnabled)
+		{		
+			lightPosition = ubo.modelTransformation * lights[i].Position;
+			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
+
+			lightDirection = lights[i].Direction;
+			//lightDirection *= vec4(1.0,-1.0,1.0,1.0);
+
+			lightDistance = abs(distance(pos.xyz,lightPosition.xyz));
+
+			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
+			{
+				ldir = normalize(lightDirection * vec4(-1.0,-1.0,-1.0,-1.0));
+			}
+			else
+			{
+				ldir = normalize(lightPosition - vectorPosition);
+			}
+
+			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
+			{
+				attenuation = 1;
+			}
+			else if(lights[i].Range < lightDistance)
+			{
+				attenuation = 0;
+			}
+			else
+			{
+				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
+			}
+
+			rho = dot(normalize(lightDirection.xyz),normalize(lightDirection.xyz));
+
+			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
+			{
+				spot = 1;
+			}
+			else if(rho < cos(lights[i].Phi/2))
+			{
+				spot = 0;
+			}
+			else
+			{
+				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
+			}
+
+			attenuationTemp += (attenuation * spot * lights[i].Ambient);
+			diffuseTemp += (diffuseColor * lights[i].Diffuse * max(dot(normal,ldir),0.0) * attenuation * spot);
+
+			if(specularEnable)
+			{
+				specularTemp += (lights[i].Specular * pow(max(dot(normal.xyz, normalize(normalize(cameraPosition - pos.xyz) + ldir.xyz)),0.0),material.Power) * attenuation * spot);
+			}
+		}
+	}
+
+	ambient = material.Ambient * (Convert(globalAmbient) + attenuationTemp);
+	diffuse = diffuseTemp;
+	emissive = material.Emissive;
+
+	if(specularEnable)
+	{
+		specular = specularColor * specularTemp;
+	}
+
+
+	return (ambient + diffuse + specular + emissive);
+}
+
 void main() 
 {
 	gl_Position = ubo.totalTransformation * vec4(position,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
-	normal = attr;
 
 	switch(diffuseMaterialSource)
 	{
 		case D3DMCS_MATERIAL:
-			color = material.Diffuse;
+			diffuseColor = material.Diffuse;
 		break;
 		case D3DMCS_COLOR1:
-			color = vec4(1.0);
+			diffuseColor = vec4(1.0);
 		break;
 		case D3DMCS_COLOR2:
-			color = vec4(0);
+			diffuseColor = vec4(0);
 		break;
 		default:
-			color = vec4(0);
+			diffuseColor = vec4(0);
 		break;
 	}
 
-	normal.y = -normal.y;
-	if(lighting)
+	switch(ambientMaterialSource)
 	{
-		if(shadeMode == D3DSHADE_GOURAUD)
-		{
-			vec3 frontLightColor = vec3(0);
-			vec3 backLightColor = vec3(0);
-			for( int i=0; i<lightCount; ++i )
-			{
-				if(lights[i].IsEnabled)
-				{
-					frontLightColor += getGouradLight( i, pos.xyz, normal.xyz);
-					backLightColor += getGouradLight( i, pos.xyz, -normal.xyz);
-				}
-			}
-			frontLight = vec4(frontLightColor,1);
-			backLight = vec4(backLightColor,1);
-		}
+		case D3DMCS_MATERIAL:
+			ambientColor = material.Ambient;
+		break;
+		case D3DMCS_COLOR1:
+			ambientColor = material.Ambient;
+		break;
+		case D3DMCS_COLOR2:
+			ambientColor = material.Ambient;
+		break;
+		default:
+			ambientColor = material.Ambient;
+		break;
 	}
+
+	switch(specularMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			specularColor = material.Specular;
+		break;
+		case D3DMCS_COLOR1:
+			specularColor = material.Specular;
+		break;
+		case D3DMCS_COLOR2:
+			specularColor = material.Specular;
+		break;
+		default:
+			specularColor = material.Specular;
+		break;
+	}
+
+	switch(emissiveMaterialSource)
+	{
+		case D3DMCS_MATERIAL:
+			emissiveColor = material.Emissive;
+		break;
+		case D3DMCS_COLOR1:
+			emissiveColor = material.Emissive;
+		break;
+		case D3DMCS_COLOR2:
+			emissiveColor = material.Emissive;
+		break;
+		default:
+			emissiveColor = material.Emissive;
+		break;
+	}
+
+	globalIllumination = GetGlobalIllumination();
 }

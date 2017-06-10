@@ -434,12 +434,12 @@ layout(constant_id = 250) const int blendOperationAlpha = D3DBLENDOP_ADD;
 
 struct Light
 {
-	int        Type;            /* Type of light source */
 	vec4       Diffuse;         /* Diffuse color of light */
 	vec4       Specular;        /* Specular color of light */
 	vec4       Ambient;         /* Ambient color of light */
-	vec3       Position;        /* Position in world space */
-	vec3       Direction;       /* Direction in world space */
+	vec4       Position;        /* Position in world space */
+	vec4       Direction;       /* Direction in world space */
+	int        Type;            /* Type of light source */
 	float      Range;           /* Cutoff range */
 	float      Falloff;         /* Falloff */
 	float      Attenuation0;    /* Constant attenuation */
@@ -447,8 +447,10 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
-
 	bool       IsEnabled;
+	int        filler1;
+	int        filler2;
+	int        filler3;	
 };
  
 struct Material
@@ -460,7 +462,7 @@ struct Material
 	float  Power;          /* Sharpness if specular highlight */
 };
 
-layout(binding = 1) uniform LightBlock
+layout(std140,binding = 1) uniform LightBlock
 {
 	Light lights[lightCount];
 };
@@ -472,51 +474,29 @@ layout(binding = 2) uniform MaterialBlock
 
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
+	mat4 modelTransformation;
 } ubo;
-
-void getPhongLight( int lightIndex, vec3 position1, vec4 norm, out vec4 ambient, out vec4 diffuse, out vec4 spec )
-{
-	vec4 temp = ubo.totalTransformation * vec4(lights[lightIndex].Position,1.0) * vec4(1.0,-1.0,1.0,1.0);
-	vec3 lightPosition = temp.xyz;
-
-	vec3 n = normalize( norm.xyz );
-	vec3 s = normalize( lightPosition - position1 );
-	vec3 v = normalize( -position1 );
-	vec3 r = reflect( -s, n );
- 
-	ambient = lights[lightIndex].Ambient * material.Ambient;
- 
-	float sDotN = max( dot( s, n ), 0.0 );
-	diffuse = lights[lightIndex].Diffuse * material.Diffuse * sDotN;
- 
- 
-	spec = lights[lightIndex].Specular * material.Specular * pow( max( dot(r,v) , 0.0 ), material.Power ); 
-}
-
-vec4 Convert(int rgba)
-{
-	vec4 unpacked = vec4(0);
-
-	/*
-	unpacked.w = float(rgba.w);
-	unpacked.z = float(rgba.z);
-	unpacked.y = float(rgba.y);
-	unpacked.x = float(rgba.x);
-
-	unpacked.x = unpacked.x / 255;
-	unpacked.y = unpacked.y / 255;
-	unpacked.z = unpacked.z / 255;
-	unpacked.w = unpacked.w / 255;
-	*/
-
-	return unpacked;
-}
 
 layout(binding = 0) uniform sampler2D textures[1];
 
-layout (location = 0) in vec4 color;
-layout (location = 1) in vec2 texcoord;
+layout (location = 0) in vec4 diffuseColor;
+layout (location = 1) in vec4 ambientColor;
+layout (location = 2) in vec4 specularColor;
+layout (location = 3) in vec4 emissiveColor;
+layout (location = 4) in vec2 texcoord;
 layout (location = 0) out vec4 uFragColor;
+
+vec4 Convert(uint rgba)
+{
+	vec4 unpacked = vec4(0);
+
+	unpacked.x = float((rgba & uint(0xff000000)) >> 24);
+	unpacked.y = float((rgba & uint(0x00ff0000)) >> 16);
+	unpacked.z = float((rgba & uint(0x0000ff00)) >> 8);
+	unpacked.w = float((rgba & uint(0x000000ff)) >> 0);
+
+	return unpacked;
+}
 
 vec2 getTextureCoord(int index)
 {
@@ -545,7 +525,7 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D 
 			return result;
 		break;
 		case D3DTA_DIFFUSE:
-			return color;
+			return diffuseColor;
 		break;
 		case D3DTA_SELECTMASK:
 			return vec4(0);
