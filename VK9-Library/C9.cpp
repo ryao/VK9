@@ -32,9 +32,9 @@ misrepresented as being the original software.
 
 #define APP_SHORT_NAME "VK9"
 
-#ifdef _DEBUG
-	#include <vld.h>
-#endif
+//#ifdef _DEBUG
+//	#include <vld.h>
+//#endif
 
 C9::C9()
 	: 
@@ -345,7 +345,7 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceTy
 	
 	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceFormat is not implemented!" << AdapterFormat << " " << CheckFormat;
 
-	return S_OK;
+	return D3D_OK;
 }
 
 
@@ -363,11 +363,31 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormatConversion(UINT Adapter,D3DDEVTYP
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceMultiSampleType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT SurfaceFormat,BOOL Windowed,D3DMULTISAMPLE_TYPE MultiSampleType,DWORD *pQualityLevels)
 {
+	if (Adapter >= mMonitors.size())
+	{
+		return D3DERR_INVALIDCALL;
+	}
+
+	//if (SurfaceFormat != D3DFMT_X8R8G8B8 || DeviceType != D3DDEVTYPE_HAL)
+	//{
+	//	return D3DERR_INVALIDCALL;
+	//}
+
+	if (MultiSampleType > 16)
+	{
+		return D3DERR_NOTAVAILABLE;
+	}
+
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceMultiSampleType is not implemented!";
 
-	return D3DERR_NOTAVAILABLE;	
+	if (pQualityLevels!= nullptr)
+	{
+		(*pQualityLevels) = 1;
+	}
+
+	return D3D_OK;
 }
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceType(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL Windowed)
@@ -401,11 +421,55 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 
 HRESULT STDMETHODCALLTYPE C9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDISPLAYMODE *pMode)
 {
-	//TODO: Implement.
+	if (Adapter >= mMonitors.size())
+	{
+		return D3DERR_INVALIDCALL;
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "C9::EnumAdapterModes is not implemented!";
+	if (Format != D3DFMT_X8R8G8B8)
+	{
+		return D3DERR_NOTAVAILABLE;
+	}
 
-	return S_OK;		
+	Monitor& monitor = mMonitors[Adapter];
+
+
+	pMode->RefreshRate = monitor.RefreshRate;
+	pMode->Format = D3DFMT_X8R8G8B8;
+
+	switch (Mode)
+	{
+	case 0:
+		pMode->Width = 1024;
+		pMode->Height = 768;	
+		break;
+	case 1:
+		pMode->Width = 1280;
+		pMode->Height = 720;
+		break;
+	case 2:
+		pMode->Width = 1920;
+		pMode->Height = 1080;
+		break;
+	case 3:
+		pMode->Width = 2560;
+		pMode->Height = 1440;
+		break;
+	case 4:
+		pMode->Width = 3840;
+		pMode->Height = 2160;
+		break;
+	case 5:
+		pMode->Width = 7680;
+		pMode->Height = 4320;
+		break;
+	default:
+			pMode->Width = monitor.Width;
+			pMode->Height = monitor.Height;	
+		break;
+	}
+
+	return D3D_OK;
 }
 
 UINT STDMETHODCALLTYPE C9::GetAdapterCount()
@@ -417,10 +481,10 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 {
 	Monitor& monitor = mMonitors[Adapter];
 
-	pMode->Height = monitor.Height;
-	pMode->Width = monitor.Width;
 	pMode->RefreshRate = monitor.RefreshRate;
 	pMode->Format = D3DFMT_X8R8G8B8;
+	pMode->Height = monitor.Height;
+	pMode->Width = monitor.Width;
 
 	if (monitor.PixelBits != 32)
 	{
@@ -458,7 +522,10 @@ UINT STDMETHODCALLTYPE C9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 {	
 	//TODO: Implement.
 
-	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterModeCount is not implemented!";
+	if (Format == D3DFMT_X8R8G8B8)
+	{
+		return 6;
+	}
 
 	return 0;	
 }
@@ -466,11 +533,11 @@ UINT STDMETHODCALLTYPE C9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 
 HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 {
-	//TODO: Implement.
+	//TODO: implement GetAdapterMonitor
 
 	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterMonitor is not implemented!";
 
-	return 0; //TODO: implement GetAdapterMonitor
+	return mMonitors[0].hMonitor; 
 }
 
 
