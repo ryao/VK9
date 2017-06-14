@@ -173,45 +173,36 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	Now that the rendering is setup the surface must be created.
 	The surface maybe inside of a window or a whole display. (Think SDL)
 	*/
-	if (mPresentationParameters.Windowed)
+
+	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
+	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	surfaceCreateInfo.pNext = nullptr;
+	surfaceCreateInfo.flags = 0;
+	surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
+	surfaceCreateInfo.hwnd = hFocusWindow;
+
+	if (!mPresentationParameters.Windowed)
+	{	
+		DEVMODE newSettings = {};
+		EnumDisplaySettings(0, 0, &newSettings);
+		newSettings.dmPelsWidth = mPresentationParameters.BackBufferWidth;
+		newSettings.dmPelsHeight = mPresentationParameters.BackBufferHeight;
+		newSettings.dmBitsPerPel = 32;
+		newSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+		ChangeDisplaySettings(&newSettings, CDS_FULLSCREEN);
+		SetWindowPos(surfaceCreateInfo.hwnd, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		InvalidateRect(surfaceCreateInfo.hwnd, 0, true);
+	}
+
+	mResult = vkCreateWin32SurfaceKHR(mInstance->mInstance, &surfaceCreateInfo, nullptr, &mSurface);
+	if (mResult != VK_SUCCESS)
 	{
-		VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.pNext = nullptr;
-		surfaceCreateInfo.flags = 0;
-		surfaceCreateInfo.hwnd = hFocusWindow;
-		surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
-
-		mResult = vkCreateWin32SurfaceKHR(mInstance->mInstance, &surfaceCreateInfo, nullptr, &mSurface);
-		if (mResult != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR failed with a return code of " << mResult;
-			return;
-		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR succeeded.";
-		}
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR failed with a return code of " << mResult;
+		return;
 	}
 	else
 	{
-		//TODO: finish full screen support.
-		/*vkGetDisplayPlaneSupportedDisplaysKHR(mPhysicalDevice, 0, &mDisplayCount, NULL);
-		mDisplays = new VkDisplayKHR[mDisplayCount];
-		vkGetDisplayPlaneSupportedDisplaysKHR(mPhysicalDevice, 0, &mDisplayCount, mDisplays);
-
-		//vkGetDisplayModePropertiesKHR(mPhysicalDevice,mDisplays[0])
-
-		VkDisplaySurfaceCreateInfoKHR surfaceCreateInfo = {};
-
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.pNext = NULL;
-		surfaceCreateInfo.flags = 0;
-
-
-
-		vkCreateDisplayPlaneSurfaceKHR(mInstance->mInstance,&surfaceCreateInfo,NULL, &mSurface);*/
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR succeeded.";
 	}
 
 	mResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mPhysicalDevice, mSurface, &mSurfaceCapabilities);
