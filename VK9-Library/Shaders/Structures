@@ -1,0 +1,29 @@
+struct Light
+{
+	vec4       Diffuse;         /* Diffuse color of light */
+	vec4       Specular;        /* Specular color of light */
+	vec4       Ambient;         /* Ambient color of light */
+	vec4       Position;        /* Position in world space */
+	vec4       Direction;       /* Direction in world space */
+	int        Type;            /* Type of light source */
+	float      Range;           /* Cutoff range */
+	float      Falloff;         /* Falloff */
+	float      Attenuation0;    /* Constant attenuation */
+	float      Attenuation1;    /* Linear attenuation */
+	float      Attenuation2;    /* Quadratic attenuation */
+	float      Theta;           /* Inner angle of spotlight cone */
+	float      Phi;             /* Outer angle of spotlight cone */
+	bool       IsEnabled;
+	int        filler1;
+	int        filler2;
+	int        filler3;	
+};
+ 
+struct Material
+{
+	vec4   Diffuse;        /* Diffuse color RGBA */
+	vec4   Ambient;        /* Ambient color RGB */
+	vec4   Specular;       /* Specular 'shininess' */
+	vec4   Emissive;       /* Emissive color RGB */
+	float  Power;          /* Sharpness if specular highlight */
+};
