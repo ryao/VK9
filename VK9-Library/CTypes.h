@@ -342,7 +342,7 @@ struct SpecializationConstants
 	int positionDegree = D3DDEGREE_CUBIC;
 	int normalDegree = D3DDEGREE_LINEAR;
 	int scissorTestEnable = false;
-	int slopeScaleDepthBias = 0;
+	float slopeScaleDepthBias = 0.0;
 	int antiAliasedLineEnable = false;
 	float minimumTessellationLevel = 1.0f;
 	float maximumTessellationLevel = 1.0f;

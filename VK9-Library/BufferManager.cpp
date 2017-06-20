@@ -108,8 +108,12 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
 	mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
+
+	mPipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
+	mPipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+	mPipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
 
 	mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
 	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
@@ -132,9 +136,11 @@ BufferManager::BufferManager(CDevice9* device)
 
 	mPipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	mPipelineViewportStateCreateInfo.viewportCount = 1;
-	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_VIEWPORT;
 	mPipelineViewportStateCreateInfo.scissorCount = 1;
+
+	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_VIEWPORT;
 	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_SCISSOR;
+	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_DEPTH_BIAS;
 
 	mPipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	mPipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
@@ -1027,7 +1033,21 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	if (context->Pipeline == VK_NULL_HANDLE)
 	{
-		CreatePipe(context); //If we didn't find a matching pipeline then create a new one.
+		CreatePipe(context); //If we didn't find a matching pipeline then create a new one.	
+	}
+
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205599(v=vs.85).aspx
+	The units for the D3DRS_DEPTHBIAS and D3DRS_SLOPESCALEDEPTHBIAS render states depend on whether z-buffering or w-buffering is enabled.
+	The bias is not applied to any line and point primitive.
+	*/
+	if (constants.zEnable != D3DZB_FALSE && type > 3)
+	{
+		vkCmdSetDepthBias(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], constants.depthBias, 0.0f, constants.slopeScaleDepthBias);
+	}
+	else
+	{
+		vkCmdSetDepthBias(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], 0.0f, 0.0f, 0.0f);
 	}
 
 	/**********************************************
