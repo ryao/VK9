@@ -299,7 +299,10 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 		}
 	}
 
-	result = vkMapMemory(mDevice->mDevice, mMemory, 0, mMemoryRequirements.size, 0, &mData);
+	if (mData == nullptr)
+	{
+		result = vkMapMemory(mDevice->mDevice, mMemory, 0, mMemoryRequirements.size, 0, &mData);
+	}
 
 	if (result != VK_SUCCESS)
 	{
@@ -319,7 +322,11 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 {
 	VkResult result = VK_SUCCESS;
 
-	vkUnmapMemory(mDevice->mDevice, mMemory);
+	if (mData != nullptr)
+	{
+		vkUnmapMemory(mDevice->mDevice, mMemory);
+		mData = nullptr;
+	}
 
 	InterlockedDecrement(&mLockCount);
 

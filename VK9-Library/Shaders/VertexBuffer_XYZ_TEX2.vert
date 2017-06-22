@@ -26,12 +26,12 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 1) uniform LightBlock
+layout(std140,binding = 0) uniform LightBlock
 {
 	Light lights[lightCount];
 };
 
-layout(binding = 2) uniform MaterialBlock
+layout(binding = 1) uniform MaterialBlock
 {
 	Material material;
 };

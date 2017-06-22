@@ -26,22 +26,22 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 1) uniform LightBlock
+layout(std140,binding = 0) uniform LightBlock
 {
 	Light lights[lightCount];
 };
 
-layout(binding = 2) uniform MaterialBlock
+layout(binding = 1) uniform MaterialBlock
 {
 	Material material;
 };
+
+layout(binding = 2) uniform sampler2D textures[2];
 
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
 	mat4 modelTransformation;
 } ubo;
-
-layout(binding = 0) uniform sampler2D textures[2];
 
 layout (location = 0) in vec4 diffuseColor;
 layout (location = 1) in vec4 ambientColor;

@@ -28,7 +28,7 @@ misrepresented as being the original software.
 class CIndexBuffer9 : public IDirect3DIndexBuffer9,CResource9
 {
 private:
-	CDevice9* mDevice;
+	CDevice9* mDevice = nullptr;
 	UINT mLength;
 	DWORD mUsage;
 	D3DFORMAT mFormat; 
@@ -38,9 +38,9 @@ public:
 	CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CIndexBuffer9();
 
-	ULONG mReferenceCount;
+	ULONG mReferenceCount = 1;
 	VkResult mResult;
-	void* mData;
+	void* mData = nullptr;
 	int32_t mSize;
 	int32_t mCapacity;
 	bool mIsDirty;

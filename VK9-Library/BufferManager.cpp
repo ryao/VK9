@@ -414,12 +414,12 @@ BufferManager::BufferManager(CDevice9* device)
 	mDevice->mDeviceState.mDescriptorImageInfo[15].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	mWriteDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	//mWriteDescriptorSet[1].dstSet = descriptorSet;
+	//mWriteDescriptorSet[0].dstSet = descriptorSet;
 	mWriteDescriptorSet[0].dstBinding = 0;
 	mWriteDescriptorSet[0].dstArrayElement = 0;
-	mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
+	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
 
 	mWriteDescriptorSet[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet[1].dstSet = descriptorSet;
@@ -427,15 +427,15 @@ BufferManager::BufferManager(CDevice9* device)
 	mWriteDescriptorSet[1].dstArrayElement = 0;
 	mWriteDescriptorSet[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	mWriteDescriptorSet[1].descriptorCount = 1;
-	mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[0];
+	mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
 
 	mWriteDescriptorSet[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	//mWriteDescriptorSet[2].dstSet = descriptorSet;
 	mWriteDescriptorSet[2].dstBinding = 2;
 	mWriteDescriptorSet[2].dstArrayElement = 0;
-	mWriteDescriptorSet[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mWriteDescriptorSet[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	mWriteDescriptorSet[2].descriptorCount = 1;
-	mWriteDescriptorSet[2].pBufferInfo = &mDescriptorBufferInfo[1];
+	mWriteDescriptorSet[2].pImageInfo = mDevice->mDeviceState.mDescriptorImageInfo;
 
 	//Command Buffer Setup
 	mCommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1453,9 +1453,9 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
 
 	mDescriptorSetLayoutBinding[0].binding = 0;
-	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[0].descriptorCount = textureCount; //Update to use mapped texture.
-	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
 	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
 
 	mDescriptorSetLayoutBinding[1].binding = 1;
@@ -1465,9 +1465,9 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
 
 	mDescriptorSetLayoutBinding[2].binding = 2;
-	mDescriptorSetLayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	mDescriptorSetLayoutBinding[2].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[2].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+	mDescriptorSetLayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	mDescriptorSetLayoutBinding[2].descriptorCount = textureCount; //Update to use mapped texture.
+	mDescriptorSetLayoutBinding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mDescriptorSetLayoutBinding[2].pImmutableSamplers = NULL;
 
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
@@ -1475,29 +1475,20 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 	if (textureCount)
 	{
-		//if (lightCount)
-		//{
-		//	mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
-		//}
-		//else
-		//{
-		//	mDescriptorSetLayoutCreateInfo.bindingCount = 1; //The number of elements in pBindings.	
-		//}	
-
 		mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
-
-		result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
-		if (result != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << result;
-			return;
-		}
 	}
 	else
 	{
-		mDescriptorSetLayoutCreateInfo.bindingCount = 0;
-		mPipelineLayoutCreateInfo.setLayoutCount = 0;
+		mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.	
+		mPipelineLayoutCreateInfo.setLayoutCount = 1;
+	}
+
+	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << result;
+		return;
 	}
 
 	/**********************************************
@@ -1561,33 +1552,33 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 
 	mUsedResourceBuffer.push_back(resourceContext);
   
+	mDescriptorBufferInfo[0].buffer = mLightBuffer;
+	mDescriptorBufferInfo[0].offset = 0;
+	mDescriptorBufferInfo[0].range = sizeof(Light) * mDevice->mDeviceState.mLights.size(); //4; 
+
+	mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
+	mDescriptorBufferInfo[1].offset = 0;
+	mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
+
 	mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-	mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size();
-	mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
+	mWriteDescriptorSet[0].descriptorCount = 1;
+	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
 
-	if (mDevice->mDeviceState.mLights.size())
+	mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
+	mWriteDescriptorSet[1].descriptorCount = 1;
+	mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
+
+	mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
+	mWriteDescriptorSet[2].descriptorCount = mDevice->mDeviceState.mTextures.size();
+	mWriteDescriptorSet[2].pImageInfo = resourceContext->DescriptorImageInfo;
+
+	if (mDevice->mDeviceState.mTextures.size())
 	{
-		mDescriptorBufferInfo[0].buffer = mLightBuffer;
-		mDescriptorBufferInfo[0].offset = 0;
-		mDescriptorBufferInfo[0].range = sizeof(Light) * mDevice->mDeviceState.mLights.size(); //4; 
-
-		mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
-		mDescriptorBufferInfo[1].offset = 0;
-		mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
-
-		mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
-		mWriteDescriptorSet[1].descriptorCount = 1;
-		mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[0];
-
-		mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-		mWriteDescriptorSet[2].descriptorCount = 1;
-		mWriteDescriptorSet[2].pBufferInfo = &mDescriptorBufferInfo[1];
-
 		vkUpdateDescriptorSets(mDevice->mDevice, 3, mWriteDescriptorSet, 0, nullptr);
 	}
 	else
 	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
+		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
 	}
 }
 
