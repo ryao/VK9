@@ -1270,7 +1270,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	VkAttachmentDescription renderAttachments[2] = {};
 	renderAttachments[0].format = mFormat;
 	renderAttachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-	renderAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	renderAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	renderAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	renderAttachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	renderAttachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -1559,10 +1559,20 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::Clear is not fully implemented!";
 		return E_NOTIMPL;
 	}
-	else
+
+	VkImageSubresourceRange subResourceRange = {};
+	subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subResourceRange.baseMipLevel = 0;
+	subResourceRange.levelCount = 1;
+	subResourceRange.baseArrayLayer = 0;
+	subResourceRange.layerCount = 1;
+
+	if (!mIsSceneStarted)
 	{
-		//vkCmdClearColorImage(mSwapchainBuffers[mCurrentBuffer], mSwapchainImages[mCurrentBuffer], VK_IMAGE_LAYOUT_GENERAL, &clearColorValue, 0, nullptr);
+		this->StartScene();
 	}
+
+	vkCmdClearColorImage(mSwapchainBuffers[mCurrentBuffer], mSwapchainImages[mCurrentBuffer], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColorValue, 1, &subResourceRange);
 
 	return S_OK;
 }

@@ -79,6 +79,9 @@ BufferManager::BufferManager(CDevice9* device)
 	mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
 	mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
 
+	mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.spv");
+	mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.spv");
+
 	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
 	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
 
@@ -597,6 +600,18 @@ BufferManager::~BufferManager()
 		mFragShaderModule_XYZ_NORMAL_TEX1 = VK_NULL_HANDLE;
 	}
 
+	if (mVertShaderModule_XYZ_NORMAL_DIFFUSE != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_NORMAL_DIFFUSE, NULL);
+		mVertShaderModule_XYZ_NORMAL_DIFFUSE = VK_NULL_HANDLE;
+	}
+
+	if (mFragShaderModule_XYZ_NORMAL_DIFFUSE != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mFragShaderModule_XYZ_NORMAL_DIFFUSE, NULL);
+		mFragShaderModule_XYZ_NORMAL_DIFFUSE = VK_NULL_HANDLE;
+	}
+
 	if (mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 != VK_NULL_HANDLE)
 	{
 		vkDestroyShaderModule(mDevice->mDevice, mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, NULL);
@@ -615,7 +630,7 @@ BufferManager::~BufferManager()
 		mPipelineCache = VK_NULL_HANDLE;
 	}
 
-	//Empty cached objects. (destructors should take care of their resources.
+	//Empty cached objects. (a destructor should take care of their resources.)
 
 	mDrawBuffer.clear();
 	mSamplerRequests.clear();
@@ -628,7 +643,18 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 {
 	VkResult result = VK_SUCCESS;
 	boost::container::flat_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
- 
+	
+	/**********************************************
+	* Update the stuff that need to be done outside of a render pass.
+	**********************************************/
+	if (mDevice->mDeviceState.mAreLightsDirty || mDevice->mDeviceState.mIsMaterialDirty)
+	{
+		vkCmdEndRenderPass(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer]);
+		UpdateBuffer();
+		mDevice->mRenderPassBeginInfo.clearValueCount = 0;
+		vkCmdBeginRenderPass(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], &mDevice->mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	}
+
 	/**********************************************
 	* Update the textures that are currently mapped.
 	**********************************************/
@@ -1053,7 +1079,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Update transformation structure.
 	**********************************************/
-	//UpdateBuffer(); //Illegal
 	UpdatePushConstants(context);
 
 	/**********************************************
@@ -1287,6 +1312,10 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		case 2:
 			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
 			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+			break;
+		case 0:
+			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE;
+			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE;
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;

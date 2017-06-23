@@ -243,5 +243,11 @@
     <CustomBuild Include="Shaders\VertexBuffer_XYZ_TEX2.vert">
       <Filter>Shaders</Filter>
     </CustomBuild>
+    <CustomBuild Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag">
+      <Filter>Shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert">
+      <Filter>Shaders</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
