@@ -76,6 +76,7 @@ vec4 GetGlobalIllumination()
 	vec4 vectorPosition = vec4(0);
 	vec4 lightPosition = vec4(0);
 	vec4 lightDirection = vec4(0);
+	vec4 worldLightDirection = vec4(0);
 	float attenuation = 0;
 	vec4 ldir = vec4(0);
 	float rho = 0;
@@ -97,7 +98,7 @@ vec4 GetGlobalIllumination()
 			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 			lightDirection = lights[i].Direction;
-			//lightDirection *= vec4(1.0,-1.0,1.0,1.0);
+			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
 
 			lightDistance = abs(distance(vectorPosition.xyz,lightPosition.xyz));
 
@@ -123,19 +124,21 @@ vec4 GetGlobalIllumination()
 				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
 			}
 
-			rho = dot(normalize(-lightDirection.xyz),normalize(lightPosition.xyz - vectorPosition.xyz));
+			rho = dot(normalize(lightDirection.xyz),normalize(vectorPosition.xyz - lightPosition.xyz));
 
 			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
 			{
 				spot = 1;
 			}
-			else if(rho < cos(lights[i].Phi/2))
+			else if(rho <= cos(lights[i].Phi/2))
 			{
 				spot = 0;
 			}
 			else
 			{
-				spot = ((rho - cos(lights[i].Phi / 2)) / (cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2))) * lights[i].Falloff;
+				float u = rho - cos(lights[i].Phi / 2);
+				float v = cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2);
+				spot = pow(u / v,lights[i].Falloff);
 			}
 
 			attenuationTemp += (attenuation * spot * lights[i].Ambient);

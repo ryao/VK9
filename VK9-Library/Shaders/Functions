@@ -39,10 +39,15 @@ vec4 Convert(uint rgba)
 {
 	vec4 unpacked = vec4(0);
 
-	unpacked.x = float((rgba & uint(0xff000000)) >> 24);
-	unpacked.y = float((rgba & uint(0x00ff0000)) >> 16);
-	unpacked.z = float((rgba & uint(0x0000ff00)) >> 8);
-	unpacked.w = float((rgba & uint(0x000000ff)) >> 0);
+	unpacked.w = float((rgba & uint(0xff000000)) >> 24);
+	unpacked.z = float((rgba & uint(0x00ff0000)) >> 16);
+	unpacked.y = float((rgba & uint(0x0000ff00)) >> 8);
+	unpacked.x = float((rgba & uint(0x000000ff)) >> 0);
 
+	unpacked.x = unpacked.x / 255;
+	unpacked.y = unpacked.y / 255;
+	unpacked.z = unpacked.z / 255;
+	unpacked.w = unpacked.w / 255;	
+	
 	return unpacked;
 }
