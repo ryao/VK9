@@ -111,7 +111,7 @@ vec4 GetGlobalIllumination()
 			}
 			else
 			{
-				ldir = normalize(vectorPosition - lightPosition);
+				ldir = normalize(lightPosition - vectorPosition);
 			}
 
 			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
@@ -127,7 +127,7 @@ vec4 GetGlobalIllumination()
 				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
 			}
 
-			rho = dot(normalize(-lightDirection.xyz),normalize(vectorPosition.xyz - lightPosition.xyz));
+			rho = dot(normalize(lightDirection.xyz * vec3(-1.0,-1.0,-1.0)),normalize(lightPosition.xyz - vectorPosition.xyz));
 
 			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
 			{
