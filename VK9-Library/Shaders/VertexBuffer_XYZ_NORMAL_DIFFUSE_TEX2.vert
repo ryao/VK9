@@ -86,8 +86,8 @@ vec4 GetGlobalIllumination()
 	float spot = 0;
 
 	normal = ubo.modelTransformation * vec4(attr1,0);
-	normal = normalize(normal);
-	//normal *= vec4(1.0,-1.0,1.0,1.0);
+	normal *= vec4(1.0,-1.0,1.0,1.0);
+	normal = normalize(normal);	
 
 	vectorPosition = ubo.modelTransformation * vec4(position,1.0);
 	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
