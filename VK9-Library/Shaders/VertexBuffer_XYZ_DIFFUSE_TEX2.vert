@@ -67,23 +67,30 @@ void main()
 	texcoord1 = attr2;
 	texcoord2 = attr3;
 
-	switch(diffuseMaterialSource)
+	if(colorVertex)
 	{
-		case D3DMCS_MATERIAL:
-			diffuseColor = material.Diffuse;
-		break;
-		case D3DMCS_COLOR1:
-			diffuseColor = Convert(attr1);
-		break;
-		case D3DMCS_COLOR2:
-			diffuseColor = vec4(0);
-		break;
-		default:
-			diffuseColor = vec4(0);
-		break;
+		switch(diffuseMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				diffuseColor = material.Diffuse;
+			break;
+			case D3DMCS_COLOR1:
+				diffuseColor = Convert(attr1);
+			break;
+			case D3DMCS_COLOR2:
+				diffuseColor = vec4(0);
+			break;
+			default:
+				diffuseColor = vec4(0);
+			break;
+		}
+	}
+	else
+	{
+		diffuseColor = material.Diffuse;
 	}
 
-		switch(ambientMaterialSource)
+	switch(ambientMaterialSource)
 	{
 		case D3DMCS_MATERIAL:
 			ambientColor = material.Ambient;

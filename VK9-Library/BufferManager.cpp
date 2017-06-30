@@ -200,7 +200,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mGraphicsPipelineCreateInfo.pViewportState = &mPipelineViewportStateCreateInfo;
 	mGraphicsPipelineCreateInfo.pMultisampleState = &mPipelineMultisampleStateCreateInfo;
 	mGraphicsPipelineCreateInfo.pStages = mPipelineShaderStageCreateInfo;
-	mGraphicsPipelineCreateInfo.renderPass = mDevice->mRenderPass;
+	mGraphicsPipelineCreateInfo.renderPass = mDevice->mStoreRenderPass;
 	mGraphicsPipelineCreateInfo.pDynamicState = &mPipelineDynamicStateCreateInfo;
 
 	mPipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
@@ -651,7 +651,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	{
 		vkCmdEndRenderPass(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer]);
 		UpdateBuffer();
-		mDevice->mRenderPassBeginInfo.clearValueCount = 0;
 		vkCmdBeginRenderPass(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], &mDevice->mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
 

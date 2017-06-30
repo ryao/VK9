@@ -223,6 +223,7 @@ public:
 	uint32_t mDisplayCount = 0;
 	VkFramebuffer* mFramebuffers = nullptr;
 	boost::container::small_vector<CSwapChain9*,2> mSwapChains;
+	VkAttachmentDescription mRenderAttachments[2] = {};
 
 	//Depth
 	VkFormat mDepthFormat = VK_FORMAT_UNDEFINED;
@@ -246,7 +247,8 @@ public:
 	VkQueue mQueue = VK_NULL_HANDLE;
 	VkSemaphore mPresentCompleteSemaphore = VK_NULL_HANDLE;
 	VkFence mNullFence = VK_NULL_HANDLE;
-	VkRenderPass mRenderPass = VK_NULL_HANDLE;	
+	VkRenderPass mStoreRenderPass = VK_NULL_HANDLE;
+	VkRenderPass mClearRenderPass = VK_NULL_HANDLE;
 	VkClearColorValue mClearColorValue = {};	
 	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
 	VkCommandBufferInheritanceInfo mCommandBufferInheritanceInfo = {};
@@ -267,7 +269,7 @@ public:
 	PAINTSTRUCT* mPaintInformation = {};
 
 	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0);
-	void StartScene();
+	void StartScene(bool clear = false);
 	void StopScene();
 };
 

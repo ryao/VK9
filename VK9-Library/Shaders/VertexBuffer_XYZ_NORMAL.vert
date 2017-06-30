@@ -168,20 +168,27 @@ void main()
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
-	switch(diffuseMaterialSource)
+	if(colorVertex)
 	{
-		case D3DMCS_MATERIAL:
-			diffuseColor = material.Diffuse;
-		break;
-		case D3DMCS_COLOR1:
-			diffuseColor = vec4(1.0);
-		break;
-		case D3DMCS_COLOR2:
-			diffuseColor = vec4(0);
-		break;
-		default:
-			diffuseColor = vec4(0);
-		break;
+		switch(diffuseMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				diffuseColor = material.Diffuse;
+			break;
+			case D3DMCS_COLOR1:
+				diffuseColor = vec4(1.0);
+			break;
+			case D3DMCS_COLOR2:
+				diffuseColor = vec4(0);
+			break;
+			default:
+				diffuseColor = vec4(0);
+			break;
+		}
+	}
+	else
+	{
+		diffuseColor = material.Diffuse;
 	}
 
 	switch(ambientMaterialSource)

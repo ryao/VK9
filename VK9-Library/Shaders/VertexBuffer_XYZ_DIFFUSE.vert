@@ -58,20 +58,27 @@ void main()
 	gl_Position = ubo.totalTransformation * vec4(position,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 
-	switch(diffuseMaterialSource)
+	if(colorVertex)
 	{
-		case D3DMCS_MATERIAL:
-			diffuseColor = material.Diffuse;
-		break;
-		case D3DMCS_COLOR1:
-			diffuseColor = Convert(attr);
-		break;
-		case D3DMCS_COLOR2:
-			diffuseColor = vec4(0);
-		break;
-		default:
-			diffuseColor = vec4(0);
-		break;
+		switch(diffuseMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				diffuseColor = material.Diffuse;
+			break;
+			case D3DMCS_COLOR1:
+				diffuseColor = Convert(attr);
+			break;
+			case D3DMCS_COLOR2:
+				diffuseColor = vec4(0);
+			break;
+			default:
+				diffuseColor = vec4(0);
+			break;
+		}
+	}
+	else
+	{
+		diffuseColor = material.Diffuse;
 	}
 
 	switch(ambientMaterialSource)

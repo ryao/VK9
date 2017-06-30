@@ -1069,7 +1069,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	swapchainCreateInfo.imageFormat = mFormat;
 	swapchainCreateInfo.imageColorSpace = mSurfaceFormats[0].colorSpace;
 	swapchainCreateInfo.imageExtent = mSwapchainExtent;
-	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	swapchainCreateInfo.preTransform = mTransformFlags;
 	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	swapchainCreateInfo.imageArrayLayers = 1;
@@ -1267,29 +1267,23 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	Now setup the render pass.
 	*/
 
-	VkAttachmentDescription renderAttachments[2] = {};
-	renderAttachments[0].format = mFormat;
-	renderAttachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-	renderAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-	renderAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	renderAttachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	renderAttachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	mRenderAttachments[0].format = mFormat;
+	mRenderAttachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+	mRenderAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	mRenderAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	mRenderAttachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	mRenderAttachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	mRenderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	mRenderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	/*
-	renderAttachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	renderAttachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	*/
-
-	renderAttachments[1].format = mDepthFormat;
-	renderAttachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-	renderAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	renderAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	renderAttachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	renderAttachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	renderAttachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	renderAttachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	mRenderAttachments[1].format = mDepthFormat;
+	mRenderAttachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+	mRenderAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	mRenderAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	mRenderAttachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	mRenderAttachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	mRenderAttachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	mRenderAttachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference colorReference = {};
 	colorReference.attachment = 0;
@@ -1315,13 +1309,26 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassCreateInfo.pNext = nullptr;
 	renderPassCreateInfo.attachmentCount = 2; //revisit
-	renderPassCreateInfo.pAttachments = renderAttachments;
+	renderPassCreateInfo.pAttachments = mRenderAttachments;
 	renderPassCreateInfo.subpassCount = 1;
 	renderPassCreateInfo.pSubpasses = &subpass;
 	renderPassCreateInfo.dependencyCount = 0;
 	renderPassCreateInfo.pDependencies = nullptr;
 
-	mResult = vkCreateRenderPass(mDevice, &renderPassCreateInfo, nullptr, &mRenderPass);
+	mResult = vkCreateRenderPass(mDevice, &renderPassCreateInfo, nullptr, &mStoreRenderPass);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass failed with return code of " << mResult;
+		return;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 vkCreateRenderPass succeeded.";
+	}
+
+	mRenderAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+	mResult = vkCreateRenderPass(mDevice, &renderPassCreateInfo, nullptr, &mClearRenderPass);
 	if (mResult != VK_SUCCESS)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass failed with return code of " << mResult;
@@ -1342,7 +1349,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	VkFramebufferCreateInfo framebufferCreateInfo = {};
 	framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	framebufferCreateInfo.pNext = nullptr;
-	framebufferCreateInfo.renderPass = mRenderPass;
+	framebufferCreateInfo.renderPass = mStoreRenderPass;
 	framebufferCreateInfo.attachmentCount = 2; //revisit
 	framebufferCreateInfo.pAttachments = attachments;
 	framebufferCreateInfo.width = mSwapchainExtent.width; //revisit
@@ -1455,9 +1462,14 @@ CDevice9::~CDevice9()
 		delete[] mFramebuffers;
 	}
 
-	if (mRenderPass != VK_NULL_HANDLE)
+	if (mStoreRenderPass != VK_NULL_HANDLE)
 	{
-		vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
+		vkDestroyRenderPass(mDevice, mStoreRenderPass, nullptr);
+	}
+
+	if (mClearRenderPass != VK_NULL_HANDLE)
+	{
+		vkDestroyRenderPass(mDevice, mClearRenderPass, nullptr);
 	}
 
 	if (mSwapchainBuffers != nullptr)
@@ -1567,12 +1579,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 	subResourceRange.baseArrayLayer = 0;
 	subResourceRange.layerCount = 1;
 
-	if (!mIsSceneStarted)
+	if (mIsSceneStarted)
 	{
-		this->StartScene();
+		vkCmdEndRenderPass(mSwapchainBuffers[mCurrentBuffer]);
+		vkCmdClearColorImage(mSwapchainBuffers[mCurrentBuffer], mSwapchainImages[mCurrentBuffer], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColorValue, 1, &subResourceRange);
+		vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
-
-	vkCmdClearColorImage(mSwapchainBuffers[mCurrentBuffer], mSwapchainImages[mCurrentBuffer], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColorValue, 1, &subResourceRange);
+	else
+	{
+		this->StartScene(true);
+	}
 
 	return S_OK;
 }
@@ -5262,7 +5278,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	vkFreeCommandBuffers(mDevice, mCommandPool, 1, commandBuffers);
 }
 
-void CDevice9::StartScene()
+void CDevice9::StartScene(bool clear)
 {
 	mIsSceneStarted = true;
 
@@ -5286,20 +5302,6 @@ void CDevice9::StartScene()
 
 	//maybe add back later
 	//SetImageLayout(mSwapchainImages[mCurrentBuffer], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR); //VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-
-	mClearValues[0].color = mClearColorValue;
-	mClearValues[1].depthStencil = { 1.0f, 0 };
-
-	mRenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	mRenderPassBeginInfo.pNext = nullptr;
-	mRenderPassBeginInfo.renderPass = mRenderPass;
-	mRenderPassBeginInfo.framebuffer = mFramebuffers[mCurrentBuffer];
-	mRenderPassBeginInfo.renderArea.offset.x = 0;
-	mRenderPassBeginInfo.renderArea.offset.y = 0;
-	mRenderPassBeginInfo.renderArea.extent.width = mSwapchainExtent.width;
-	mRenderPassBeginInfo.renderArea.extent.height = mSwapchainExtent.height;
-	mRenderPassBeginInfo.clearValueCount = 2;
-	mRenderPassBeginInfo.pClearValues = mClearValues;
 
 	result = vkBeginCommandBuffer(mSwapchainBuffers[mCurrentBuffer], &mCommandBufferBeginInfo);
 	if (result != VK_SUCCESS)
@@ -5328,8 +5330,30 @@ void CDevice9::StartScene()
 	*/
 	mBufferManager->UpdateBuffer();
 
-	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
+	mClearValues[0].color = mClearColorValue;
+	mClearValues[1].depthStencil = { 1.0f, 0 };
 
+	mRenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	mRenderPassBeginInfo.pNext = nullptr;
+	if (clear)
+	{
+		mRenderPassBeginInfo.renderPass = mClearRenderPass; // mClearRenderPass;
+	}
+	else
+	{
+		mRenderPassBeginInfo.renderPass = mStoreRenderPass;
+	}
+	mRenderPassBeginInfo.framebuffer = mFramebuffers[mCurrentBuffer];
+	mRenderPassBeginInfo.renderArea.offset.x = 0;
+	mRenderPassBeginInfo.renderArea.offset.y = 0;
+	mRenderPassBeginInfo.renderArea.extent.width = mSwapchainExtent.width;
+	mRenderPassBeginInfo.renderArea.extent.height = mSwapchainExtent.height;
+	mRenderPassBeginInfo.clearValueCount = 2;
+	mRenderPassBeginInfo.pClearValues = mClearValues;
+
+	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
+	//Set the pass back to store so draw calls won't be lost if they require stop/start of render pass.
+	mRenderPassBeginInfo.renderPass = mStoreRenderPass; 
 	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mViewport);
 	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mScissor);
 }
