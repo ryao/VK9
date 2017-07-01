@@ -287,7 +287,7 @@ struct SpecializationConstants
 	int alphaBlendEnable = false;
 	int fogEnable = false;
 	int specularEnable = false;
-	int fogColor = 0;
+	uint32_t fogColor = 0;
 	int fogTableMode = D3DFOG_NONE;
 	float fogStart = 0.0f;
 	float fogEnd = 1.0f;
@@ -312,7 +312,7 @@ struct SpecializationConstants
 	int wrap7 = 0;
 	int clipping = true;
 	int lighting = true;
-	int ambient = 0;
+	uint32_t ambient = 0;
 	int fogVertexMode = D3DFOG_NONE;
 	int colorVertex = true;
 	int localViewer = true;

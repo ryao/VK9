@@ -58,110 +58,7 @@ out gl_PerVertex
         vec4 gl_Position;
 };
 
-/*
-https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
-*/
-vec4 GetGlobalIllumination()
-{
-	vec4 ambient = vec4(0);
-	vec4 diffuse = vec4(0);
-	vec4 specular = vec4(0);
-	vec4 emissive = vec4(0);	
-	vec4 attenuationTemp = vec4(0);
-	vec4 diffuseTemp = vec4(0);
-	vec4 specularTemp = vec4(0);
-	vec3 cameraPosition = vec3(0);
-
-	float lightDistance = 0;
-	vec4 vectorPosition = vec4(0);
-	vec4 lightPosition = vec4(0);
-	vec4 lightDirection = vec4(0);
-	float attenuation = 0;
-	vec4 ldir = vec4(0);
-	float rho = 0;
-	float spot = 0;
-
-	normal = ubo.modelTransformation * vec4(attr1,0);
-	normal *= vec4(1.0,-1.0,1.0,1.0);
-	normal = normalize(normal);	
-
-	vectorPosition = ubo.modelTransformation * vec4(position,1.0);
-	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
-
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
-	for( int i=0; i<lightCount; ++i )
-	{		
-		if(lights[i].IsEnabled)
-		{		
-			lightPosition = ubo.modelTransformation * lights[i].Position;
-			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
-
-			lightDirection = lights[i].Direction;
-			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
-
-			lightDistance = abs(distance(vectorPosition.xyz,lightPosition.xyz));
-
-			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
-			{
-				ldir = normalize(lightDirection * vec4(-1.0,-1.0,-1.0,-1.0));
-			}
-			else
-			{
-				ldir = normalize(lightPosition - vectorPosition);
-			}
-
-			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
-			{
-				attenuation = 1;
-			}
-			else if(lights[i].Range < lightDistance)
-			{
-				attenuation = 0;
-			}
-			else
-			{
-				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
-			}
-
-			rho = dot(normalize(lightDirection.xyz * vec3(-1.0,-1.0,-1.0)),normalize(lightPosition.xyz - vectorPosition.xyz));
-
-			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
-			{
-				spot = 1;
-			}
-			else if(rho <= cos(lights[i].Phi/2))
-			{
-				spot = 0;
-			}
-			else
-			{
-				float u = rho - cos(lights[i].Phi / 2);
-				float v = cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2);
-				spot = pow(u / v,lights[i].Falloff);
-			}
-
-			attenuationTemp += (attenuation * spot * lights[i].Ambient);
-			diffuseTemp += (diffuseColor * lights[i].Diffuse * max(dot(normal,ldir),0.0) * attenuation * spot);
-
-			if(specularEnable)
-			{
-				specularTemp += (lights[i].Specular * pow(max(dot(normal.xyz, normalize(normalize(cameraPosition - vectorPosition.xyz) + ldir.xyz)),0.0),material.Power) * attenuation * spot);
-			}
-		}
-	}
-
-	ambient = material.Ambient * (Convert(globalAmbient) + attenuationTemp);
-	diffuse = diffuseTemp;
-	emissive = material.Emissive;
-
-	if(specularEnable)
-	{
-		specular = specularColor * specularTemp;
-	}
-
-
-	return (ambient + diffuse + specular + emissive);
-}
+#include "GlobalIllumination"
 
 void main() 
 {	
@@ -241,6 +138,10 @@ void main()
 			emissiveColor = material.Emissive;
 		break;
 	}
+
+	normal = ubo.modelTransformation * vec4(attr1,0);
+	normal *= vec4(1.0,-1.0,1.0,1.0);
+	normal = normalize(normal);	
 
 	globalIllumination = GetGlobalIllumination();
 }
