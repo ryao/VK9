@@ -71,10 +71,7 @@ vec2 getTextureCoord(int index)
 
 void main() 
 {
-	vec4 temp;
-	vec4 result = diffuseColor; //On stage 0 CURRENT is the same as DIFFUSE
-
-	uFragColor = result;
+   uFragColor = vec4(1.0,1.0,1.0,1.0);
 
 	if(lighting)
 	{	
