@@ -26,9 +26,35 @@ misrepresented as being the original software.
 #include <vulkan/vk_sdk_platform.h>
 #include "d3d9types.h"
 
+/*
+http://timjones.io/blog/archive/2015/09/02/parsing-direct3d-shader-bytecode
+https://msdn.microsoft.com/en-us/library/bb219840(VS.85).aspx#Shader_Binary_Format
+http://stackoverflow.com/questions/2545704/format-of-compiled-directx9-shader-files
+https://msdn.microsoft.com/en-us/library/windows/hardware/ff552891(v=vs.85).aspx
+*/
+
 const uint32_t mEndToken = 0x0000FFFF;
 const uint16_t mShaderTypePixel = 0xFFFF;
 const uint16_t mShaderTypeVertex = 0xFFFE;
+
+#define PACK(c0, c1, c2, c3) \
+    (((uint32_t)(uint8_t)(c0) << 24) | \
+    ((uint32_t)(uint8_t)(c1) << 16) | \
+    ((uint32_t)(uint8_t)(c2) << 8) | \
+    ((uint32_t)(uint8_t)(c3)))
+
+const uint32_t ICFE = PACK('I','C','F','E');
+const uint32_t ISGN = PACK('I','S','G','N');
+const uint32_t OSG5 = PACK('O','S','G','5');
+const uint32_t OSGN = PACK('O','S','G','N');
+const uint32_t PCSG = PACK('P','C','S','G');
+const uint32_t RDEF = PACK('R','D','E','F');
+const uint32_t SDGB = PACK('S','D','G','B');
+const uint32_t SFI0 = PACK('S','F','I','0');
+const uint32_t SHDR = PACK('S','H','D','R');
+const uint32_t SHEX = PACK('S','H','E','X');
+const uint32_t SPDB = PACK('S','P','D','B');
+const uint32_t STAT = PACK('S','T','A','T');
 
 struct ConvertedShader
 {
@@ -36,14 +62,95 @@ struct ConvertedShader
 	VkShaderModule ShaderModule = VK_NULL_HANDLE;
 };
 
-struct VersionToken
+struct ShaderHeader
 {
-	char MinorVersion=0;
-	char MajorVersion=0;
-	uint16_t ShaderType = 0xFFFE; //Pixel 0xFFFF & Vertex 0xFFFE
+	char FileType[4];
+	uint64_t Checksum;
+	uint32_t Unknown;
+	uint32_t ShaderSize;
+	uint32_t ChunkCount;
 };
 
+struct ICFEChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
 
+struct ISGNChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct OSG5Chunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct OSGNChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct PCSGChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct RDEFChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+	uint32_t ConstantBufferCount;
+	uint32_t ConstantBufferOffset;
+	uint32_t ResourceBindingCount;
+	uint32_t ResourceBindingOffset;
+	char MinorVersionNumber;
+	char MajorVersionNumber;
+	uint16_t ProgramType;
+	uint32_t Flag;
+	uint32_t CreatorOffset;
+};
+
+struct SDGBChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct SFI0Chunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct SHDRChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct SHEXChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct SPDBChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
+
+struct STATChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+};
 
 class ShaderConverter
 {

@@ -112,7 +112,7 @@ void CSurface9::Init()
 
 	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	mMemoryAllocateInfo.pNext = NULL;
-	mMemoryAllocateInfo.allocationSize = 0;
+	//mMemoryAllocateInfo.allocationSize = 0;
 	mMemoryAllocateInfo.memoryTypeIndex = 0;
 	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
 
