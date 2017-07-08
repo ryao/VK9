@@ -44,6 +44,7 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c3)))
 
 const uint32_t ICFE = PACK('I','C','F','E');
+const uint32_t IFCE = PACK('I', 'F', 'C', 'E');
 const uint32_t ISGN = PACK('I','S','G','N');
 const uint32_t OSG5 = PACK('O','S','G','5');
 const uint32_t OSGN = PACK('O','S','G','N');
@@ -62,6 +63,11 @@ struct ConvertedShader
 	VkShaderModule ShaderModule = VK_NULL_HANDLE;
 };
 
+/*
+ The structures read from the file don't have initializers because they are set from file data so it would be a waste of CPU cycles.
+ Not all of these structures are documented so some of these may be wrong.
+ */
+
 struct ShaderHeader
 {
 	char FileType[4];
@@ -71,34 +77,60 @@ struct ShaderHeader
 	uint32_t ChunkCount;
 };
 
+//ICFE and IFCE might be the same thing but I'm not sure. 
+
 struct ICFEChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	uint32_t ClassInstanceCount;
+	uint32_t ClassTypeCount;
+	uint32_t InterfaceSlotRecordCount;
+	uint32_t InterfaceSlotCount;
+	uint32_t Unknown;
+	uint32_t ClassTypeOffset;
+};
+
+struct IFCEChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+	uint32_t ClassInstanceCount;
+	uint32_t ClassTypeCount;
+	uint32_t InterfaceSlotRecordCount;
+	uint32_t InterfaceSlotCount;
+	uint32_t Unknown;
+	uint32_t ClassTypeOffset;
 };
 
 struct ISGNChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	uint32_t ElementCount;
+	uint32_t Unknown;
 };
 
 struct OSG5Chunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	//??
 };
 
 struct OSGNChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	uint32_t ElementCount;
+	uint32_t Unknown;
 };
 
 struct PCSGChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	//??????????
 };
 
 struct RDEFChunk
@@ -120,36 +152,79 @@ struct SDGBChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	//???
 };
 
 struct SFI0Chunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
-};
-
-struct SHDRChunk
-{
-	uint32_t ChunkType;
-	uint32_t ChunkLength;
-};
-
-struct SHEXChunk
-{
-	uint32_t ChunkType;
-	uint32_t ChunkLength;
+	uint32_t Flags;  //if 1 then double precision floating point is required.
 };
 
 struct SPDBChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	//??????
 };
 
 struct STATChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
+	uint32_t InstructionCount;
+	uint32_t TempRegisterCount;
+	uint32_t DefineCount;
+	uint32_t DeclarationCount;
+	uint32_t FloatInstructionCount;
+	uint32_t IntegerInstructionCount;
+	uint32_t UnsignedIntegerInstructionCount;
+	uint32_t StaticFlowControlCount;
+	uint32_t DynamicFlowControlCount;
+	uint32_t MacroInstructionCount; //might be wrong.
+	uint32_t TempArrayCount;
+	uint32_t ArrayInstructionCount;
+	uint32_t CutInstructionCount;
+	uint32_t EmitInstructionCount;
+	uint32_t TextureNormalInstructionCount;
+	uint32_t TextureLoadInstructionCount;
+	uint32_t TextureBiasInstructionCount;
+	uint32_t TextureGradientInstructionCount;
+	uint32_t MovInstructionCount;
+	uint32_t MovcInstructionCount;
+	uint32_t ConversionInstructionCount;
+	uint32_t Unknown;
+	uint32_t InputPrimitiveForGeometryShaderCount;
+	uint32_t PrimitiveTopologyForGemotryShaderCount;
+	uint32_t MaximumOutputVertexCountForGeometryShaderCount;
+	uint32_t Unknown2;
+	uint32_t Unknown3;
+	uint32_t IsSampleFrequencyShader; //Might be more than a switch but I only know about 1 and 0.
+};
+
+struct SHDRChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+	char Version; //Minor low 4 bits //Major high 4 bits.
+	uint16_t ProgramType; //1 means vertex shader.
+	uint32_t DWORDCount; //Number of DWORDs in the chunk.
+};
+
+struct SHEXChunk
+{
+	uint32_t ChunkType;
+	uint32_t ChunkLength;
+	//??????
+};
+
+struct OperationCodeHeader //OPCODE
+{
+	uint32_t OperationCodeType : 11;
+	uint32_t Unknown : 13;
+	uint32_t OperationCodeLength : 7;
+	uint32_t IsExtended : 1;
 };
 
 class ShaderConverter

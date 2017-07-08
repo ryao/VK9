@@ -31,6 +31,7 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 	*/
 
 	ConvertedShader output;
+	std::vector<uint32_t> mOutputInstructions;
 	ShaderHeader header;
 	uint32_t chunkType;
 	char* data = (char*)shader;
@@ -55,6 +56,12 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 		{
 			ICFEChunk chunk;
 			memcpy(&chunk, chunkPointer, sizeof(ICFEChunk));
+		}
+		break;
+		case IFCE:
+		{
+			IFCEChunk chunk;
+			memcpy(&chunk, chunkPointer, sizeof(IFCEChunk));
 		}
 		break;
 		case ISGN:
