@@ -207,16 +207,20 @@ struct SHDRChunk
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
-	char Version; //Minor low 4 bits //Major high 4 bits.
+	unsigned MinorVersion : 4;
+	unsigned MajorVersion : 4;
 	uint16_t ProgramType; //1 means vertex shader.
 	uint32_t DWORDCount; //Number of DWORDs in the chunk.
 };
 
-struct SHEXChunk
+struct SHEXChunk //maybe wrong?
 {
 	uint32_t ChunkType;
 	uint32_t ChunkLength;
-	//??????
+	unsigned MinorVersion : 4;
+	unsigned MajorVersion : 4;
+	uint16_t ProgramType; //1 means vertex shader.
+	uint32_t DWORDCount; //Number of DWORDs in the chunk.
 };
 
 struct OperationCodeHeader //OPCODE

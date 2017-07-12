@@ -18,6 +18,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "DxbcContainer.h"
 #include "ShaderConverter.h"
 #include "Utilities.h"
 
@@ -30,150 +31,119 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 	https://msdn.microsoft.com/en-us/library/windows/hardware/ff552891(v=vs.85).aspx
 	*/
 
-	ConvertedShader output;
-	std::vector<uint32_t> mOutputInstructions;
 	ShaderHeader header;
-	uint32_t chunkType;
 	char* data = (char*)shader;
-	char* chunkPointer = nullptr;
-
 	memcpy(&header, (void*)data, sizeof(ShaderHeader));
-	data += sizeof(ShaderHeader);
+	
+	ConvertedShader output;
+	output.Size = header.ShaderSize;
+	auto reader = SlimShader::BytecodeReader((uint8_t*)shader, output.Size);
+	auto container = SlimShader::DxbcContainer::Parse(reader);
 
-	//The header is followed by a list of chunk offsets so loop over that and process each chunk.
-	for (size_t i = 0; i < header.ChunkCount; i++)
-	{
-		uint32_t chunkOffset = (*(uint32_t*)data);
-		data += sizeof(uint32_t);
 
-		chunkPointer = (char*)shader;
-		chunkPointer += chunkOffset;
 
-		memcpy(&chunkType, (void*)chunkPointer, sizeof(char[4]));
-		switch (chunkType)
-		{
-		case ICFE:
-		{
-			ICFEChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(ICFEChunk));
-		}
-		break;
-		case IFCE:
-		{
-			IFCEChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(IFCEChunk));
-		}
-		break;
-		case ISGN:
-		{
-			ISGNChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(ISGNChunk));
-		}
-		break;
-		case OSG5:
-		{
-			OSG5Chunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(OSG5Chunk));
-		}
-		break;
-		case OSGN:
-		{
-			OSGNChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(OSGNChunk));
-		}
-		break;
-		case PCSG:
-		{
-			PCSGChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(PCSGChunk));
-		}
-		break;
-		case RDEF:
-		{
-			RDEFChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(RDEFChunk));
-		}
-		break;
-		case SDGB:
-		{
-			SDGBChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(SDGBChunk));
-		}
-		break;
-		case SFI0:
-		{
-			SFI0Chunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(SFI0Chunk));
-		}
-		break;
-		case SHDR:
-		{
-			SHDRChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(SHDRChunk));
-		}
-		break;
-		case SHEX:
-		{
-			SHEXChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(SHEXChunk));
-		}
-		break;
-		case SPDB:
-		{
-			SPDBChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(SPDBChunk));
-		}
-		break;
-		case STAT:
-		{
-			STATChunk chunk;
-			memcpy(&chunk, chunkPointer, sizeof(STATChunk));
-		}
-		break;
-		default:
-			BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Convert unknown chunk type " << chunkType;
-			break;
-		}
-	}
 
-	//DWORD token;
-	//VersionToken versionToken;
-	//int32_t size = sizeof(ShaderHeader);
+	//std::vector<uint32_t> mOutputInstructions;
+	//uint32_t chunkType;
+	//char* chunkPointer = nullptr;
 
-	//versionToken = (*(ShaderHeader*)shader);
-	//shader += 1;
-	//token = (*shader);
+	//memcpy(&header, (void*)data, sizeof(ShaderHeader));
+	//data += sizeof(ShaderHeader);
 
-	//BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader version: " << versionToken.MajorVersion << "." << versionToken.MinorVersion;
-
-	//switch (versionToken.ShaderType)
+	////The header is followed by a list of chunk offsets so loop over that and process each chunk.
+	//for (size_t i = 0; i < header.ChunkCount; i++)
 	//{
-	//case mShaderTypePixel:
-	//	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader type: Pixel";
-	//	break;
-	//case mShaderTypeVertex:
-	//	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader type: Vertex";
-	//	break;
-	//default:
-	//	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert shader type: Unknown";
-	//	break;
-	//}
+	//	uint32_t chunkOffset = (*(uint32_t*)data);
+	//	data += sizeof(uint32_t);
 
-	//while (token != mEndToken)
-	//{
-	//	uint16_t opcode = (*(uint16_t*)shader);
+	//	chunkPointer = (char*)shader;
+	//	chunkPointer += chunkOffset;
 
-	//	switch (opcode)
+	//	memcpy(&chunkType, (void*)chunkPointer, sizeof(char[4]));
+	//	switch (chunkType)
 	//	{
-
+	//	case ICFE:
+	//	{
+	//		ICFEChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(ICFEChunk));
+	//	}
+	//	break;
+	//	case IFCE:
+	//	{
+	//		IFCEChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(IFCEChunk));
+	//	}
+	//	break;
+	//	case ISGN:
+	//	{
+	//		ISGNChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(ISGNChunk));
+	//	}
+	//	break;
+	//	case OSG5:
+	//	{
+	//		OSG5Chunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(OSG5Chunk));
+	//	}
+	//	break;
+	//	case OSGN:
+	//	{
+	//		OSGNChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(OSGNChunk));
+	//	}
+	//	break;
+	//	case PCSG:
+	//	{
+	//		PCSGChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(PCSGChunk));
+	//	}
+	//	break;
+	//	case RDEF:
+	//	{
+	//		RDEFChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(RDEFChunk));
+	//	}
+	//	break;
+	//	case SDGB:
+	//	{
+	//		SDGBChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(SDGBChunk));
+	//	}
+	//	break;
+	//	case SFI0:
+	//	{
+	//		SFI0Chunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(SFI0Chunk));
+	//	}
+	//	break;
+	//	case SHDR:
+	//	{
+	//		SHDRChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(SHDRChunk));
+	//	}
+	//	break;
+	//	case SHEX:
+	//	{
+	//		SHEXChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(SHEXChunk));
+	//	}
+	//	break;
+	//	case SPDB:
+	//	{
+	//		SPDBChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(SPDBChunk));
+	//	}
+	//	break;
+	//	case STAT:
+	//	{
+	//		STATChunk chunk;
+	//		memcpy(&chunk, chunkPointer, sizeof(STATChunk));
+	//	}
+	//	break;
 	//	default:
-	//		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Convert OP code " << opcode;
+	//		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Convert unknown chunk type " << chunkType;
 	//		break;
 	//	}
-
-	//	shader += 1;
-	//	token = (*shader);
-	//	size += 1;
 	//}
 
 	return output; //Return value optimization don't fail me now.
