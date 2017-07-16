@@ -16,6 +16,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{cc225075-770e-4039-8f2b-4822226ae36b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="fxdis">
+      <UniqueIdentifier>{6d787399-bfda-4108-af24-a3fc17d26dd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D3D9.cpp">
@@ -95,6 +98,27 @@
     </ClCompile>
     <ClCompile Include="GarbageManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fxdis\dxbc_assemble.cpp">
+      <Filter>fxdis</Filter>
+    </ClCompile>
+    <ClCompile Include="fxdis\dxbc_dump.cpp">
+      <Filter>fxdis</Filter>
+    </ClCompile>
+    <ClCompile Include="fxdis\dxbc_parse.cpp">
+      <Filter>fxdis</Filter>
+    </ClCompile>
+    <ClCompile Include="fxdis\sm4_analyze.cpp">
+      <Filter>fxdis</Filter>
+    </ClCompile>
+    <ClCompile Include="fxdis\sm4_dump.cpp">
+      <Filter>fxdis</Filter>
+    </ClCompile>
+    <ClCompile Include="fxdis\sm4_parse.cpp">
+      <Filter>fxdis</Filter>
+    </ClCompile>
+    <ClCompile Include="fxdis\sm4_text.cpp">
+      <Filter>fxdis</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +202,24 @@
     </ClInclude>
     <ClInclude Include="GarbageManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fxdis\dxbc.h">
+      <Filter>fxdis</Filter>
+    </ClInclude>
+    <ClInclude Include="fxdis\le32.h">
+      <Filter>fxdis</Filter>
+    </ClInclude>
+    <ClInclude Include="fxdis\msvc_stdint.h">
+      <Filter>fxdis</Filter>
+    </ClInclude>
+    <ClInclude Include="fxdis\sm4.h">
+      <Filter>fxdis</Filter>
+    </ClInclude>
+    <ClInclude Include="fxdis\sm4_defs.h">
+      <Filter>fxdis</Filter>
+    </ClInclude>
+    <ClInclude Include="fxdis\utils.h">
+      <Filter>fxdis</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

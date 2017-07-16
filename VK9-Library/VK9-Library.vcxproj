@@ -59,11 +59,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>E:\slimshader-cpp\src\Dependencies\boolinq\include;E:\slimshader-cpp\src\SDK\Include;$(DXSDK_DIR)Include;$(VULKAN_SDK)\Include;C:\local\boost_1_63_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VULKAN_SDK)\Include;C:\local\boost_1_63_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;WIN32;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -85,8 +85,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Source\lib32;$(DXSDK_DIR)Lib\x86;C:\local\boost_1_63_0\lib32-msvc-14.0;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\lib\Win32;E:\slimshader-cpp\src\SDK\Library\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;SlimShader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Source\lib32;$(DXSDK_DIR)Lib\x86;C:\local\boost_1_63_0\lib32-msvc-14.0;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\lib\Win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>d3d9.def</ModuleDefinitionFile>
       <LargeAddressAware>true</LargeAddressAware>
       <Version>
@@ -120,12 +120,12 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_WIN32;WIN32;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;NDEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>E:\slimshader-cpp\src\Dependencies\boolinq\include;E:\slimshader-cpp\src\SDK\Include;$(DXSDK_DIR)Include;$(VULKAN_SDK)\Include;C:\local\boost_1_63_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(VULKAN_SDK)\Include;C:\local\boost_1_63_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
@@ -137,6 +137,7 @@
       <OpenMPSupport>true</OpenMPSupport>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -144,8 +145,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Source\lib32;$(DXSDK_DIR)Lib\x86;C:\local\boost_1_63_0\lib32-msvc-14.0;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\lib\Win32;E:\slimshader-cpp\src\SDK\Library\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;SlimShader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Source\lib32;$(DXSDK_DIR)Lib\x86;C:\local\boost_1_63_0\lib32-msvc-14.0;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\lib\Win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>d3d9.def</ModuleDefinitionFile>
       <Version>
       </Version>
@@ -201,6 +202,13 @@
       </PrecompiledHeader>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
+    <ClCompile Include="fxdis\dxbc_assemble.cpp" />
+    <ClCompile Include="fxdis\dxbc_dump.cpp" />
+    <ClCompile Include="fxdis\dxbc_parse.cpp" />
+    <ClCompile Include="fxdis\sm4_analyze.cpp" />
+    <ClCompile Include="fxdis\sm4_dump.cpp" />
+    <ClCompile Include="fxdis\sm4_parse.cpp" />
+    <ClCompile Include="fxdis\sm4_text.cpp" />
     <ClCompile Include="GarbageManager.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
     <ClCompile Include="VK9-Library.cpp" />
@@ -230,6 +238,12 @@
     <ClInclude Include="CVertexDeclaration9.h" />
     <ClInclude Include="CVertexShader9.h" />
     <ClInclude Include="CVolumeTexture9.h" />
+    <ClInclude Include="fxdis\dxbc.h" />
+    <ClInclude Include="fxdis\le32.h" />
+    <ClInclude Include="fxdis\msvc_stdint.h" />
+    <ClInclude Include="fxdis\sm4.h" />
+    <ClInclude Include="fxdis\sm4_defs.h" />
+    <ClInclude Include="fxdis\utils.h" />
     <ClInclude Include="GarbageManager.h" />
     <ClInclude Include="PrivateTypes.h" />
     <ClInclude Include="resource.h" />
