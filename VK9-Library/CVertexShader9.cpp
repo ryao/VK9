@@ -25,7 +25,8 @@ misrepresented as being the original software.
 
 CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
 	: mDevice(device),
-	mFunction((DWORD*)pFunction)
+	mFunction((DWORD*)pFunction),
+	mShaderConverter(device->mDevice)
 {
 	BOOST_LOG_TRIVIAL(info) << "CVertexShader9::CVertexShader9";
 	mConvertedShader = mShaderConverter.Convert(mFunction);

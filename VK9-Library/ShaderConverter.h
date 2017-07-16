@@ -22,6 +22,8 @@ misrepresented as being the original software.
 #define SHADERCONVERTER_H
 
 #include <vulkan/vulkan.h>
+#include <vector>
+#include <boost/container/flat_map.hpp>
 
 struct ConvertedShader
 {
@@ -35,8 +37,39 @@ class ShaderConverter
 {
 
 public:
+	VkDevice mDevice;
+	std::vector<DWORD> mInstructions; //used to store the combined instructions for creating a module.
+	boost::container::flat_map<std::string, uint32_t> mVariableIds;
+
+
+	std::vector<DWORD> mCapabilityInstructions;
+	std::vector<DWORD> mExtensionInstructions;
+	std::vector<DWORD> mImportExtendedInstructions;
+	std::vector<DWORD> mMemoryModelInstructions;
+	std::vector<DWORD> mEntryPointInstructions;
+	std::vector<DWORD> mExecutionModeInstructions;
+
+	std::vector<DWORD> mStringInstructions;
+	std::vector<DWORD> mSourceExtensionInstructions;
+	std::vector<DWORD> mSourceInstructions;
+	std::vector<DWORD> mSourceContinuedInstructions;
+	std::vector<DWORD> mNameInstructions;
+	std::vector<DWORD> mMemberNameInstructions;
+
+	std::vector<DWORD> mDecorateInstructions;
+	std::vector<DWORD> mMemberDecorateInstructions;
+	std::vector<DWORD> mGroupDecorateInstructions;
+	std::vector<DWORD> mGroupMemberDecorateInstructions;
+	std::vector<DWORD> mDecorationGroupInstructions;
+
+	std::vector<DWORD> mTypeInstructions;
+	std::vector<DWORD> mFunctionDeclarationInstructions;
+	std::vector<DWORD> mFunctionDefinitionInstructions;
+
+	ShaderConverter(VkDevice device);
 	ConvertedShader Convert(DWORD* shader);
 private:
+
 
 };
 

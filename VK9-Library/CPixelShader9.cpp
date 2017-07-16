@@ -25,7 +25,8 @@ misrepresented as being the original software.
 
 CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
 	: mDevice(device),
-	mFunction((DWORD*)pFunction)
+	mFunction((DWORD*)pFunction),
+	mShaderConverter(device->mDevice)
 {
 	BOOST_LOG_TRIVIAL(info) << "CPixelShader9::CPixelShader9";
 	mConvertedShader = mShaderConverter.Convert(mFunction);

@@ -248,6 +248,492 @@ inline VkFormat ConvertType(D3D_REGISTER_COMPONENT_TYPE value)
 	}
 }
 
+inline DWORD ConvertType(sm4_opcode_type value)
+{
+	switch (value)
+	{
+	case SM4_OPCODE_TYPE_NA:
+		return 0; //TODO: lookup types.
+		break;
+	case SM4_OPCODE_TYPE_FLOAT:
+		return 0; //TODO: lookup types.
+		break;
+	case SM4_OPCODE_TYPE_DOUBLE:
+		return 0; //TODO: lookup types.
+		break;
+	case SM4_OPCODE_TYPE_INT:
+		return 0; //TODO: lookup types.
+		break;
+	case SM4_OPCODE_TYPE_UINT:
+		return 0; //TODO: lookup types.
+		break;
+	case SM4_OPCODE_TYPE_COUNT:
+		return 0; //TODO: lookup types.
+		break;
+	default:
+		break;
+	}
+}
+
+inline void ConvertOpCode(ShaderConverter* _this,sm4_dcl* instruction)
+{
+	sm4_opcode opcode = (sm4_opcode)instruction->opcode;
+
+	switch (opcode)
+	{
+	default:
+		break;
+	}
+}
+
+inline void ConvertOpCode(ShaderConverter* _this, sm4_insn* instruction)
+{
+	sm4_opcode opcode = (sm4_opcode)instruction->opcode;
+	sm4_opcode_type type;
+	DWORD resultId=0;
+	DWORD operand1Id=0;
+	DWORD operand2Id=0;
+
+	switch (opcode)
+	{
+	case SM4_OPCODE_ADD:
+		
+		type = (sm4_opcode_type)instruction->ops[0]->extended_token.type;
+		resultId = instruction->resource_target;
+
+		_this->mFunctionDefinitionInstructions.push_back(5); //word size
+		_this->mFunctionDefinitionInstructions.push_back(129); //OpFAdd
+		_this->mFunctionDefinitionInstructions.push_back(ConvertType(type)); //Result Type TODO: find result type codes.
+		_this->mFunctionDefinitionInstructions.push_back(resultId); //Result Id
+		_this->mFunctionDefinitionInstructions.push_back(operand1Id); //Operand 1 Id
+		_this->mFunctionDefinitionInstructions.push_back(operand2Id); //Operand 2 Id
+
+		break;
+	case SM4_OPCODE_AND:
+		break;
+	case SM4_OPCODE_BREAK:
+		break;
+	case SM4_OPCODE_BREAKC:
+		break;
+	case SM4_OPCODE_CALL:
+		break;
+	case SM4_OPCODE_CALLC:
+		break;
+	case SM4_OPCODE_CASE:
+		break;
+	case SM4_OPCODE_CONTINUE:
+		break;
+	case SM4_OPCODE_CONTINUEC:
+		break;
+	case SM4_OPCODE_CUT:
+		break;
+	case SM4_OPCODE_DEFAULT:
+		break;
+	case SM4_OPCODE_DERIV_RTX:
+		break;
+	case SM4_OPCODE_DERIV_RTY:
+		break;
+	case SM4_OPCODE_DISCARD:
+		break;
+	case SM4_OPCODE_DIV:
+		break;
+	case SM4_OPCODE_DP2:
+		break;
+	case SM4_OPCODE_DP3:
+		break;
+	case SM4_OPCODE_DP4:
+		break;
+	case SM4_OPCODE_ELSE:
+		break;
+	case SM4_OPCODE_EMIT:
+		break;
+	case SM4_OPCODE_EMITTHENCUT:
+		break;
+	case SM4_OPCODE_ENDIF:
+		break;
+	case SM4_OPCODE_ENDLOOP:
+		break;
+	case SM4_OPCODE_ENDSWITCH:
+		break;
+	case SM4_OPCODE_EQ:
+		break;
+	case SM4_OPCODE_EXP:
+		break;
+	case SM4_OPCODE_FRC:
+		break;
+	case SM4_OPCODE_FTOI:
+		break;
+	case SM4_OPCODE_FTOU:
+		break;
+	case SM4_OPCODE_GE:
+		break;
+	case SM4_OPCODE_IADD:
+		break;
+	case SM4_OPCODE_IF:
+		break;
+	case SM4_OPCODE_IEQ:
+		break;
+	case SM4_OPCODE_IGE:
+		break;
+	case SM4_OPCODE_ILT:
+		break;
+	case SM4_OPCODE_IMAD:
+		break;
+	case SM4_OPCODE_IMAX:
+		break;
+	case SM4_OPCODE_IMIN:
+		break;
+	case SM4_OPCODE_IMUL:
+		break;
+	case SM4_OPCODE_INE:
+		break;
+	case SM4_OPCODE_INEG:
+		break;
+	case SM4_OPCODE_ISHL:
+		break;
+	case SM4_OPCODE_ISHR:
+		break;
+	case SM4_OPCODE_ITOF:
+		break;
+	case SM4_OPCODE_LABEL:
+		break;
+	case SM4_OPCODE_LD:
+		break;
+	case SM4_OPCODE_LD_MS:
+		break;
+	case SM4_OPCODE_LOG:
+		break;
+	case SM4_OPCODE_LOOP:
+		break;
+	case SM4_OPCODE_LT:
+		break;
+	case SM4_OPCODE_MAD:
+		break;
+	case SM4_OPCODE_MIN:
+		break;
+	case SM4_OPCODE_MAX:
+		break;
+	case SM4_OPCODE_CUSTOMDATA:
+		break;
+	case SM4_OPCODE_MOV:
+		break;
+	case SM4_OPCODE_MOVC:
+		break;
+	case SM4_OPCODE_MUL:
+		break;
+	case SM4_OPCODE_NE:
+		break;
+	case SM4_OPCODE_NOP:
+		break;
+	case SM4_OPCODE_NOT:
+		break;
+	case SM4_OPCODE_OR:
+		break;
+	case SM4_OPCODE_RESINFO:
+		break;
+	case SM4_OPCODE_RET:
+		break;
+	case SM4_OPCODE_RETC:
+		break;
+	case SM4_OPCODE_ROUND_NE:
+		break;
+	case SM4_OPCODE_ROUND_NI:
+		break;
+	case SM4_OPCODE_ROUND_PI:
+		break;
+	case SM4_OPCODE_ROUND_Z:
+		break;
+	case SM4_OPCODE_RSQ:
+		break;
+	case SM4_OPCODE_SAMPLE:
+		break;
+	case SM4_OPCODE_SAMPLE_C:
+		break;
+	case SM4_OPCODE_SAMPLE_C_LZ:
+		break;
+	case SM4_OPCODE_SAMPLE_L:
+		break;
+	case SM4_OPCODE_SAMPLE_D:
+		break;
+	case SM4_OPCODE_SAMPLE_B:
+		break;
+	case SM4_OPCODE_SQRT:
+		break;
+	case SM4_OPCODE_SWITCH:
+		break;
+	case SM4_OPCODE_SINCOS:
+		break;
+	case SM4_OPCODE_UDIV:
+		break;
+	case SM4_OPCODE_ULT:
+		break;
+	case SM4_OPCODE_UGE:
+		break;
+	case SM4_OPCODE_UMUL:
+		break;
+	case SM4_OPCODE_UMAD:
+		break;
+	case SM4_OPCODE_UMAX:
+		break;
+	case SM4_OPCODE_UMIN:
+		break;
+	case SM4_OPCODE_USHR:
+		break;
+	case SM4_OPCODE_UTOF:
+		break;
+	case SM4_OPCODE_XOR:
+		break;
+	case SM4_OPCODE_DCL_RESOURCE:
+		break;
+	case SM4_OPCODE_DCL_CONSTANT_BUFFER:
+		break;
+	case SM4_OPCODE_DCL_SAMPLER:
+		break;
+	case SM4_OPCODE_DCL_INDEX_RANGE:
+		break;
+	case SM4_OPCODE_DCL_GS_OUTPUT_PRIMITIVE_TOPOLOGY:
+		break;
+	case SM4_OPCODE_DCL_GS_INPUT_PRIMITIVE:
+		break;
+	case SM4_OPCODE_DCL_MAX_OUTPUT_VERTEX_COUNT:
+		break;
+	case SM4_OPCODE_DCL_INPUT:
+		break;
+	case SM4_OPCODE_DCL_INPUT_SGV:
+		break;
+	case SM4_OPCODE_DCL_INPUT_SIV:
+		break;
+	case SM4_OPCODE_DCL_INPUT_PS:
+		break;
+	case SM4_OPCODE_DCL_INPUT_PS_SGV:
+		break;
+	case SM4_OPCODE_DCL_INPUT_PS_SIV:
+		break;
+	case SM4_OPCODE_DCL_OUTPUT:
+		break;
+	case SM4_OPCODE_DCL_OUTPUT_SGV:
+		break;
+	case SM4_OPCODE_DCL_OUTPUT_SIV:
+		break;
+	case SM4_OPCODE_DCL_TEMPS:
+		break;
+	case SM4_OPCODE_DCL_INDEXABLE_TEMP:
+		break;
+	case SM4_OPCODE_DCL_GLOBAL_FLAGS:
+		break;
+	case SM4_OPCODE_D3D10_COUNT:
+		break;
+	case SM4_OPCODE_LOD:
+		break;
+	case SM4_OPCODE_GATHER4:
+		break;
+	case SM4_OPCODE_SAMPLE_POS:
+		break;
+	case SM4_OPCODE_SAMPLE_INFO:
+		break;
+	case SM4_OPCODE_D3D10_1_COUNT:
+		break;
+	case SM4_OPCODE_HS_DECLS:
+		break;
+	case SM4_OPCODE_HS_CONTROL_POINT_PHASE:
+		break;
+	case SM4_OPCODE_HS_FORK_PHASE:
+		break;
+	case SM4_OPCODE_HS_JOIN_PHASE:
+		break;
+	case SM4_OPCODE_EMIT_STREAM:
+		break;
+	case SM4_OPCODE_CUT_STREAM:
+		break;
+	case SM4_OPCODE_EMITTHENCUT_STREAM:
+		break;
+	case SM4_OPCODE_INTERFACE_CALL:
+		break;
+	case SM4_OPCODE_BUFINFO:
+		break;
+	case SM4_OPCODE_DERIV_RTX_COARSE:
+		break;
+	case SM4_OPCODE_DERIV_RTX_FINE:
+		break;
+	case SM4_OPCODE_DERIV_RTY_COARSE:
+		break;
+	case SM4_OPCODE_DERIV_RTY_FINE:
+		break;
+	case SM4_OPCODE_GATHER4_C:
+		break;
+	case SM4_OPCODE_GATHER4_PO:
+		break;
+	case SM4_OPCODE_GATHER4_PO_C:
+		break;
+	case SM4_OPCODE_RCP:
+		break;
+	case SM4_OPCODE_F32TOF16:
+		break;
+	case SM4_OPCODE_F16TOF32:
+		break;
+	case SM4_OPCODE_UADDC:
+		break;
+	case SM4_OPCODE_USUBB:
+		break;
+	case SM4_OPCODE_COUNTBITS:
+		break;
+	case SM4_OPCODE_FIRSTBIT_HI:
+		break;
+	case SM4_OPCODE_FIRSTBIT_LO:
+		break;
+	case SM4_OPCODE_FIRSTBIT_SHI:
+		break;
+	case SM4_OPCODE_UBFE:
+		break;
+	case SM4_OPCODE_IBFE:
+		break;
+	case SM4_OPCODE_BFI:
+		break;
+	case SM4_OPCODE_BFREV:
+		break;
+	case SM4_OPCODE_SWAPC:
+		break;
+	case SM4_OPCODE_DCL_STREAM:
+		break;
+	case SM4_OPCODE_DCL_FUNCTION_BODY:
+		break;
+	case SM4_OPCODE_DCL_FUNCTION_TABLE:
+		break;
+	case SM4_OPCODE_DCL_INTERFACE:
+		break;
+	case SM4_OPCODE_DCL_INPUT_CONTROL_POINT_COUNT:
+		break;
+	case SM4_OPCODE_DCL_OUTPUT_CONTROL_POINT_COUNT:
+		break;
+	case SM4_OPCODE_DCL_TESS_DOMAIN:
+		break;
+	case SM4_OPCODE_DCL_TESS_PARTITIONING:
+		break;
+	case SM4_OPCODE_DCL_TESS_OUTPUT_PRIMITIVE:
+		break;
+	case SM4_OPCODE_DCL_HS_MAX_TESSFACTOR:
+		break;
+	case SM4_OPCODE_DCL_HS_FORK_PHASE_INSTANCE_COUNT:
+		break;
+	case SM4_OPCODE_DCL_HS_JOIN_PHASE_INSTANCE_COUNT:
+		break;
+	case SM4_OPCODE_DCL_THREAD_GROUP:
+		break;
+	case SM4_OPCODE_DCL_UNORDERED_ACCESS_VIEW_TYPED:
+		break;
+	case SM4_OPCODE_DCL_UNORDERED_ACCESS_VIEW_RAW:
+		break;
+	case SM4_OPCODE_DCL_UNORDERED_ACCESS_VIEW_STRUCTURED:
+		break;
+	case SM4_OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_RAW:
+		break;
+	case SM4_OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_STRUCTURED:
+		break;
+	case SM4_OPCODE_DCL_RESOURCE_RAW:
+		break;
+	case SM4_OPCODE_DCL_RESOURCE_STRUCTURED:
+		break;
+	case SM4_OPCODE_LD_UAV_TYPED:
+		break;
+	case SM4_OPCODE_STORE_UAV_TYPED:
+		break;
+	case SM4_OPCODE_LD_RAW:
+		break;
+	case SM4_OPCODE_STORE_RAW:
+		break;
+	case SM4_OPCODE_LD_STRUCTURED:
+		break;
+	case SM4_OPCODE_STORE_STRUCTURED:
+		break;
+	case SM4_OPCODE_ATOMIC_AND:
+		break;
+	case SM4_OPCODE_ATOMIC_OR:
+		break;
+	case SM4_OPCODE_ATOMIC_XOR:
+		break;
+	case SM4_OPCODE_ATOMIC_CMP_STORE:
+		break;
+	case SM4_OPCODE_ATOMIC_IADD:
+		break;
+	case SM4_OPCODE_ATOMIC_IMAX:
+		break;
+	case SM4_OPCODE_ATOMIC_IMIN:
+		break;
+	case SM4_OPCODE_ATOMIC_UMAX:
+		break;
+	case SM4_OPCODE_ATOMIC_UMIN:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_ALLOC:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_CONSUME:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_IADD:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_AND:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_OR:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_XOR:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_EXCH:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_CMP_EXCH:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_IMAX:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_IMIN:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_UMAX:
+		break;
+	case SM4_OPCODE_IMM_ATOMIC_UMIN:
+		break;
+	case SM4_OPCODE_SYNC:
+		break;
+	case SM4_OPCODE_DADD:
+		break;
+	case SM4_OPCODE_DMAX:
+		break;
+	case SM4_OPCODE_DMIN:
+		break;
+	case SM4_OPCODE_DMUL:
+		break;
+	case SM4_OPCODE_DEQ:
+		break;
+	case SM4_OPCODE_DGE:
+		break;
+	case SM4_OPCODE_DLT:
+		break;
+	case SM4_OPCODE_DNE:
+		break;
+	case SM4_OPCODE_DMOV:
+		break;
+	case SM4_OPCODE_DMOVC:
+		break;
+	case SM4_OPCODE_DTOF:
+		break;
+	case SM4_OPCODE_FTOD:
+		break;
+	case SM4_OPCODE_EVAL_SNAPPED:
+		break;
+	case SM4_OPCODE_EVAL_SAMPLE_INDEX:
+		break;
+	case SM4_OPCODE_EVAL_CENTROID:
+		break;
+	case SM4_OPCODE_DCL_GS_INSTANCE_COUNT:
+		break;
+	case SM4_OPCODE_COUNT:
+		break;
+	default:
+		break;
+	}
+}
+
+ShaderConverter::ShaderConverter(VkDevice device)
+	: mDevice(device)
+{
+
+}
+
 ConvertedShader ShaderConverter::Convert(DWORD* shader)
 {
 	/*
@@ -284,12 +770,80 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 					attributeDescription.offset = parameter.Register*4;
 				}
 
+				for (size_t i = 0; i < sm4->dcls.size(); i++)
+				{
+					ConvertOpCode(this,sm4->dcls[i]);
+				}
+
+				for (size_t i = 0; i < sm4->insns.size(); i++)
+				{
+					ConvertOpCode(this,sm4->insns[i]);
+				}
 				
 				delete sm4;
 			}		
 		}
 		delete dxbc;
 	}
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mExtensionInstructions), std::end(mExtensionInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mImportExtendedInstructions), std::end(mImportExtendedInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mMemoryModelInstructions), std::end(mMemoryModelInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mEntryPointInstructions), std::end(mEntryPointInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mExecutionModeInstructions), std::end(mExecutionModeInstructions));
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mStringInstructions), std::end(mStringInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mSourceExtensionInstructions), std::end(mSourceExtensionInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mSourceInstructions), std::end(mSourceInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mSourceContinuedInstructions), std::end(mSourceContinuedInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mNameInstructions), std::end(mNameInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mMemberNameInstructions), std::end(mMemberNameInstructions));
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mDecorateInstructions), std::end(mDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mMemberDecorateInstructions), std::end(mMemberDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mGroupDecorateInstructions), std::end(mGroupDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mGroupMemberDecorateInstructions), std::end(mGroupMemberDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mDecorationGroupInstructions), std::end(mDecorationGroupInstructions));
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mTypeInstructions), std::end(mTypeInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mFunctionDeclarationInstructions), std::end(mFunctionDeclarationInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mFunctionDefinitionInstructions), std::end(mFunctionDefinitionInstructions));
+
+	mCapabilityInstructions.clear();
+	mExtensionInstructions.clear();
+	mImportExtendedInstructions.clear();
+	mMemoryModelInstructions.clear();
+	mEntryPointInstructions.clear();
+	mExecutionModeInstructions.clear();
+
+	mStringInstructions.clear();
+	mSourceExtensionInstructions.clear();
+	mSourceInstructions.clear();
+	mSourceContinuedInstructions.clear();
+	mNameInstructions.clear();
+	mMemberNameInstructions.clear();
+
+	mDecorateInstructions.clear();
+	mMemberDecorateInstructions.clear();
+	mGroupDecorateInstructions.clear();
+	mGroupMemberDecorateInstructions.clear();
+	mDecorationGroupInstructions.clear();
+
+	mTypeInstructions.clear();
+	mFunctionDeclarationInstructions.clear();
+	mFunctionDefinitionInstructions.clear();
+
+	VkResult result = VK_SUCCESS;
+	VkShaderModuleCreateInfo moduleCreateInfo = {};
+	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfo.pNext = NULL;
+	moduleCreateInfo.codeSize = mInstructions.size()*sizeof(uint32_t);
+	moduleCreateInfo.pCode = (uint32_t*)mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
+	moduleCreateInfo.flags = 0;
+	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &output.ShaderModule);
+
+	mInstructions.clear();
 
 	//uint32_t chunkType;
 	//char* chunkPointer = nullptr;
