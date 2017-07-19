@@ -294,6 +294,8 @@ inline void ConvertOpCode(ShaderConverter* _this, sm4_insn* instruction)
 	DWORD operand1Id=0;
 	DWORD operand2Id=0;
 
+	//TODO: figure out how to set the id for operand 1 & 2 as well as result id.
+
 	switch (opcode)
 	{
 	case SM4_OPCODE_ADD:
@@ -310,24 +312,56 @@ inline void ConvertOpCode(ShaderConverter* _this, sm4_insn* instruction)
 
 		break;
 	case SM4_OPCODE_AND:
+
+		type = (sm4_opcode_type)instruction->ops[0]->extended_token.type;
+		resultId = instruction->resource_target;
+
+		_this->mFunctionDefinitionInstructions.push_back(5); //word size
+		_this->mFunctionDefinitionInstructions.push_back(167); //OpLogicalAnd
+		_this->mFunctionDefinitionInstructions.push_back(ConvertType(type)); //Result Type TODO: find result type codes.
+		_this->mFunctionDefinitionInstructions.push_back(resultId); //Result Id
+		_this->mFunctionDefinitionInstructions.push_back(operand1Id); //Operand 1 Id
+		_this->mFunctionDefinitionInstructions.push_back(operand2Id); //Operand 2 Id
+
 		break;
 	case SM4_OPCODE_BREAK:
+		//TODO: BREAK
 		break;
 	case SM4_OPCODE_BREAKC:
+		//TODO: BREAKC
 		break;
 	case SM4_OPCODE_CALL:
+		//TODO: CALL
 		break;
 	case SM4_OPCODE_CALLC:
+		//TODO: CALLC
 		break;
 	case SM4_OPCODE_CASE:
+
+		resultId = instruction->resource_target;
+
+		_this->mFunctionDefinitionInstructions.push_back(2); //word size
+		_this->mFunctionDefinitionInstructions.push_back(248); //OpLabel
+		_this->mFunctionDefinitionInstructions.push_back(resultId); //Result Id
+
 		break;
 	case SM4_OPCODE_CONTINUE:
+		//TODO: CONTINUE
 		break;
 	case SM4_OPCODE_CONTINUEC:
+		//TODO: CONTINUEC
 		break;
 	case SM4_OPCODE_CUT:
+		//TODO: CUT
 		break;
 	case SM4_OPCODE_DEFAULT:
+
+		resultId = instruction->resource_target;
+
+		_this->mFunctionDefinitionInstructions.push_back(2); //word size
+		_this->mFunctionDefinitionInstructions.push_back(248); //OpLabel
+		_this->mFunctionDefinitionInstructions.push_back(resultId); //Result Id
+
 		break;
 	case SM4_OPCODE_DERIV_RTX:
 		break;
