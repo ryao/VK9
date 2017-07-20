@@ -1692,6 +1692,11 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	samplerCreateInfo.minLod = 0.0f;
 	samplerCreateInfo.maxLod = request->MaxLod;
 
+	if (request->MipmapMode == D3DTEXF_NONE)
+	{
+		samplerCreateInfo.maxLod = 0.0f;
+	}
+
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &request->Sampler);
 	if (mResult != VK_SUCCESS)
 	{
