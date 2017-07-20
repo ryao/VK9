@@ -1,219 +1,503 @@
-/*
-Copyright(c) 2016 Christopher Joseph Dean Schaefer
-
-This software is provided 'as-is', without any express or implied
-warranty.In no event will the authors be held liable for any damages
-arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions :
-
-1. The origin of this software must not be misrepresented; you must not
-claim that you wrote the original software.If you use this software
-in a product, an acknowledgement in the product documentation would be
-appreciated but is not required.
-2. Altered source versions must be plainly marked as such, and must not be
-misrepresented as being the original software.
-3. This notice may not be removed or altered from any source distribution.
-*/
-
-// SchaeferGL-Tests.cpp : Defines the entry point for the application.
+//-----------------------------------------------------------------------------
+//           Name: dx9_hlsl_simple_vs2ps.cpp
+//         Author: Kevin Harris
+//  Last Modified: 04/15/05
+//    Description: This sample demonstrates how to write both a simple Vertex 
+//                 and Pixel Shader using Direct3D's HLSL. The sample should be 
+//                 considered a starting point or framework for more advanced 
+//                 samples.
 //
+//   Control Keys: F1 - Toggle usage of vertex and pixel shaders.
+//
+// Note: The pixel shader has been changed slightly from what the 
+//       fixed-function pipeline does by default so you can see a noticeable 
+//       change when toggling the shaders on and off. Instead of modulating 
+//       the vertex color with the texture's texel, the pixel shader adds the 
+//       two together, which causes the pixel shader to produce a brighter, 
+//       washed-out image. This modification can be switched back in the pixel 
+//       shader file.
+//-----------------------------------------------------------------------------
 
-#include "stdafx.h"
-#include "VK9-Tests.h"
+#define STRICT
+#define WIN32_LEAN_AND_MEAN
+
+#include <windows.h>
 #include <d3d9.h>
 #include <d3dx9.h>
+#include "resource.h"
 
-#define MAX_LOADSTRING 100
+//-----------------------------------------------------------------------------
+// GLOBALS
+//-----------------------------------------------------------------------------
+HWND                    g_hWnd = NULL;
+LPDIRECT3D9             g_pD3D = NULL;
+LPDIRECT3DDEVICE9       g_pd3dDevice = NULL;
+LPDIRECT3DVERTEXBUFFER9 g_pVertexBuffer = NULL;
+LPDIRECT3DTEXTURE9      g_pTexture = NULL;
 
-// Global Variables:
-HINSTANCE hInst;								// current instance
-TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
-TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
+LPDIRECT3DVERTEXSHADER9      g_pVertexShader = NULL;
+LPDIRECT3DVERTEXDECLARATION9 g_pVertexDeclaration = NULL;
+LPD3DXCONSTANTTABLE          g_pConstantTableVS = NULL;
 
-// Forward declarations of functions included in this code module:
-ATOM				MyRegisterClass(HINSTANCE hInstance);
-BOOL				InitInstance(HINSTANCE, int);
-LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+LPDIRECT3DPIXELSHADER9 g_pPixelShader = NULL;
+LPD3DXCONSTANTTABLE    g_pConstantTablePS = NULL;
 
-int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+bool g_bUseShaders = true;
+
+D3DXMATRIX g_matWorld;
+D3DXMATRIX g_matView;
+D3DXMATRIX g_matProj;
+float      g_fSpinX = 0.0f;
+float      g_fSpinY = 0.0f;
+
+struct Vertex
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+	float x, y, z;
+	DWORD color;
+	float tu, tv;
 
- 	// TODO: Place code here.
-	MSG msg;
-	HACCEL hAccelTable;
-
-	// Initialize global strings
-	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadString(hInstance, IDC_SCHAEFERGLTESTS, szWindowClass, MAX_LOADSTRING);
-	MyRegisterClass(hInstance);
-
-	// Perform application initialization:
-	if (!InitInstance (hInstance, nCmdShow))
+	enum FVF
 	{
-		return FALSE;
+		FVF_Flags = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1
+	};
+};
+
+Vertex g_quadVertices[] =
+{
+	{ -1.0f, 1.0f, 0.0f,  0xffffff00,  0.0f,0.0f },
+	{ 1.0f, 1.0f, 0.0f,  0xff00ff00,  1.0f,0.0f },
+	{ -1.0f,-1.0f, 0.0f,  0xffff0000,  0.0f,1.0f },
+	{ 1.0f,-1.0f, 0.0f,  0xff0000ff,  1.0f,1.0f }
+};
+
+//-----------------------------------------------------------------------------
+// PROTOTYPES
+//-----------------------------------------------------------------------------
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+	LPSTR lpCmdLine, int nCmdShow);
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void init(void);
+void render(void);
+void shutDown(void);
+void initShader(void);
+
+//-----------------------------------------------------------------------------
+// Name: WinMain()
+// Desc: The application's entry point
+//-----------------------------------------------------------------------------
+int WINAPI WinMain(HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPSTR     lpCmdLine,
+	int       nCmdShow)
+{
+	WNDCLASSEX winClass;
+	MSG        uMsg;
+
+	memset(&uMsg, 0, sizeof(uMsg));
+
+	winClass.lpszClassName = "MY_WINDOWS_CLASS";
+	winClass.cbSize = sizeof(WNDCLASSEX);
+	winClass.style = CS_HREDRAW | CS_VREDRAW;
+	winClass.lpfnWndProc = WindowProc;
+	winClass.hInstance = hInstance;
+	//winClass.hIcon = LoadIcon(hInstance, (LPCTSTR)IDI_DIRECTX_ICON);
+	//winClass.hIconSm = LoadIcon(hInstance, (LPCTSTR)IDI_DIRECTX_ICON);
+	winClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	winClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	winClass.lpszMenuName = NULL;
+	winClass.cbClsExtra = 0;
+	winClass.cbWndExtra = 0;
+
+	if (!RegisterClassEx(&winClass))
+		return E_FAIL;
+
+	g_hWnd = CreateWindowEx(NULL, "MY_WINDOWS_CLASS",
+		"Direct3D (DX9) - Simple Vertex & Pixel Shader Using HLSL",
+		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+		0, 0, 640, 480, NULL, NULL, hInstance, NULL);
+
+	if (g_hWnd == NULL)
+		return E_FAIL;
+
+	ShowWindow(g_hWnd, nCmdShow);
+	UpdateWindow(g_hWnd);
+
+	init();
+	initShader();
+
+	while (uMsg.message != WM_QUIT)
+	{
+		if (PeekMessage(&uMsg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&uMsg);
+			DispatchMessage(&uMsg);
+		}
+		else
+			render();
 	}
 
-	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SCHAEFERGLTESTS));
+	shutDown();
 
+	UnregisterClass("MY_WINDOWS_CLASS", winClass.hInstance);
 
-	D3DXMATRIX mWorld;
-	D3DXMatrixTranslation(&mWorld, 0.0f, 0.0f, 5.0f);
+	return uMsg.wParam;
+}
 
-	D3DXMATRIX mProjection;
-	D3DXMatrixPerspectiveFovLH(&mProjection, D3DXToRadian(45.0f), 1.0f, 1.0f, 100.0f);
+//-----------------------------------------------------------------------------
+// Name: WindowProc()
+// Desc: The window's message handler
+//-----------------------------------------------------------------------------
+LRESULT CALLBACK WindowProc(HWND   hWnd,
+	UINT   msg,
+	WPARAM wParam,
+	LPARAM lParam)
+{
+	static POINT ptLastMousePosit;
+	static POINT ptCurrentMousePosit;
+	static bool bMousing;
 
-	// Main message loop:
-	while (GetMessage(&msg, NULL, 0, 0))
+	switch (msg)
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+	case WM_KEYDOWN:
+	{
+		switch (wParam)
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+		case VK_ESCAPE:
+			PostQuitMessage(0);
+			break;
+
+		case VK_F1:
+			g_bUseShaders = !g_bUseShaders;
+			break;
 		}
 	}
+	break;
 
-	return (int) msg.wParam;
-}
-
-
-
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-//  COMMENTS:
-//
-//    This function and its usage are only necessary if you want this code
-//    to be compatible with Win32 systems prior to the 'RegisterClassEx'
-//    function that was added to Windows 95. It is important to call this function
-//    so that the application will get 'well formed' small icons associated
-//    with it.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-	WNDCLASSEX wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX);
-
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= WndProc;
-	wcex.cbClsExtra		= 0;
-	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SCHAEFERGLTESTS));
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_SCHAEFERGLTESTS);
-	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-	return RegisterClassEx(&wcex);
-}
-
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   HWND hWnd;
-
-   hInst = hInstance; // Store instance handle in our global variable
-
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
-
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE:  Processes messages for the main window.
-//
-//  WM_COMMAND	- process the application menu
-//  WM_PAINT	- Paint the main window
-//  WM_DESTROY	- post a quit message and return
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	int wmId, wmEvent;
-	PAINTSTRUCT ps;
-	HDC hdc;
-
-	switch (message)
+	case WM_LBUTTONDOWN:
 	{
-	case WM_COMMAND:
-		wmId    = LOWORD(wParam);
-		wmEvent = HIWORD(wParam);
-		// Parse the menu selections:
-		switch (wmId)
+		ptLastMousePosit.x = ptCurrentMousePosit.x = LOWORD(lParam);
+		ptLastMousePosit.y = ptCurrentMousePosit.y = HIWORD(lParam);
+		bMousing = true;
+	}
+	break;
+
+	case WM_LBUTTONUP:
+	{
+		bMousing = false;
+	}
+	break;
+
+	case WM_MOUSEMOVE:
+	{
+		ptCurrentMousePosit.x = LOWORD(lParam);
+		ptCurrentMousePosit.y = HIWORD(lParam);
+
+		if (bMousing)
 		{
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			g_fSpinX -= (ptCurrentMousePosit.x - ptLastMousePosit.x);
+			g_fSpinY -= (ptCurrentMousePosit.y - ptLastMousePosit.y);
 		}
-		break;
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code here...
-		EndPaint(hWnd, &ps);
-		break;
-	case WM_DESTROY:
+
+		ptLastMousePosit.x = ptCurrentMousePosit.x;
+		ptLastMousePosit.y = ptCurrentMousePosit.y;
+	}
+	break;
+
+	case WM_CLOSE:
+	{
 		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
+
+	case WM_DESTROY:
+	{
+		PostQuitMessage(0);
+	}
+	break;
+
+	default:
+	{
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+	break;
+	}
+
 	return 0;
 }
 
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+//-----------------------------------------------------------------------------
+// Name: init()
+// Desc: 
+//-----------------------------------------------------------------------------
+void init(void)
 {
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
+	g_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
+	D3DDISPLAYMODE d3ddm;
+
+	g_pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
+
+	D3DPRESENT_PARAMETERS d3dpp;
+	ZeroMemory(&d3dpp, sizeof(d3dpp));
+
+	d3dpp.Windowed = TRUE;
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	d3dpp.BackBufferFormat = d3ddm.Format;
+	d3dpp.EnableAutoDepthStencil = TRUE;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+
+	g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, g_hWnd,
+		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+		&d3dpp, &g_pd3dDevice);
+
+	g_pd3dDevice->CreateVertexBuffer(4 * sizeof(Vertex), D3DUSAGE_WRITEONLY,
+		Vertex::FVF_Flags, D3DPOOL_DEFAULT,
+		&g_pVertexBuffer, NULL);
+	void *pVertices = NULL;
+
+	g_pVertexBuffer->Lock(0, sizeof(g_quadVertices), (void**)&pVertices, 0);
+	memcpy(pVertices, g_quadVertices, sizeof(g_quadVertices));
+	g_pVertexBuffer->Unlock();
+
+	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+	D3DXMatrixPerspectiveFovLH(&g_matProj, D3DXToRadian(45.0f),
+		640.0f / 480.0f, 0.1f, 100.0f);
+	g_pd3dDevice->SetTransform(D3DTS_PROJECTION, &g_matProj);
+
+	D3DXMatrixIdentity(&g_matView); // This sample is not really making use of a view matrix
+}
+
+//-----------------------------------------------------------------------------
+// Name: initShader()
+// Desc: Initialize a HLSL shader.
+//-----------------------------------------------------------------------------
+void initShader(void)
+{
+	//
+	// Create a test texture for our effect to use...
+	//
+
+	D3DXCreateTextureFromFile(g_pd3dDevice, "test.bmp", &g_pTexture);
+
+	//
+	// Create a HLSL based vertex shader.
+	//
+
+	//
+	// If your program uses explicit binding semantics (like this one), 
+	// you can create a vertex declaration using those semantics.
+	//
+
+	D3DVERTEXELEMENT9 declaration[] =
+	{
+		{ 0, 0,  D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 12, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,    0 },
+		{ 0, 16, D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
+	g_pd3dDevice->CreateVertexDeclaration(declaration, &g_pVertexDeclaration);
+
+	HRESULT hr;
+	LPD3DXBUFFER pCode;
+	DWORD dwShaderFlags = 0;
+	LPD3DXBUFFER pBufferErrors = NULL;
+
+	// Assemble the vertex shader from the file
+	hr = D3DXCompileShaderFromFile("vertex_shader.vsh", NULL, NULL, "main",
+		"vs_1_1", dwShaderFlags, &pCode,
+		&pBufferErrors, &g_pConstantTableVS);
+
+	if (FAILED(hr))
+	{
+		LPVOID pCompilErrors = pBufferErrors->GetBufferPointer();
+		MessageBox(NULL, (const char*)pCompilErrors, "Vertex Shader Compile Error",
+			MB_OK | MB_ICONEXCLAMATION);
 	}
-	return (INT_PTR)FALSE;
+
+	// Create the vertex shader
+	g_pd3dDevice->CreateVertexShader((DWORD*)pCode->GetBufferPointer(),
+		&g_pVertexShader);
+	pCode->Release();
+
+	//
+	// Create a HLSL based pixel shader.
+	//
+
+	// Assemble the vertex shader from the file
+	hr = D3DXCompileShaderFromFile("pixel_shader.psh", NULL, NULL, "main",
+		"ps_1_1", dwShaderFlags, &pCode,
+		&pBufferErrors, &g_pConstantTablePS);
+
+	if (FAILED(hr))
+	{
+		LPVOID pCompilErrors = pBufferErrors->GetBufferPointer();
+		MessageBox(NULL, (const char*)pCompilErrors, "Pixel Shader Compile Error",
+			MB_OK | MB_ICONEXCLAMATION);
+	}
+
+	// Create the vertex shader
+	g_pd3dDevice->CreatePixelShader((DWORD*)pCode->GetBufferPointer(),
+		&g_pPixelShader);
+	pCode->Release();
+}
+
+//-----------------------------------------------------------------------------
+// Name: shutDown()
+// Desc: Releases all previously initialized objects
+//-----------------------------------------------------------------------------
+void shutDown(void)
+{
+	if (g_pTexture != NULL)
+	{
+		g_pTexture->Release();
+		g_pTexture = NULL;
+	}
+
+	if (g_pVertexShader != NULL)
+	{
+		g_pVertexShader->Release();
+		g_pVertexShader = NULL;
+	}
+
+	if (g_pConstantTableVS != NULL)
+	{
+		g_pConstantTableVS->Release();
+		g_pConstantTableVS = NULL;
+	}
+
+	if (g_pVertexDeclaration != NULL)
+	{
+		g_pVertexDeclaration->Release();
+		g_pVertexDeclaration = NULL;
+	}
+
+	if (g_pPixelShader != NULL)
+	{
+		g_pPixelShader->Release();
+		g_pPixelShader = NULL;
+	}
+
+	if (g_pConstantTablePS != NULL)
+	{
+		g_pConstantTablePS->Release();
+		g_pConstantTablePS = NULL;
+	}
+
+	if (g_pVertexBuffer != NULL)
+	{
+		g_pVertexBuffer->Release();
+		g_pVertexBuffer = NULL;
+	}
+
+	if (g_pd3dDevice != NULL)
+	{
+		g_pd3dDevice->Release();
+		g_pd3dDevice = NULL;
+	}
+
+	if (g_pD3D != NULL)
+	{
+		g_pD3D->Release();
+		g_pD3D = NULL;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Name: render()
+// Desc: Draws the scene
+//-----------------------------------------------------------------------------
+void render(void)
+{
+	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+		D3DCOLOR_COLORVALUE(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
+
+	g_pd3dDevice->BeginScene();
+
+	//
+	// Set up a world matrix for spinning the quad about...
+	//
+
+	D3DXMATRIX matTrans;
+	D3DXMATRIX matRot;
+
+	D3DXMatrixTranslation(&matTrans, 0.0f, 0.0f, 4.0f);
+	D3DXMatrixRotationYawPitchRoll(&matRot,
+		D3DXToRadian(g_fSpinX),
+		D3DXToRadian(g_fSpinY),
+		0.0f);
+	g_matWorld = matRot * matTrans;
+
+	D3DXMatrixIdentity(&g_matView); // This sample is not really making use of a view matrix
+
+	if (g_bUseShaders == true)
+	{
+		//
+		// Use vertex and pixel shaders...
+		//
+
+		D3DXMATRIX worldViewProjection = g_matWorld * g_matView * g_matProj;
+		g_pConstantTableVS->SetMatrix(g_pd3dDevice, "worldViewProj", &worldViewProjection);
+
+		g_pd3dDevice->SetVertexDeclaration(g_pVertexDeclaration);
+		g_pd3dDevice->SetVertexShader(g_pVertexShader);
+
+		/*
+		//
+		// NOTE:
+		//
+		// If our pixel shader had defined more than one sampler, we would
+		// need to look into our pixel shader's constants table and use the
+		// sampler's ASCII name to figure out which texture stage it had been
+		// mapped to on the hardware. The pixel shader we use here is so
+		// simple, we already know that are texture will end up on stage 0 so
+		// we can just call...
+		//
+		// g_pd3dDevice->SetTexture( 0, g_pTexture );
+		//
+		// and be done with it with out further worry.
+		//
+
+		D3DXHANDLE handle;
+
+		if( handle = g_pConstantTablePS->GetConstantByName( NULL, "testTexture" ) )
+		{
+		D3DXCONSTANT_DESC constDesc;
+		UINT count;
+
+		g_pConstantTablePS->GetConstantDesc( handle, &constDesc, &count );
+
+		if( constDesc.RegisterSet == D3DXRS_SAMPLER )
+		g_pd3dDevice->SetTexture( constDesc.RegisterIndex, g_pTexture );
+		}
+		//*/
+		g_pd3dDevice->SetTexture(0, g_pTexture);
+
+		g_pd3dDevice->SetPixelShader(g_pPixelShader);
+
+		g_pd3dDevice->SetFVF(Vertex::FVF_Flags);
+		g_pd3dDevice->SetStreamSource(0, g_pVertexBuffer, 0, sizeof(Vertex));
+		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+
+		g_pd3dDevice->SetVertexShader(NULL);
+		g_pd3dDevice->SetPixelShader(NULL);
+	}
+	else
+	{
+		//
+		// Render the normal way...
+		//
+
+		g_pd3dDevice->SetTransform(D3DTS_WORLD, &g_matWorld);
+
+		g_pd3dDevice->SetTexture(0, g_pTexture);
+		g_pd3dDevice->SetFVF(Vertex::FVF_Flags);
+		g_pd3dDevice->SetStreamSource(0, g_pVertexBuffer, 0, sizeof(Vertex));
+		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+	}
+
+	g_pd3dDevice->EndScene();
+	g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 }
