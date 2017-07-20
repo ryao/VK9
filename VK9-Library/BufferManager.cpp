@@ -1677,7 +1677,16 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	{
 		// Use max. level of anisotropy for this example
 		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy, mDevice->mDeviceProperties.limits.maxSamplerAnisotropy);
-		samplerCreateInfo.anisotropyEnable = VK_TRUE;
+		
+		if (request->MinFilter == D3DTEXF_ANISOTROPIC ||
+			request->MagFilter == D3DTEXF_ANISOTROPIC ||
+			request->MipmapMode == D3DTEXF_ANISOTROPIC)
+		{
+			samplerCreateInfo.anisotropyEnable = VK_TRUE;
+		}
+		else {
+			samplerCreateInfo.anisotropyEnable = VK_FALSE;
+		}
 	}
 	else
 	{
