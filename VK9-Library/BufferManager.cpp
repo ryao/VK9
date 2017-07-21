@@ -1215,6 +1215,10 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 		textureCount = ConvertFormat(context->FVF);
 	}
+	else if (context->VertexShader != nullptr)
+	{
+		//Nothing so far.
+	}
 	else
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported layout definition.";
@@ -1263,90 +1267,102 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	/**********************************************
 	* Figure out correct shader
 	**********************************************/
-	if (hasPosition && !hasColor && !hasNormal)
+	if (context->VertexShader != nullptr)
 	{
-		switch (textureCount)
-		{
-		case 0:
-			//No textures. 
-			break;
-		case 1:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
-			break;
-		case 2:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX2;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX2;
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
-			break;
-		}
-	}
-	else if (hasPosition && hasColor && !hasNormal)
-	{
-		switch (textureCount)
-		{
-		case 0:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
-			break;
-		case 1:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
-			break;
-		case 2:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX2;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX2;
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
-			break;
-		}
-	}
-	else if (hasPosition && hasColor && hasNormal)
-	{
-		switch (textureCount)
-		{
-		case 2:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-			break;
-		case 0:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE;
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
-			break;
-		}
-	}
-	else if (hasPosition && !hasColor && hasNormal)
-	{
-		switch (textureCount)
-		{
-		case 0:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
-			break;
-		case 1:
-			mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_TEX1;
-			mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_TEX1;
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
-			break;
-		}
+		mPipelineShaderStageCreateInfo[0].module = context->VertexShader->mConvertedShader.ShaderModule;
+		mPipelineShaderStageCreateInfo[1].module = context->PixelShader->mConvertedShader.ShaderModule;
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported layout.";
+		if (hasPosition && !hasColor && !hasNormal)
+		{
+			switch (textureCount)
+			{
+			case 0:
+				//No textures. 
+				break;
+			case 1:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX1;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX1;
+				break;
+			case 2:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_TEX2;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_TEX2;
+				break;
+			default:
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
+				break;
+			}
+		}
+		else if (hasPosition && hasColor && !hasNormal)
+		{
+			switch (textureCount)
+			{
+			case 0:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
+				break;
+			case 1:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX1;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX1;
+				break;
+			case 2:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE_TEX2;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE_TEX2;
+				break;
+			default:
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
+				break;
+			}
+		}
+		else if (hasPosition && hasColor && hasNormal)
+		{
+			switch (textureCount)
+			{
+			case 2:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
+				break;
+			case 0:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_DIFFUSE;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_DIFFUSE;
+				break;
+			default:
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
+				break;
+			}
+		}
+		else if (hasPosition && !hasColor && hasNormal)
+		{
+			switch (textureCount)
+			{
+			case 0:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL;
+				break;
+			case 1:
+				mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_NORMAL_TEX1;
+				mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_NORMAL_TEX1;
+				break;
+			default:
+				BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported texture count " << textureCount;
+				break;
+			}
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported layout.";
+		}
 	}
-
 	/**********************************************
 	* Figure out attributes
 	**********************************************/
-	if (context->VertexDeclaration != nullptr)
+	if (context->VertexShader != nullptr)
+	{
+		//Revisit, make sure this copies properly.
+		memcpy(&mVertexInputAttributeDescription, &context->VertexShader->mConvertedShader.mVertexInputAttributeDescription, sizeof(mVertexInputAttributeDescription));
+	}
+	else if (context->VertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
@@ -1473,6 +1489,8 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unknown vertex format.";
 	}
+
+	//Revisit all of this stuff will probably be different for 
 
 	mPipelineLayoutCreateInfo.pPushConstantRanges = mPushConstantRanges;
 	mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;

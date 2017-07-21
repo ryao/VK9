@@ -28,7 +28,7 @@ misrepresented as being the original software.
 struct ConvertedShader
 {
 	UINT Size = 0;
-	VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
+	//VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
 	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
 	VkShaderModule ShaderModule = VK_NULL_HANDLE;
 };
