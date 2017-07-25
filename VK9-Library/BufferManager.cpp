@@ -1078,8 +1078,11 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Update transformation structure.
 	**********************************************/
-	UpdatePushConstants(context);
-
+	if (context->VertexShader==nullptr)
+	{
+		UpdatePushConstants(context);
+	}
+	
 	/**********************************************
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
@@ -1354,6 +1357,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreatePipe unsupported layout.";
 		}
 	}
+
 	/**********************************************
 	* Figure out attributes
 	**********************************************/
@@ -1490,44 +1494,61 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw unknown vertex format.";
 	}
 
-	//Revisit all of this stuff will probably be different for 
-
 	mPipelineLayoutCreateInfo.pPushConstantRanges = mPushConstantRanges;
-	mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
-
-	mDescriptorSetLayoutBinding[0].binding = 0;
-	mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-	mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
-
-	mDescriptorSetLayoutBinding[1].binding = 1;
-	mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	mDescriptorSetLayoutBinding[1].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-	mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
-
-	mDescriptorSetLayoutBinding[2].binding = 2;
-	mDescriptorSetLayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	mDescriptorSetLayoutBinding[2].descriptorCount = textureCount; //Update to use mapped texture.
-	mDescriptorSetLayoutBinding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	mDescriptorSetLayoutBinding[2].pImmutableSamplers = NULL;
-
-	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
-	mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
-
-	if (textureCount)
+	if (context->VertexShader != nullptr)
 	{
-		mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
+		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = context->VertexShader->mConvertedShader.VertexInputAttributeDescriptionCount;
+
+		memcpy(&mDescriptorSetLayoutBinding, &context->VertexShader->mConvertedShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
+
+		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
+
+		mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
+		mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+
+		mDescriptorSetLayoutCreateInfo.bindingCount = context->VertexShader->mConvertedShader.mDescriptorSetLayoutBindingCount;
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 	}
 	else
-	{
-		mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.	
-		mPipelineLayoutCreateInfo.setLayoutCount = 1;
+	{		
+		mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+
+		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
+
+		mDescriptorSetLayoutBinding[0].binding = 0;
+		mDescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		mDescriptorSetLayoutBinding[0].descriptorCount = 1;
+		mDescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+		mDescriptorSetLayoutBinding[0].pImmutableSamplers = NULL;
+
+		mDescriptorSetLayoutBinding[1].binding = 1;
+		mDescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		mDescriptorSetLayoutBinding[1].descriptorCount = 1;
+		mDescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+		mDescriptorSetLayoutBinding[1].pImmutableSamplers = NULL;
+
+		mDescriptorSetLayoutBinding[2].binding = 2;
+		mDescriptorSetLayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+		mDescriptorSetLayoutBinding[2].descriptorCount = textureCount; //Update to use mapped texture.
+		mDescriptorSetLayoutBinding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		mDescriptorSetLayoutBinding[2].pImmutableSamplers = NULL;
+
+		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
+
+		mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
+		mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+
+		if (textureCount)
+		{
+			mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
+			mPipelineLayoutCreateInfo.setLayoutCount = 1;
+		}
+		else
+		{
+			mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.	
+			mPipelineLayoutCreateInfo.setLayoutCount = 1;
+		}
 	}
 
 	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
@@ -1598,33 +1619,40 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 
 	mUsedResourceBuffer.push_back(resourceContext);
   
-	mDescriptorBufferInfo[0].buffer = mLightBuffer;
-	mDescriptorBufferInfo[0].offset = 0;
-	mDescriptorBufferInfo[0].range = sizeof(Light) * mDevice->mDeviceState.mLights.size(); //4; 
-
-	mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
-	mDescriptorBufferInfo[1].offset = 0;
-	mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
-
-	mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
-
-	mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
-	mWriteDescriptorSet[1].descriptorCount = 1;
-	mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
-
-	mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-	mWriteDescriptorSet[2].descriptorCount = mDevice->mDeviceState.mTextures.size();
-	mWriteDescriptorSet[2].pImageInfo = resourceContext->DescriptorImageInfo;
-
-	if (mDevice->mDeviceState.mTextures.size())
+	if (context->VertexShader == nullptr)
 	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 3, mWriteDescriptorSet, 0, nullptr);
+		mDescriptorBufferInfo[0].buffer = mLightBuffer;
+		mDescriptorBufferInfo[0].offset = 0;
+		mDescriptorBufferInfo[0].range = sizeof(Light) * mDevice->mDeviceState.mLights.size(); //4; 
+
+		mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
+		mDescriptorBufferInfo[1].offset = 0;
+		mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
+
+		mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
+		mWriteDescriptorSet[0].descriptorCount = 1;
+		mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
+
+		mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
+		mWriteDescriptorSet[1].descriptorCount = 1;
+		mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
+
+		mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
+		mWriteDescriptorSet[2].descriptorCount = mDevice->mDeviceState.mTextures.size();
+		mWriteDescriptorSet[2].pImageInfo = resourceContext->DescriptorImageInfo;
+
+		if (mDevice->mDeviceState.mTextures.size())
+		{
+			vkUpdateDescriptorSets(mDevice->mDevice, 3, mWriteDescriptorSet, 0, nullptr);
+		}
+		else
+		{
+			vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
+		}
 	}
 	else
 	{
-		vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
+
 	}
 }
 
