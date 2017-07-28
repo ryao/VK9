@@ -29,7 +29,7 @@ CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
 	mShaderConverter(device->mDevice)
 {
 	BOOST_LOG_TRIVIAL(info) << "CPixelShader9::CPixelShader9";
-	mConvertedShader = mShaderConverter.Convert(mFunction);
+	mConvertedShader = mShaderConverter.Convert((uint32_t*)mFunction);
 }
 
 CPixelShader9::~CPixelShader9()

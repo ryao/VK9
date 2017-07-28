@@ -25,6 +25,14 @@ misrepresented as being the original software.
 #include <vector>
 #include <boost/container/flat_map.hpp>
 
+/*
+http://timjones.io/blog/archive/2015/09/02/parsing-direct3d-shader-bytecode
+https://msdn.microsoft.com/en-us/library/bb219840(VS.85).aspx#Shader_Binary_Format
+http://stackoverflow.com/questions/2545704/format-of-compiled-directx9-shader-files
+https://msdn.microsoft.com/en-us/library/windows/hardware/ff552891(v=vs.85).aspx
+https://github.com/ValveSoftware/ToGL
+*/
+
 struct ConvertedShader
 {
 	UINT Size = 0;
@@ -40,7 +48,8 @@ struct ConvertedShader
 
 class ShaderConverter
 {
-
+protected:
+	ConvertedShader mConvertedShader;
 public:
 	VkDevice mDevice;
 	std::vector<DWORD> mInstructions; //used to store the combined instructions for creating a module.
@@ -72,9 +81,22 @@ public:
 	std::vector<DWORD> mFunctionDefinitionInstructions;
 
 	ShaderConverter(VkDevice device);
-	ConvertedShader Convert(DWORD* shader);
+	ConvertedShader Convert(uint32_t* shader);
 private:
+	uint32_t* mBaseToken;
+	uint32_t* mNextToken;
+	uint32_t mMinorVersion;
+	uint32_t mMajorVersion;
+	bool mIsVertexShader;
 
+	uint32_t GetNextToken();
+	void SkipTokens(uint32_t numberToSkip);
+	uint32_t ShaderConverter::GetOpcode(uint32_t token);
+	uint32_t ShaderConverter::GetOpcodeData(uint32_t token);
+	uint32_t ShaderConverter::GetTextureType(uint32_t token);
+
+	void CombineSpirVOpCodes();
+	void CreateSpirVModule();
 
 };
 
