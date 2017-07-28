@@ -202,13 +202,6 @@
       </PrecompiledHeader>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
-    <ClCompile Include="fxdis\dxbc_assemble.cpp" />
-    <ClCompile Include="fxdis\dxbc_dump.cpp" />
-    <ClCompile Include="fxdis\dxbc_parse.cpp" />
-    <ClCompile Include="fxdis\sm4_analyze.cpp" />
-    <ClCompile Include="fxdis\sm4_dump.cpp" />
-    <ClCompile Include="fxdis\sm4_parse.cpp" />
-    <ClCompile Include="fxdis\sm4_text.cpp" />
     <ClCompile Include="GarbageManager.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
     <ClCompile Include="VK9-Library.cpp" />
@@ -238,12 +231,6 @@
     <ClInclude Include="CVertexDeclaration9.h" />
     <ClInclude Include="CVertexShader9.h" />
     <ClInclude Include="CVolumeTexture9.h" />
-    <ClInclude Include="fxdis\dxbc.h" />
-    <ClInclude Include="fxdis\le32.h" />
-    <ClInclude Include="fxdis\msvc_stdint.h" />
-    <ClInclude Include="fxdis\sm4.h" />
-    <ClInclude Include="fxdis\sm4_defs.h" />
-    <ClInclude Include="fxdis\utils.h" />
     <ClInclude Include="GarbageManager.h" />
     <ClInclude Include="PrivateTypes.h" />
     <ClInclude Include="resource.h" />

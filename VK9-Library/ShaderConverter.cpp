@@ -59,18 +59,21 @@ const uint32_t SHEX = PACK('S', 'H', 'E', 'X');
 const uint32_t SPDB = PACK('S', 'P', 'D', 'B');
 const uint32_t STAT = PACK('S', 'T', 'A', 'T');
 
-/*
-The structures read from the file don't have initializers because they are set from file data so it would be a waste of CPU cycles.
-Not all of these structures are documented so some of these may be wrong.
-*/
 
 struct ShaderHeader
 {
-	char FileType[4];
-	uint64_t Checksum;
-	uint32_t Unknown;
-	uint32_t ShaderSize;
-	uint32_t ChunkCount;
+	//ShaderType type;
+	char major;
+	char minor;
+
+	const struct wined3d_sm1_opcode_info *opcode_table;
+	const DWORD *start;
+
+	//char fourcc[4];
+	//char FileType[4];
+	//uint32_t Unknown;
+	//uint32_t ShaderSize;
+	//uint32_t ChunkCount;
 };
 
 //ICFE and IFCE might be the same thing but I'm not sure. 
@@ -1015,104 +1018,46 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 	ShaderHeader header;
 	char* data = (char*)shader;
 	memcpy(&header, (void*)data, sizeof(ShaderHeader));
-	
+	data += sizeof(ShaderHeader);
+
 	ConvertedShader output;
-	output.Size = header.ShaderSize; //The size is not a parameter to the d3d9 functions so I have to take it from the header.
+	//output.Size = header.ShaderSize; //The size is not a parameter to the d3d9 functions so I have to take it from the header.
 
-	dxbc_container* dxbc = dxbc_parse(shader, header.ShaderSize);
-	if (dxbc) //!= nullptr
-	{
-		dxbc_chunk_header* sm4_chunk = dxbc_find_shader_bytecode(shader, header.ShaderSize);
-		if (sm4_chunk) //!= nullptr
-		{
-			sm4_program* sm4 = sm4_parse(sm4_chunk + 1, bswap_le32(sm4_chunk->size));
-			if (sm4) //!= nullptr
-			{
-				for (size_t i = 0; i < sm4->num_params_in; i++)
-				{
-					auto& parameter = sm4->params_in[i];
-					auto& attributeDescription = output.mVertexInputAttributeDescription[i];
+	//dxbc_container* dxbc = dxbc_parse(shader, 0);
+	//if (dxbc) //!= nullptr
+	//{
+	//	dxbc_chunk_header* sm4_chunk = dxbc_find_shader_bytecode(shader, header.ShaderSize);
+	//	if (sm4_chunk) //!= nullptr
+	//	{
+	//		sm4_program* sm4 = sm4_parse(sm4_chunk + 1, bswap_le32(sm4_chunk->size));
+	//		if (sm4) //!= nullptr
+	//		{
+	//			for (size_t i = 0; i < sm4->num_params_in; i++)
+	//			{
+	//				auto& parameter = sm4->params_in[i];
+	//				auto& attributeDescription = output.mVertexInputAttributeDescription[i];
 
-					attributeDescription.binding = parameter.Stream;
-					attributeDescription.location = i;
-					attributeDescription.format = ConvertType(parameter.ComponentType);
-					attributeDescription.offset = parameter.Register*4;
-				}
+	//				attributeDescription.binding = parameter.Stream;
+	//				attributeDescription.location = i;
+	//				attributeDescription.format = ConvertType(parameter.ComponentType);
+	//				attributeDescription.offset = parameter.Register*4;
+	//			}
 
-				for (size_t i = 0; i < sm4->dcls.size(); i++)
-				{
-					ConvertOpCode(this,sm4->dcls[i]);
-				}
+	//			for (size_t i = 0; i < sm4->dcls.size(); i++)
+	//			{
+	//				ConvertOpCode(this,sm4->dcls[i]);
+	//			}
 
-				for (size_t i = 0; i < sm4->insns.size(); i++)
-				{
-					ConvertOpCode(this,sm4->insns[i]);
-				}
-				
-				delete sm4;
-			}		
-		}
-		delete dxbc;
-	}
-
-	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mExtensionInstructions), std::end(mExtensionInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mImportExtendedInstructions), std::end(mImportExtendedInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mMemoryModelInstructions), std::end(mMemoryModelInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mEntryPointInstructions), std::end(mEntryPointInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mExecutionModeInstructions), std::end(mExecutionModeInstructions));
-
-	mInstructions.insert(std::end(mInstructions), std::begin(mStringInstructions), std::end(mStringInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mSourceExtensionInstructions), std::end(mSourceExtensionInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mSourceInstructions), std::end(mSourceInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mSourceContinuedInstructions), std::end(mSourceContinuedInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mNameInstructions), std::end(mNameInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mMemberNameInstructions), std::end(mMemberNameInstructions));
-
-	mInstructions.insert(std::end(mInstructions), std::begin(mDecorateInstructions), std::end(mDecorateInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mMemberDecorateInstructions), std::end(mMemberDecorateInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mGroupDecorateInstructions), std::end(mGroupDecorateInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mGroupMemberDecorateInstructions), std::end(mGroupMemberDecorateInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mDecorationGroupInstructions), std::end(mDecorationGroupInstructions));
-
-	mInstructions.insert(std::end(mInstructions), std::begin(mTypeInstructions), std::end(mTypeInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mFunctionDeclarationInstructions), std::end(mFunctionDeclarationInstructions));
-	mInstructions.insert(std::end(mInstructions), std::begin(mFunctionDefinitionInstructions), std::end(mFunctionDefinitionInstructions));
-
-	mCapabilityInstructions.clear();
-	mExtensionInstructions.clear();
-	mImportExtendedInstructions.clear();
-	mMemoryModelInstructions.clear();
-	mEntryPointInstructions.clear();
-	mExecutionModeInstructions.clear();
-
-	mStringInstructions.clear();
-	mSourceExtensionInstructions.clear();
-	mSourceInstructions.clear();
-	mSourceContinuedInstructions.clear();
-	mNameInstructions.clear();
-	mMemberNameInstructions.clear();
-
-	mDecorateInstructions.clear();
-	mMemberDecorateInstructions.clear();
-	mGroupDecorateInstructions.clear();
-	mGroupMemberDecorateInstructions.clear();
-	mDecorationGroupInstructions.clear();
-
-	mTypeInstructions.clear();
-	mFunctionDeclarationInstructions.clear();
-	mFunctionDefinitionInstructions.clear();
-
-	VkResult result = VK_SUCCESS;
-	VkShaderModuleCreateInfo moduleCreateInfo = {};
-	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	moduleCreateInfo.pNext = NULL;
-	moduleCreateInfo.codeSize = mInstructions.size()*sizeof(uint32_t);
-	moduleCreateInfo.pCode = (uint32_t*)mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
-	moduleCreateInfo.flags = 0;
-	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &output.ShaderModule);
-
-	mInstructions.clear();
+	//			for (size_t i = 0; i < sm4->insns.size(); i++)
+	//			{
+	//				ConvertOpCode(this,sm4->insns[i]);
+	//			}
+	//			
+	//			delete sm4;
+	//		}		
+	//	}
+	//	delete dxbc;
+	//}
 
 	//uint32_t chunkType;
 	//char* chunkPointer = nullptr;
@@ -1120,11 +1065,12 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 	//std::vector<uint32_t> mOutputInstructions;
 
 	//The header is followed by a list of chunk offsets so loop over that and process each chunk.
+	//uint32_t* indexPointer = (uint32_t*)data;
 	//for (size_t i = 0; i < header.ChunkCount; i++)
 	//{
-	//	uint32_t chunkOffset = (*(uint32_t*)data);
-	//	data += sizeof(uint32_t);
-
+	//	indexPointer += i; //sizeof is 4 bytes or one uint32.
+	//	uint32_t chunkOffset = (*indexPointer);
+	//	
 	//	chunkPointer = (char*)shader;
 	//	chunkPointer += chunkOffset;
 
@@ -1214,6 +1160,65 @@ ConvertedShader ShaderConverter::Convert(DWORD* shader)
 	//		break;
 	//	}
 	//}
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mExtensionInstructions), std::end(mExtensionInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mImportExtendedInstructions), std::end(mImportExtendedInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mMemoryModelInstructions), std::end(mMemoryModelInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mEntryPointInstructions), std::end(mEntryPointInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mExecutionModeInstructions), std::end(mExecutionModeInstructions));
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mStringInstructions), std::end(mStringInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mSourceExtensionInstructions), std::end(mSourceExtensionInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mSourceInstructions), std::end(mSourceInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mSourceContinuedInstructions), std::end(mSourceContinuedInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mNameInstructions), std::end(mNameInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mMemberNameInstructions), std::end(mMemberNameInstructions));
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mDecorateInstructions), std::end(mDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mMemberDecorateInstructions), std::end(mMemberDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mGroupDecorateInstructions), std::end(mGroupDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mGroupMemberDecorateInstructions), std::end(mGroupMemberDecorateInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mDecorationGroupInstructions), std::end(mDecorationGroupInstructions));
+
+	mInstructions.insert(std::end(mInstructions), std::begin(mTypeInstructions), std::end(mTypeInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mFunctionDeclarationInstructions), std::end(mFunctionDeclarationInstructions));
+	mInstructions.insert(std::end(mInstructions), std::begin(mFunctionDefinitionInstructions), std::end(mFunctionDefinitionInstructions));
+
+	mCapabilityInstructions.clear();
+	mExtensionInstructions.clear();
+	mImportExtendedInstructions.clear();
+	mMemoryModelInstructions.clear();
+	mEntryPointInstructions.clear();
+	mExecutionModeInstructions.clear();
+
+	mStringInstructions.clear();
+	mSourceExtensionInstructions.clear();
+	mSourceInstructions.clear();
+	mSourceContinuedInstructions.clear();
+	mNameInstructions.clear();
+	mMemberNameInstructions.clear();
+
+	mDecorateInstructions.clear();
+	mMemberDecorateInstructions.clear();
+	mGroupDecorateInstructions.clear();
+	mGroupMemberDecorateInstructions.clear();
+	mDecorationGroupInstructions.clear();
+
+	mTypeInstructions.clear();
+	mFunctionDeclarationInstructions.clear();
+	mFunctionDefinitionInstructions.clear();
+
+	VkResult result = VK_SUCCESS;
+	VkShaderModuleCreateInfo moduleCreateInfo = {};
+	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfo.pNext = NULL;
+	moduleCreateInfo.codeSize = mInstructions.size() * sizeof(uint32_t);
+	moduleCreateInfo.pCode = (uint32_t*)mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
+	moduleCreateInfo.flags = 0;
+	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &output.ShaderModule);
+
+	mInstructions.clear();
 
 	return output; //Return value optimization don't fail me now.
 }
