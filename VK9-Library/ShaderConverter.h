@@ -49,51 +49,58 @@ struct ConvertedShader
 class ShaderConverter
 {
 protected:
+	VkDevice mDevice;
 	ConvertedShader mConvertedShader;
 public:
-	VkDevice mDevice;
-	std::vector<DWORD> mInstructions; //used to store the combined instructions for creating a module.
-	boost::container::flat_map<std::string, uint32_t> mVariableIds;
-
-
-	std::vector<DWORD> mCapabilityInstructions;
-	std::vector<DWORD> mExtensionInstructions;
-	std::vector<DWORD> mImportExtendedInstructions;
-	std::vector<DWORD> mMemoryModelInstructions;
-	std::vector<DWORD> mEntryPointInstructions;
-	std::vector<DWORD> mExecutionModeInstructions;
-
-	std::vector<DWORD> mStringInstructions;
-	std::vector<DWORD> mSourceExtensionInstructions;
-	std::vector<DWORD> mSourceInstructions;
-	std::vector<DWORD> mSourceContinuedInstructions;
-	std::vector<DWORD> mNameInstructions;
-	std::vector<DWORD> mMemberNameInstructions;
-
-	std::vector<DWORD> mDecorateInstructions;
-	std::vector<DWORD> mMemberDecorateInstructions;
-	std::vector<DWORD> mGroupDecorateInstructions;
-	std::vector<DWORD> mGroupMemberDecorateInstructions;
-	std::vector<DWORD> mDecorationGroupInstructions;
-
-	std::vector<DWORD> mTypeInstructions;
-	std::vector<DWORD> mFunctionDeclarationInstructions;
-	std::vector<DWORD> mFunctionDefinitionInstructions;
-
 	ShaderConverter(VkDevice device);
 	ConvertedShader Convert(uint32_t* shader);
-private:
+private:	
+	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
+	boost::container::flat_map<uint32_t, uint32_t> mIdOffsetPairs;
+
+	std::vector<uint32_t> mCapabilityInstructions;
+	std::vector<uint32_t> mExtensionInstructions;
+	std::vector<uint32_t> mImportExtendedInstructions;
+	std::vector<uint32_t> mMemoryModelInstructions;
+	std::vector<uint32_t> mEntryPointInstructions;
+	std::vector<uint32_t> mExecutionModeInstructions;
+
+	std::vector<uint32_t> mStringInstructions;
+	std::vector<uint32_t> mSourceExtensionInstructions;
+	std::vector<uint32_t> mSourceInstructions;
+	std::vector<uint32_t> mSourceContinuedInstructions;
+	std::vector<uint32_t> mNameInstructions;
+	std::vector<uint32_t> mMemberNameInstructions;
+
+	std::vector<uint32_t> mDecorateInstructions;
+	std::vector<uint32_t> mMemberDecorateInstructions;
+	std::vector<uint32_t> mGroupDecorateInstructions;
+	std::vector<uint32_t> mGroupMemberDecorateInstructions;
+	std::vector<uint32_t> mDecorationGroupInstructions;
+
+	std::vector<uint32_t> mTypeInstructions;
+	std::vector<uint32_t> mFunctionDeclarationInstructions;
+	std::vector<uint32_t> mFunctionDefinitionInstructions;
+
 	uint32_t* mBaseToken;
 	uint32_t* mNextToken;
+	uint32_t mBaseId;
+	uint32_t mNextId;
 	uint32_t mMinorVersion;
 	uint32_t mMajorVersion;
 	bool mIsVertexShader;
 
 	uint32_t GetNextToken();
 	void SkipTokens(uint32_t numberToSkip);
-	uint32_t ShaderConverter::GetOpcode(uint32_t token);
-	uint32_t ShaderConverter::GetOpcodeData(uint32_t token);
-	uint32_t ShaderConverter::GetTextureType(uint32_t token);
+	uint32_t GetNextId();
+	void SkipIds(uint32_t numberToSkip);
+	uint32_t GetOpcode(uint32_t token);
+	uint32_t GetOpcodeData(uint32_t token);
+	uint32_t GetTextureType(uint32_t token);
+	uint32_t GetRegisterType(uint32_t token);
+	uint32_t GetRegisterNumber(uint32_t token);
+	uint32_t GetUsage(uint32_t token);
+	uint32_t GetUsageIndex(uint32_t token);
 
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();

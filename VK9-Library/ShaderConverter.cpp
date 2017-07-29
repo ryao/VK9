@@ -30,6 +30,7 @@ https://msdn.microsoft.com/en-us/library/bb219840(VS.85).aspx#Shader_Binary_Form
 http://stackoverflow.com/questions/2545704/format-of-compiled-directx9-shader-files
 https://msdn.microsoft.com/en-us/library/windows/hardware/ff552891(v=vs.85).aspx
 https://github.com/ValveSoftware/ToGL
+https://www.khronos.org/registry/spir-v/specs/1.2/SPIRV.html
 */
 
 const uint32_t mEndToken = 0x0000FFFF;
@@ -42,6 +43,27 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c2) << 8) | \
     ((uint32_t)(uint8_t)(c3)))
 
+/*
+A module is defined as a stream of words, not a stream of bytes. However, if 
+stored as a stream of bytes (e.g., in a file), the magic number can be used to deduce what 
+endianness to apply to convert the byte stream back to a word stream.
+*/
+#define SPIR_V_MAGIC_NUMBER 0x07230203
+
+/*
+The bytes are, high-order to low-order
+0 | Major Number | Minor Number | 0
+Hence, version 1.00 is the value 0x00010000.
+*/
+#define SPIR_V_VERSION_NUMBER 0x00010000
+
+/*
+Generator’s magic number. It is associated with the tool that generated 
+the module. Its value does not affect any semantics, and is allowed to be 0. 
+Using a non-0 value is encouraged, and can be registered with 
+Khronos at https://www.khronos.org/registry/spir-v/api/spir-v.xml.
+*/
+#define SPIR_V_GENERATORS_NUMBER 0x00000000
 
 ShaderConverter::ShaderConverter(VkDevice device)
 	: mDevice(device)
@@ -59,6 +81,16 @@ void ShaderConverter::SkipTokens(uint32_t numberToSkip)
 	mNextToken += numberToSkip;
 }
 
+uint32_t ShaderConverter::GetNextId()
+{
+	return mNextId++;
+}
+
+void ShaderConverter::SkipIds(uint32_t numberToSkip)
+{
+	mNextId += numberToSkip;
+}
+
 uint32_t ShaderConverter::GetOpcode(uint32_t token)
 {
 	return (token & D3DSI_OPCODE_MASK);
@@ -74,9 +106,28 @@ uint32_t ShaderConverter::GetTextureType(uint32_t token)
 	return (token & D3DSP_TEXTURETYPE_MASK); // Note this one doesn't shift due to weird D3DSAMPLER_TEXTURE_TYPE enum
 }
 
+uint32_t ShaderConverter::GetRegisterType(uint32_t token)
+{
+	return ((token & D3DSP_REGTYPE_MASK2) >> D3DSP_REGTYPE_SHIFT2) | ((token & D3DSP_REGTYPE_MASK) >> D3DSP_REGTYPE_SHIFT);
+}
+
+uint32_t ShaderConverter::GetRegisterNumber(uint32_t token)
+{
+	return token & D3DSP_REGNUM_MASK;
+}
+
+uint32_t ShaderConverter::GetUsage(uint32_t token)
+{
+	return token & D3DSP_DCL_USAGE_MASK;
+}
+
+uint32_t ShaderConverter::GetUsageIndex(uint32_t token)
+{
+	return (token & D3DSP_DCL_USAGEINDEX_MASK) >> D3DSP_DCL_USAGEINDEX_SHIFT;
+}
+
 void ShaderConverter::CombineSpirVOpCodes()
 {
-	mInstructions.clear();
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
 	mInstructions.insert(std::end(mInstructions), std::begin(mExtensionInstructions), std::end(mExtensionInstructions));
 	mInstructions.insert(std::end(mInstructions), std::begin(mImportExtendedInstructions), std::end(mImportExtendedInstructions));
@@ -143,6 +194,7 @@ void ShaderConverter::CreateSpirVModule()
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 {
 	mConvertedShader = {};
+	mInstructions.clear();
 
 	uint32_t token;
 	uint32_t instruction;
@@ -153,9 +205,18 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mMinorVersion = D3DSHADER_VERSION_MINOR(token);
 	//Probably more info in this word but I'll handle that later.
 
+	//Write SPIR-V header
+	mInstructions.push_back(SPIR_V_MAGIC_NUMBER);
+	mInstructions.push_back(SPIR_V_VERSION_NUMBER);
+
+	//Read DXBC instructions
 	while (token != D3DPS_END())
 	{
-		int tokenId = mNextToken - shader; //I'm thinking I can use this as an OpCode Id in Spir-V but we'll see.
+		int tokenOffset = mNextToken - shader; //I'm thinking I can use this as an OpCode Id in Spir-V but we'll see.
+		int tokenId = GetNextId();
+
+		mIdOffsetPairs[tokenOffset] = tokenId;
+
 		token = GetNextToken();
 		instruction = GetOpcode(token);
 
@@ -418,7 +479,14 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	}
 
+	//Finish SPIR-V header
+	mInstructions.push_back(GetNextId()); //Bound
+	mInstructions.push_back(0); //Reserved for instruction schema, if needed
+	
+	//Dump other opcodes into instruction collection is required order.
 	CombineSpirVOpCodes();
+
+	//Pass the word blob to Vulkan to generate a module.
 	CreateSpirVModule();
 
 	return mConvertedShader; //Return value optimization don't fail me now.
