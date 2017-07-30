@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <boost/container/flat_map.hpp>
+#include <spirv.hpp>
 
 /*
 http://timjones.io/blog/archive/2015/09/02/parsing-direct3d-shader-bytecode
@@ -44,6 +45,32 @@ struct ConvertedShader
 	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 
 	VkShaderModule ShaderModule = VK_NULL_HANDLE;
+};
+
+//https://msdn.microsoft.com/en-us/library/windows/hardware/ff552738(v=vs.85).aspx
+union DestinationParameterToken
+{
+	struct
+	{
+		uint32_t RegisterNumber : 11;
+		uint32_t RegisterType2 : 2;
+		bool UseRelativeAddressing : 1;
+		uint32_t Reserved : 2;
+		uint32_t WriteMask : 4;
+		uint32_t ResultModifier : 4;
+		uint32_t ResultShiftScale : 4;
+		uint32_t RegisterType1 : 3;
+		uint32_t FinalBit : 1;
+	};
+	uint32_t AllField;
+};
+
+//In DXBC can have float's in the DWORD stream so it was either this or break alias rules.
+union Token
+{
+	float f;
+	uint32_t i;
+	DestinationParameterToken DestinationParameterToken;
 };
 
 class ShaderConverter
@@ -86,24 +113,27 @@ private:
 	uint32_t* mNextToken;
 	uint32_t mBaseId;
 	uint32_t mNextId;
+	uint32_t mTokenOffset;
 	uint32_t mMinorVersion;
 	uint32_t mMajorVersion;
 	bool mIsVertexShader;
 
-	uint32_t GetNextToken();
+	Token GetNextToken();
 	void SkipTokens(uint32_t numberToSkip);
 	uint32_t GetNextId();
 	void SkipIds(uint32_t numberToSkip);
 	uint32_t GetOpcode(uint32_t token);
 	uint32_t GetOpcodeData(uint32_t token);
 	uint32_t GetTextureType(uint32_t token);
-	uint32_t GetRegisterType(uint32_t token);
+	_D3DSHADER_PARAM_REGISTER_TYPE GetRegisterType(uint32_t token);
 	uint32_t GetRegisterNumber(uint32_t token);
 	uint32_t GetUsage(uint32_t token);
 	uint32_t GetUsageIndex(uint32_t token);
 
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
+
+	void Process_DEF();
 
 };
 

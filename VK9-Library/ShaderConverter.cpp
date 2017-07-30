@@ -44,23 +44,9 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c3)))
 
 /*
-A module is defined as a stream of words, not a stream of bytes. However, if 
-stored as a stream of bytes (e.g., in a file), the magic number can be used to deduce what 
-endianness to apply to convert the byte stream back to a word stream.
-*/
-#define SPIR_V_MAGIC_NUMBER 0x07230203
-
-/*
-The bytes are, high-order to low-order
-0 | Major Number | Minor Number | 0
-Hence, version 1.00 is the value 0x00010000.
-*/
-#define SPIR_V_VERSION_NUMBER 0x00010000
-
-/*
-Generator’s magic number. It is associated with the tool that generated 
-the module. Its value does not affect any semantics, and is allowed to be 0. 
-Using a non-0 value is encouraged, and can be registered with 
+Generator’s magic number. It is associated with the tool that generated
+the module. Its value does not affect any semantics, and is allowed to be 0.
+Using a non-0 value is encouraged, and can be registered with
 Khronos at https://www.khronos.org/registry/spir-v/api/spir-v.xml.
 */
 #define SPIR_V_GENERATORS_NUMBER 0x00000000
@@ -71,9 +57,11 @@ ShaderConverter::ShaderConverter(VkDevice device)
 
 }
 
-uint32_t ShaderConverter::GetNextToken()
+Token ShaderConverter::GetNextToken()
 {
-	return *(mNextToken++);
+	Token token;
+	token.i = *(mNextToken++);
+	return token;
 }
 
 void ShaderConverter::SkipTokens(uint32_t numberToSkip)
@@ -106,9 +94,9 @@ uint32_t ShaderConverter::GetTextureType(uint32_t token)
 	return (token & D3DSP_TEXTURETYPE_MASK); // Note this one doesn't shift due to weird D3DSAMPLER_TEXTURE_TYPE enum
 }
 
-uint32_t ShaderConverter::GetRegisterType(uint32_t token)
+_D3DSHADER_PARAM_REGISTER_TYPE ShaderConverter::GetRegisterType(uint32_t token)
 {
-	return ((token & D3DSP_REGTYPE_MASK2) >> D3DSP_REGTYPE_SHIFT2) | ((token & D3DSP_REGTYPE_MASK) >> D3DSP_REGTYPE_SHIFT);
+	return (_D3DSHADER_PARAM_REGISTER_TYPE)(((token & D3DSP_REGTYPE_MASK2) >> D3DSP_REGTYPE_SHIFT2) | ((token & D3DSP_REGTYPE_MASK) >> D3DSP_REGTYPE_SHIFT));
 }
 
 uint32_t ShaderConverter::GetRegisterNumber(uint32_t token)
@@ -191,6 +179,71 @@ void ShaderConverter::CreateSpirVModule()
 	mInstructions.clear();
 }
 
+//https://msdn.microsoft.com/en-us/library/windows/hardware/ff552693(v=vs.85).aspx
+void ShaderConverter::Process_DEF()
+{
+	Token token = GetNextToken();
+	uint32_t registerType = GetRegisterType(token.i);
+	//uint32_t registerNumber = GetRegisterNumber(token);
+	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
+
+	float value[4];
+	for (size_t i = 0; i < 4; i++)
+	{
+		value[i] = GetNextToken().f;
+	}
+
+	int tokenId = GetNextId();
+	mIdOffsetPairs[mTokenOffset] = tokenId;
+
+	switch (registerType)
+	{
+	case D3DSPR_TEMP:
+		break;
+	case D3DSPR_INPUT:
+		break;
+	case D3DSPR_CONST:
+		break;
+	case D3DSPR_ADDR:
+		break;
+	case D3DSPR_RASTOUT:
+		break;
+	case D3DSPR_ATTROUT:
+		break;
+	case D3DSPR_TEXCRDOUT:
+		break;
+	case D3DSPR_CONSTINT:
+		break;
+	case D3DSPR_COLOROUT:
+		break;
+	case D3DSPR_DEPTHOUT:
+		break;
+	case D3DSPR_SAMPLER:
+		break;
+	case D3DSPR_CONST2:
+		break;
+	case D3DSPR_CONST3:
+		break;
+	case D3DSPR_CONST4:
+		break;
+	case D3DSPR_CONSTBOOL:
+		break;
+	case D3DSPR_LOOP:
+		break;
+	case D3DSPR_TEMPFLOAT16:
+		break;
+	case D3DSPR_MISCTYPE:
+		break;
+	case D3DSPR_LABEL:
+		break;
+	case D3DSPR_PREDICATE:
+		break;
+	}
+
+	BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DEF.";
+
+}
+
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 {
 	mConvertedShader = {};
@@ -200,24 +253,20 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	uint32_t instruction;
 	mBaseToken = mNextToken = shader;
 
-	token = GetNextToken();
+	token = GetNextToken().i;
 	mMajorVersion = D3DSHADER_VERSION_MAJOR(token);
 	mMinorVersion = D3DSHADER_VERSION_MINOR(token);
 	//Probably more info in this word but I'll handle that later.
 
 	//Write SPIR-V header
-	mInstructions.push_back(SPIR_V_MAGIC_NUMBER);
-	mInstructions.push_back(SPIR_V_VERSION_NUMBER);
+	mInstructions.push_back(spv::MagicNumber);
+	mInstructions.push_back(spv::Version);
 
 	//Read DXBC instructions
 	while (token != D3DPS_END())
 	{
-		int tokenOffset = mNextToken - shader; //I'm thinking I can use this as an OpCode Id in Spir-V but we'll see.
-		int tokenId = GetNextId();
-
-		mIdOffsetPairs[tokenOffset] = tokenId;
-
-		token = GetNextToken();
+		mTokenOffset = mNextToken - shader; //I'm thinking I can use this as an OpCode Id in Spir-V but we'll see.
+		token = GetNextToken().i;
 		instruction = GetOpcode(token);
 
 		switch (instruction)
@@ -463,7 +512,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DEFI.";
 			break;
 		case D3DSIO_DEF:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DEF.";
+			Process_DEF();
 			break;
 		case D3DSIO_COMMENT:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_COMMENT.";
@@ -482,7 +531,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//Finish SPIR-V header
 	mInstructions.push_back(GetNextId()); //Bound
 	mInstructions.push_back(0); //Reserved for instruction schema, if needed
-	
+
 	//Dump other opcodes into instruction collection is required order.
 	CombineSpirVOpCodes();
 
