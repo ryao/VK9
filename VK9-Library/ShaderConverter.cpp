@@ -114,6 +114,82 @@ uint32_t ShaderConverter::GetUsageIndex(uint32_t token)
 	return (token & D3DSP_DCL_USAGEINDEX_MASK) >> D3DSP_DCL_USAGEINDEX_SHIFT;
 }
 
+uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType)
+{
+	boost::container::flat_map<spv::Op, uint32_t>::iterator it = mIdTypePairs.find(registerType);
+
+	if (it != mIdTypePairs.end())
+	{
+		uint32_t id = GetNextId();
+		mIdTypePairs[registerType] = id;
+
+		switch (registerType)
+		{
+		case spv::OpTypeVoid:
+			break;
+		case spv::OpTypeBool:
+			mTypeInstructions.push_back(2); //size
+			mTypeInstructions.push_back(registerType); //Type
+			mTypeInstructions.push_back(id); //Id
+			break;
+		case spv::OpTypeInt:
+			mTypeInstructions.push_back(4); //size
+			mTypeInstructions.push_back(registerType); //Type
+			mTypeInstructions.push_back(id); //Id
+			mTypeInstructions.push_back(32); //Number of bits.
+			mTypeInstructions.push_back(0); //Signedness (0 = unsigned,1 = signed)
+			break;
+		case spv::OpTypeFloat:
+			mTypeInstructions.push_back(3); //size
+			mTypeInstructions.push_back(registerType); //Type
+			mTypeInstructions.push_back(id); //Id
+			mTypeInstructions.push_back(32); //Number of bits.
+			break;
+		default:
+			break;
+		}
+	}
+
+	return mIdTypePairs[registerType];
+
+	/*
+		case spv::OpTypeVector:
+			break;
+		case spv::OpTypeMatrix:
+			break;
+		case spv::OpTypeImage:
+			break;
+		case spv::OpTypeSampler:
+			break;
+		case spv::OpTypeSampledImage:
+			break;
+		case spv::OpTypeArray:
+			break;
+		case spv::OpTypeRuntimeArray:
+			break;
+		case spv::OpTypeStruct:
+			break;
+		case spv::OpTypeOpaque:
+			break;
+		case spv::OpTypePointer:
+			break;
+		case spv::OpTypeFunction:
+			break;
+		case spv::OpTypeEvent:
+			break;
+		case spv::OpTypeDeviceEvent:
+			break;
+		case spv::OpTypeReserveId:
+			break;
+		case spv::OpTypeQueue:
+			break;
+		case spv::OpTypePipe:
+			break;
+		case spv::OpTypeForwardPointer:
+			break;
+	*/
+}
+
 void ShaderConverter::CombineSpirVOpCodes()
 {
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
@@ -183,65 +259,61 @@ void ShaderConverter::CreateSpirVModule()
 void ShaderConverter::Process_DEF()
 {
 	Token token = GetNextToken();
-	uint32_t registerType = GetRegisterType(token.i);
-	//uint32_t registerNumber = GetRegisterNumber(token);
+	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
 
-	float value[4];
+	int tokenId = GetNextId();
+	mIdRegisterPairs[destinationParameterToken.RegisterNumber] = tokenId;
+	uint32_t resultTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+
+	mTypeInstructions.push_back(7); //size
+	mTypeInstructions.push_back(spv::OpConstant); //opcode
+	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(tokenId); //Result (Id)
 	for (size_t i = 0; i < 4; i++)
 	{
-		value[i] = GetNextToken().f;
+		mTypeInstructions.push_back(GetNextToken().i); //Literal Values
 	}
+}
+
+void ShaderConverter::Process_DEFI()
+{
+	Token token = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
+	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
 
 	int tokenId = GetNextId();
-	mIdOffsetPairs[mTokenOffset] = tokenId;
+	mIdRegisterPairs[destinationParameterToken.RegisterNumber] = tokenId;
+	uint32_t resultTypeId = GetSpirVTypeId(spv::OpTypeInt);
 
-	switch (registerType)
+	mTypeInstructions.push_back(7); //size
+	mTypeInstructions.push_back(spv::OpConstant); //opcode
+	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(tokenId); //Result (Id)
+	for (size_t i = 0; i < 4; i++)
 	{
-	case D3DSPR_TEMP:
-		break;
-	case D3DSPR_INPUT:
-		break;
-	case D3DSPR_CONST:
-		break;
-	case D3DSPR_ADDR:
-		break;
-	case D3DSPR_RASTOUT:
-		break;
-	case D3DSPR_ATTROUT:
-		break;
-	case D3DSPR_TEXCRDOUT:
-		break;
-	case D3DSPR_CONSTINT:
-		break;
-	case D3DSPR_COLOROUT:
-		break;
-	case D3DSPR_DEPTHOUT:
-		break;
-	case D3DSPR_SAMPLER:
-		break;
-	case D3DSPR_CONST2:
-		break;
-	case D3DSPR_CONST3:
-		break;
-	case D3DSPR_CONST4:
-		break;
-	case D3DSPR_CONSTBOOL:
-		break;
-	case D3DSPR_LOOP:
-		break;
-	case D3DSPR_TEMPFLOAT16:
-		break;
-	case D3DSPR_MISCTYPE:
-		break;
-	case D3DSPR_LABEL:
-		break;
-	case D3DSPR_PREDICATE:
-		break;
+		mTypeInstructions.push_back(GetNextToken().i); //Literal Values
 	}
+}
 
-	BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DEF.";
+void ShaderConverter::Process_DEFB()
+{
+	Token token = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
+	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
 
+	int tokenId = GetNextId();
+	mIdRegisterPairs[destinationParameterToken.RegisterNumber] = tokenId;
+	uint32_t resultTypeId = GetSpirVTypeId(spv::OpTypeBool);
+
+	mTypeInstructions.push_back(7); //size
+	mTypeInstructions.push_back(spv::OpConstant); //opcode
+	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(tokenId); //Result (Id)
+	for (size_t i = 0; i < 1; i++)
+	{
+		mTypeInstructions.push_back(GetNextToken().i); //Literal Values
+	}
 }
 
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
@@ -265,14 +337,14 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//Read DXBC instructions
 	while (token != D3DPS_END())
 	{
-		mTokenOffset = mNextToken - shader; //I'm thinking I can use this as an OpCode Id in Spir-V but we'll see.
+		mTokenOffset = mNextToken - shader;
 		token = GetNextToken().i;
 		instruction = GetOpcode(token);
 
 		switch (instruction)
 		{
 		case D3DSIO_NOP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_NOP.";
+			//Nothing
 			break;
 		case D3DSIO_PHASE:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_PHASE.";
@@ -506,20 +578,19 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DCL.";
 			break;
 		case D3DSIO_DEFB:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DEFB.";
+			Process_DEFB();
 			break;
 		case D3DSIO_DEFI:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DEFI.";
+			Process_DEFI();
 			break;
 		case D3DSIO_DEF:
 			Process_DEF();
 			break;
 		case D3DSIO_COMMENT:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_COMMENT.";
 			SkipTokens(((token & 0x0fff0000) >> 16));
 			break;
 		case D3DSIO_END:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_END.";
+			//Nothing
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction " << instruction << ".";

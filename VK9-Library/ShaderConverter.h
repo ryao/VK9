@@ -83,7 +83,8 @@ public:
 	ConvertedShader Convert(uint32_t* shader);
 private:	
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
-	boost::container::flat_map<uint32_t, uint32_t> mIdOffsetPairs;
+	boost::container::flat_map<uint32_t, uint32_t> mIdRegisterPairs;
+	boost::container::flat_map<spv::Op, uint32_t> mIdTypePairs;
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -129,11 +130,14 @@ private:
 	uint32_t GetRegisterNumber(uint32_t token);
 	uint32_t GetUsage(uint32_t token);
 	uint32_t GetUsageIndex(uint32_t token);
+	uint32_t GetSpirVTypeId(spv::Op registerType);
 
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
 	void Process_DEF();
+	void Process_DEFI();
+	void Process_DEFB();
 
 };
 
