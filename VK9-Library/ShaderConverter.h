@@ -83,8 +83,10 @@ public:
 	ConvertedShader Convert(uint32_t* shader);
 private:	
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
-	boost::container::flat_map<uint32_t, uint32_t> mIdRegisterPairs;
+	boost::container::flat_map<uint32_t, uint32_t> mRegisterIdPairs;
+	boost::container::flat_map<uint32_t, spv::Op> mRegisterTypePairs;
 	boost::container::flat_map<spv::Op, uint32_t> mIdTypePairs;
+	
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -138,7 +140,9 @@ private:
 	void Process_DEF();
 	void Process_DEFI();
 	void Process_DEFB();
-
+	void Process_MUL();
+	void Process_ADD();
+	void Process_SUB();
 };
 
 #endif //SHADERCONVERTER_H
