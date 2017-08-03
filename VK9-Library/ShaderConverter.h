@@ -84,9 +84,10 @@ public:
 private:	
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
 	boost::container::flat_map<uint32_t, uint32_t> mRegisterIdPairs;
-	boost::container::flat_map<uint32_t, spv::Op> mRegisterTypePairs;
-	boost::container::flat_map<spv::Op, uint32_t> mIdTypePairs;
-	
+	boost::container::flat_map<uint32_t, uint32_t> mIdRegisterPairs;
+
+	boost::container::flat_map<spv::Op, uint32_t> mTypeIdPairs;
+	boost::container::flat_map<uint32_t,spv::Op> mIdTypePairs;
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -133,6 +134,8 @@ private:
 	uint32_t GetUsage(uint32_t token);
 	uint32_t GetUsageIndex(uint32_t token);
 	uint32_t GetSpirVTypeId(spv::Op registerType);
+	uint32_t GetNextVersionId(uint32_t registerNumber);
+	spv::Op GetTypeByRegister(uint32_t registerNumber);
 
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
