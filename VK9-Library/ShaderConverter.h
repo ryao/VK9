@@ -73,6 +73,23 @@ union Token
 	DestinationParameterToken DestinationParameterToken;
 };
 
+struct TypeDescription
+{
+	spv::Op PrimaryType = spv::OpTypeVoid;
+	spv::Op SecondaryType = spv::OpTypeVoid;
+	uint32_t ComponentCount = 0;
+
+	bool operator ==(const TypeDescription &value) const
+	{
+		return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
+	}
+
+	bool operator <(const TypeDescription &value) const
+	{
+		return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->ComponentCount < value.ComponentCount;
+	}
+};
+
 class ShaderConverter
 {
 protected:
@@ -86,8 +103,8 @@ private:
 	boost::container::flat_map<uint32_t, uint32_t> mRegisterIdPairs;
 	boost::container::flat_map<uint32_t, uint32_t> mIdRegisterPairs;
 
-	boost::container::flat_map<spv::Op, uint32_t> mTypeIdPairs;
-	boost::container::flat_map<uint32_t,spv::Op> mIdTypePairs;
+	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
+	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -134,8 +151,9 @@ private:
 	uint32_t GetUsage(uint32_t token);
 	uint32_t GetUsageIndex(uint32_t token);
 	uint32_t GetSpirVTypeId(spv::Op registerType);
+	uint32_t GetSpirVTypeId(TypeDescription& registerType);
 	uint32_t GetNextVersionId(uint32_t registerNumber);
-	spv::Op GetTypeByRegister(uint32_t registerNumber);
+	TypeDescription GetTypeByRegister(uint32_t registerNumber);
 
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
@@ -143,9 +161,13 @@ private:
 	void Process_DEF();
 	void Process_DEFI();
 	void Process_DEFB();
+
+	//Binary Operators
 	void Process_MUL();
 	void Process_ADD();
 	void Process_SUB();
+	void Process_MIN();
+	void Process_MAX();
 };
 
 #endif //SHADERCONVERTER_H
