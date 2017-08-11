@@ -168,6 +168,8 @@ private:
 	void Process_SUB();
 	void Process_MIN();
 	void Process_MAX();
+	void Process_DP3();
+	void Process_DP4();
 };
 
 #endif //SHADERCONVERTER_H

@@ -568,6 +568,54 @@ void ShaderConverter::Process_MAX()
 	BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_MAX.";
 }
 
+void ShaderConverter::Process_DP3()
+{
+	spv::Op dataType;
+	uint32_t dataTypeId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+
+	mFunctionDefinitionInstructions.push_back(5); //count
+	mFunctionDefinitionInstructions.push_back(spv::OpDot); //Opcode
+	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
+	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
+}
+
+void ShaderConverter::Process_DP4()
+{
+	spv::Op dataType;
+	uint32_t dataTypeId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+
+	mFunctionDefinitionInstructions.push_back(5); //count
+	mFunctionDefinitionInstructions.push_back(spv::OpDot); //Opcode
+	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
+	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
+}
+
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 {
 	mConvertedShader = {};
@@ -763,10 +811,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			Process_MUL();
 			break;
 		case D3DSIO_DP3:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DP3.";
+			Process_DP3();
 			break;
 		case D3DSIO_DP4:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DP4.";
+			Process_DP4();
 			break;
 		case D3DSIO_MIN:
 			Process_MIN();
