@@ -315,6 +315,57 @@ void ShaderConverter::CreateSpirVModule()
 }
 
 //https://msdn.microsoft.com/en-us/library/windows/hardware/ff552693(v=vs.85).aspx
+void ShaderConverter::Process_DCL()
+{
+	Token token = GetNextToken();
+	Token registerToken = GetNextToken();
+	uint32_t usage = GetUsage(token.i);
+	uint32_t usageIndex = GetUsageIndex(token.i);
+	uint32_t registerNumber = GetRegisterNumber(registerToken.i);
+	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(registerToken.i);
+	uint32_t tokenId = GetNextVersionId(registerNumber);
+
+	/*
+	
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].binding = 0;//element.Stream;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].location = 0;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = 0;//ConvertDeclType((D3DDECLTYPE)element.Type);
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].offset = 0;//element.Offset;
+	*/
+
+	if (mIsVertexShader)
+	{
+		if (mMajorVersion >= 3 && registerType == D3DSPR_OUTPUT)
+		{			
+			mTypeInstructions.push_back(4); //size
+			mTypeInstructions.push_back(spv::OpVariable); //opcode
+			mTypeInstructions.push_back(0); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+			mTypeInstructions.push_back(tokenId); //Result (Id)
+			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+			//Optional initializer
+
+			if (usage == D3DDECLUSAGE_POSITION)
+			{
+				//Nothing yet.
+			}
+
+		}
+		else if (registerType == D3DSPR_SAMPLER)
+		{
+			BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type D3DSPR_SAMPLER";
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type " << registerType;
+		}
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Pixel Shader declare not supported.";
+	}
+
+}
+
 void ShaderConverter::Process_DEF()
 {
 	Token token = GetNextToken();
@@ -628,6 +679,15 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	token = GetNextToken().i;
 	mMajorVersion = D3DSHADER_VERSION_MAJOR(token);
 	mMinorVersion = D3DSHADER_VERSION_MINOR(token);
+
+	if ((token & 0xFFFF0000) == 0xFFFF0000)
+	{
+		mIsVertexShader = false;
+	}
+	else
+	{
+		mIsVertexShader = true;
+	}
 	//Probably more info in this word but I'll handle that later.
 
 	//Read DXBC instructions
@@ -871,7 +931,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXLDL.";
 			break;
 		case D3DSIO_DCL:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DCL.";
+			Process_DCL();
 			break;
 		case D3DSIO_DEFB:
 			Process_DEFB();

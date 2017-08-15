@@ -1498,7 +1498,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 	if (context->VertexShader != nullptr)
 	{
-		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = context->VertexShader->mConvertedShader.VertexInputAttributeDescriptionCount;
+		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = context->VertexShader->mConvertedShader.mVertexInputAttributeDescriptionCount;
 
 		memcpy(&mDescriptorSetLayoutBinding, &context->VertexShader->mConvertedShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
 

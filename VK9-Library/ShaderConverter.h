@@ -38,7 +38,7 @@ struct ConvertedShader
 {
 	UINT Size = 0;
 	//VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
-	uint32_t VertexInputAttributeDescriptionCount = 0;
+	uint32_t mVertexInputAttributeDescriptionCount = 0;
 	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
 
 	uint32_t mDescriptorSetLayoutBindingCount = 0;
@@ -158,6 +158,7 @@ private:
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
+	void Process_DCL();
 	void Process_DEF();
 	void Process_DEFI();
 	void Process_DEFB();
