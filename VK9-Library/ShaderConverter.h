@@ -77,16 +77,17 @@ struct TypeDescription
 {
 	spv::Op PrimaryType = spv::OpTypeVoid;
 	spv::Op SecondaryType = spv::OpTypeVoid;
+	spv::Op TernaryType = spv::OpTypeVoid;
 	uint32_t ComponentCount = 0;
 
 	bool operator ==(const TypeDescription &value) const
 	{
-		return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
+		return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType && this->ComponentCount == value.ComponentCount;
 	}
 
 	bool operator <(const TypeDescription &value) const
 	{
-		return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->ComponentCount < value.ComponentCount;
+		return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType || this->ComponentCount < value.ComponentCount;
 	}
 };
 
@@ -137,6 +138,7 @@ private:
 	uint32_t mTokenOffset;
 	uint32_t mMinorVersion;
 	uint32_t mMajorVersion;
+	uint32_t mPositionRegister = -1;
 	bool mIsVertexShader;
 
 	Token GetNextToken();
@@ -151,6 +153,7 @@ private:
 	uint32_t GetUsage(uint32_t token);
 	uint32_t GetUsageIndex(uint32_t token);
 	uint32_t GetSpirVTypeId(spv::Op registerType);
+	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2);
 	uint32_t GetSpirVTypeId(TypeDescription& registerType);
 	uint32_t GetNextVersionId(uint32_t registerNumber);
 	TypeDescription GetTypeByRegister(uint32_t registerNumber);
