@@ -174,6 +174,9 @@ private:
 	void Process_MAX();
 	void Process_DP3();
 	void Process_DP4();
+
+	//ternary operators
+	void Process_MAD();
 };
 
 #endif //SHADERCONVERTER_H
