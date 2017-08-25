@@ -568,6 +568,30 @@ void ShaderConverter::Process_DEFB()
 	}
 }
 
+void ShaderConverter::Process_MOV()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1.DestinationParameterToken.RegisterNumber);
+	dataTypeId = GetSpirVTypeId(typeDescription);
+
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	mFunctionDefinitionInstructions.push_back(4); //count
+	mFunctionDefinitionInstructions.push_back(spv::OpCopyObject); //Opcode
+	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
+}
+
 void ShaderConverter::Process_MUL()
 {
 	TypeDescription typeDescription;
@@ -817,6 +841,36 @@ void ShaderConverter::Process_DP4()
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 }
 
+void ShaderConverter::Process_TEX()
+{
+	//spv::Op dataType;
+	uint32_t dataTypeId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	TypeDescription typeDescription;
+	typeDescription.PrimaryType = spv::OpTypeVector;
+	typeDescription.SecondaryType = spv::OpTypeFloat;
+	typeDescription.ComponentCount = 4;
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+
+	mFunctionDefinitionInstructions.push_back(5); //count
+	mFunctionDefinitionInstructions.push_back(spv::OpImageFetch); //Opcode
+	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
+	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)	
+}
+
 void ShaderConverter::Process_MAD()
 {
 	TypeDescription typeDescription;
@@ -1052,7 +1106,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_MOVA.";
 			break;
 		case D3DSIO_MOV:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_MOV.";
+			Process_MOV();
 			break;
 		case D3DSIO_RCP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_RCP.";
@@ -1172,7 +1226,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXCOORD.";
 			break;
 		case D3DSIO_TEX:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEX.";
+			Process_TEX();
 			break;
 		case D3DSIO_TEXLDL:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXLDL.";

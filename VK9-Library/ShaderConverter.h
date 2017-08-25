@@ -161,10 +161,14 @@ private:
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
+	//declare
 	void Process_DCL();
 	void Process_DEF();
 	void Process_DEFI();
 	void Process_DEFB();
+
+	//Unary Operators
+	void Process_MOV();
 
 	//Binary Operators
 	void Process_MUL();
@@ -174,6 +178,7 @@ private:
 	void Process_MAX();
 	void Process_DP3();
 	void Process_DP4();
+	void Process_TEX();
 
 	//ternary operators
 	void Process_MAD();
