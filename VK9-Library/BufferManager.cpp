@@ -672,7 +672,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			request->AddressModeW = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSW];
 			request->MaxAnisotropy = mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAXANISOTROPY];
 			request->MipmapMode = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPFILTER];
-			request->MipLodBias = (float)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPMAPLODBIAS];
+			request->MipLodBias = *(float*)&mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPMAPLODBIAS];
 			request->MaxLod = pair1.second->mLevels;
 
 			for (size_t i = 0; i < mSamplerRequests.size(); i++)
@@ -1677,7 +1677,16 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	{
 		// Use max. level of anisotropy for this example
 		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy, mDevice->mDeviceProperties.limits.maxSamplerAnisotropy);
-		samplerCreateInfo.anisotropyEnable = VK_TRUE;
+		
+		if (request->MinFilter == D3DTEXF_ANISOTROPIC ||
+			request->MagFilter == D3DTEXF_ANISOTROPIC ||
+			request->MipmapMode == D3DTEXF_ANISOTROPIC)
+		{
+			samplerCreateInfo.anisotropyEnable = VK_TRUE;
+		}
+		else {
+			samplerCreateInfo.anisotropyEnable = VK_FALSE;
+		}
 	}
 	else
 	{
@@ -1691,6 +1700,11 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER; //VK_COMPARE_OP_ALWAYS
 	samplerCreateInfo.minLod = 0.0f;
 	samplerCreateInfo.maxLod = request->MaxLod;
+
+	if (request->MipmapMode == D3DTEXF_NONE)
+	{
+		samplerCreateInfo.maxLod = 0.0f;
+	}
 
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &request->Sampler);
 	if (mResult != VK_SUCCESS)
