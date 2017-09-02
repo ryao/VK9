@@ -329,6 +329,12 @@ void ShaderConverter::CreateSpirVModule()
 	moduleCreateInfo.flags = 0;
 	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &mConvertedShader.ShaderModule);
 
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << result;
+		return;
+	}
+
 	mInstructions.clear();
 }
 
@@ -348,6 +354,8 @@ void ShaderConverter::Process_DCL()
 	typeDescription.TernaryType = spv::OpTypeFloat;
 	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
+
+	mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
 
 	//Magic numbers from ToGL (no whole numbers?)
 	switch (registerComponents)
@@ -571,7 +579,7 @@ void ShaderConverter::Process_DEFB()
 void ShaderConverter::Process_MOV()
 {
 	TypeDescription typeDescription;
-	spv::Op dataType;
+	//spv::Op dataType;
 	uint32_t dataTypeId;
 
 	Token resultToken = GetNextToken();
@@ -991,6 +999,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	}
 	//Probably more info in this word but I'll handle that later.
 
+	//TODO: create entry point function to contain all of the converted instructions. (Not sure about other functions just yet.)
+
 	//Read DXBC instructions
 	while (token != D3DPS_END())
 	{
@@ -1254,6 +1264,53 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		}
 
+	}
+
+	//Capability
+	mCapabilityInstructions.push_back(2); //count
+	mCapabilityInstructions.push_back(spv::OpCapability); //Opcode
+	mCapabilityInstructions.push_back(spv::CapabilityShader); //Capability
+
+	//Import
+	std::string importStatement = "GLSL.std.450";
+	mExtensionInstructions.push_back(3 + importStatement.length()); //count
+	mExtensionInstructions.push_back(spv::OpExtInstImport); //Opcode
+	mExtensionInstructions.push_back(GetNextId()); //Result Id
+	PutStringInVector(importStatement, mExtensionInstructions);
+
+	//Memory Model
+	mMemoryModelInstructions.push_back(3); //count
+	mMemoryModelInstructions.push_back(spv::OpMemoryModel); //Opcode
+	mMemoryModelInstructions.push_back(spv::AddressingModelLogical); //Addressing Model
+	mMemoryModelInstructions.push_back(spv::MemoryModelGLSL450); //Memory Model
+
+	//EntryPoint
+	std::string entryPointName = "main";
+	mEntryPointInstructions.push_back(4 + entryPointName.length() + mInterfaceIds.size()); //count
+	mEntryPointInstructions.push_back(spv::OpEntryPoint); //Opcode
+	if (mIsVertexShader)
+	{
+		mEntryPointInstructions.push_back(spv::ExecutionModelVertex); //Execution Model
+	}
+	else
+	{
+		mEntryPointInstructions.push_back(spv::ExecutionModelFragment); //Execution Model
+	}
+	mEntryPointInstructions.push_back(mEntryPointId); //Entry Point (Id)
+	PutStringInVector(entryPointName, mEntryPointInstructions); //Name
+	mEntryPointInstructions.insert(std::end(mEntryPointInstructions), std::begin(mInterfaceIds), std::end(mInterfaceIds)); //Interfaces
+	
+	//ExecutionMode
+	if (!mIsVertexShader)
+	{
+		mExecutionModeInstructions.push_back(3); //count
+		mExecutionModeInstructions.push_back(spv::OpExecutionMode); //Opcode
+		mExecutionModeInstructions.push_back(mEntryPointId); //Entry Point (Id)
+		mExecutionModeInstructions.push_back(spv::ExecutionModeOriginLowerLeft); //Execution Mode
+	}
+	else
+	{
+		//TODO: figure out what to do for vertex execution mode.
 	}
 
 	//Write SPIR-V header

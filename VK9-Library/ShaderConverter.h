@@ -21,6 +21,7 @@ misrepresented as being the original software.
 #ifndef SHADERCONVERTER_H
 #define SHADERCONVERTER_H
 
+#include <stdint.h>
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <boost/container/flat_map.hpp>
@@ -33,6 +34,12 @@ http://stackoverflow.com/questions/2545704/format-of-compiled-directx9-shader-fi
 https://msdn.microsoft.com/en-us/library/windows/hardware/ff552891(v=vs.85).aspx
 https://github.com/ValveSoftware/ToGL
 */
+
+#define PACK(c0, c1, c2, c3) \
+    (((uint32_t)(uint8_t)(c0) << 24) | \
+    ((uint32_t)(uint8_t)(c1) << 16) | \
+    ((uint32_t)(uint8_t)(c2) << 8) | \
+    ((uint32_t)(uint8_t)(c3)))
 
 struct ConvertedShader
 {
@@ -91,6 +98,31 @@ struct TypeDescription
 	}
 };
 
+inline void PutStringInVector(std::string& text, std::vector<uint32_t> words)
+{
+	for (size_t i = 0; i < text.length(); i+=4)
+	{
+		switch (text.length() - (i+1))
+		{
+		case 0:
+			break;
+		case 1:
+			words.push_back(PACK(text.at(i), '\0', '\0', '\0'));
+			break;
+		case 2:
+			words.push_back(PACK(text.at(i), text.at(i + 1), '\0', '\0'));
+			break;
+		case 3:
+			words.push_back(PACK(text.at(i), text.at(i + 1), text.at(i + 2), '\0'));
+			break;
+		default:
+			words.push_back(PACK(text.at(i), text.at(i + 1), text.at(i + 2), text.at(i + 3)));
+			break;
+		}	
+	}
+
+}
+
 class ShaderConverter
 {
 protected:
@@ -106,6 +138,8 @@ private:
 
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
+
+	std::vector<uint32_t> mInterfaceIds; //Used by entry point opcode.
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -139,6 +173,7 @@ private:
 	uint32_t mMinorVersion;
 	uint32_t mMajorVersion;
 	uint32_t mPositionRegister = -1;
+	uint32_t mEntryPointId = -1;
 	bool mIsVertexShader;
 
 	Token GetNextToken();
