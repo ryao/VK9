@@ -99,7 +99,7 @@ struct TypeDescription
 	}
 };
 
-inline void PutStringInVector(std::string& text, std::vector<uint32_t> words)
+inline void PutStringInVector(std::string& text, std::vector<uint32_t>& words)
 {
 	for (size_t i = 0; i < text.length(); i+=4)
 	{
@@ -166,17 +166,17 @@ private:
 	std::vector<uint32_t> mFunctionDeclarationInstructions;
 	std::vector<uint32_t> mFunctionDefinitionInstructions;
 
-	uint32_t* mBaseToken;
-	uint32_t* mNextToken;
-	uint32_t mBaseId;
-	uint32_t mNextId;
-	uint32_t mTokenOffset;
-	uint32_t mMinorVersion;
-	uint32_t mMajorVersion;
+	uint32_t* mBaseToken = nullptr;
+	uint32_t* mNextToken = nullptr;
+	uint32_t mBaseId = 0;
+	uint32_t mNextId = 0;
+	uint32_t mTokenOffset = 0;
+	uint32_t mMinorVersion = 0;
+	uint32_t mMajorVersion = 0;
 	uint32_t mPositionRegister = -1;
 	uint32_t mEntryPointTypeId = -1;
 	uint32_t mEntryPointId = -1;
-	bool mIsVertexShader;
+	bool mIsVertexShader = false;
 
 	Token GetNextToken();
 	void SkipTokens(uint32_t numberToSkip);

@@ -350,13 +350,13 @@ void ShaderConverter::CreateSpirVModule()
 	//Start Debug Code
 	if (!mIsVertexShader)
 	{
-		std::ofstream outFile("fragment.spv");
-		for (const auto &e : mInstructions) outFile << e;
+		std::ofstream outFile("fragment.spv", std::ios::out | std::ios::binary);
+		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
 	}
 	else
 	{
-		std::ofstream outFile("vertex.spv");
-		for (const auto &e : mInstructions) outFile << e;
+		std::ofstream outFile("vertex.spv", std::ios::out | std::ios::binary);
+		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
 	}
 	//End Debug Code
 #endif
@@ -1314,7 +1314,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	//Import
 	std::string importStatement = "GLSL.std.450";
-	mExtensionInstructions.push_back(3 + importStatement.length()); //count
+	//The spec says 3+variable but there are only 2 before string literal.
+	mExtensionInstructions.push_back(2 + importStatement.length()/4); //count
 	mExtensionInstructions.push_back(spv::OpExtInstImport); //Opcode
 	mExtensionInstructions.push_back(GetNextId()); //Result Id
 	PutStringInVector(importStatement, mExtensionInstructions);
@@ -1327,7 +1328,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	//EntryPoint
 	std::string entryPointName = "main";
-	mEntryPointInstructions.push_back(4 + entryPointName.length() + mInterfaceIds.size()); //count
+	//The spec says 4+variable but there are only 3 before the string literal.
+	mEntryPointInstructions.push_back(3 + (entryPointName.length()/4) + mInterfaceIds.size()); //count
 	mEntryPointInstructions.push_back(spv::OpEntryPoint); //Opcode
 	if (mIsVertexShader)
 	{
