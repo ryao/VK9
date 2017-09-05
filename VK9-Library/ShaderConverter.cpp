@@ -137,6 +137,9 @@ uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType1, spv::Op register
 uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 {
 	boost::container::flat_map<TypeDescription, uint32_t>::iterator it = mTypeIdPairs.find(registerType);
+	uint32_t columnTypeId = 0;
+	uint32_t pointerTypeId = 0;
+	uint32_t returnTypeId = 0;
 
 	if (it == mTypeIdPairs.end())
 	{
@@ -167,18 +170,22 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 		case spv::OpTypeVector:
 			//Matrix and Vector type opcodes are laid out the same but exchange component for column.
 		case spv::OpTypeMatrix:
+			columnTypeId = GetSpirVTypeId(registerType.SecondaryType);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(registerType.PrimaryType); //Type
 			mTypeInstructions.push_back(id); //Id
-			mTypeInstructions.push_back(GetSpirVTypeId(registerType.SecondaryType)); //Component/Column Type
+			mTypeInstructions.push_back(columnTypeId); //Component/Column Type
 			mTypeInstructions.push_back(registerType.ComponentCount);
 			break;
 		case spv::OpTypePointer:
+			pointerTypeId = GetSpirVTypeId(registerType.SecondaryType, registerType.TernaryType);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(registerType.PrimaryType); //Type
 			mTypeInstructions.push_back(id); //Id
 			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
-			mTypeInstructions.push_back(GetSpirVTypeId(registerType.SecondaryType, registerType.TernaryType)); // Type
+			mTypeInstructions.push_back(pointerTypeId); // Type
 			break;
 		case spv::OpTypeSampler:
 			mTypeInstructions.push_back(2); //size
@@ -186,17 +193,21 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 			mTypeInstructions.push_back(id); //Id
 			break;
 		case spv::OpTypeFunction:
+		{
+			returnTypeId = GetSpirVTypeId(registerType.SecondaryType);
+
 			mTypeInstructions.push_back(3 + registerType.Arguments.size()); //size
 			mTypeInstructions.push_back(registerType.PrimaryType); //Type
 			mTypeInstructions.push_back(id); //Id
-			mTypeInstructions.push_back(GetSpirVTypeId(registerType.SecondaryType)); //Return Type
-			
+			mTypeInstructions.push_back(returnTypeId); //Return Type (Id)
+
 			//Right now there is no comparison on arguments so we are assuming that functions with the same return type are the same. This will need to be expanded later when we're using functions other than the default entry point.
 			for (size_t i = 0; i < registerType.Arguments.size(); i++)
 			{
 				mTypeInstructions.push_back(registerType.Arguments[i]); //Argument Id
 			}
-			break;
+		}
+		break;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "GetSpirVTypeId - Unsupported data type " << registerType.PrimaryType;
 			break;
@@ -378,8 +389,9 @@ void ShaderConverter::Process_DCL()
 	typeDescription.PrimaryType = spv::OpTypePointer;
 	typeDescription.SecondaryType = spv::OpTypeVector;
 	typeDescription.TernaryType = spv::OpTypeFloat;
-	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
+	//uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
+	uint32_t resultTypeId;
 
 	mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
 
@@ -410,9 +422,11 @@ void ShaderConverter::Process_DCL()
 	{
 		if (mMajorVersion >= 3 && registerType == D3DSPR_OUTPUT)
 		{
+			resultTypeId = GetSpirVTypeId(typeDescription);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(spv::OpVariable); //opcode
-			mTypeInstructions.push_back(GetSpirVTypeId(typeDescription)); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 			//Optional initializer
@@ -429,9 +443,11 @@ void ShaderConverter::Process_DCL()
 		}
 		else if (registerType == D3DSPR_INPUT)
 		{
+			resultTypeId = GetSpirVTypeId(typeDescription);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(spv::OpVariable); //opcode
-			mTypeInstructions.push_back(GetSpirVTypeId(typeDescription)); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 			//Optional initializer
@@ -468,9 +484,11 @@ void ShaderConverter::Process_DCL()
 	{
 		if (mMajorVersion >= 3 && registerType == D3DSPR_OUTPUT)
 		{
+			resultTypeId = GetSpirVTypeId(typeDescription);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(spv::OpVariable); //opcode
-			mTypeInstructions.push_back(GetSpirVTypeId(typeDescription)); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 			//Optional initializer
@@ -493,9 +511,11 @@ void ShaderConverter::Process_DCL()
 			//	break;
 			//}	
 
+			resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(spv::OpVariable); //opcode
-			mTypeInstructions.push_back(GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler)); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
 			//Optional initializer
@@ -512,18 +532,22 @@ void ShaderConverter::Process_DCL()
 		}
 		else if (registerType == D3DSPR_INPUT)
 		{
+			resultTypeId = GetSpirVTypeId(typeDescription);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(spv::OpVariable); //opcode
-			mTypeInstructions.push_back(GetSpirVTypeId(typeDescription)); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 			//Optional initializer
 		}
 		else if (registerType == D3DSPR_TEXTURE)
 		{
+			resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
+
 			mTypeInstructions.push_back(4); //size
 			mTypeInstructions.push_back(spv::OpVariable); //opcode
-			mTypeInstructions.push_back(GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage)); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
 			//Optional initializer
@@ -942,7 +966,7 @@ void ShaderConverter::Process_MAD()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		
+
 		//Write out multiply
 		mFunctionDefinitionInstructions.push_back(5); //count
 		mFunctionDefinitionInstructions.push_back(spv::OpIMul); //Opcode
@@ -1315,7 +1339,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//Import
 	std::string importStatement = "GLSL.std.450";
 	//The spec says 3+variable but there are only 2 before string literal.
-	mExtensionInstructions.push_back(2 + importStatement.length()/4); //count
+	mExtensionInstructions.push_back(2 + importStatement.length() / 4); //count
 	mExtensionInstructions.push_back(spv::OpExtInstImport); //Opcode
 	mExtensionInstructions.push_back(GetNextId()); //Result Id
 	PutStringInVector(importStatement, mExtensionInstructions);
@@ -1329,7 +1353,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//EntryPoint
 	std::string entryPointName = "main";
 	//The spec says 4+variable but there are only 3 before the string literal.
-	mEntryPointInstructions.push_back(3 + (entryPointName.length()/4) + mInterfaceIds.size()); //count
+	mEntryPointInstructions.push_back(3 + (entryPointName.length() / 4) + mInterfaceIds.size()); //count
 	mEntryPointInstructions.push_back(spv::OpEntryPoint); //Opcode
 	if (mIsVertexShader)
 	{
@@ -1342,7 +1366,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mEntryPointInstructions.push_back(mEntryPointId); //Entry Point (Id)
 	PutStringInVector(entryPointName, mEntryPointInstructions); //Name
 	mEntryPointInstructions.insert(std::end(mEntryPointInstructions), std::begin(mInterfaceIds), std::end(mInterfaceIds)); //Interfaces
-	
+
 	//ExecutionMode
 	if (!mIsVertexShader)
 	{
