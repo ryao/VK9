@@ -23,6 +23,7 @@ misrepresented as being the original software.
 #include "D3D11Shader.h"
 #include "ShaderConverter.h"
 #include <boost/log/trivial.hpp>
+#include <fstream>
 
 /*
 http://timjones.io/blog/archive/2015/09/02/parsing-direct3d-shader-bytecode
@@ -184,8 +185,20 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 			mTypeInstructions.push_back(registerType.PrimaryType); //Type
 			mTypeInstructions.push_back(id); //Id
 			break;
+		case spv::OpTypeFunction:
+			mTypeInstructions.push_back(3 + registerType.Arguments.size()); //size
+			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(id); //Id
+			mTypeInstructions.push_back(GetSpirVTypeId(registerType.SecondaryType)); //Return Type
+			
+			//Right now there is no comparison on arguments so we are assuming that functions with the same return type are the same. This will need to be expanded later when we're using functions other than the default entry point.
+			for (size_t i = 0; i < registerType.Arguments.size(); i++)
+			{
+				mTypeInstructions.push_back(registerType.Arguments[i]); //Argument Id
+			}
+			break;
 		default:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported data type " << registerType.PrimaryType;
+			BOOST_LOG_TRIVIAL(warning) << "GetSpirVTypeId - Unsupported data type " << registerType.PrimaryType;
 			break;
 		}
 
@@ -208,8 +221,6 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 		case spv::OpTypeStruct:
 			break;
 		case spv::OpTypeOpaque:
-			break;
-		case spv::OpTypeFunction:
 			break;
 		case spv::OpTypeEvent:
 			break;
@@ -334,6 +345,21 @@ void ShaderConverter::CreateSpirVModule()
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << result;
 		return;
 	}
+
+#ifdef _DEBUG
+	//Start Debug Code
+	if (!mIsVertexShader)
+	{
+		std::ofstream outFile("fragment.spv");
+		for (const auto &e : mInstructions) outFile << e;
+	}
+	else
+	{
+		std::ofstream outFile("vertex.spv");
+		for (const auto &e : mInstructions) outFile << e;
+	}
+	//End Debug Code
+#endif
 
 	mInstructions.clear();
 }
@@ -999,7 +1025,16 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	}
 	//Probably more info in this word but I'll handle that later.
 
-	//TODO: create entry point function to contain all of the converted instructions. (Not sure about other functions just yet.)
+	//End of entry point
+	mEntryPointTypeId = GetSpirVTypeId(spv::OpFunction); //secondary type will be void by default.
+	mEntryPointId = GetNextId();
+
+	mFunctionDefinitionInstructions.push_back(5); //count
+	mFunctionDefinitionInstructions.push_back(spv::OpFunction); //Opcode
+	mFunctionDefinitionInstructions.push_back(GetSpirVTypeId(spv::OpTypeVoid)); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(mEntryPointId); //result (Id)
+	mFunctionDefinitionInstructions.push_back(spv::FunctionControlMaskNone); //Function Control
+	mFunctionDefinitionInstructions.push_back(mEntryPointTypeId); //Function Type (Id)
 
 	//Read DXBC instructions
 	while (token != D3DPS_END())
@@ -1265,6 +1300,12 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		}
 
 	}
+
+	//End of entry point
+	mFunctionDefinitionInstructions.push_back(1); //count
+	mFunctionDefinitionInstructions.push_back(spv::OpReturn); //Opcode
+	mFunctionDefinitionInstructions.push_back(1); //count
+	mFunctionDefinitionInstructions.push_back(spv::OpFunctionEnd); //Opcode
 
 	//Capability
 	mCapabilityInstructions.push_back(2); //count

@@ -86,6 +86,7 @@ struct TypeDescription
 	spv::Op SecondaryType = spv::OpTypeVoid;
 	spv::Op TernaryType = spv::OpTypeVoid;
 	uint32_t ComponentCount = 0;
+	std::vector<uint32_t> Arguments;
 
 	bool operator ==(const TypeDescription &value) const
 	{
@@ -173,6 +174,7 @@ private:
 	uint32_t mMinorVersion;
 	uint32_t mMajorVersion;
 	uint32_t mPositionRegister = -1;
+	uint32_t mEntryPointTypeId = -1;
 	uint32_t mEntryPointId = -1;
 	bool mIsVertexShader;
 
