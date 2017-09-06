@@ -72,6 +72,16 @@ union DestinationParameterToken
 	uint32_t AllField;
 };
 
+union OpcodeDescription
+{
+	struct
+	{
+		spv::Op Opcode : 16;
+		uint32_t WordCount : 16;
+	};
+	uint32_t Word;
+};
+
 //In DXBC can have float's in the DWORD stream so it was either this or break alias rules.
 union Token
 {
@@ -98,6 +108,17 @@ struct TypeDescription
 		return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType || this->ComponentCount < value.ComponentCount;
 	}
 };
+
+inline uint32_t Pack(uint32_t wordCount, spv::Op opcode)
+{
+	OpcodeDescription opcodeDescription;
+
+	opcodeDescription.WordCount = wordCount;
+	opcodeDescription.Opcode = opcode;
+
+	return opcodeDescription.Word;
+}
+
 
 inline void PutStringInVector(std::string& text, std::vector<uint32_t>& words)
 {

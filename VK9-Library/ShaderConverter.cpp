@@ -150,20 +150,17 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 		switch (registerType.PrimaryType)
 		{
 		case spv::OpTypeBool:
-			mTypeInstructions.push_back(2); //size
-			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(Pack(2, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			break;
 		case spv::OpTypeInt:
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(Pack(4, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			mTypeInstructions.push_back(32); //Number of bits.
 			mTypeInstructions.push_back(0); //Signedness (0 = unsigned,1 = signed)
 			break;
 		case spv::OpTypeFloat:
-			mTypeInstructions.push_back(3); //size
-			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(Pack(3, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			mTypeInstructions.push_back(32); //Number of bits.
 			break;
@@ -172,8 +169,7 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 		case spv::OpTypeMatrix:
 			columnTypeId = GetSpirVTypeId(registerType.SecondaryType);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(Pack(4, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			mTypeInstructions.push_back(columnTypeId); //Component/Column Type
 			mTypeInstructions.push_back(registerType.ComponentCount);
@@ -181,23 +177,20 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 		case spv::OpTypePointer:
 			pointerTypeId = GetSpirVTypeId(registerType.SecondaryType, registerType.TernaryType);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(Pack(4, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 			mTypeInstructions.push_back(pointerTypeId); // Type
 			break;
 		case spv::OpTypeSampler:
-			mTypeInstructions.push_back(2); //size
-			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(Pack(2, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			break;
 		case spv::OpTypeFunction:
 		{
 			returnTypeId = GetSpirVTypeId(registerType.SecondaryType);
 
-			mTypeInstructions.push_back(3 + registerType.Arguments.size()); //size
-			mTypeInstructions.push_back(registerType.PrimaryType); //Type
+			mTypeInstructions.push_back(Pack(3 + registerType.Arguments.size(), registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			mTypeInstructions.push_back(returnTypeId); //Return Type (Id)
 
@@ -424,8 +417,7 @@ void ShaderConverter::Process_DCL()
 		{
 			resultTypeId = GetSpirVTypeId(typeDescription);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(spv::OpVariable); //opcode
+			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
@@ -445,8 +437,7 @@ void ShaderConverter::Process_DCL()
 		{
 			resultTypeId = GetSpirVTypeId(typeDescription);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(spv::OpVariable); //opcode
+			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
@@ -486,8 +477,7 @@ void ShaderConverter::Process_DCL()
 		{
 			resultTypeId = GetSpirVTypeId(typeDescription);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(spv::OpVariable); //opcode
+			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
@@ -513,8 +503,7 @@ void ShaderConverter::Process_DCL()
 
 			resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(spv::OpVariable); //opcode
+			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
@@ -534,8 +523,7 @@ void ShaderConverter::Process_DCL()
 		{
 			resultTypeId = GetSpirVTypeId(typeDescription);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(spv::OpVariable); //opcode
+			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
@@ -545,8 +533,7 @@ void ShaderConverter::Process_DCL()
 		{
 			resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
 
-			mTypeInstructions.push_back(4); //size
-			mTypeInstructions.push_back(spv::OpVariable); //opcode
+			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 			mTypeInstructions.push_back(tokenId); //Result (Id)
 			mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
@@ -572,8 +559,7 @@ void ShaderConverter::Process_DEF()
 	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	mIdTypePairs[tokenId] = typeDescription;
 
-	mTypeInstructions.push_back(7); //size
-	mTypeInstructions.push_back(spv::OpConstant); //opcode
+	mTypeInstructions.push_back(Pack(7, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(tokenId); //Result (Id)
 	for (size_t i = 0; i < 4; i++)
@@ -594,8 +580,7 @@ void ShaderConverter::Process_DEFI()
 	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	mIdTypePairs[tokenId] = typeDescription;
 
-	mTypeInstructions.push_back(7); //size
-	mTypeInstructions.push_back(spv::OpConstant); //opcode
+	mTypeInstructions.push_back(Pack(7, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(tokenId); //Result (Id)
 	for (size_t i = 0; i < 4; i++)
@@ -616,8 +601,7 @@ void ShaderConverter::Process_DEFB()
 	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	mIdTypePairs[tokenId] = typeDescription;
 
-	mTypeInstructions.push_back(7); //size
-	mTypeInstructions.push_back(spv::OpConstant); //opcode
+	mTypeInstructions.push_back(Pack(7, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(tokenId); //Result (Id)
 	for (size_t i = 0; i < 1; i++)
@@ -643,8 +627,7 @@ void ShaderConverter::Process_MOV()
 
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	mFunctionDefinitionInstructions.push_back(4); //count
-	mFunctionDefinitionInstructions.push_back(spv::OpCopyObject); //Opcode
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
@@ -682,24 +665,21 @@ void ShaderConverter::Process_MUL()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIMul); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIMul); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpFMul); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
@@ -743,24 +723,21 @@ void ShaderConverter::Process_ADD()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIAdd); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIAdd); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpFAdd); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
@@ -804,24 +781,21 @@ void ShaderConverter::Process_SUB()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpISub); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpISub)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpISub); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpISub)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpFSub); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFSub)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
@@ -863,8 +837,7 @@ void ShaderConverter::Process_DP3()
 	typeDescription.PrimaryType = spv::OpTypeFloat;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	mFunctionDefinitionInstructions.push_back(5); //count
-	mFunctionDefinitionInstructions.push_back(spv::OpDot); //Opcode
+	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
@@ -891,8 +864,7 @@ void ShaderConverter::Process_DP4()
 	typeDescription.PrimaryType = spv::OpTypeFloat;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	mFunctionDefinitionInstructions.push_back(5); //count
-	mFunctionDefinitionInstructions.push_back(spv::OpDot); //Opcode
+	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
@@ -921,8 +893,7 @@ void ShaderConverter::Process_TEX()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 
-	mFunctionDefinitionInstructions.push_back(5); //count
-	mFunctionDefinitionInstructions.push_back(spv::OpImageFetch); //Opcode
+	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageFetch)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
@@ -968,16 +939,14 @@ void ShaderConverter::Process_MAD()
 	case spv::OpTypeBool:
 
 		//Write out multiply
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIMul); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 
 		//Write out add
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIAdd); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
@@ -986,16 +955,14 @@ void ShaderConverter::Process_MAD()
 		break;
 	case spv::OpTypeInt:
 		//Write out multiply
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIMul); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 
 		//Write out add
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpIAdd); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
@@ -1004,16 +971,14 @@ void ShaderConverter::Process_MAD()
 		break;
 	case spv::OpTypeFloat:
 		//Write out multiply
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpFMul); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 
 		//Write out add
-		mFunctionDefinitionInstructions.push_back(5); //count
-		mFunctionDefinitionInstructions.push_back(spv::OpFAdd); //Opcode
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
@@ -1053,8 +1018,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mEntryPointTypeId = GetSpirVTypeId(spv::OpFunction); //secondary type will be void by default.
 	mEntryPointId = GetNextId();
 
-	mFunctionDefinitionInstructions.push_back(5); //count
-	mFunctionDefinitionInstructions.push_back(spv::OpFunction); //Opcode
+	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFunction)); //size,Type
 	mFunctionDefinitionInstructions.push_back(GetSpirVTypeId(spv::OpTypeVoid)); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(mEntryPointId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(spv::FunctionControlMaskNone); //Function Control
@@ -1326,35 +1290,29 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	}
 
 	//End of entry point
-	mFunctionDefinitionInstructions.push_back(1); //count
-	mFunctionDefinitionInstructions.push_back(spv::OpReturn); //Opcode
-	mFunctionDefinitionInstructions.push_back(1); //count
-	mFunctionDefinitionInstructions.push_back(spv::OpFunctionEnd); //Opcode
+	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpReturn)); //size,Type
+	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpFunctionEnd)); //size,Type
 
 	//Capability
-	mCapabilityInstructions.push_back(2); //count
-	mCapabilityInstructions.push_back(spv::OpCapability); //Opcode
+	mCapabilityInstructions.push_back(Pack(2, spv::OpCapability)); //size,Type
 	mCapabilityInstructions.push_back(spv::CapabilityShader); //Capability
 
 	//Import
 	std::string importStatement = "GLSL.std.450";
 	//The spec says 3+variable but there are only 2 before string literal.
-	mExtensionInstructions.push_back(2 + importStatement.length() / 4); //count
-	mExtensionInstructions.push_back(spv::OpExtInstImport); //Opcode
+	mExtensionInstructions.push_back(Pack(2 + importStatement.length() / 4, spv::OpExtInstImport)); //size,Type
 	mExtensionInstructions.push_back(GetNextId()); //Result Id
 	PutStringInVector(importStatement, mExtensionInstructions);
 
 	//Memory Model
-	mMemoryModelInstructions.push_back(3); //count
-	mMemoryModelInstructions.push_back(spv::OpMemoryModel); //Opcode
+	mMemoryModelInstructions.push_back(Pack(3, spv::OpMemoryModel)); //size,Type
 	mMemoryModelInstructions.push_back(spv::AddressingModelLogical); //Addressing Model
 	mMemoryModelInstructions.push_back(spv::MemoryModelGLSL450); //Memory Model
 
 	//EntryPoint
 	std::string entryPointName = "main";
 	//The spec says 4+variable but there are only 3 before the string literal.
-	mEntryPointInstructions.push_back(3 + (entryPointName.length() / 4) + mInterfaceIds.size()); //count
-	mEntryPointInstructions.push_back(spv::OpEntryPoint); //Opcode
+	mEntryPointInstructions.push_back(Pack(3 + (entryPointName.length() / 4) + mInterfaceIds.size(), spv::OpEntryPoint)); //size,Type
 	if (mIsVertexShader)
 	{
 		mEntryPointInstructions.push_back(spv::ExecutionModelVertex); //Execution Model
@@ -1370,8 +1328,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//ExecutionMode
 	if (!mIsVertexShader)
 	{
-		mExecutionModeInstructions.push_back(3); //count
-		mExecutionModeInstructions.push_back(spv::OpExecutionMode); //Opcode
+		mExecutionModeInstructions.push_back(Pack(3, spv::OpExecutionMode)); //size,Type
 		mExecutionModeInstructions.push_back(mEntryPointId); //Entry Point (Id)
 		mExecutionModeInstructions.push_back(spv::ExecutionModeOriginLowerLeft); //Execution Mode
 	}
