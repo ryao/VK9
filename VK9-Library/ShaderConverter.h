@@ -124,23 +124,31 @@ inline void PutStringInVector(std::string& text, std::vector<uint32_t>& words)
 {
 	for (size_t i = 0; i < text.length(); i+=4)
 	{
-		switch (text.length() - (i+1))
+		uint32_t difference = text.length() - (i);
+		const char* value = text.c_str();
+
+		switch (difference)
 		{
 		case 0:
 			break;
 		case 1:
-			words.push_back(PACK(text.at(i), '\0', '\0', '\0'));
+			words.push_back(PACK('\0', '\0', '\0', value[i]));
 			break;
 		case 2:
-			words.push_back(PACK(text.at(i), text.at(i + 1), '\0', '\0'));
+			words.push_back(PACK('\0', '\0', value[i + 1], value[i]));
 			break;
 		case 3:
-			words.push_back(PACK(text.at(i), text.at(i + 1), text.at(i + 2), '\0'));
+			words.push_back(PACK('\0', value[i + 2], value[i + 1], value[i]));
 			break;
 		default:
-			words.push_back(PACK(text.at(i), text.at(i + 1), text.at(i + 2), text.at(i + 3)));
+			words.push_back(PACK(value[i+3], value[i + 2], value[i + 1], value[i]));
 			break;
 		}	
+	}
+
+	if (text.length() % 4 == 0)
+	{
+		words.push_back(0); //null terminator if all words have characters.
 	}
 
 }

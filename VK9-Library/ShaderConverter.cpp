@@ -996,8 +996,9 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mConvertedShader = {};
 	mInstructions.clear();
 
-	uint32_t token;
-	uint32_t instruction;
+	uint32_t stringWordSize=0;
+	uint32_t token=0;
+	uint32_t instruction=0;
 	mBaseToken = mNextToken = shader;
 
 	token = GetNextToken().i;
@@ -1300,7 +1301,12 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//Import
 	std::string importStatement = "GLSL.std.450";
 	//The spec says 3+variable but there are only 2 before string literal.
-	mExtensionInstructions.push_back(Pack(2 + importStatement.length() / 4, spv::OpExtInstImport)); //size,Type
+	stringWordSize = 2 + (importStatement.length() / 4);
+	if (importStatement.length() % 4 == 0)
+	{
+		stringWordSize++;
+	}
+	mExtensionInstructions.push_back(Pack(stringWordSize, spv::OpExtInstImport)); //size,Type
 	mExtensionInstructions.push_back(GetNextId()); //Result Id
 	PutStringInVector(importStatement, mExtensionInstructions);
 
@@ -1312,7 +1318,12 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//EntryPoint
 	std::string entryPointName = "main";
 	//The spec says 4+variable but there are only 3 before the string literal.
-	mEntryPointInstructions.push_back(Pack(3 + (entryPointName.length() / 4) + mInterfaceIds.size(), spv::OpEntryPoint)); //size,Type
+	stringWordSize = 3 + (entryPointName.length() / 4) + mInterfaceIds.size();
+	if (entryPointName.length() % 4 == 0)
+	{
+		stringWordSize++;
+	}
+	mEntryPointInstructions.push_back(Pack(stringWordSize, spv::OpEntryPoint)); //size,Type
 	if (mIsVertexShader)
 	{
 		mEntryPointInstructions.push_back(spv::ExecutionModelVertex); //Execution Model
