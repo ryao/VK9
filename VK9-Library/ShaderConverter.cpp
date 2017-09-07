@@ -924,7 +924,8 @@ void ShaderConverter::Process_MAD()
 	Token argumentToken3 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType3 = GetRegisterType(argumentToken3.i);
 
-	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+	typeDescription = GetTypeByRegister(argumentToken1.DestinationParameterToken.RegisterNumber);
+	dataTypeId = GetSpirVTypeId(typeDescription);
 
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
@@ -942,7 +943,6 @@ void ShaderConverter::Process_MAD()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-
 		//Write out multiply
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
@@ -991,7 +991,7 @@ void ShaderConverter::Process_MAD()
 
 		break;
 	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_SUB - Unsupported data type " << dataType;
+		BOOST_LOG_TRIVIAL(warning) << "Process_MAD - Unsupported data type " << dataType;
 		break;
 	}
 }
