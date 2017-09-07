@@ -201,6 +201,10 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 			}
 		}
 		break;
+		case spv::OpTypeVoid:
+			mTypeInstructions.push_back(Pack(2, registerType.PrimaryType)); //size,Type
+			mTypeInstructions.push_back(id); //Id		
+		break;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "GetSpirVTypeId - Unsupported data type " << registerType.PrimaryType;
 			break;
@@ -555,11 +559,13 @@ void ShaderConverter::Process_DEF()
 
 	uint32_t tokenId = GetNextVersionId(destinationParameterToken.RegisterNumber);
 	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeFloat;
+	typeDescription.PrimaryType = spv::OpTypeVector;
+	typeDescription.SecondaryType = spv::OpTypeFloat;
+	typeDescription.ComponentCount = 4;
 	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	mIdTypePairs[tokenId] = typeDescription;
 
-	mTypeInstructions.push_back(Pack(7, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(Pack(7, spv::OpConstantComposite)); //size,Type
 	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(tokenId); //Result (Id)
 	for (size_t i = 0; i < 4; i++)
@@ -576,11 +582,13 @@ void ShaderConverter::Process_DEFI()
 
 	uint32_t tokenId = GetNextVersionId(destinationParameterToken.RegisterNumber);
 	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeInt;
+	typeDescription.PrimaryType = spv::OpTypeVector;
+	typeDescription.SecondaryType = spv::OpTypeInt;
+	typeDescription.ComponentCount = 4;
 	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	mIdTypePairs[tokenId] = typeDescription;
 
-	mTypeInstructions.push_back(Pack(7, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(Pack(7, spv::OpConstantComposite)); //size,Type
 	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(tokenId); //Result (Id)
 	for (size_t i = 0; i < 4; i++)
@@ -601,13 +609,10 @@ void ShaderConverter::Process_DEFB()
 	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
 	mIdTypePairs[tokenId] = typeDescription;
 
-	mTypeInstructions.push_back(Pack(7, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(Pack(4, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(resultTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(tokenId); //Result (Id)
-	for (size_t i = 0; i < 1; i++)
-	{
-		mTypeInstructions.push_back(GetNextToken().i); //Literal Values
-	}
+	mTypeInstructions.push_back(GetNextToken().i); //Literal Value
 }
 
 void ShaderConverter::Process_MOV()
@@ -1016,7 +1021,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//Probably more info in this word but I'll handle that later.
 
 	//End of entry point
-	mEntryPointTypeId = GetSpirVTypeId(spv::OpFunction); //secondary type will be void by default.
+	mEntryPointTypeId = GetSpirVTypeId(spv::OpTypeFunction); //secondary type will be void by default.
 	mEntryPointId = GetNextId();
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFunction)); //size,Type
