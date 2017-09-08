@@ -197,8 +197,8 @@ private:
 
 	uint32_t* mBaseToken = nullptr;
 	uint32_t* mNextToken = nullptr;
-	uint32_t mBaseId = 0;
-	uint32_t mNextId = 0;
+	uint32_t mBaseId = 1;
+	uint32_t mNextId = 1;
 	uint32_t mTokenOffset = 0;
 	uint32_t mMinorVersion = 0;
 	uint32_t mMajorVersion = 0;
@@ -220,6 +220,7 @@ private:
 	uint32_t GetUsageIndex(uint32_t token);
 	uint32_t GetSpirVTypeId(spv::Op registerType);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2);
+	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2,uint32_t componentCount);
 	uint32_t GetSpirVTypeId(TypeDescription& registerType);
 	uint32_t GetNextVersionId(uint32_t registerNumber);
 	TypeDescription GetTypeByRegister(uint32_t registerNumber);
