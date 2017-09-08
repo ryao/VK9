@@ -229,6 +229,8 @@ private:
 	void CreateSpirVModule();
 
 	//declare
+	void Process_DCL_Pixel();
+	void Process_DCL_Vertex();
 	void Process_DCL();
 	void Process_DEF();
 	void Process_DEFI();

@@ -383,8 +383,7 @@ void ShaderConverter::CreateSpirVModule()
 	mInstructions.clear();
 }
 
-//https://msdn.microsoft.com/en-us/library/windows/hardware/ff552693(v=vs.85).aspx
-void ShaderConverter::Process_DCL()
+void ShaderConverter::Process_DCL_Pixel()
 {
 	Token token = GetNextToken();
 	Token registerToken = GetNextToken();
@@ -394,14 +393,13 @@ void ShaderConverter::Process_DCL()
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(registerToken.i);
 	uint32_t tokenId = GetNextVersionId(registerNumber);
 	TypeDescription typeDescription;
+	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
+	uint32_t resultTypeId;
+	uint32_t textureType;
+
 	typeDescription.PrimaryType = spv::OpTypePointer;
 	typeDescription.SecondaryType = spv::OpTypeVector;
 	typeDescription.TernaryType = spv::OpTypeFloat;
-	//uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
-	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
-	uint32_t resultTypeId;
-
-	mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
 
 	//Magic numbers from ToGL (no whole numbers?)
 	switch (registerComponents)
@@ -427,140 +425,200 @@ void ShaderConverter::Process_DCL()
 
 	mIdTypePairs[tokenId] = typeDescription;
 
+	switch (registerType)
+	{
+	case D3DSPR_INPUT:
+		resultTypeId = GetSpirVTypeId(typeDescription);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+		//Optional initializer
+		break;
+	case D3DSPR_TEXTURE:
+		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
+		//Optional initializer
+		break;
+	case D3DSPR_SAMPLER:
+		textureType = GetTextureType(token.i);
+
+		//switch (textureType)
+		//{
+		//case D3DSTT_2D:
+		//	break;
+		//case D3DSTT_CUBE:
+		//	break;
+		//case D3DSTT_VOLUME:
+		//	break;
+		//case D3DSTT_UNKNOWN:
+		//	break;
+		//default:
+		//	break;
+		//}	
+
+		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
+		//Optional initializer
+
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = mConvertedShader.mDescriptorSetLayoutBindingCount;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorCount = 1;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].pImmutableSamplers = NULL;
+
+		mConvertedShader.mDescriptorSetLayoutBindingCount++;
+
+		BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type D3DSPR_SAMPLER";
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Pixel unsupported register type " << registerType;
+		break;
+	}
+}
+
+void ShaderConverter::Process_DCL_Vertex()
+{
+	Token token = GetNextToken();
+	Token registerToken = GetNextToken();
+	uint32_t usage = GetUsage(token.i);
+	uint32_t usageIndex = GetUsageIndex(token.i);
+	uint32_t registerNumber = GetRegisterNumber(registerToken.i);
+	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(registerToken.i);
+	uint32_t tokenId = GetNextVersionId(registerNumber);
+	TypeDescription typeDescription;
+	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
+	uint32_t resultTypeId;
+
+	typeDescription.PrimaryType = spv::OpTypePointer;
+	typeDescription.SecondaryType = spv::OpTypeVector;
+	typeDescription.TernaryType = spv::OpTypeFloat;
+
+	//Magic numbers from ToGL (no whole numbers?)
+	switch (registerComponents)
+	{
+	case 1: //float
+		typeDescription.SecondaryType = spv::OpTypeFloat;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+		typeDescription.ComponentCount = 1;
+		break;
+	case 3: //vec2
+		typeDescription.ComponentCount = 2;
+		break;
+	case 7: //vec3
+		typeDescription.ComponentCount = 3;
+		break;
+	case 0xF: //vec4
+		typeDescription.ComponentCount = 4;
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported component type " << registerComponents;
+		break;
+	}
+
+	mIdTypePairs[tokenId] = typeDescription;
+
+	switch (registerType)
+	{
+	case D3DSPR_INPUT:
+
+		mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
+
+		resultTypeId = GetSpirVTypeId(typeDescription);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+															 //Optional initializer
+
+		mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].binding = 0;//element.Stream; TODO:REVISIT
+		mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].location = mConvertedShader.mVertexInputAttributeDescriptionCount;
+		mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].offset = 0;//element.Offset;
+
+		switch (typeDescription.ComponentCount)
+		{
+		case 1: // 1D float expanded to (value, 0., 0., 1.)
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32_SFLOAT;
+			break;
+		case 2:  // 2D float expanded to (value, value, 0., 1.)
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32_SFLOAT;
+			break;
+		case 3: // 3D float expanded to (value, value, value, 1.)
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32B32_SFLOAT;
+			break;
+		case 4:  // 4D float
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+		default:
+			break;
+		}
+
+		mConvertedShader.mVertexInputAttributeDescriptionCount++;
+
+		break;
+	case D3DSPR_OUTPUT:
+		resultTypeId = GetSpirVTypeId(typeDescription);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+		//Optional initializer
+
+		if (usage == D3DDECLUSAGE_POSITION)
+		{
+			mPositionRegister = usageIndex; //might need this later.
+		}
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Vertex unsupported register type " << registerType;
+		break;
+	}
+}
+
+void ShaderConverter::Process_DCL()
+{
 	if (mIsVertexShader)
 	{
-		if (mMajorVersion >= 3 && registerType == D3DSPR_OUTPUT)
+		if (mMajorVersion >= 3)
 		{
-			resultTypeId = GetSpirVTypeId(typeDescription);
-
-			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-			mTypeInstructions.push_back(tokenId); //Result (Id)
-			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
-			//Optional initializer
-
-			if (usage == D3DDECLUSAGE_POSITION)
-			{
-				mPositionRegister = usageIndex; //might need this later.
-			}
-
+			Process_DCL_Vertex();
 		}
-		else if (registerType == D3DSPR_SAMPLER)
+		else if (mMajorVersion >= 2)
 		{
-			BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type D3DSPR_SAMPLER";
-		}
-		else if (registerType == D3DSPR_INPUT)
-		{
-			resultTypeId = GetSpirVTypeId(typeDescription);
-
-			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-			mTypeInstructions.push_back(tokenId); //Result (Id)
-			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
-			//Optional initializer
-
-			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].binding = 0;//element.Stream; TODO:REVISIT
-			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].location = mConvertedShader.mVertexInputAttributeDescriptionCount;
-			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].offset = 0;//element.Offset;
-
-			switch (typeDescription.ComponentCount)
-			{
-			case 1: // 1D float expanded to (value, 0., 0., 1.)
-				mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32_SFLOAT;
-				break;
-			case 2:  // 2D float expanded to (value, value, 0., 1.)
-				mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32_SFLOAT;
-				break;
-			case 3: // 3D float expanded to (value, value, value, 1.)
-				mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32B32_SFLOAT;
-				break;
-			case 4:  // 4D float
-				mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-			default:
-				break;
-			}
-
-			mConvertedShader.mVertexInputAttributeDescriptionCount++;
+			Process_DCL_Vertex();
 		}
 		else
 		{
-			BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type " << registerType;
-		}
+			Process_DCL_Vertex();
+			BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
+		}		
 	}
-	else //This is a pixel shader (at least for d3d9)
+	else
 	{
-		if (mMajorVersion >= 3 && registerType == D3DSPR_OUTPUT)
+		if (mMajorVersion >= 3)
 		{
-			resultTypeId = GetSpirVTypeId(typeDescription);
-
-			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-			mTypeInstructions.push_back(tokenId); //Result (Id)
-			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
-			//Optional initializer
+			Process_DCL_Pixel();
 		}
-		else if (registerType == D3DSPR_SAMPLER)
+		else if (mMajorVersion >= 2)
 		{
-			uint32_t textureType = GetTextureType(token.i);
-
-			//switch (textureType)
-			//{
-			//case D3DSTT_2D:
-			//	break;
-			//case D3DSTT_CUBE:
-			//	break;
-			//case D3DSTT_VOLUME:
-			//	break;
-			//case D3DSTT_UNKNOWN:
-			//	break;
-			//default:
-			//	break;
-			//}	
-
-			resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler);
-
-			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-			mTypeInstructions.push_back(tokenId); //Result (Id)
-			mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
-			//Optional initializer
-
-			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = mConvertedShader.mDescriptorSetLayoutBindingCount;
-			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorCount = 1;
-			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].pImmutableSamplers = NULL;
-
-			mConvertedShader.mDescriptorSetLayoutBindingCount++;
-
-			BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type D3DSPR_SAMPLER";
-		}
-		else if (registerType == D3DSPR_INPUT)
-		{
-			resultTypeId = GetSpirVTypeId(typeDescription);
-
-			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-			mTypeInstructions.push_back(tokenId); //Result (Id)
-			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
-			//Optional initializer
-		}
-		else if (registerType == D3DSPR_TEXTURE)
-		{
-			resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
-
-			mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-			mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-			mTypeInstructions.push_back(tokenId); //Result (Id)
-			mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
-			//Optional initializer
+			Process_DCL_Pixel();
 		}
 		else
 		{
-			BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type " << registerType;
-		}
+			Process_DCL_Pixel();
+			BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
+		}		
 	}
-
 }
 
 void ShaderConverter::Process_DEF()
@@ -978,6 +1036,7 @@ void ShaderConverter::Process_DP3()
 {
 	//spv::Op dataType;
 	uint32_t dataTypeId;
+	uint32_t resultId;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -989,6 +1048,7 @@ void ShaderConverter::Process_DP3()
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
 	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+	resultId = GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber);
 
 	TypeDescription typeDescription;
 	typeDescription.PrimaryType = spv::OpTypeFloat;
@@ -996,7 +1056,7 @@ void ShaderConverter::Process_DP3()
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 }
@@ -1005,6 +1065,7 @@ void ShaderConverter::Process_DP4()
 {
 	//spv::Op dataType;
 	uint32_t dataTypeId;
+	uint32_t resultId;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -1016,6 +1077,7 @@ void ShaderConverter::Process_DP4()
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
 	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+	resultId = GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber);
 
 	TypeDescription typeDescription;
 	typeDescription.PrimaryType = spv::OpTypeFloat;
@@ -1023,7 +1085,7 @@ void ShaderConverter::Process_DP4()
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken.DestinationParameterToken.RegisterNumber)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken1.DestinationParameterToken.RegisterNumber]); //argument1 (Id)
 	mFunctionDefinitionInstructions.push_back(mRegisterIdPairs[argumentToken2.DestinationParameterToken.RegisterNumber]); //argument2 (Id)
 }
@@ -1219,6 +1281,9 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mFunctionDefinitionInstructions.push_back(mEntryPointId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(spv::FunctionControlMaskNone); //Function Control
 	mFunctionDefinitionInstructions.push_back(mEntryPointTypeId); //Function Type (Id)
+
+	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
+	mFunctionDefinitionInstructions.push_back(GetNextId()); //result (Id)
 
 	//Read DXBC instructions
 	while (token != D3DPS_END())
