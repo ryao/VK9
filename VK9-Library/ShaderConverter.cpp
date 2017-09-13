@@ -297,6 +297,49 @@ TypeDescription ShaderConverter::GetTypeByRegister(uint32_t registerNumber)
 	return dataType;
 }
 
+/*
+This function assumes a source register. 
+As such it can write out the conversion instructions and then return the new Id for the caller to use instead of the original source register.
+*/
+uint32_t ShaderConverter::GetSwizzledId(uint32_t inputId, const Token& token)
+{
+	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
+
+	if (swizzle == D3DVS_NOSWIZZLE)
+	{
+		return inputId; //No swizzle no op.
+	}
+
+	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
+
+	if (outputComponentCount > 1) //scalar
+	{
+		uint32_t xSource = swizzle & D3DVS_X_W;
+
+		
+
+	}
+	else //vector
+	{
+		if (outputComponentCount == 1)
+		{
+			uint32_t xSource = swizzle & D3DVS_X_W;
+			if (outputComponentCount == 2)
+			{
+				uint32_t ySource = swizzle & D3DVS_Y_W;
+				if (outputComponentCount == 3)
+				{
+					uint32_t zSource = swizzle & D3DVS_Z_W;
+					if (outputComponentCount == 4)
+					{
+						uint32_t wSource = swizzle & D3DVS_W_W;
+					}
+				}
+			}
+		}
+	}
+}
+
 void ShaderConverter::CombineSpirVOpCodes()
 {
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
