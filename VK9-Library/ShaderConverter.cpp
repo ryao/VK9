@@ -304,40 +304,211 @@ As such it can write out the conversion instructions and then return the new Id 
 uint32_t ShaderConverter::GetSwizzledId(uint32_t inputId, const Token& token)
 {
 	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
+	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
 
-	if (swizzle == D3DVS_NOSWIZZLE)
+	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount==0)
 	{
 		return inputId; //No swizzle no op.
 	}
 
-	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
+	uint32_t xSource = swizzle & D3DVS_X_W;
+	uint32_t ySource = swizzle & D3DVS_Y_W;
+	uint32_t zSource = swizzle & D3DVS_Z_W;
+	uint32_t wSource = swizzle & D3DVS_W_W;
+	uint32_t vectorTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, outputComponentCount);
+	uint32_t outputId = GetNextId();
 
-	if (outputComponentCount > 1) //scalar
+	//OpVectorShuffle must return a vector and vectors must have at least 2 elements so extra must be used for a single component swizzle operation.
+	if 
+	(
+		((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 2))) &&
+		((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 4))) &&
+		((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 6)))
+	)
 	{
-		uint32_t xSource = swizzle & D3DVS_X_W;
-
-		
+		//TODO: add extract branch.
 
 	}
 	else //vector
 	{
-		if (outputComponentCount == 1)
-		{
-			uint32_t xSource = swizzle & D3DVS_X_W;
-			if (outputComponentCount == 2)
+		switch (outputComponentCount)
+		{ //1 should be covered by the other branch.
+		case 2:
+			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
+			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
+			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
+			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
+			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+
+			switch (xSource)
 			{
-				uint32_t ySource = swizzle & D3DVS_Y_W;
-				if (outputComponentCount == 3)
-				{
-					uint32_t zSource = swizzle & D3DVS_Z_W;
-					if (outputComponentCount == 4)
-					{
-						uint32_t wSource = swizzle & D3DVS_W_W;
-					}
-				}
+			case D3DVS_X_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_X_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_X_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_X_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
 			}
+
+			switch (ySource)
+			{
+			case D3DVS_Y_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_Y_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_Y_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_Y_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			break;
+		case 3:
+			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
+			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
+			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
+			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
+			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+
+			switch (xSource)
+			{
+			case D3DVS_X_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_X_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_X_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_X_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			switch (ySource)
+			{
+			case D3DVS_Y_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_Y_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_Y_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_Y_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			switch (zSource)
+			{
+			case D3DVS_Z_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_Z_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_Z_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_Z_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			break;
+		case 4:
+			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
+			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
+			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
+			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
+			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+
+			switch (xSource)
+			{
+			case D3DVS_X_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_X_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_X_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_X_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			switch (ySource)
+			{
+			case D3DVS_Y_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_Y_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_Y_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_Y_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			switch (zSource)
+			{
+			case D3DVS_Z_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_Z_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_Z_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_Z_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			switch (wSource)
+			{
+			case D3DVS_W_X:
+				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				break;
+			case D3DVS_W_Y:
+				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				break;
+			case D3DVS_W_Z:
+				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				break;
+			case D3DVS_W_W:
+				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				break;
+			}
+
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "GetSwizzledId - Unsupported component count  " << outputComponentCount;
+			break;
 		}
+
 	}
+
+	return outputId;
 }
 
 void ShaderConverter::CombineSpirVOpCodes()
