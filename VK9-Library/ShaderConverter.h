@@ -225,7 +225,7 @@ private:
 	uint32_t GetNextVersionId(uint32_t registerNumber);
 	TypeDescription GetTypeByRegister(uint32_t registerNumber);
 
-	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = 0);
+	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX);
 
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();

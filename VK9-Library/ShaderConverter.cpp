@@ -215,7 +215,7 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 		case spv::OpTypeVoid:
 			mTypeInstructions.push_back(Pack(2, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id		
-		break;
+			break;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "GetSpirVTypeId - Unsupported data type " << registerType.PrimaryType;
 			break;
@@ -298,44 +298,74 @@ TypeDescription ShaderConverter::GetTypeByRegister(uint32_t registerNumber)
 }
 
 /*
-This function assumes a source register. 
+This function assumes a source register.
 As such it can write out the conversion instructions and then return the new Id for the caller to use instead of the original source register.
 */
 uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 {
 	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
-	uint32_t vectorTypeId;
+	uint32_t vectorTypeId=0;
+	uint32_t registerNumber=0;
+	//TypeDescription typeDescription;
+	D3DSHADER_PARAM_REGISTER_TYPE registerType;
 
-	if (!inputId)
+	registerType = GetRegisterType(token.i);
+	//typeDescription = GetTypeByRegister(token.DestinationParameterToken.RegisterNumber);
+
+	if (inputId == UINT_MAX)
 	{
-		inputId = mRegisterIdPairs[token.DestinationParameterToken.RegisterNumber];
+		switch (registerType)
+		{
+		case D3DSPR_CONST2:
+			registerNumber = token.DestinationParameterToken.RegisterNumber + 2048;
+			break;
+		case D3DSPR_CONST3:
+			registerNumber = token.DestinationParameterToken.RegisterNumber + 4096;
+			break;
+		case D3DSPR_CONST4:
+			registerNumber = token.DestinationParameterToken.RegisterNumber + 6144;
+			break;
+		default:
+			registerNumber = token.DestinationParameterToken.RegisterNumber;
+			break;
+		}
+
+		boost::container::flat_map<uint32_t, uint32_t>::iterator it = mRegisterIdPairs.find(registerNumber);
+		if (it != mRegisterIdPairs.end())
+		{
+			inputId = it->second;
+		}
+		else
+		{
+			//TODO: figure out the data type and add a declare.
+
+			inputId = 0;
+		}	
 	}
 
-	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount==0)
+	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0)
 	{
 		return inputId; //No swizzle no op.
 	}
-	
+
 	uint32_t xSource = swizzle & D3DVS_X_W;
 	uint32_t ySource = swizzle & D3DVS_Y_W;
 	uint32_t zSource = swizzle & D3DVS_Z_W;
 	uint32_t wSource = swizzle & D3DVS_W_W;
 	uint32_t outputId = GetNextId();
 
-	//typeDescription = GetTypeByRegister(token.DestinationParameterToken.RegisterNumber);
-
-	//OpVectorShuffle must return a vector and vectors must have at least 2 elements so extract must be used for a single component swizzle operation.
-	if 
-	(
+	//OpVectorShuffle must return a vector and vectors must have at least 2 elements so OpCompositeExtract must be used for a single component swizzle operation.
+	if
+		(
 		((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 2))) &&
-		((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 4))) &&
-		((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 6)))
-	)
+			((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 4))) &&
+			((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 6)))
+			)
 	{
 		vectorTypeId = GetSpirVTypeId(spv::OpTypeFloat); //Revisit may not be a float
 
-		mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpVectorShuffle)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
 		mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
 		mFunctionDefinitionInstructions.push_back(inputId); //Composite (Id)
@@ -845,7 +875,7 @@ void ShaderConverter::Process_DCL()
 		{
 			Process_DCL_Vertex();
 			BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
-		}		
+		}
 	}
 	else
 	{
@@ -861,7 +891,7 @@ void ShaderConverter::Process_DCL()
 		{
 			Process_DCL_Pixel();
 			BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
-		}		
+		}
 	}
 }
 
@@ -1395,7 +1425,7 @@ void ShaderConverter::Process_MAD()
 {
 	TypeDescription typeDescription;
 	spv::Op dataType;
-	uint32_t dataTypeId;	
+	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
 	uint32_t argumentId3;
@@ -1539,9 +1569,9 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mConvertedShader = {};
 	mInstructions.clear();
 
-	uint32_t stringWordSize=0;
-	uint32_t token=0;
-	uint32_t instruction=0;
+	uint32_t stringWordSize = 0;
+	uint32_t token = 0;
+	uint32_t instruction = 0;
 	mBaseToken = mNextToken = shader;
 
 	token = GetNextToken().i;
