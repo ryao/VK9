@@ -163,8 +163,11 @@ public:
 	ConvertedShader Convert(uint32_t* shader);
 private:	
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
-	boost::container::flat_map<uint32_t, uint32_t> mRegisterIdPairs;
-	boost::container::flat_map<uint32_t, uint32_t> mIdRegisterPairs;
+
+
+	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mRegistersById;
+	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mIdsByRegister;
+
 
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
@@ -222,9 +225,10 @@ private:
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2,uint32_t componentCount);
 	uint32_t GetSpirVTypeId(TypeDescription& registerType);
-	uint32_t GetNextVersionId(uint32_t registerNumber);
-	TypeDescription GetTypeByRegister(uint32_t registerNumber);
-
+	uint32_t GetNextVersionId(const Token& token);
+	uint32_t GetIdByRegister(const Token& token);
+	void SetIdByRegister(const Token& token, uint32_t id);
+	TypeDescription GetTypeByRegister(const Token& token);
 	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX);
 
 	void CombineSpirVOpCodes();
