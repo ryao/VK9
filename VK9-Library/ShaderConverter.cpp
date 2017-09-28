@@ -301,7 +301,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		}
 	}
 
-	BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber;
+	BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
 
 	return 0;
 }
@@ -692,7 +692,7 @@ void ShaderConverter::Process_DCL_Pixel()
 	uint32_t usageIndex = GetUsageIndex(token.i);
 	uint32_t registerNumber = GetRegisterNumber(registerToken.i);
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(registerToken.i);
-	uint32_t tokenId = GetNextVersionId(token);
+	uint32_t tokenId = GetNextVersionId(registerToken);
 	TypeDescription typeDescription;
 	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
 	uint32_t resultTypeId;
@@ -795,7 +795,7 @@ void ShaderConverter::Process_DCL_Vertex()
 	uint32_t usageIndex = GetUsageIndex(token.i);
 	uint32_t registerNumber = GetRegisterNumber(registerToken.i);
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(registerToken.i);
-	uint32_t tokenId = GetNextVersionId(token);
+	uint32_t tokenId = GetNextVersionId(registerToken);
 	TypeDescription typeDescription;
 	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
 	uint32_t resultTypeId;
