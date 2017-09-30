@@ -3449,29 +3449,32 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9 **ppS
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
-	//TODO: Implement.
+	for (size_t i = 0; i < BoolCount; i++)
+	{
+		pConstantData[i] = this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i];
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetVertexShaderConstantB is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
-	//TODO: Implement.
+	for (size_t i = 0; i < Vector4fCount; i++)
+	{
+		pConstantData[i] = this->mBufferManager->mPushConstants.Floats[(StartRegister * 4) + i];
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetVertexShaderConstantF is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
-	//TODO: Implement.
+	for (size_t i = 0; i < Vector4iCount; i++)
+	{
+		pConstantData[i] = this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i];
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetVertexShaderConstantI is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
@@ -5005,27 +5008,30 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pSha
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetVertexShaderConstantB is not implemented!";
+	for (size_t i = 0; i < BoolCount; i++)
+	{
+		this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
+	}
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetVertexShaderConstantF is not implemented!";
+	for (size_t i = 0; i < Vector4fCount; i++)
+	{
+		this->mBufferManager->mPushConstants.Floats[(StartRegister * 4) + i] = pConstantData[i];
+	}
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetVertexShaderConstantI is not implemented!";
+	for (size_t i = 0; i < Vector4iCount; i++)
+	{
+		this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
+	}
 
 	return S_OK;
 }

@@ -58,30 +58,30 @@ struct Vertex
 };
 
 /*
-The structure below is using vec4 for position and direction because some implementations handle vec3 strange. 
+The structure below is using vec4 for position and direction because some implementations handle vec3 strange.
 The alignment requirements are different for vec4 versus int/float so I moved "Type" after the vec4 variables to prevent strange padding in the middle of the structure.
 In addition if the structure isn't a multiple of 16 the stride between elements in an array can be different. That is why the filler variables are included.
 This structure is exactly 128 bytes.
 */
 struct Light
 {
-	float                 Diffuse[4];         /* Diffuse color of light */
-	float                 Specular[4];        /* Specular color of light */
-	float                 Ambient[4];         /* Ambient color of light */
-	float                 Position[4];        /* Position in world space */
-	float                 Direction[4];       /* Direction in world space */
-	int                   Type;            /* Type of light source */
-	float                 Range;           /* Cutoff range */
-	float                 Falloff;         /* Falloff */
-	float                 Attenuation0;    /* Constant attenuation */
-	float                 Attenuation1;    /* Linear attenuation */
-	float                 Attenuation2;    /* Quadratic attenuation */
-	float                 Theta;           /* Inner angle of spotlight cone */
-	float                 Phi;             /* Outer angle of spotlight cone */
+	float                 Diffuse[4] = {};         /* Diffuse color of light */
+	float                 Specular[4] = {};        /* Specular color of light */
+	float                 Ambient[4] = {};         /* Ambient color of light */
+	float                 Position[4] = {};        /* Position in world space */
+	float                 Direction[4] = {};       /* Direction in world space */
+	int                   Type = 0;            /* Type of light source */
+	float                 Range = 0;           /* Cutoff range */
+	float                 Falloff = 0;         /* Falloff */
+	float                 Attenuation0 = 0;    /* Constant attenuation */
+	float                 Attenuation1 = 0;    /* Linear attenuation */
+	float                 Attenuation2 = 0;    /* Quadratic attenuation */
+	float                 Theta = 0;           /* Inner angle of spotlight cone */
+	float                 Phi = 0;             /* Outer angle of spotlight cone */
 	int                   IsEnabled = 0;       /*Replaces separate enable structure.*/
-	int                   Filler1;
-	int                   Filler2;
-	int                   Filler3;
+	int                   Filler1 = 0;
+	int                   Filler2 = 0;
+	int                   Filler3 = 0;
 };
 
 class StreamSource
@@ -456,53 +456,53 @@ struct DeviceState
 	bool hasColorVertex = false;
 	bool hasLocalViewer = false;
 	bool hasNormalizeNormals = false;
-	bool hasDiffuseMaterialSource  = false;
+	bool hasDiffuseMaterialSource = false;
 	bool hasSpecularMaterialSource = false;
-	bool hasAmbientMaterialSource  = false;
+	bool hasAmbientMaterialSource = false;
 	bool hasEmissiveMaterialSource = false;
 	bool hasVertexBlend = false;
 	bool hasClipPlaneEnable = false;
 	bool hasPointSize = false;
-	bool hasPointSizeMinimum  = false;
+	bool hasPointSizeMinimum = false;
 	bool hasPointSpriteEnable = false;
-	bool hasPointScaleEnable  = false;
-	bool hasPointScaleA  = false;
-	bool hasPointScaleB  = false;
-	bool hasPointScaleC  = false;
+	bool hasPointScaleEnable = false;
+	bool hasPointScaleA = false;
+	bool hasPointScaleB = false;
+	bool hasPointScaleC = false;
 	bool hasMultisampleAntiAlias = false;
 	bool hasMultisampleMask = false;
-	bool hasPatchEdgeStyle  = false;
+	bool hasPatchEdgeStyle = false;
 	bool hasDebugMonitorToken = false;
-	bool hasPointSizeMaximum  = false;
+	bool hasPointSizeMaximum = false;
 	bool hasIndexedVertexBlendEnable = false;
 	bool hasColorWriteEnable = false;
 	bool hasTweenFactor = false;
-	bool hasBlendOperation  = false;
-	bool hasPositionDegree  = false;
+	bool hasBlendOperation = false;
+	bool hasPositionDegree = false;
 	bool hasNormalDegree = false;
 	bool hasScissorTestEnable = false;
 	bool hasSlopeScaleDepthBias = false;
 	bool hasAntiAliasedLineEnable = false;
 	bool hasMinimumTessellationLevel = false;
 	bool hasMaximumTessellationLevel = false;
-	bool hasAdaptivetessX  = false;
-	bool hasAdaptivetessY  = false;
-	bool hasAdaptivetessZ  = false;
-	bool hasAdaptivetessW  = false;
+	bool hasAdaptivetessX = false;
+	bool hasAdaptivetessY = false;
+	bool hasAdaptivetessZ = false;
+	bool hasAdaptivetessW = false;
 	bool hasEnableAdaptiveTessellation = false;
 	bool hasTwoSidedStencilMode = false;
-	bool hasCcwStencilFail  = false;
+	bool hasCcwStencilFail = false;
 	bool hasCcwStencilZFail = false;
-	bool hasCcwStencilPass  = false;
+	bool hasCcwStencilPass = false;
 	bool hasCcwStencilFunction = false;
-	bool hasColorWriteEnable1  = false;
-	bool hasColorWriteEnable2  = false;
-	bool hasColorWriteEnable3  = false;
+	bool hasColorWriteEnable1 = false;
+	bool hasColorWriteEnable2 = false;
+	bool hasColorWriteEnable3 = false;
 	bool hasBlendFactor = false;
 	bool hasSrgbWriteEnable = false;
 	bool hasDepthBias = false;
-	bool hasWrap8  = false;
-	bool hasWrap9  = false;
+	bool hasWrap8 = false;
+	bool hasWrap9 = false;
 	bool hasWrap10 = false;
 	bool hasWrap11 = false;
 	bool hasWrap12 = false;

@@ -1082,7 +1082,11 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	{
 		UpdatePushConstants(context);
 	}
-	
+	else
+	{
+		vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE * 2, &mPushConstants);
+	}
+
 	/**********************************************
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
@@ -1498,16 +1502,18 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 	if (context->VertexShader != nullptr)
 	{
-		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = context->VertexShader->mConvertedShader.mVertexInputAttributeDescriptionCount;
+		auto& convertedShader = context->VertexShader->mConvertedShader;
 
-		memcpy(&mDescriptorSetLayoutBinding, &context->VertexShader->mConvertedShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
+		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = convertedShader.mVertexInputAttributeDescriptionCount;
+
+		memcpy(&mDescriptorSetLayoutBinding, &convertedShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
 
 		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 
 		mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 		mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 
-		mDescriptorSetLayoutCreateInfo.bindingCount = context->VertexShader->mConvertedShader.mDescriptorSetLayoutBindingCount;
+		mDescriptorSetLayoutCreateInfo.bindingCount = convertedShader.mDescriptorSetLayoutBindingCount;
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 	}
 	else
@@ -1802,8 +1808,7 @@ void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 	mTransformations.mTotalTransformation = mTransformations.mProjection * mTransformations.mView * mTransformations.mModel;
 	//mTotalTransformation = mModel * mView * mProjection;
 
-	//vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, UBO_SIZE, mTotalTransformation.data());
-	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE*2, &mTransformations);
+	vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE * 2, &mTransformations);
 }
 
 void BufferManager::FlushDrawBufffer()
