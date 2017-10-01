@@ -274,6 +274,9 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 {
 	D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	uint32_t registerNumber = 0;
+	TypeDescription description;
+	uint32_t id = 0;
+	uint32_t typeId = 0;
 
 	switch (registerType)
 	{
@@ -301,9 +304,35 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		}
 	}
 
-	BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
+	switch (registerType)
+	{
+	case D3DSPR_CONST:
+	case D3DSPR_CONST2:
+	case D3DSPR_CONST3:
+	case D3DSPR_CONST4:
+		id = GetNextId();
+		description.PrimaryType = spv::OpTypePointer;
+		description.SecondaryType = spv::OpTypeVector;
+		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
+		description.ComponentCount = 4;
+		typeId = GetSpirVTypeId(description);
 
-	return 0;
+		mIdsByRegister[registerType][registerNumber] = id;
+		mRegistersById[registerType][id] = registerNumber;
+		mIdTypePairs[id] = description;
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
+
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
+		break;
+	}
+
+	return id;
 }
 
 void ShaderConverter::SetIdByRegister(const Token& token, uint32_t id)
@@ -358,8 +387,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 {
 	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
-	uint32_t vectorTypeId=0;
-	uint32_t registerNumber=0;
+	uint32_t vectorTypeId = 0;
+	uint32_t registerNumber = 0;
 	//TypeDescription typeDescription;
 	D3DSHADER_PARAM_REGISTER_TYPE registerType;
 
@@ -368,7 +397,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 
 	if (inputId == UINT_MAX)
 	{
-		inputId = GetIdByRegister(token);	
+		inputId = GetIdByRegister(token);
 	}
 
 	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0)

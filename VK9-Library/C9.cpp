@@ -632,8 +632,8 @@ HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D
 	pCaps->VertexTextureFilterCaps = pCaps->TextureFilterCaps; //revisit
 	pCaps->MaxVertexShader30InstructionSlots = 32768; //revisit
 	pCaps->MaxPixelShader30InstructionSlots = 32768; //revisit
-	pCaps->MaxVShaderInstructionsExecuted = 65535 < pCaps->MaxVertexShader30InstructionSlots * 32 ? pCaps->MaxVertexShader30InstructionSlots * 32: 65535; //revisit
-	pCaps->MaxPShaderInstructionsExecuted = 65535 < pCaps->MaxPixelShader30InstructionSlots * 32 ? pCaps->MaxPixelShader30InstructionSlots * 32 : 65535; //revisit
+	pCaps->MaxVShaderInstructionsExecuted = 65535; //65535 < pCaps->MaxVertexShader30InstructionSlots * 32 ? pCaps->MaxVertexShader30InstructionSlots * 32 : 65535; //revisit
+	pCaps->MaxPShaderInstructionsExecuted = 65535; //65535 < pCaps->MaxPixelShader30InstructionSlots * 32 ? pCaps->MaxPixelShader30InstructionSlots * 32 : 65535; //revisit
 
 
 	pCaps->MaxNpatchTessellationLevel = 0.0f;
