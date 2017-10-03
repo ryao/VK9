@@ -627,6 +627,42 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 	return outputId;
 }
 
+uint32_t ShaderConverter::GetLoadedId(const Token& token)
+{
+	TypeDescription typeDescription;
+	uint32_t dataTypeId;
+	uint32_t id;
+
+	typeDescription = GetTypeByRegister(token);
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		id = GetSwizzledId(token);
+	}
+	else if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+		dataTypeId = GetSpirVTypeId(typeDescription);
+
+		//deference pointer into a register.
+		id = GetNextId();
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(id); //result (Id)
+		mFunctionDefinitionInstructions.push_back(GetIdByRegister(token)); //pointer (Id)	
+		id = GetSwizzledId(token, id);
+	}
+	else
+	{
+		id = GetSwizzledId(token);
+	}
+
+	return id;
+}
+
 void ShaderConverter::CombineSpirVOpCodes()
 {
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
@@ -1084,59 +1120,29 @@ void ShaderConverter::Process_MUL()
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-	typeDescription = GetTypeByRegister(argumentToken1);
-	dataTypeId = GetSpirVTypeId(typeDescription);
-
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
-		dataTypeId = GetSpirVTypeId(typeDescription);
+	dataType = typeDescription.PrimaryType;
 
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
-	}
-	else if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
 	{
-		if (typeDescription.SecondaryType == spv::OpTypeMatrix || typeDescription.SecondaryType == spv::OpTypeVector)
-		{
-			dataType = typeDescription.TernaryType;
-		}
-		else
-		{
-			dataType = typeDescription.SecondaryType;
-		}
-
 		//Shift the result type so we get a register instead of a pointer as the output type.
 		typeDescription.PrimaryType = typeDescription.SecondaryType;
 		typeDescription.SecondaryType = typeDescription.TernaryType;
 		typeDescription.TernaryType = spv::OpTypeVoid;
-		dataTypeId = GetSpirVTypeId(typeDescription);
-
-		//deference pointer into a register.
-		argumentId1 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken1)); //pointer (Id)	
-		argumentId1 = GetSwizzledId(argumentToken1, argumentId1);
-
-
-		argumentId2 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken2)); //pointer (Id)
-		argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 	}
-	else
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
-		dataType = typeDescription.PrimaryType;
-
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
+		dataType = typeDescription.SecondaryType;
+		//TODO: handle target swizzle
 	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetLoadedId(argumentToken1);
+	argumentId2 = GetLoadedId(argumentToken2);
 
 	switch (dataType)
 	{
@@ -1184,58 +1190,29 @@ void ShaderConverter::Process_ADD()
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-	typeDescription = GetTypeByRegister(argumentToken1);
-	dataTypeId = GetSpirVTypeId(typeDescription);
-
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
+	dataType = typeDescription.PrimaryType;
 
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
-	}
-	else if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
 	{
-		if (typeDescription.SecondaryType == spv::OpTypeMatrix || typeDescription.SecondaryType == spv::OpTypeVector)
-		{
-			dataType = typeDescription.TernaryType;
-		}
-		else
-		{
-			dataType = typeDescription.SecondaryType;
-		}
-
 		//Shift the result type so we get a register instead of a pointer as the output type.
 		typeDescription.PrimaryType = typeDescription.SecondaryType;
 		typeDescription.SecondaryType = typeDescription.TernaryType;
 		typeDescription.TernaryType = spv::OpTypeVoid;
-		dataTypeId = GetSpirVTypeId(typeDescription);
-
-		//deference pointer into a register.
-		argumentId1 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken1)); //pointer (Id)	
-		argumentId1 = GetSwizzledId(argumentToken1, argumentId1);
-
-
-		argumentId2 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken2)); //pointer (Id)
-		argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 	}
-	else
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
-		dataType = typeDescription.PrimaryType;
-
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
+		dataType = typeDescription.SecondaryType;
+		//TODO: handle target swizzle
 	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetLoadedId(argumentToken1);
+	argumentId2 = GetLoadedId(argumentToken2);
 
 	switch (dataType)
 	{
@@ -1283,58 +1260,29 @@ void ShaderConverter::Process_SUB()
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-	typeDescription = GetTypeByRegister(argumentToken1);
-	dataTypeId = GetSpirVTypeId(typeDescription);
-
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
+	dataType = typeDescription.PrimaryType;
 
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
-	}
-	else if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
 	{
-		if (typeDescription.SecondaryType == spv::OpTypeMatrix || typeDescription.SecondaryType == spv::OpTypeVector)
-		{
-			dataType = typeDescription.TernaryType;
-		}
-		else
-		{
-			dataType = typeDescription.SecondaryType;
-		}
-
 		//Shift the result type so we get a register instead of a pointer as the output type.
 		typeDescription.PrimaryType = typeDescription.SecondaryType;
 		typeDescription.SecondaryType = typeDescription.TernaryType;
 		typeDescription.TernaryType = spv::OpTypeVoid;
-		dataTypeId = GetSpirVTypeId(typeDescription);
-
-		//deference pointer into a register.
-		argumentId1 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken1)); //pointer (Id)	
-		argumentId1 = GetSwizzledId(argumentToken1, argumentId1);
-
-
-		argumentId2 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken2)); //pointer (Id)
-		argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 	}
-	else
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
-		dataType = typeDescription.PrimaryType;
-
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
+		dataType = typeDescription.SecondaryType;
+		//TODO: handle target swizzle
 	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetLoadedId(argumentToken1);
+	argumentId2 = GetLoadedId(argumentToken2);
 
 	switch (dataType)
 	{
@@ -1377,7 +1325,7 @@ void ShaderConverter::Process_MAX()
 
 void ShaderConverter::Process_DP3()
 {
-	//spv::Op dataType;
+	spv::Op dataType;
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
@@ -1399,8 +1347,26 @@ void ShaderConverter::Process_DP3()
 	typeDescription.PrimaryType = spv::OpTypeFloat;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+		//TODO: handle target swizzle
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetLoadedId(argumentToken1);
+	argumentId2 = GetLoadedId(argumentToken2);
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
@@ -1411,7 +1377,7 @@ void ShaderConverter::Process_DP3()
 
 void ShaderConverter::Process_DP4()
 {
-	//spv::Op dataType;
+	spv::Op dataType;
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
@@ -1426,15 +1392,32 @@ void ShaderConverter::Process_DP4()
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
 	resultId = GetNextVersionId(resultToken);
 
 	TypeDescription typeDescription;
 	typeDescription.PrimaryType = spv::OpTypeFloat;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+		//TODO: handle target swizzle
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetLoadedId(argumentToken1);
+	argumentId2 = GetLoadedId(argumentToken2);
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
@@ -1445,7 +1428,7 @@ void ShaderConverter::Process_DP4()
 
 void ShaderConverter::Process_TEX()
 {
-	//spv::Op dataType;
+	spv::Op dataType;
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
@@ -1465,10 +1448,29 @@ void ShaderConverter::Process_TEX()
 	typeDescription.ComponentCount = 4;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+		//TODO: handle target swizzle
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetLoadedId(argumentToken1);
+	argumentId2 = GetLoadedId(argumentToken2);
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageFetch)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
@@ -1499,68 +1501,30 @@ void ShaderConverter::Process_MAD()
 	Token argumentToken3 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType3 = GetRegisterType(argumentToken3.i);
 
-	typeDescription = GetTypeByRegister(argumentToken1);
-	dataTypeId = GetSpirVTypeId(typeDescription);
-
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
+	dataType = typeDescription.PrimaryType;
 
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
-		argumentId3 = GetSwizzledId(argumentToken3);
-	}
-	else if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
 	{
-		if (typeDescription.SecondaryType == spv::OpTypeMatrix || typeDescription.SecondaryType == spv::OpTypeVector)
-		{
-			dataType = typeDescription.TernaryType;
-		}
-		else
-		{
-			dataType = typeDescription.SecondaryType;
-		}
-
 		//Shift the result type so we get a register instead of a pointer as the output type.
 		typeDescription.PrimaryType = typeDescription.SecondaryType;
 		typeDescription.SecondaryType = typeDescription.TernaryType;
 		typeDescription.TernaryType = spv::OpTypeVoid;
-		dataTypeId = GetSpirVTypeId(typeDescription);
-
-		//deference pointer into a register.
-		argumentId1 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken1)); //pointer (Id)	
-		argumentId1 = GetSwizzledId(argumentToken1, argumentId1);
-
-
-		argumentId2 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken2)); //pointer (Id)
-		argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
-
-
-		argumentId3 = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId3); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(argumentToken3)); //pointer (Id)
-		argumentId3 = GetSwizzledId(argumentToken3, argumentId3);
 	}
-	else
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
-		dataType = typeDescription.PrimaryType;
-
-		argumentId1 = GetSwizzledId(argumentToken1);
-		argumentId2 = GetSwizzledId(argumentToken2);
-		argumentId3 = GetSwizzledId(argumentToken3);
+		dataType = typeDescription.SecondaryType;
+		//TODO: handle target swizzle
 	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetLoadedId(argumentToken1);
+	argumentId2 = GetLoadedId(argumentToken2);
+	argumentId3 = GetLoadedId(argumentToken3);
 
 	resultId = GetNextVersionId(resultToken);
 

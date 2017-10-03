@@ -230,6 +230,7 @@ private:
 	void SetIdByRegister(const Token& token, uint32_t id);
 	TypeDescription GetTypeByRegister(const Token& token);
 	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX);
+	uint32_t GetLoadedId(const Token& token);
 
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
