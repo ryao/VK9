@@ -389,15 +389,33 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
 	uint32_t vectorTypeId = 0;
 	uint32_t registerNumber = 0;
-	//TypeDescription typeDescription;
+	TypeDescription typeDescription;
 	D3DSHADER_PARAM_REGISTER_TYPE registerType;
+	uint32_t dataTypeId;
 
 	registerType = GetRegisterType(token.i);
-	//typeDescription = GetTypeByRegister(token.DestinationParameterToken.RegisterNumber);
+	typeDescription = GetTypeByRegister(token);
 
 	if (inputId == UINT_MAX)
 	{
 		inputId = GetIdByRegister(token);
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+		dataTypeId = GetSpirVTypeId(typeDescription);
+
+		//deference pointer into a register.
+		inputId = GetNextId();
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(inputId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(GetIdByRegister(token)); //pointer (Id)	
+		inputId = GetSwizzledId(token, inputId);
 	}
 
 	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0)
@@ -625,42 +643,6 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 	}
 
 	return outputId;
-}
-
-uint32_t ShaderConverter::GetLoadedId(const Token& token)
-{
-	TypeDescription typeDescription;
-	uint32_t dataTypeId;
-	uint32_t id;
-
-	typeDescription = GetTypeByRegister(token);
-
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		id = GetSwizzledId(token);
-	}
-	else if (typeDescription.PrimaryType == spv::OpTypePointer)
-	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
-		dataTypeId = GetSpirVTypeId(typeDescription);
-
-		//deference pointer into a register.
-		id = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(id); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(token)); //pointer (Id)	
-		id = GetSwizzledId(token, id);
-	}
-	else
-	{
-		id = GetSwizzledId(token);
-	}
-
-	return id;
 }
 
 void ShaderConverter::CombineSpirVOpCodes()
@@ -1081,6 +1063,7 @@ void ShaderConverter::Process_MOV()
 	TypeDescription typeDescription;
 	//spv::Op dataType;
 	uint32_t dataTypeId;
+	uint32_t resultId;
 	uint32_t argumentId1;
 	//uint32_t argumentId2;
 
@@ -1090,16 +1073,18 @@ void ShaderConverter::Process_MOV()
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-	typeDescription = GetTypeByRegister(argumentToken1);
+	//typeDescription = GetTypeByRegister(argumentToken1);
+	typeDescription = GetTypeByRegister(resultToken);
 	dataTypeId = GetSpirVTypeId(typeDescription);
 
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
 	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextVersionId(resultToken);
 
 	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 }
 
@@ -1141,8 +1126,8 @@ void ShaderConverter::Process_MUL()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetLoadedId(argumentToken1);
-	argumentId2 = GetLoadedId(argumentToken2);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
 
 	switch (dataType)
 	{
@@ -1211,8 +1196,8 @@ void ShaderConverter::Process_ADD()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetLoadedId(argumentToken1);
-	argumentId2 = GetLoadedId(argumentToken2);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
 
 	switch (dataType)
 	{
@@ -1281,8 +1266,8 @@ void ShaderConverter::Process_SUB()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetLoadedId(argumentToken1);
-	argumentId2 = GetLoadedId(argumentToken2);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
 
 	switch (dataType)
 	{
@@ -1365,8 +1350,8 @@ void ShaderConverter::Process_DP3()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetLoadedId(argumentToken1);
-	argumentId2 = GetLoadedId(argumentToken2);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
@@ -1416,8 +1401,8 @@ void ShaderConverter::Process_DP4()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetLoadedId(argumentToken1);
-	argumentId2 = GetLoadedId(argumentToken2);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
@@ -1469,8 +1454,8 @@ void ShaderConverter::Process_TEX()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetLoadedId(argumentToken1);
-	argumentId2 = GetLoadedId(argumentToken2);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageFetch)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
@@ -1522,9 +1507,9 @@ void ShaderConverter::Process_MAD()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetLoadedId(argumentToken1);
-	argumentId2 = GetLoadedId(argumentToken2);
-	argumentId3 = GetLoadedId(argumentToken3);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	argumentId3 = GetSwizzledId(argumentToken3);
 
 	resultId = GetNextVersionId(resultToken);
 
