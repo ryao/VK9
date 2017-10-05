@@ -399,23 +399,23 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 	if (inputId == UINT_MAX)
 	{
 		inputId = GetIdByRegister(token);
-	}
 
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
-	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
-		dataTypeId = GetSpirVTypeId(typeDescription);
+		if (typeDescription.PrimaryType == spv::OpTypePointer)
+		{
+			//Shift the result type so we get a register instead of a pointer as the output type.
+			typeDescription.PrimaryType = typeDescription.SecondaryType;
+			typeDescription.SecondaryType = typeDescription.TernaryType;
+			typeDescription.TernaryType = spv::OpTypeVoid;
+			dataTypeId = GetSpirVTypeId(typeDescription);
 
-		//deference pointer into a register.
-		inputId = GetNextId();
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(inputId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(GetIdByRegister(token)); //pointer (Id)	
-		inputId = GetSwizzledId(token, inputId);
+			//deference pointer into a register.
+			inputId = GetNextId();
+			mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+			mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+			mFunctionDefinitionInstructions.push_back(inputId); //result (Id)
+			mFunctionDefinitionInstructions.push_back(GetIdByRegister(token)); //pointer (Id)	
+			inputId = GetSwizzledId(token, inputId);
+		}
 	}
 
 	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0)
@@ -643,6 +643,11 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 	}
 
 	return outputId;
+}
+
+void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
+{
+
 }
 
 void ShaderConverter::CombineSpirVOpCodes()
@@ -1082,10 +1087,24 @@ void ShaderConverter::Process_MOV()
 	argumentId1 = GetSwizzledId(argumentToken1);
 	resultId = GetNextVersionId(resultToken);
 
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
-	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+	switch (resultRegisterType)
+	{
+	case D3DSPR_RASTOUT:
+	case D3DSPR_ATTROUT:
+	case D3DSPR_COLOROUT:
+	case D3DSPR_DEPTHOUT:
+	case D3DSPR_OUTPUT:
+		mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	}
 }
 
 void ShaderConverter::Process_MUL()
