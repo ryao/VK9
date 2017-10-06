@@ -306,6 +306,28 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 
 	switch (registerType)
 	{
+	case D3DSPR_RASTOUT:
+	case D3DSPR_ATTROUT:
+	case D3DSPR_COLOROUT:
+	case D3DSPR_DEPTHOUT:
+	case D3DSPR_OUTPUT:
+		id = GetNextId();
+		description.PrimaryType = spv::OpTypePointer;
+		description.SecondaryType = spv::OpTypeVector;
+		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
+		description.ComponentCount = 4;
+		typeId = GetSpirVTypeId(description);
+
+		mIdsByRegister[registerType][registerNumber] = id;
+		mRegistersById[registerType][id] = registerNumber;
+		mIdTypePairs[id] = description;
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+
+		break;
 	case D3DSPR_CONST:
 	case D3DSPR_CONST2:
 	case D3DSPR_CONST3:
@@ -1078,14 +1100,11 @@ void ShaderConverter::Process_MOV()
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-	//typeDescription = GetTypeByRegister(argumentToken1);
-	typeDescription = GetTypeByRegister(resultToken);
-	dataTypeId = GetSpirVTypeId(typeDescription);
-
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
-
 	argumentId1 = GetSwizzledId(argumentToken1);
-	resultId = GetNextVersionId(resultToken);
+	//resultId = GetNextVersionId(resultToken);
+	typeDescription = GetTypeByRegister(resultToken);	
+	resultId = GetIdByRegister(resultToken);
+	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
 	switch (resultRegisterType)
 	{
@@ -1099,6 +1118,8 @@ void ShaderConverter::Process_MOV()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	default:
+		dataTypeId = GetSpirVTypeId(typeDescription);
+
 		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
