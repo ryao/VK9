@@ -306,6 +306,23 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 
 	switch (registerType)
 	{
+	case D3DSPR_TEMP:
+		id = GetNextId();
+		description.PrimaryType = spv::OpTypePointer;
+		description.SecondaryType = spv::OpTypeVector;
+		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
+		description.ComponentCount = 4;
+		typeId = GetSpirVTypeId(description);
+
+		mIdsByRegister[registerType][registerNumber] = id;
+		mRegistersById[registerType][id] = registerNumber;
+		mIdTypePairs[id] = description;
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
+		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
 	case D3DSPR_COLOROUT:
@@ -855,6 +872,15 @@ void ShaderConverter::Process_DCL_Pixel()
 
 		BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type D3DSPR_SAMPLER";
 		break;
+	case D3DSPR_TEMP:
+		resultTypeId = GetSpirVTypeId(typeDescription);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
+		//Optional initializer
+		break;
 	default:
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Pixel unsupported register type " << registerType;
 		break;
@@ -953,6 +979,15 @@ void ShaderConverter::Process_DCL_Vertex()
 		{
 			mPositionRegister = usageIndex; //might need this later.
 		}
+		break;
+	case D3DSPR_TEMP:
+		resultTypeId = GetSpirVTypeId(typeDescription);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
+		//Optional initializer
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Vertex unsupported register type " << registerType;
