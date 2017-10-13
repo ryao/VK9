@@ -5120,8 +5120,8 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	This is just a helper method to reduce repeat code.
 	*/
 	VkResult result = VK_SUCCESS;
-	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags sourceStages = 0; //VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+	VkPipelineStageFlags destinationStages = 0; //VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
 	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 
 	if (aspectMask == 0)
@@ -5197,15 +5197,15 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		//sourceStages  |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		sourceStages  |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		//sourceStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		sourceStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_PREINITIALIZED:
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-		//sourceStages |= VK_PIPELINE_STAGE_HOST_BIT;
+		sourceStages |= VK_PIPELINE_STAGE_HOST_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
@@ -5224,29 +5224,29 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		imageMemoryBarrier.srcAccessMask |= VK_ACCESS_MEMORY_READ_BIT;
 
 		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		//destinationStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		destinationStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
 		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		//destinationStages |= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		destinationStages |= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
 		break;
 	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
 		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-		//destinationStages |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		destinationStages |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
 		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_TRANSFER_READ_BIT;
-		//destinationStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		destinationStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
 		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_TRANSFER_WRITE_BIT;
-		//destinationStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		destinationStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_PREINITIALIZED:
 		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_HOST_WRITE_BIT;
-		//destinationStages |= VK_PIPELINE_STAGE_HOST_BIT;
+		destinationStages |= VK_PIPELINE_STAGE_HOST_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
@@ -5255,14 +5255,14 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		break;
 	}
 
-	//if (sourceStages==0)
-	//{
-	//	sourceStages=VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	//}
-	//if (destinationStages == 0)
-	//{
-	//	destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	//}
+	if (sourceStages==0)
+	{
+		sourceStages=VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	}
+	if (destinationStages == 0)
+	{
+		destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	}
 
 	vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
