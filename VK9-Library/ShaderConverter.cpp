@@ -323,12 +323,31 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
 		break;
+	case D3DSPR_INPUT:
+		id = GetNextId();
+		mInterfaceIds.push_back(id); //Used by entry point opcode.
+		description.PrimaryType = spv::OpTypePointer;
+		description.SecondaryType = spv::OpTypeVector;
+		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
+		description.ComponentCount = 4;
+		typeId = GetSpirVTypeId(description);
+
+		mIdsByRegister[registerType][registerNumber] = id;
+		mRegistersById[registerType][id] = registerNumber;
+		mIdTypePairs[id] = description;
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
 	case D3DSPR_COLOROUT:
 	case D3DSPR_DEPTHOUT:
 	case D3DSPR_OUTPUT:
 		id = GetNextId();
+		mInterfaceIds.push_back(id); //Used by entry point opcode.
 		description.PrimaryType = spv::OpTypePointer;
 		description.SecondaryType = spv::OpTypeVector;
 		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
@@ -343,7 +362,6 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
-
 		break;
 	case D3DSPR_CONST:
 	case D3DSPR_CONST2:
@@ -364,7 +382,6 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
-
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
@@ -378,6 +395,8 @@ void ShaderConverter::SetIdByRegister(const Token& token, uint32_t id)
 {
 	D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	uint32_t registerNumber = 0;
+	TypeDescription description;
+	uint32_t typeId = 0;
 
 	switch (registerType)
 	{
@@ -397,6 +416,51 @@ void ShaderConverter::SetIdByRegister(const Token& token, uint32_t id)
 
 	mIdsByRegister[registerType][registerNumber] = id;
 	mRegistersById[registerType][id] = registerNumber;
+
+	//Assume that if no type was set then it has not be declared yet.
+	boost::container::flat_map<uint32_t, TypeDescription>::iterator it1 = mIdTypePairs.find(id);
+	if (it1 == mIdTypePairs.end())
+	{
+		mInterfaceIds.push_back(id); //Used by entry point opcode.
+
+		description.PrimaryType = spv::OpTypePointer;
+		description.SecondaryType = spv::OpTypeVector;
+		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
+		description.ComponentCount = 4;
+		typeId = GetSpirVTypeId(description);
+		mIdTypePairs[id] = description;
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+
+		switch (registerType)
+		{
+		case D3DSPR_TEMP:
+			mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
+			break;
+		case D3DSPR_INPUT:
+			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+			break;
+		case D3DSPR_RASTOUT:
+		case D3DSPR_ATTROUT:
+		case D3DSPR_COLOROUT:
+		case D3DSPR_DEPTHOUT:
+		case D3DSPR_OUTPUT:
+			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+			break;
+		case D3DSPR_CONST:
+		case D3DSPR_CONST2:
+		case D3DSPR_CONST3:
+		case D3DSPR_CONST4:
+			mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
+			break;
+		}
+	}
 }
 
 TypeDescription ShaderConverter::GetTypeByRegister(const Token& token)
@@ -747,7 +811,7 @@ void ShaderConverter::CreateSpirVModule()
 	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	moduleCreateInfo.pNext = NULL;
 	moduleCreateInfo.codeSize = mInstructions.size() * sizeof(uint32_t);
-	moduleCreateInfo.pCode = (uint32_t*)mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
+	moduleCreateInfo.pCode = mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
 	moduleCreateInfo.flags = 0;
 	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &mConvertedShader.ShaderModule);
 
@@ -772,7 +836,6 @@ void ShaderConverter::CreateSpirVModule()
 	//End Debug Code
 #endif
 
-	mInstructions.clear();
 }
 
 void ShaderConverter::Process_DCL_Pixel()
@@ -820,6 +883,8 @@ void ShaderConverter::Process_DCL_Pixel()
 	switch (registerType)
 	{
 	case D3DSPR_INPUT:
+		mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
+
 		resultTypeId = GetSpirVTypeId(typeDescription);
 
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
@@ -966,7 +1031,13 @@ void ShaderConverter::Process_DCL_Vertex()
 		mConvertedShader.mVertexInputAttributeDescriptionCount++;
 
 		break;
+	case D3DSPR_RASTOUT:
+	case D3DSPR_ATTROUT:
+	case D3DSPR_COLOROUT:
+	case D3DSPR_DEPTHOUT:
 	case D3DSPR_OUTPUT:
+		mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
+
 		resultTypeId = GetSpirVTypeId(typeDescription);
 
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
@@ -1135,10 +1206,10 @@ void ShaderConverter::Process_MOV()
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-	argumentId1 = GetSwizzledId(argumentToken1);
-	//resultId = GetNextVersionId(resultToken);
-	typeDescription = GetTypeByRegister(resultToken);	
+	//resultId = GetNextVersionId(resultToken);	
 	resultId = GetIdByRegister(resultToken);
+	typeDescription = GetTypeByRegister(resultToken);
+	argumentId1 = GetSwizzledId(argumentToken1);
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
 	switch (resultRegisterType)
@@ -2003,6 +2074,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	{
 		//TODO: figure out what to do for vertex execution mode.
 	}
+
 
 	//Write SPIR-V header
 	mInstructions.push_back(spv::MagicNumber);
