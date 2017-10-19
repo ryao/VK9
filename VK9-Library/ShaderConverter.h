@@ -164,15 +164,15 @@ public:
 private:	
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
 
-
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mRegistersById;
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mIdsByRegister;
+	
+	boost::container::flat_map<uint32_t, uint32_t> mInputRegisters;
+	boost::container::flat_map<uint32_t, uint32_t> mOutputRegisters;
 
 
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
-
-	std::vector<uint32_t> mInterfaceIds; //Used by entry point opcode.
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -230,6 +230,7 @@ private:
 	void SetIdByRegister(const Token& token, uint32_t id);
 	TypeDescription GetTypeByRegister(const Token& token);
 	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX);
+	uint32_t ApplyWriteMask(const Token& token, uint32_t inputId);
 	void GenerateStore(const Token& token, uint32_t inputId);
 
 	void CombineSpirVOpCodes();

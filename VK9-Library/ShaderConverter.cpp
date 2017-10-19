@@ -23,6 +23,7 @@ misrepresented as being the original software.
 #include "D3D11Shader.h"
 #include "ShaderConverter.h"
 #include <boost/log/trivial.hpp>
+#include <boost/foreach.hpp>
 #include <fstream>
 
 /*
@@ -325,7 +326,6 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		break;
 	case D3DSPR_INPUT:
 		id = GetNextId();
-		mInterfaceIds.push_back(id); //Used by entry point opcode.
 		description.PrimaryType = spv::OpTypePointer;
 		description.SecondaryType = spv::OpTypeVector;
 		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
@@ -340,6 +340,8 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+
+		mInputRegisters[registerNumber] = id;
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
@@ -347,7 +349,6 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 	case D3DSPR_DEPTHOUT:
 	case D3DSPR_OUTPUT:
 		id = GetNextId();
-		mInterfaceIds.push_back(id); //Used by entry point opcode.
 		description.PrimaryType = spv::OpTypePointer;
 		description.SecondaryType = spv::OpTypeVector;
 		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
@@ -362,6 +363,8 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+
+		mOutputRegisters[registerNumber] = id;
 		break;
 	case D3DSPR_CONST:
 	case D3DSPR_CONST2:
@@ -418,49 +421,46 @@ void ShaderConverter::SetIdByRegister(const Token& token, uint32_t id)
 	mRegistersById[registerType][id] = registerNumber;
 
 	//Assume that if no type was set then it has not be declared yet.
-	boost::container::flat_map<uint32_t, TypeDescription>::iterator it1 = mIdTypePairs.find(id);
-	if (it1 == mIdTypePairs.end())
-	{
-		mInterfaceIds.push_back(id); //Used by entry point opcode.
+	//boost::container::flat_map<uint32_t, TypeDescription>::iterator it1 = mIdTypePairs.find(id);
+	//if (it1 == mIdTypePairs.end())
+	//{
+	//	description.PrimaryType = spv::OpTypePointer;
+	//	description.SecondaryType = spv::OpTypeVector;
+	//	description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
+	//	description.ComponentCount = 4;
+	//	typeId = GetSpirVTypeId(description);
+	//	mIdTypePairs[id] = description;
 
-		description.PrimaryType = spv::OpTypePointer;
-		description.SecondaryType = spv::OpTypeVector;
-		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
-		description.ComponentCount = 4;
-		typeId = GetSpirVTypeId(description);
-		mIdTypePairs[id] = description;
+	//	mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+	//	mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+	//	mTypeInstructions.push_back(id); //Result (Id)
 
-		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-		mTypeInstructions.push_back(id); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
-
-		switch (registerType)
-		{
-		case D3DSPR_TEMP:
-			mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
-			break;
-		case D3DSPR_INPUT:
-			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
-			break;
-		case D3DSPR_RASTOUT:
-		case D3DSPR_ATTROUT:
-		case D3DSPR_COLOROUT:
-		case D3DSPR_DEPTHOUT:
-		case D3DSPR_OUTPUT:
-			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
-			break;
-		case D3DSPR_CONST:
-		case D3DSPR_CONST2:
-		case D3DSPR_CONST3:
-		case D3DSPR_CONST4:
-			mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
-			break;
-		}
-	}
+	//	switch (registerType)
+	//	{
+	//	case D3DSPR_TEMP:
+	//		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
+	//		break;
+	//	case D3DSPR_INPUT:
+	//		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+	//		break;
+	//	case D3DSPR_RASTOUT:
+	//	case D3DSPR_ATTROUT:
+	//	case D3DSPR_COLOROUT:
+	//	case D3DSPR_DEPTHOUT:
+	//	case D3DSPR_OUTPUT:
+	//		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+	//		break;
+	//	case D3DSPR_CONST:
+	//	case D3DSPR_CONST2:
+	//	case D3DSPR_CONST3:
+	//	case D3DSPR_CONST4:
+	//		mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
+	//		break;
+	//	default:
+	//		BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
+	//		break;
+	//	}
+	//}
 }
 
 TypeDescription ShaderConverter::GetTypeByRegister(const Token& token)
@@ -748,9 +748,96 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 	return outputId;
 }
 
+uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t inputId)
+{
+	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
+	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
+	uint32_t vectorTypeId = 0;
+	uint32_t registerNumber = 0;
+	TypeDescription typeDescription;
+	D3DSHADER_PARAM_REGISTER_TYPE registerType;
+	uint32_t dataTypeId;
+	uint32_t originalId = GetIdByRegister(token);
+	uint32_t outputId = GetNextId();
+
+	registerType = GetRegisterType(token.i);
+	typeDescription = GetTypeByRegister(token);
+
+	if ((((token.i & D3DSP_WRITEMASK_ALL) == D3DSP_WRITEMASK_ALL) || ((token.i & D3DSP_WRITEMASK_ALL) == 0x00000000)))
+	{
+		SetIdByRegister(token, inputId);
+		return inputId; //No swizzle no op.
+	}
+
+	vectorTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, outputComponentCount); //Revisit may not be a float
+
+	mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
+	mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
+	mFunctionDefinitionInstructions.push_back(originalId); //Vector1 (Id)
+	mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+
+	if (token.i & D3DSP_WRITEMASK_0)
+	{
+		mFunctionDefinitionInstructions.push_back(4); //Component Literal
+	}
+	else
+	{
+		mFunctionDefinitionInstructions.push_back(0); //Component Literal
+	}
+
+	if (token.i & D3DSP_WRITEMASK_1)
+	{
+		mFunctionDefinitionInstructions.push_back(5); //Component Literal
+	}
+	else
+	{
+		mFunctionDefinitionInstructions.push_back(1); //Component Literal
+	}
+
+	if (token.i & D3DSP_WRITEMASK_2)
+	{
+		mFunctionDefinitionInstructions.push_back(6); //Component Literal
+	}
+	else
+	{
+		mFunctionDefinitionInstructions.push_back(2); //Component Literal
+	}
+
+	if (token.i & D3DSP_WRITEMASK_3)
+	{
+		mFunctionDefinitionInstructions.push_back(7); //Component Literal
+	}
+	else
+	{
+		mFunctionDefinitionInstructions.push_back(3); //Component Literal
+	}
+
+	SetIdByRegister(token, outputId);
+
+	return outputId;
+}
+
 void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
 {
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(token.i);
+	uint32_t resultId = GetNextVersionId(token);
+	uint32_t argumentId1 = inputId;
 
+	switch (resultRegisterType)
+	{
+	case D3DSPR_RASTOUT:
+	case D3DSPR_ATTROUT:
+	case D3DSPR_COLOROUT:
+	case D3DSPR_DEPTHOUT:
+	case D3DSPR_OUTPUT:
+		mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		break;
+	}
 }
 
 void ShaderConverter::CombineSpirVOpCodes()
@@ -883,8 +970,6 @@ void ShaderConverter::Process_DCL_Pixel()
 	switch (registerType)
 	{
 	case D3DSPR_INPUT:
-		mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
-
 		resultTypeId = GetSpirVTypeId(typeDescription);
 
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
@@ -892,6 +977,8 @@ void ShaderConverter::Process_DCL_Pixel()
 		mTypeInstructions.push_back(tokenId); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 		//Optional initializer
+
+		mInputRegisters[registerNumber] = tokenId;
 		break;
 	case D3DSPR_TEXTURE:
 		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
@@ -996,9 +1083,6 @@ void ShaderConverter::Process_DCL_Vertex()
 	switch (registerType)
 	{
 	case D3DSPR_INPUT:
-
-		mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
-
 		resultTypeId = GetSpirVTypeId(typeDescription);
 
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
@@ -1030,14 +1114,14 @@ void ShaderConverter::Process_DCL_Vertex()
 
 		mConvertedShader.mVertexInputAttributeDescriptionCount++;
 
+		mInputRegisters[registerNumber] = tokenId;
+
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
 	case D3DSPR_COLOROUT:
 	case D3DSPR_DEPTHOUT:
 	case D3DSPR_OUTPUT:
-		mInterfaceIds.push_back(tokenId); //Used by entry point opcode.
-
 		resultTypeId = GetSpirVTypeId(typeDescription);
 
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
@@ -1050,6 +1134,8 @@ void ShaderConverter::Process_DCL_Vertex()
 		{
 			mPositionRegister = usageIndex; //might need this later.
 		}
+
+		mOutputRegisters[registerNumber] = tokenId;
 		break;
 	case D3DSPR_TEMP:
 		resultTypeId = GetSpirVTypeId(typeDescription);
@@ -1212,6 +1298,8 @@ void ShaderConverter::Process_MOV()
 	argumentId1 = GetSwizzledId(argumentToken1);
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
+	resultId = ApplyWriteMask(resultToken, resultId);
+
 	switch (resultRegisterType)
 	{
 	case D3DSPR_RASTOUT:
@@ -1241,6 +1329,7 @@ void ShaderConverter::Process_MUL()
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
+	uint32_t resultId;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -1268,33 +1357,33 @@ void ShaderConverter::Process_MUL()
 	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
 		dataType = typeDescription.SecondaryType;
-		//TODO: handle target swizzle
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
 	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
 
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
@@ -1302,6 +1391,9 @@ void ShaderConverter::Process_MUL()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MUL - Unsupported data type " << dataType;
 		break;
 	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
 }
 
 void ShaderConverter::Process_ADD()
@@ -1311,6 +1403,7 @@ void ShaderConverter::Process_ADD()
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
+	uint32_t resultId;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -1338,33 +1431,33 @@ void ShaderConverter::Process_ADD()
 	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
 		dataType = typeDescription.SecondaryType;
-		//TODO: handle target swizzle
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
 	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
 
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
@@ -1372,6 +1465,9 @@ void ShaderConverter::Process_ADD()
 		BOOST_LOG_TRIVIAL(warning) << "Process_ADD - Unsupported data type " << dataType;
 		break;
 	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
 }
 
 void ShaderConverter::Process_SUB()
@@ -1381,6 +1477,7 @@ void ShaderConverter::Process_SUB()
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
+	uint32_t resultId;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -1408,33 +1505,33 @@ void ShaderConverter::Process_SUB()
 	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
 		dataType = typeDescription.SecondaryType;
-		//TODO: handle target swizzle
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
 	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
 
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpISub)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpISub)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFSub)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
@@ -1442,6 +1539,9 @@ void ShaderConverter::Process_SUB()
 		BOOST_LOG_TRIVIAL(warning) << "Process_SUB - Unsupported data type " << dataType;
 		break;
 	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
 }
 
 void ShaderConverter::Process_MIN()
@@ -1472,7 +1572,6 @@ void ShaderConverter::Process_DP3()
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
 	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
-	resultId = GetNextVersionId(resultToken);
 
 	TypeDescription typeDescription;
 	typeDescription.PrimaryType = spv::OpTypeFloat;
@@ -1492,18 +1591,20 @@ void ShaderConverter::Process_DP3()
 	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
 		dataType = typeDescription.SecondaryType;
-		//TODO: handle target swizzle
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
 	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+
+	resultId = ApplyWriteMask(resultToken, resultId);
 }
 
 void ShaderConverter::Process_DP4()
@@ -1523,8 +1624,6 @@ void ShaderConverter::Process_DP4()
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-	resultId = GetNextVersionId(resultToken);
-
 	TypeDescription typeDescription;
 	typeDescription.PrimaryType = spv::OpTypeFloat;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
@@ -1549,12 +1648,15 @@ void ShaderConverter::Process_DP4()
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
 	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+
+	resultId = ApplyWriteMask(resultToken, resultId);
 }
 
 void ShaderConverter::Process_TEX()
@@ -1563,6 +1665,7 @@ void ShaderConverter::Process_TEX()
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
 	uint32_t argumentId2;
+	uint32_t resultId;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -1596,20 +1699,25 @@ void ShaderConverter::Process_TEX()
 	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
 		dataType = typeDescription.SecondaryType;
-		//TODO: handle target swizzle
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
 	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageFetch)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+
+	resultId = ApplyWriteMask(resultToken, resultId);
 }
 
+/*
+I don't know why SPIR-V doesn't have a MAD instruction.
+*/
 void ShaderConverter::Process_MAD()
 {
 	TypeDescription typeDescription;
@@ -1619,6 +1727,7 @@ void ShaderConverter::Process_MAD()
 	uint32_t argumentId2;
 	uint32_t argumentId3;
 	uint32_t resultId;
+	uint32_t resultId2;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -1649,7 +1758,6 @@ void ShaderConverter::Process_MAD()
 	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
 		dataType = typeDescription.SecondaryType;
-		//TODO: handle target swizzle
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
@@ -1657,7 +1765,8 @@ void ShaderConverter::Process_MAD()
 	argumentId2 = GetSwizzledId(argumentToken2);
 	argumentId3 = GetSwizzledId(argumentToken3);
 
-	resultId = GetNextVersionId(resultToken);
+	resultId = GetNextId();
+	resultId2 = GetNextId();
 
 	switch (dataType)
 	{
@@ -1672,7 +1781,7 @@ void ShaderConverter::Process_MAD()
 		//Write out add
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId3); //argument2 (Id)
 
@@ -1688,7 +1797,7 @@ void ShaderConverter::Process_MAD()
 		//Write out add
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId3); //argument2 (Id)
 
@@ -1704,7 +1813,7 @@ void ShaderConverter::Process_MAD()
 		//Write out add
 		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFAdd)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(GetNextVersionId(resultToken)); //result (Id)
+		mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId3); //argument2 (Id)
 
@@ -1713,6 +1822,9 @@ void ShaderConverter::Process_MAD()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAD - Unsupported data type " << dataType;
 		break;
 	}
+
+	resultId2 = ApplyWriteMask(resultToken, resultId2);
+
 }
 
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
@@ -2044,8 +2156,21 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	//EntryPoint
 	std::string entryPointName = "main";
+	std::vector<uint32_t> interfaceIds;
+	typedef boost::container::flat_map<uint32_t, uint32_t> maptype2;
+	BOOST_FOREACH(const maptype2::value_type& inputRegister, mInputRegisters)
+	{
+		interfaceIds.push_back(inputRegister.second);
+		BOOST_LOG_TRIVIAL(info) << inputRegister.second << " (Input)";
+	}
+	BOOST_FOREACH(const maptype2::value_type& outputRegister, mOutputRegisters)
+	{
+		interfaceIds.push_back(outputRegister.second);
+		BOOST_LOG_TRIVIAL(info) << outputRegister.second << " (Output)";
+	}
+
 	//The spec says 4+variable but there are only 3 before the string literal.
-	stringWordSize = 3 + (entryPointName.length() / 4) + mInterfaceIds.size();
+	stringWordSize = 3 + (entryPointName.length() / 4) + interfaceIds.size();
 	if (entryPointName.length() % 4 == 0)
 	{
 		stringWordSize++;
@@ -2061,7 +2186,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	}
 	mEntryPointInstructions.push_back(mEntryPointId); //Entry Point (Id)
 	PutStringInVector(entryPointName, mEntryPointInstructions); //Name
-	mEntryPointInstructions.insert(std::end(mEntryPointInstructions), std::begin(mInterfaceIds), std::end(mInterfaceIds)); //Interfaces
+	mEntryPointInstructions.insert(std::end(mEntryPointInstructions), std::begin(interfaceIds), std::end(interfaceIds)); //Interfaces
 
 	//ExecutionMode
 	if (!mIsVertexShader)
