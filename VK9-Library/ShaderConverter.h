@@ -232,7 +232,7 @@ private:
 	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX);
 	uint32_t ApplyWriteMask(const Token& token, uint32_t inputId);
 	void GenerateStore(const Token& token, uint32_t inputId);
-
+	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId);
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 

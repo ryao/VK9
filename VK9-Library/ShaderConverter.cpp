@@ -282,16 +282,16 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 	switch (registerType)
 	{
 	case D3DSPR_CONST2:
-		registerNumber = token.DestinationParameterToken.RegisterNumber + 2048;
+		registerNumber = GetRegisterNumber(token.i) + 2048;
 		break;
 	case D3DSPR_CONST3:
-		registerNumber = token.DestinationParameterToken.RegisterNumber + 4096;
+		registerNumber = GetRegisterNumber(token.i) + 4096;
 		break;
 	case D3DSPR_CONST4:
-		registerNumber = token.DestinationParameterToken.RegisterNumber + 6144;
+		registerNumber = GetRegisterNumber(token.i) + 6144;
 		break;
 	default:
-		registerNumber = token.DestinationParameterToken.RegisterNumber;
+		registerNumber = GetRegisterNumber(token.i);
 		break;
 	}
 
@@ -342,6 +342,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 
 		mInputRegisters[registerNumber] = id;
+		GenerateDecoration(registerNumber, id);
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
@@ -365,6 +366,8 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 
 		mOutputRegisters[registerNumber] = id;
+		GenerateDecoration(registerNumber, id);
+
 		break;
 	case D3DSPR_CONST:
 	case D3DSPR_CONST2:
@@ -875,6 +878,20 @@ void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
 	}
 }
 
+void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t inputId)
+{
+	mDecorateInstructions.push_back(Pack(3+1, spv::OpDecorate)); //size,Type
+	mDecorateInstructions.push_back(inputId); //target (Id)
+	mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+
+	/*
+	The location should line up with how the variables are passed in. 
+	The register number is also zero indexed so I'm using that to get the right binding.
+	The register numbers are unique per type so input and output should still line up with bindings.
+	*/
+	mDecorateInstructions.push_back(registerNumber); //Location offset
+}
+
 void ShaderConverter::CombineSpirVOpCodes()
 {
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
@@ -1013,6 +1030,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		//Optional initializer
 
 		mInputRegisters[registerNumber] = tokenId;
+		GenerateDecoration(registerNumber, tokenId);
 		break;
 	case D3DSPR_TEXTURE:
 		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
@@ -1149,7 +1167,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		mConvertedShader.mVertexInputAttributeDescriptionCount++;
 
 		mInputRegisters[registerNumber] = tokenId;
-
+		GenerateDecoration(registerNumber, tokenId);
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
@@ -1170,6 +1188,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		}
 
 		mOutputRegisters[registerNumber] = tokenId;
+		GenerateDecoration(registerNumber, tokenId);
 		break;
 	case D3DSPR_TEMP:
 		resultTypeId = GetSpirVTypeId(typeDescription);
