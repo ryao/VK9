@@ -101,9 +101,28 @@ _D3DSHADER_PARAM_REGISTER_TYPE ShaderConverter::GetRegisterType(uint32_t token)
 	return (_D3DSHADER_PARAM_REGISTER_TYPE)(((token & D3DSP_REGTYPE_MASK2) >> D3DSP_REGTYPE_SHIFT2) | ((token & D3DSP_REGTYPE_MASK) >> D3DSP_REGTYPE_SHIFT));
 }
 
-uint32_t ShaderConverter::GetRegisterNumber(uint32_t token)
+uint32_t ShaderConverter::GetRegisterNumber(const Token& token)
 {
-	return token & D3DSP_REGNUM_MASK;
+	//D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
+	uint32_t output= D3DDECLUSAGE_POSITION;
+
+	//switch (registerType)
+	//{
+	//case D3DSPR_RASTOUT:
+	//case D3DSPR_ATTROUT:
+	//case D3DSPR_COLOROUT:
+	//case D3DSPR_DEPTHOUT:
+	//case D3DSPR_OUTPUT:
+	//	output = GetUsageIndex(token.i);
+	//	break;
+	//default:
+	//	output = (token.i & D3DSP_REGNUM_MASK);
+	//	break;
+	//}
+
+	output = (token.i & D3DSP_REGNUM_MASK);
+
+	return output;
 }
 
 uint32_t ShaderConverter::GetUsage(uint32_t token)
@@ -282,16 +301,16 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 	switch (registerType)
 	{
 	case D3DSPR_CONST2:
-		registerNumber = GetRegisterNumber(token.i) + 2048;
+		registerNumber = GetRegisterNumber(token) + 2048;
 		break;
 	case D3DSPR_CONST3:
-		registerNumber = GetRegisterNumber(token.i) + 4096;
+		registerNumber = GetRegisterNumber(token) + 4096;
 		break;
 	case D3DSPR_CONST4:
-		registerNumber = GetRegisterNumber(token.i) + 6144;
+		registerNumber = GetRegisterNumber(token) + 6144;
 		break;
 	default:
-		registerNumber = GetRegisterNumber(token.i);
+		registerNumber = GetRegisterNumber(token);
 		break;
 	}
 
@@ -366,8 +385,8 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 
 		mOutputRegisters[registerNumber] = id;
-		GenerateDecoration(registerNumber, id);
-
+		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsageIndex(token.i)] = id;
+		//GenerateDecoration(mOutputRegisterUsages.size(), id);
 		break;
 	case D3DSPR_CONST:
 	case D3DSPR_CONST2:
@@ -407,16 +426,16 @@ void ShaderConverter::SetIdByRegister(const Token& token, uint32_t id)
 	switch (registerType)
 	{
 	case D3DSPR_CONST2:
-		registerNumber = token.DestinationParameterToken.RegisterNumber + 2048;
+		registerNumber = GetRegisterNumber(token) + 2048;
 		break;
 	case D3DSPR_CONST3:
-		registerNumber = token.DestinationParameterToken.RegisterNumber + 4096;
+		registerNumber = GetRegisterNumber(token) + 4096;
 		break;
 	case D3DSPR_CONST4:
-		registerNumber = token.DestinationParameterToken.RegisterNumber + 6144;
+		registerNumber = GetRegisterNumber(token) + 6144;
 		break;
 	default:
-		registerNumber = token.DestinationParameterToken.RegisterNumber;
+		registerNumber = GetRegisterNumber(token);
 		break;
 	}
 
@@ -835,7 +854,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		{
 			mFunctionDefinitionInstructions.push_back(3); //Component Literal
 		}
-	}	
+	}
 
 	switch (registerType)
 	{
@@ -880,12 +899,12 @@ void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
 
 void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t inputId)
 {
-	mDecorateInstructions.push_back(Pack(3+1, spv::OpDecorate)); //size,Type
+	mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 	mDecorateInstructions.push_back(inputId); //target (Id)
 	mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
 
 	/*
-	The location should line up with how the variables are passed in. 
+	The location should line up with how the variables are passed in.
 	The register number is also zero indexed so I'm using that to get the right binding.
 	The register numbers are unique per type so input and output should still line up with bindings.
 	*/
@@ -982,7 +1001,7 @@ void ShaderConverter::Process_DCL_Pixel()
 	Token registerToken = GetNextToken();
 	uint32_t usage = GetUsage(token.i);
 	uint32_t usageIndex = GetUsageIndex(token.i);
-	uint32_t registerNumber = GetRegisterNumber(registerToken.i);
+	uint32_t registerNumber = GetRegisterNumber(registerToken);
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(registerToken.i);
 	uint32_t tokenId = GetNextVersionId(registerToken);
 	TypeDescription typeDescription;
@@ -1097,7 +1116,7 @@ void ShaderConverter::Process_DCL_Vertex()
 	Token registerToken = GetNextToken();
 	uint32_t usage = GetUsage(token.i);
 	uint32_t usageIndex = GetUsageIndex(token.i);
-	uint32_t registerNumber = GetRegisterNumber(registerToken.i);
+	uint32_t registerNumber = GetRegisterNumber(registerToken);
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(registerToken.i);
 	uint32_t tokenId = GetNextVersionId(registerToken);
 	TypeDescription typeDescription;
@@ -1188,7 +1207,8 @@ void ShaderConverter::Process_DCL_Vertex()
 		}
 
 		mOutputRegisters[registerNumber] = tokenId;
-		GenerateDecoration(registerNumber, tokenId);
+		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsageIndex(token.i)] = tokenId;
+		//GenerateDecoration(mOutputRegisterUsages.size(), tokenId);
 		break;
 	case D3DSPR_TEMP:
 		resultTypeId = GetSpirVTypeId(typeDescription);
@@ -2178,6 +2198,14 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		}
 
+	}
+
+	//Declare output based on type and hope it all works out.
+	uint32_t outputIndex = 0;
+	typedef boost::container::flat_map<_D3DDECLUSAGE, uint32_t> usageMapType;
+	BOOST_FOREACH(const usageMapType::value_type& entry, mOutputRegisterUsages)
+	{
+		GenerateDecoration(outputIndex++, entry.second);
 	}
 
 	//End of entry point

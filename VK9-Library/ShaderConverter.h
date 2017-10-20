@@ -169,7 +169,7 @@ private:
 	
 	boost::container::flat_map<uint32_t, uint32_t> mInputRegisters;
 	boost::container::flat_map<uint32_t, uint32_t> mOutputRegisters;
-
+	boost::container::flat_map<_D3DDECLUSAGE, uint32_t> mOutputRegisterUsages;
 
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
@@ -218,7 +218,7 @@ private:
 	uint32_t GetOpcodeData(uint32_t token);
 	uint32_t GetTextureType(uint32_t token);
 	_D3DSHADER_PARAM_REGISTER_TYPE GetRegisterType(uint32_t token);
-	uint32_t GetRegisterNumber(uint32_t token);
+	uint32_t GetRegisterNumber(const Token& token);
 	uint32_t GetUsage(uint32_t token);
 	uint32_t GetUsageIndex(uint32_t token);
 	uint32_t GetSpirVTypeId(spv::Op registerType);
