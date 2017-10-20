@@ -748,72 +748,107 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId)
 	return outputId;
 }
 
-uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t inputId)
+uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId)
 {
-	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
 	uint32_t vectorTypeId = 0;
 	uint32_t registerNumber = 0;
-	TypeDescription typeDescription;
-	D3DSHADER_PARAM_REGISTER_TYPE registerType;
-	uint32_t dataTypeId;
-	uint32_t originalId = GetIdByRegister(token);
-	uint32_t outputId = GetNextId();
+	TypeDescription typeDescription = {};
+	D3DSHADER_PARAM_REGISTER_TYPE registerType = {};
+	uint32_t dataTypeId = 0;
+	uint32_t originalId = 0;
+	uint32_t loadedOriginalId = 0;
+	uint32_t outputId = 0;
 
 	registerType = GetRegisterType(token.i);
+
+	originalId = GetIdByRegister(token);
+
+	loadedOriginalId = originalId;
 	typeDescription = GetTypeByRegister(token);
+
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+		dataTypeId = GetSpirVTypeId(typeDescription);
+
+		//deference pointer into a register.
+		loadedOriginalId = GetNextId();
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(loadedOriginalId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(originalId); //pointer (Id)	
+	}
 
 	if ((((token.i & D3DSP_WRITEMASK_ALL) == D3DSP_WRITEMASK_ALL) || ((token.i & D3DSP_WRITEMASK_ALL) == 0x00000000)))
 	{
-		SetIdByRegister(token, inputId);
-		return inputId; //No swizzle no op.
-	}
-
-	vectorTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, outputComponentCount); //Revisit may not be a float
-
-	mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-	mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-	mFunctionDefinitionInstructions.push_back(originalId); //Vector1 (Id)
-	mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
-
-	if (token.i & D3DSP_WRITEMASK_0)
-	{
-		mFunctionDefinitionInstructions.push_back(4); //Component Literal
+		outputId = modifiedId; //No swizzle no op.
 	}
 	else
 	{
-		mFunctionDefinitionInstructions.push_back(0); //Component Literal
-	}
+		vectorTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, outputComponentCount); //Revisit may not be a float
+		outputId = GetNextId();
+		mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
+		mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
+		mFunctionDefinitionInstructions.push_back(loadedOriginalId); //Vector1 (Id)
+		mFunctionDefinitionInstructions.push_back(modifiedId); //Vector2 (Id)
 
-	if (token.i & D3DSP_WRITEMASK_1)
-	{
-		mFunctionDefinitionInstructions.push_back(5); //Component Literal
-	}
-	else
-	{
-		mFunctionDefinitionInstructions.push_back(1); //Component Literal
-	}
+		if (token.i & D3DSP_WRITEMASK_0)
+		{
+			mFunctionDefinitionInstructions.push_back(4); //Component Literal
+		}
+		else
+		{
+			mFunctionDefinitionInstructions.push_back(0); //Component Literal
+		}
 
-	if (token.i & D3DSP_WRITEMASK_2)
-	{
-		mFunctionDefinitionInstructions.push_back(6); //Component Literal
-	}
-	else
-	{
-		mFunctionDefinitionInstructions.push_back(2); //Component Literal
-	}
+		if (token.i & D3DSP_WRITEMASK_1)
+		{
+			mFunctionDefinitionInstructions.push_back(5); //Component Literal
+		}
+		else
+		{
+			mFunctionDefinitionInstructions.push_back(1); //Component Literal
+		}
 
-	if (token.i & D3DSP_WRITEMASK_3)
-	{
-		mFunctionDefinitionInstructions.push_back(7); //Component Literal
-	}
-	else
-	{
-		mFunctionDefinitionInstructions.push_back(3); //Component Literal
-	}
+		if (token.i & D3DSP_WRITEMASK_2)
+		{
+			mFunctionDefinitionInstructions.push_back(6); //Component Literal
+		}
+		else
+		{
+			mFunctionDefinitionInstructions.push_back(2); //Component Literal
+		}
 
-	SetIdByRegister(token, outputId);
+		if (token.i & D3DSP_WRITEMASK_3)
+		{
+			mFunctionDefinitionInstructions.push_back(7); //Component Literal
+		}
+		else
+		{
+			mFunctionDefinitionInstructions.push_back(3); //Component Literal
+		}
+	}	
+
+	switch (registerType)
+	{
+	case D3DSPR_RASTOUT:
+	case D3DSPR_ATTROUT:
+	case D3DSPR_COLOROUT:
+	case D3DSPR_DEPTHOUT:
+	case D3DSPR_OUTPUT:
+		mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+		mFunctionDefinitionInstructions.push_back(originalId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)
+		break;
+	default:
+		SetIdByRegister(token, outputId);
+		break;
+	}
 
 	return outputId;
 }
@@ -893,21 +928,6 @@ void ShaderConverter::CombineSpirVOpCodes()
 
 void ShaderConverter::CreateSpirVModule()
 {
-	VkResult result = VK_SUCCESS;
-	VkShaderModuleCreateInfo moduleCreateInfo = {};
-	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	moduleCreateInfo.pNext = NULL;
-	moduleCreateInfo.codeSize = mInstructions.size() * sizeof(uint32_t);
-	moduleCreateInfo.pCode = mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
-	moduleCreateInfo.flags = 0;
-	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &mConvertedShader.ShaderModule);
-
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << result;
-		return;
-	}
-
 #ifdef _DEBUG
 	//Start Debug Code
 	if (!mIsVertexShader)
@@ -923,6 +943,20 @@ void ShaderConverter::CreateSpirVModule()
 	//End Debug Code
 #endif
 
+	VkResult result = VK_SUCCESS;
+	VkShaderModuleCreateInfo moduleCreateInfo = {};
+	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfo.pNext = NULL;
+	moduleCreateInfo.codeSize = mInstructions.size() * sizeof(uint32_t);
+	moduleCreateInfo.pCode = mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
+	moduleCreateInfo.flags = 0;
+	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &mConvertedShader.ShaderModule);
+
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << result;
+		return;
+	}
 }
 
 void ShaderConverter::Process_DCL_Pixel()
@@ -1298,7 +1332,7 @@ void ShaderConverter::Process_MOV()
 	argumentId1 = GetSwizzledId(argumentToken1);
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
-	resultId = ApplyWriteMask(resultToken, resultId);
+	resultId = ApplyWriteMask(resultToken, argumentId1);
 
 	switch (resultRegisterType)
 	{
@@ -1307,9 +1341,7 @@ void ShaderConverter::Process_MOV()
 	case D3DSPR_COLOROUT:
 	case D3DSPR_DEPTHOUT:
 	case D3DSPR_OUTPUT:
-		mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		//Handled by ApplyWriteMask
 		break;
 	default:
 		dataTypeId = GetSpirVTypeId(typeDescription);
