@@ -384,8 +384,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDeviceState.mViewport.minDepth = (float)0.0f;
 	mDeviceState.mViewport.maxDepth = (float)1.0f;
 
-	mDeviceState.m9Viewport.Width = mDeviceState.mViewport.width;
-	mDeviceState.m9Viewport.Height = mDeviceState.mViewport.height;
+	mDeviceState.m9Viewport.Width = (DWORD)mDeviceState.mViewport.width;
+	mDeviceState.m9Viewport.Height = (DWORD)mDeviceState.mViewport.height;
 	mDeviceState.m9Viewport.MinZ = mDeviceState.mViewport.minDepth;
 	mDeviceState.m9Viewport.MaxZ = mDeviceState.mViewport.maxDepth;
 
@@ -2505,13 +2505,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 		(*pValue) = constants->fogTableMode;
 		break;
 	case D3DRS_FOGSTART:
-		(*pValue) = constants->fogStart;
+		(*pValue) = bit_cast(constants->fogStart);
 		break;
 	case D3DRS_FOGEND:
-		(*pValue) = constants->fogEnd;
+		(*pValue) = bit_cast(constants->fogEnd);
 		break;
 	case D3DRS_FOGDENSITY:
-		(*pValue) = constants->fogDensity;
+		(*pValue) = bit_cast(constants->fogDensity);
 		break;
 	case D3DRS_RANGEFOGENABLE:
 		(*pValue) = constants->rangeFogEnable;
@@ -2610,7 +2610,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 		(*pValue) = constants->pointSize;
 		break;
 	case D3DRS_POINTSIZE_MIN:
-		(*pValue) = constants->pointSizeMinimum;
+		(*pValue) = bit_cast(constants->pointSizeMinimum);
 		break;
 	case D3DRS_POINTSPRITEENABLE:
 		(*pValue) = constants->pointSpriteEnable;
@@ -2619,13 +2619,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 		(*pValue) = constants->pointScaleEnable;
 		break;
 	case D3DRS_POINTSCALE_A:
-		(*pValue) = constants->pointScaleA;
+		(*pValue) = bit_cast(constants->pointScaleA);
 		break;
 	case D3DRS_POINTSCALE_B:
-		(*pValue) = constants->pointScaleB;
+		(*pValue) = bit_cast(constants->pointScaleB);
 		break;
 	case D3DRS_POINTSCALE_C:
-		(*pValue) = constants->pointScaleC;
+		(*pValue) = bit_cast(constants->pointScaleC);
 		break;
 	case D3DRS_MULTISAMPLEANTIALIAS:
 		(*pValue) = constants->multisampleAntiAlias;
@@ -2640,7 +2640,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 		(*pValue) = constants->debugMonitorToken;
 		break;
 	case D3DRS_POINTSIZE_MAX:
-		(*pValue) = constants->pointSizeMaximum;
+		(*pValue) = bit_cast(constants->pointSizeMaximum);
 		break;
 	case D3DRS_INDEXEDVERTEXBLENDENABLE:
 		(*pValue) = constants->indexedVertexBlendEnable;
@@ -2649,7 +2649,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 		(*pValue) = constants->colorWriteEnable;
 		break;
 	case D3DRS_TWEENFACTOR:
-		(*pValue) = constants->tweenFactor;
+		(*pValue) = bit_cast(constants->tweenFactor);
 		break;
 	case D3DRS_BLENDOP:
 		(*pValue) = constants->blendOperation;
@@ -2664,28 +2664,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 		(*pValue) = constants->scissorTestEnable;
 		break;
 	case D3DRS_SLOPESCALEDEPTHBIAS:
-		(*pValue) = constants->slopeScaleDepthBias;
+		(*pValue) = bit_cast(constants->slopeScaleDepthBias);
 		break;
 	case D3DRS_ANTIALIASEDLINEENABLE:
 		(*pValue) = constants->antiAliasedLineEnable;
 		break;
 	case D3DRS_MINTESSELLATIONLEVEL:
-		(*pValue) = constants->minimumTessellationLevel;
+		(*pValue) = bit_cast(constants->minimumTessellationLevel);
 		break;
 	case D3DRS_MAXTESSELLATIONLEVEL:
-		(*pValue) = constants->maximumTessellationLevel;
+		(*pValue) = bit_cast(constants->maximumTessellationLevel);
 		break;
 	case D3DRS_ADAPTIVETESS_X:
-		(*pValue) = constants->adaptivetessX;
+		(*pValue) = bit_cast(constants->adaptivetessX);
 		break;
 	case D3DRS_ADAPTIVETESS_Y:
-		(*pValue) = constants->adaptivetessY;
+		(*pValue) = bit_cast(constants->adaptivetessY);
 		break;
 	case D3DRS_ADAPTIVETESS_Z:
-		(*pValue) = constants->adaptivetessZ;
+		(*pValue) = bit_cast(constants->adaptivetessZ);
 		break;
 	case D3DRS_ADAPTIVETESS_W:
-		(*pValue) = constants->adaptivetessW;
+		(*pValue) = bit_cast(constants->adaptivetessW);
 		break;
 	case D3DRS_ENABLEADAPTIVETESSELLATION:
 		(*pValue) = constants->enableAdaptiveTessellation;
@@ -2721,7 +2721,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 		(*pValue) = constants->srgbWriteEnable;
 		break;
 	case D3DRS_DEPTHBIAS:
-		(*pValue) = constants->depthBias;
+		(*pValue) = bit_cast(constants->depthBias);
 		break;
 	case D3DRS_WRAP8:
 		(*pValue) = constants->wrap8;
@@ -3051,28 +3051,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_0;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_0);
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_1;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_1);
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_2;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_2);
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_3;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_3);
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_4;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_4);
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_5;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_5);
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_6;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_6);
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix00_7;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_7);
 			break;
 		default:
 			break;
@@ -3082,28 +3082,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_0;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_0);
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_1;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_1);
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_2;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_2);
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_3;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_3);
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_4;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_4);
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_5;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_5);
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_6;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_6);
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix01_7;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_7);
 			break;
 		default:
 			break;
@@ -3113,28 +3113,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_0;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_0);
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_1;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_1);
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_2;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_2);
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_3;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_3);
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_4;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_4);
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_5;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_5);
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_6;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_6);
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix10_7;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_7);
 			break;
 		default:
 			break;
@@ -3144,28 +3144,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_0;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_0);
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_1;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_1);
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_2;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_2);
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_3;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_3);
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_4;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_4);
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_5;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_5);
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_6;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_6);
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapMatrix11_7;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_7);
 			break;
 		default:
 			break;
@@ -3206,28 +3206,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_0;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_0);
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_1;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_1);
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_2;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_2);
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_3;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_3);
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_4;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_4);
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_5;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_5);
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_6;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_6);
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapScale_7;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_7);
 			break;
 		default:
 			break;
@@ -3237,28 +3237,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_0;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_0);
 			break;
 		case 1:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_1;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_1);
 			break;
 		case 2:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_2;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_2);
 			break;
 		case 3:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_3;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_3);
 			break;
 		case 4:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_4;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_4);
 			break;
 		case 5:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_5;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_5);
 			break;
 		case 6:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_6;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_6);
 			break;
 		case 7:
-			(*pValue) = state->mSpecializationConstants.bumpMapOffset_7;
+			(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_7);
 			break;
 		default:
 			break;
@@ -3449,9 +3449,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9 **ppS
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
+	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
 	for (size_t i = 0; i < BoolCount; i++)
 	{
-		pConstantData[i] = this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i];
+		pConstantData[i] = pushConstants.Booleans[(StartRegister * 4) + i];
 	}
 
 	return S_OK;
@@ -3459,9 +3460,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
+	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
 	for (size_t i = 0; i < Vector4fCount; i++)
 	{
-		pConstantData[i] = this->mBufferManager->mPushConstants.Floats[(StartRegister * 4) + i];
+		pConstantData[i] = pushConstants.Floats[(StartRegister * 4) + i];
 	}
 
 	return S_OK;
@@ -3469,9 +3471,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
+	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
 	for (size_t i = 0; i < Vector4iCount; i++)
 	{
-		pConstantData[i] = this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i];
+		pConstantData[i] = pushConstants.Booleans[(StartRegister * 4) + i];
 	}
 
 	return S_OK;
@@ -3902,15 +3905,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasFogTableMode = true;
 		break;
 	case D3DRS_FOGSTART:
-		constants->fogStart = Value;
+		constants->fogStart = bit_cast(Value);
 		state->hasFogStart = true;
 		break;
 	case D3DRS_FOGEND:
-		constants->fogEnd = Value;
+		constants->fogEnd = bit_cast(Value);
 		state->hasFogEnd = true;
 		break;
 	case D3DRS_FOGDENSITY:
-		constants->fogDensity = Value;
+		constants->fogDensity = bit_cast(Value);
 		state->hasFogDensity = true;
 		break;
 	case D3DRS_RANGEFOGENABLE:
@@ -4042,7 +4045,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasPointSize = true;
 		break;
 	case D3DRS_POINTSIZE_MIN:
-		constants->pointSizeMinimum = Value;
+		constants->pointSizeMinimum = bit_cast(Value);
 		state->hasPointSizeMinimum = true;
 		break;
 	case D3DRS_POINTSPRITEENABLE:
@@ -4054,15 +4057,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasPointScaleEnable = true;
 		break;
 	case D3DRS_POINTSCALE_A:
-		constants->pointScaleA = Value;
+		constants->pointScaleA = bit_cast(Value);
 		state->hasPointScaleA = true;
 		break;
 	case D3DRS_POINTSCALE_B:
-		constants->pointScaleB = Value;
+		constants->pointScaleB = bit_cast(Value);
 		state->hasPointScaleB = true;
 		break;
 	case D3DRS_POINTSCALE_C:
-		constants->pointScaleC = Value;
+		constants->pointScaleC = bit_cast(Value);
 		state->hasPointScaleC = true;
 		break;
 	case D3DRS_MULTISAMPLEANTIALIAS:
@@ -4082,7 +4085,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasDebugMonitorToken = true;
 		break;
 	case D3DRS_POINTSIZE_MAX:
-		constants->pointSizeMaximum = Value;
+		constants->pointSizeMaximum = bit_cast(Value);
 		state->hasPointSizeMaximum = true;
 		break;
 	case D3DRS_INDEXEDVERTEXBLENDENABLE:
@@ -4094,7 +4097,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasColorWriteEnable = true;
 		break;
 	case D3DRS_TWEENFACTOR:
-		constants->tweenFactor = Value;
+		constants->tweenFactor = bit_cast(Value);
 		state->hasTweenFactor = true;
 		break;
 	case D3DRS_BLENDOP:
@@ -4114,7 +4117,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasScissorTestEnable = true;
 		break;
 	case D3DRS_SLOPESCALEDEPTHBIAS:
-		constants->slopeScaleDepthBias = Value;
+		constants->slopeScaleDepthBias = bit_cast(Value);
 		state->hasSlopeScaleDepthBias = true;
 		break;
 	case D3DRS_ANTIALIASEDLINEENABLE:
@@ -4122,27 +4125,27 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasAntiAliasedLineEnable = true;
 		break;
 	case D3DRS_MINTESSELLATIONLEVEL:
-		constants->minimumTessellationLevel = Value;
+		constants->minimumTessellationLevel = bit_cast(Value);
 		state->hasMinimumTessellationLevel = true;
 		break;
 	case D3DRS_MAXTESSELLATIONLEVEL:
-		constants->maximumTessellationLevel = Value;
+		constants->maximumTessellationLevel = bit_cast(Value);
 		state->hasMaximumTessellationLevel = true;
 		break;
 	case D3DRS_ADAPTIVETESS_X:
-		constants->adaptivetessX = Value;
+		constants->adaptivetessX = bit_cast(Value);
 		state->hasAdaptivetessX = true;
 		break;
 	case D3DRS_ADAPTIVETESS_Y:
-		constants->adaptivetessY = Value;
+		constants->adaptivetessY = bit_cast(Value);
 		state->hasAdaptivetessY = true;
 		break;
 	case D3DRS_ADAPTIVETESS_Z:
-		constants->adaptivetessZ = Value;
+		constants->adaptivetessZ = bit_cast(Value);
 		state->hasAdaptivetessZ = true;
 		break;
 	case D3DRS_ADAPTIVETESS_W:
-		constants->adaptivetessW = Value;
+		constants->adaptivetessW = bit_cast(Value);
 		state->hasAdaptivetessW = true;
 		break;
 	case D3DRS_ENABLEADAPTIVETESSELLATION:
@@ -4190,7 +4193,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 		state->hasSrgbWriteEnable = true;
 		break;
 	case D3DRS_DEPTHBIAS:
-		constants->depthBias = Value;
+		constants->depthBias = bit_cast(Value);
 		state->hasDepthBias = true;
 		break;
 	case D3DRS_WRAP8:
@@ -4568,28 +4571,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			state->mSpecializationConstants.bumpMapMatrix00_0 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_0 = bit_cast(Value);
 			break;
 		case 1:
-			state->mSpecializationConstants.bumpMapMatrix00_1 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_1 = bit_cast(Value);
 			break;
 		case 2:
-			state->mSpecializationConstants.bumpMapMatrix00_2 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_2 = bit_cast(Value);
 			break;
 		case 3:
-			state->mSpecializationConstants.bumpMapMatrix00_3 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_3 = bit_cast(Value);
 			break;
 		case 4:
-			state->mSpecializationConstants.bumpMapMatrix00_4 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_4 = bit_cast(Value);
 			break;
 		case 5:
-			state->mSpecializationConstants.bumpMapMatrix00_5 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_5 = bit_cast(Value);
 			break;
 		case 6:
-			state->mSpecializationConstants.bumpMapMatrix00_6 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_6 = bit_cast(Value);
 			break;
 		case 7:
-			state->mSpecializationConstants.bumpMapMatrix00_7 = Value;
+			state->mSpecializationConstants.bumpMapMatrix00_7 = bit_cast(Value);
 			break;
 		default:
 			break;
@@ -4599,28 +4602,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			state->mSpecializationConstants.bumpMapMatrix01_0 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_0 = bit_cast(Value);
 			break;
 		case 1:
-			state->mSpecializationConstants.bumpMapMatrix01_1 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_1 = bit_cast(Value);
 			break;
 		case 2:
-			state->mSpecializationConstants.bumpMapMatrix01_2 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_2 = bit_cast(Value);
 			break;
 		case 3:
-			state->mSpecializationConstants.bumpMapMatrix01_3 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_3 = bit_cast(Value);
 			break;
 		case 4:
-			state->mSpecializationConstants.bumpMapMatrix01_4 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_4 = bit_cast(Value);
 			break;
 		case 5:
-			state->mSpecializationConstants.bumpMapMatrix01_5 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_5 = bit_cast(Value);
 			break;
 		case 6:
-			state->mSpecializationConstants.bumpMapMatrix01_6 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_6 = bit_cast(Value);
 			break;
 		case 7:
-			state->mSpecializationConstants.bumpMapMatrix01_7 = Value;
+			state->mSpecializationConstants.bumpMapMatrix01_7 = bit_cast(Value);
 			break;
 		default:
 			break;
@@ -4630,28 +4633,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			state->mSpecializationConstants.bumpMapMatrix10_0 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_0 = bit_cast(Value);
 			break;
 		case 1:
-			state->mSpecializationConstants.bumpMapMatrix10_1 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_1 = bit_cast(Value);
 			break;
 		case 2:
-			state->mSpecializationConstants.bumpMapMatrix10_2 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_2 = bit_cast(Value);
 			break;
 		case 3:
-			state->mSpecializationConstants.bumpMapMatrix10_3 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_3 = bit_cast(Value);
 			break;
 		case 4:
-			state->mSpecializationConstants.bumpMapMatrix10_4 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_4 = bit_cast(Value);
 			break;
 		case 5:
-			state->mSpecializationConstants.bumpMapMatrix10_5 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_5 = bit_cast(Value);
 			break;
 		case 6:
-			state->mSpecializationConstants.bumpMapMatrix10_6 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_6 = bit_cast(Value);
 			break;
 		case 7:
-			state->mSpecializationConstants.bumpMapMatrix10_7 = Value;
+			state->mSpecializationConstants.bumpMapMatrix10_7 = bit_cast(Value);
 			break;
 		default:
 			break;
@@ -4661,28 +4664,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			state->mSpecializationConstants.bumpMapMatrix11_0 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_0 = bit_cast(Value);
 			break;
 		case 1:
-			state->mSpecializationConstants.bumpMapMatrix11_1 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_1 = bit_cast(Value);
 			break;
 		case 2:
-			state->mSpecializationConstants.bumpMapMatrix11_2 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_2 = bit_cast(Value);
 			break;
 		case 3:
-			state->mSpecializationConstants.bumpMapMatrix11_3 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_3 = bit_cast(Value);
 			break;
 		case 4:
-			state->mSpecializationConstants.bumpMapMatrix11_4 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_4 = bit_cast(Value);
 			break;
 		case 5:
-			state->mSpecializationConstants.bumpMapMatrix11_5 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_5 = bit_cast(Value);
 			break;
 		case 6:
-			state->mSpecializationConstants.bumpMapMatrix11_6 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_6 = bit_cast(Value);
 			break;
 		case 7:
-			state->mSpecializationConstants.bumpMapMatrix11_7 = Value;
+			state->mSpecializationConstants.bumpMapMatrix11_7 = bit_cast(Value);
 			break;
 		default:
 			break;
@@ -4723,28 +4726,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			state->mSpecializationConstants.bumpMapScale_0 = Value;
+			state->mSpecializationConstants.bumpMapScale_0 = bit_cast(Value);
 			break;
 		case 1:
-			state->mSpecializationConstants.bumpMapScale_1 = Value;
+			state->mSpecializationConstants.bumpMapScale_1 = bit_cast(Value);
 			break;
 		case 2:
-			state->mSpecializationConstants.bumpMapScale_2 = Value;
+			state->mSpecializationConstants.bumpMapScale_2 = bit_cast(Value);
 			break;
 		case 3:
-			state->mSpecializationConstants.bumpMapScale_3 = Value;
+			state->mSpecializationConstants.bumpMapScale_3 = bit_cast(Value);
 			break;
 		case 4:
-			state->mSpecializationConstants.bumpMapScale_4 = Value;
+			state->mSpecializationConstants.bumpMapScale_4 = bit_cast(Value);
 			break;
 		case 5:
-			state->mSpecializationConstants.bumpMapScale_5 = Value;
+			state->mSpecializationConstants.bumpMapScale_5 = bit_cast(Value);
 			break;
 		case 6:
-			state->mSpecializationConstants.bumpMapScale_6 = Value;
+			state->mSpecializationConstants.bumpMapScale_6 = bit_cast(Value);
 			break;
 		case 7:
-			state->mSpecializationConstants.bumpMapScale_7 = Value;
+			state->mSpecializationConstants.bumpMapScale_7 = bit_cast(Value);
 			break;
 		default:
 			break;
@@ -4754,28 +4757,28 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 		switch (Stage)
 		{
 		case 0:
-			state->mSpecializationConstants.bumpMapOffset_0 = Value;
+			state->mSpecializationConstants.bumpMapOffset_0 = bit_cast(Value);
 			break;
 		case 1:
-			state->mSpecializationConstants.bumpMapOffset_1 = Value;
+			state->mSpecializationConstants.bumpMapOffset_1 = bit_cast(Value);
 			break;
 		case 2:
-			state->mSpecializationConstants.bumpMapOffset_2 = Value;
+			state->mSpecializationConstants.bumpMapOffset_2 = bit_cast(Value);
 			break;
 		case 3:
-			state->mSpecializationConstants.bumpMapOffset_3 = Value;
+			state->mSpecializationConstants.bumpMapOffset_3 = bit_cast(Value);
 			break;
 		case 4:
-			state->mSpecializationConstants.bumpMapOffset_4 = Value;
+			state->mSpecializationConstants.bumpMapOffset_4 = bit_cast(Value);
 			break;
 		case 5:
-			state->mSpecializationConstants.bumpMapOffset_5 = Value;
+			state->mSpecializationConstants.bumpMapOffset_5 = bit_cast(Value);
 			break;
 		case 6:
-			state->mSpecializationConstants.bumpMapOffset_6 = Value;
+			state->mSpecializationConstants.bumpMapOffset_6 = bit_cast(Value);
 			break;
 		case 7:
-			state->mSpecializationConstants.bumpMapOffset_7 = Value;
+			state->mSpecializationConstants.bumpMapOffset_7 = bit_cast(Value);
 			break;
 		default:
 			break;
@@ -5008,9 +5011,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pSha
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
 {
+	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
 	for (size_t i = 0; i < BoolCount; i++)
 	{
-		this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
+		pushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
 	}
 
 	return S_OK;
@@ -5018,9 +5022,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
+	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
 	for (size_t i = 0; i < Vector4fCount; i++)
 	{
-		this->mBufferManager->mPushConstants.Floats[(StartRegister * 4) + i] = pConstantData[i];
+		pushConstants.Floats[(StartRegister * 4) + i] = pConstantData[i];
 	}
 
 	return S_OK;
@@ -5028,9 +5033,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
+	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
 	for (size_t i = 0; i < Vector4iCount; i++)
 	{
-		this->mBufferManager->mPushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
+		pushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
 	}
 
 	return S_OK;
@@ -5042,8 +5048,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 	{
 		this->mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
 
-		this->mCurrentStateRecording->mDeviceState.mViewport.width = mDeviceState.m9Viewport.Width;
-		this->mCurrentStateRecording->mDeviceState.mViewport.height = mDeviceState.m9Viewport.Height;
+		this->mCurrentStateRecording->mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
+		this->mCurrentStateRecording->mDeviceState.mViewport.height = (float)mDeviceState.m9Viewport.Height;
 		this->mCurrentStateRecording->mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
 		this->mCurrentStateRecording->mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 	}
@@ -5051,8 +5057,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 	{
 		mDeviceState.m9Viewport = (*pViewport);
 
-		mDeviceState.mViewport.width = mDeviceState.m9Viewport.Width;
-		mDeviceState.mViewport.height = mDeviceState.m9Viewport.Height;
+		mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
+		mDeviceState.mViewport.height = (float)mDeviceState.m9Viewport.Height;
 		mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
 		mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 	}

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
 #include "ShaderConverter.h"
+#include "CTypes.h"
 
 class CVertexShader9 : public IDirect3DVertexShader9
 {
@@ -34,6 +35,7 @@ public:
 
 	CDevice9* mDevice = nullptr;
 	DWORD* mFunction = nullptr;
+	PushConstants mPushConstants;
 
 	ShaderConverter mShaderConverter;
 	ConvertedShader mConvertedShader;

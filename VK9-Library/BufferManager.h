@@ -102,22 +102,6 @@ struct DrawContext
 	~DrawContext();
 };
 
-struct Transformations
-{
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	Eigen::Matrix4f mTotalTransformation;
-	Eigen::Matrix4f mModel;
-	Eigen::Matrix4f mView;
-	Eigen::Matrix4f mProjection;
-};
-
-union PushConstants
-{
-	float Floats[64] = {};
-	uint32_t Integers[64];
-	BOOL Booleans[64];
-};
-
 class BufferManager
 {
 public:
@@ -506,7 +490,6 @@ public:
 	VkDescriptorSet mLastDescriptorSet = VK_NULL_HANDLE;
 	VkPipeline mLastVkPipeline = VK_NULL_HANDLE;
 
-	PushConstants mPushConstants;
 	Transformations mTransformations;
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();

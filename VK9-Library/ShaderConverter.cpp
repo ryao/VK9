@@ -385,7 +385,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 
 		mOutputRegisters[registerNumber] = id;
-		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsageIndex(token.i)] = id;
+		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = id;
 		//GenerateDecoration(mOutputRegisterUsages.size(), id);
 		break;
 	case D3DSPR_CONST:
@@ -897,18 +897,36 @@ void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
 	}
 }
 
-void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t inputId)
+void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t inputId, uint32_t usage)
 {
-	mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-	mDecorateInstructions.push_back(inputId); //target (Id)
-	mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+	switch (usage)
+	{
+	case D3DDECLUSAGE_POSITION:
+		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+		mDecorateInstructions.push_back(inputId); //target (Id)
+		mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
+		mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
+		break;
+	//can't find anything for fragment color output D3DDECLUSAGE_COLOR
+	//case D3DDECLUSAGE_COLOR:
+	//	mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+	//	mDecorateInstructions.push_back(inputId); //target (Id)
+	//	mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
+	//	mDecorateInstructions.push_back(0); //Location offset
+	//	break;
+	default:
+		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+		mDecorateInstructions.push_back(inputId); //target (Id)
+		mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
 
-	/*
-	The location should line up with how the variables are passed in.
-	The register number is also zero indexed so I'm using that to get the right binding.
-	The register numbers are unique per type so input and output should still line up with bindings.
-	*/
-	mDecorateInstructions.push_back(registerNumber); //Location offset
+		/*
+		The location should line up with how the variables are passed in.
+		The register number is also zero indexed so I'm using that to get the right binding.
+		The register numbers are unique per type so input and output should still line up with bindings.
+		*/
+		mDecorateInstructions.push_back(registerNumber); //Location offset
+		break;
+	}
 }
 
 void ShaderConverter::CombineSpirVOpCodes()
@@ -1207,7 +1225,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		}
 
 		mOutputRegisters[registerNumber] = tokenId;
-		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsageIndex(token.i)] = tokenId;
+		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = tokenId;
 		//GenerateDecoration(mOutputRegisterUsages.size(), tokenId);
 		break;
 	case D3DSPR_TEMP:
@@ -1922,6 +1940,27 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	}
 	//Probably more info in this word but I'll handle that later.
 
+	//Capability
+	mCapabilityInstructions.push_back(Pack(2, spv::OpCapability)); //size,Type
+	mCapabilityInstructions.push_back(spv::CapabilityShader); //Capability
+
+															  //Import
+	std::string importStatement = "GLSL.std.450";
+	//The spec says 3+variable but there are only 2 before string literal.
+	stringWordSize = 2 + (importStatement.length() / 4);
+	if (importStatement.length() % 4 == 0)
+	{
+		stringWordSize++;
+	}
+	mExtensionInstructions.push_back(Pack(stringWordSize, spv::OpExtInstImport)); //size,Type
+	mExtensionInstructions.push_back(GetNextId()); //Result Id
+	PutStringInVector(importStatement, mExtensionInstructions);
+
+	//Memory Model
+	mMemoryModelInstructions.push_back(Pack(3, spv::OpMemoryModel)); //size,Type
+	mMemoryModelInstructions.push_back(spv::AddressingModelLogical); //Addressing Model
+	mMemoryModelInstructions.push_back(spv::MemoryModelGLSL450); //Memory Model
+
 	//End of entry point
 	mEntryPointTypeId = GetSpirVTypeId(spv::OpTypeFunction); //secondary type will be void by default.
 	mEntryPointId = GetNextId();
@@ -2205,33 +2244,12 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	typedef boost::container::flat_map<_D3DDECLUSAGE, uint32_t> usageMapType;
 	BOOST_FOREACH(const usageMapType::value_type& entry, mOutputRegisterUsages)
 	{
-		GenerateDecoration(outputIndex++, entry.second);
+		GenerateDecoration(outputIndex++, entry.second,entry.first);
 	}
 
 	//End of entry point
 	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpReturn)); //size,Type
 	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpFunctionEnd)); //size,Type
-
-	//Capability
-	mCapabilityInstructions.push_back(Pack(2, spv::OpCapability)); //size,Type
-	mCapabilityInstructions.push_back(spv::CapabilityShader); //Capability
-
-	//Import
-	std::string importStatement = "GLSL.std.450";
-	//The spec says 3+variable but there are only 2 before string literal.
-	stringWordSize = 2 + (importStatement.length() / 4);
-	if (importStatement.length() % 4 == 0)
-	{
-		stringWordSize++;
-	}
-	mExtensionInstructions.push_back(Pack(stringWordSize, spv::OpExtInstImport)); //size,Type
-	mExtensionInstructions.push_back(GetNextId()); //Result Id
-	PutStringInVector(importStatement, mExtensionInstructions);
-
-	//Memory Model
-	mMemoryModelInstructions.push_back(Pack(3, spv::OpMemoryModel)); //size,Type
-	mMemoryModelInstructions.push_back(spv::AddressingModelLogical); //Addressing Model
-	mMemoryModelInstructions.push_back(spv::MemoryModelGLSL450); //Memory Model
 
 	//EntryPoint
 	std::string entryPointName = "main";

@@ -986,4 +986,39 @@ inline void SaveImage(const char *filename, char* imageData, uint32_t height, ui
 	file.close();
 }
 
+
+/*
+Optimizing compilers are magic. The memcpy should go away. If not performance will take a hit here.
+*/
+
+template <class TargetType, class SourceType>
+inline void assign(TargetType& target, const SourceType& source)
+{
+	static_assert(sizeof(TargetType) == sizeof(SourceType),"To do a bitwise assign both types must be the same size.");
+	memcpy(&target, &source, sizeof(target));
+}
+
+template <class TargetType, class SourceType>
+inline TargetType bit_cast(const SourceType& source)
+{
+	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise cast both types must be the same size.");
+	Dest returnValue;
+	memcpy(&returnValue, &source, sizeof(target));
+	return returnValue;
+}
+
+inline DWORD bit_cast(const float& source)
+{
+	DWORD returnValue;
+	memcpy(&returnValue, &source, sizeof(DWORD));
+	return returnValue;
+}
+
+inline float bit_cast(const DWORD& source)
+{
+	float returnValue;
+	memcpy(&returnValue, &source, sizeof(float));
+	return returnValue;
+}
+
 #endif // UTILITIES_H
