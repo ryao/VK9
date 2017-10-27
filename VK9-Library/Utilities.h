@@ -995,6 +995,7 @@ template <class TargetType, class SourceType>
 inline void assign(TargetType& target, const SourceType& source)
 {
 	static_assert(sizeof(TargetType) == sizeof(SourceType),"To do a bitwise assign both types must be the same size.");
+	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
 	memcpy(&target, &source, sizeof(target));
 }
 
@@ -1002,7 +1003,8 @@ template <class TargetType, class SourceType>
 inline TargetType bit_cast(const SourceType& source)
 {
 	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise cast both types must be the same size.");
-	Dest returnValue;
+	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
+	TargetType returnValue;
 	memcpy(&returnValue, &source, sizeof(target));
 	return returnValue;
 }
