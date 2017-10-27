@@ -14,7 +14,7 @@
     <ProjectGuid>{687FC2B4-7887-45D0-B455-DD32F9680FE2}</ProjectGuid>
     <RootNamespace>VK9Library</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <ProjectName>VK9-Library</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
