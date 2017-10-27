@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include <vector>
 #include <boost/container/flat_map.hpp>
 #include <spirv.hpp>
+#include "CTypes.h"
 
 /*
 http://timjones.io/blog/archive/2015/09/02/parsing-direct3d-shader-bytecode
@@ -43,15 +44,17 @@ https://github.com/ValveSoftware/ToGL
 
 struct ConvertedShader
 {
-	UINT Size = 0;
+	//Information about layout
 	//VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
 	uint32_t mVertexInputAttributeDescriptionCount = 0;
 	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
-
 	uint32_t mDescriptorSetLayoutBindingCount = 0;
 	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 
+	//Actual Payload
+	UINT Size = 0;
 	VkShaderModule ShaderModule = VK_NULL_HANDLE;
+	PushConstants mPushConstants;
 };
 
 //https://msdn.microsoft.com/en-us/library/windows/hardware/ff552738(v=vs.85).aspx

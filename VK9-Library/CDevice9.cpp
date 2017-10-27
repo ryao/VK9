@@ -2401,29 +2401,35 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppSha
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
-	//TODO: Implement.
+	auto& pushConstants = mDeviceState.mPixelShader->mConvertedShader.mPushConstants;
+	for (size_t i = 0; i < BoolCount; i++)
+	{
+		pConstantData[i] = pushConstants.Booleans[(StartRegister * 4) + i];
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetPixelShaderConstantB is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
-	//TODO: Implement.
+	auto& pushConstants = mDeviceState.mPixelShader->mConvertedShader.mPushConstants;
+	for (size_t i = 0; i < Vector4fCount; i++)
+	{
+		pConstantData[i] = pushConstants.Floats[(StartRegister * 4) + i];
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetPixelShaderConstantF is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
-	//TODO: Implement.
+	auto& pushConstants = mDeviceState.mPixelShader->mConvertedShader.mPushConstants;
+	for (size_t i = 0; i < Vector4iCount; i++)
+	{
+		pConstantData[i] = pushConstants.Booleans[(StartRegister * 4) + i];
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetPixelShaderConstantI is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain, D3DRASTER_STATUS *pRasterStatus)
@@ -3449,7 +3455,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9 **ppS
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
-	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
+	auto& pushConstants = mDeviceState.mVertexShader->mConvertedShader.mPushConstants;
 	for (size_t i = 0; i < BoolCount; i++)
 	{
 		pConstantData[i] = pushConstants.Booleans[(StartRegister * 4) + i];
@@ -3460,7 +3466,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
-	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
+	auto& pushConstants = mDeviceState.mVertexShader->mConvertedShader.mPushConstants;
 	for (size_t i = 0; i < Vector4fCount; i++)
 	{
 		pConstantData[i] = pushConstants.Floats[(StartRegister * 4) + i];
@@ -3471,7 +3477,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
-	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
+	auto& pushConstants = mDeviceState.mVertexShader->mConvertedShader.mPushConstants;
 	for (size_t i = 0; i < Vector4iCount; i++)
 	{
 		pConstantData[i] = pushConstants.Booleans[(StartRegister * 4) + i];
@@ -3789,27 +3795,33 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShade
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetPixelShaderConstantB is not implemented!";
+	auto& pushConstants = mDeviceState.mPixelShader->mConvertedShader.mPushConstants;
+	for (size_t i = 0; i < BoolCount; i++)
+	{
+		pushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
+	}
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetPixelShaderConstantF is not implemented!";
+	auto& pushConstants = mDeviceState.mPixelShader->mConvertedShader.mPushConstants;
+	for (size_t i = 0; i < Vector4fCount; i++)
+	{
+		pushConstants.Floats[(StartRegister * 4) + i] = pConstantData[i];
+	}
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetPixelShaderConstantI is not implemented!";
+	auto& pushConstants = mDeviceState.mPixelShader->mConvertedShader.mPushConstants;
+	for (size_t i = 0; i < Vector4iCount; i++)
+	{
+		pushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
+	}
 
 	return S_OK;
 }
@@ -5011,7 +5023,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pSha
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
 {
-	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
+	auto& pushConstants = mDeviceState.mVertexShader->mConvertedShader.mPushConstants;
 	for (size_t i = 0; i < BoolCount; i++)
 	{
 		pushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];
@@ -5022,7 +5034,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
-	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
+	auto& pushConstants = mDeviceState.mVertexShader->mConvertedShader.mPushConstants;
 	for (size_t i = 0; i < Vector4fCount; i++)
 	{
 		pushConstants.Floats[(StartRegister * 4) + i] = pConstantData[i];
@@ -5033,7 +5045,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
-	auto& pushConstants = mDeviceState.mVertexShader->mPushConstants;
+	auto& pushConstants = mDeviceState.mVertexShader->mConvertedShader.mPushConstants;
 	for (size_t i = 0; i < Vector4iCount; i++)
 	{
 		pushConstants.Booleans[(StartRegister * 4) + i] = pConstantData[i];

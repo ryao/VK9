@@ -843,7 +843,7 @@ inline uint32_t ConvertFormat(DWORD fvf)
 
 inline void Print(boost::container::flat_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& transforms)
 {
-	BOOST_FOREACH(const auto& pair1, transforms)
+	for (const auto& pair1 : transforms)
 	{
 		BOOST_LOG_TRIVIAL(info) << pair1.first;
 		BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._11 << "," << pair1.second._12 << "," << pair1.second._13 << "," << pair1.second._14 << "}";
@@ -852,6 +852,16 @@ inline void Print(boost::container::flat_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& 
 		BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._41 << "," << pair1.second._42 << "," << pair1.second._43 << "," << pair1.second._44 << "}";
 		BOOST_LOG_TRIVIAL(info) << "";
 	}
+
+	//BOOST_FOREACH(const auto& pair1, transforms)
+	//{
+	//	BOOST_LOG_TRIVIAL(info) << pair1.first;
+	//	BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._11 << "," << pair1.second._12 << "," << pair1.second._13 << "," << pair1.second._14 << "}";
+	//	BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._21 << "," << pair1.second._22 << "," << pair1.second._23 << "," << pair1.second._24 << "}";
+	//	BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._31 << "," << pair1.second._32 << "," << pair1.second._33 << "," << pair1.second._34 << "}";
+	//	BOOST_LOG_TRIVIAL(info) << "{" << pair1.second._41 << "," << pair1.second._42 << "," << pair1.second._43 << "," << pair1.second._44 << "}";
+	//	BOOST_LOG_TRIVIAL(info) << "";
+	//}
 }
 
 inline void Print(DeviceState& deviceState)

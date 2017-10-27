@@ -35,8 +35,7 @@ public:
 
 	CDevice9* mDevice = nullptr;
 	DWORD* mFunction = nullptr;
-	PushConstants mPushConstants;
-
+	
 	ShaderConverter mShaderConverter;
 	ConvertedShader mConvertedShader;
 

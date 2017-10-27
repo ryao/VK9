@@ -1282,6 +1282,7 @@ void ShaderConverter::Process_DCL()
 void ShaderConverter::Process_DEF()
 {
 	uint32_t literalIds[4];
+	uint32_t literalValue;
 	Token token = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
@@ -1298,10 +1299,13 @@ void ShaderConverter::Process_DEF()
 	for (size_t i = 0; i < 4; i++)
 	{
 		literalIds[i] = GetNextId();
+		literalValue = GetNextToken().i;
 		mTypeInstructions.push_back(Pack(4, spv::OpConstant)); //size,Type
 		mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
 		mTypeInstructions.push_back(literalIds[i]); //Result (Id)
-		mTypeInstructions.push_back(GetNextToken().i); //Literal Value
+		mTypeInstructions.push_back(literalValue); //Literal Value
+
+		mConvertedShader.mPushConstants.Integers[token.DestinationParameterToken.RegisterNumber * 4 + i];
 	}
 
 	mTypeInstructions.push_back(Pack(7, spv::OpConstantComposite)); //size,Type
@@ -1317,6 +1321,7 @@ void ShaderConverter::Process_DEF()
 void ShaderConverter::Process_DEFI()
 {
 	uint32_t literalIds[4];
+	uint32_t literalValue;
 	Token token = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
@@ -1333,10 +1338,13 @@ void ShaderConverter::Process_DEFI()
 	for (size_t i = 0; i < 4; i++)
 	{
 		literalIds[i] = GetNextId();
+		literalValue = GetNextToken().i;
 		mTypeInstructions.push_back(Pack(4, spv::OpConstant)); //size,Type
 		mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
 		mTypeInstructions.push_back(literalIds[i]); //Result (Id)
-		mTypeInstructions.push_back(GetNextToken().i); //Literal Value
+		mTypeInstructions.push_back(literalValue); //Literal Value
+
+		mConvertedShader.mPushConstants.Integers[token.DestinationParameterToken.RegisterNumber * 4 + i];
 	}
 
 	mTypeInstructions.push_back(Pack(7, spv::OpConstantComposite)); //size,Type
@@ -1351,6 +1359,7 @@ void ShaderConverter::Process_DEFI()
 
 void ShaderConverter::Process_DEFB()
 {
+	uint32_t literalValue;
 	Token token = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
@@ -1362,10 +1371,13 @@ void ShaderConverter::Process_DEFB()
 	uint32_t componentTypeId = GetSpirVTypeId(typeDescription.SecondaryType);
 	mIdTypePairs[tokenId] = typeDescription;
 
+	literalValue = GetNextToken().i;
 	mTypeInstructions.push_back(Pack(4, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(tokenId); //Result (Id)
-	mTypeInstructions.push_back(GetNextToken().i); //Literal Value
+	mTypeInstructions.push_back(literalValue); //Literal Value
+
+	mConvertedShader.mPushConstants.Integers[token.DestinationParameterToken.RegisterNumber * 4];
 }
 
 void ShaderConverter::Process_MOV()

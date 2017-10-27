@@ -136,7 +136,7 @@ public:
 	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
 	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
 	VkWriteDescriptorSet mWriteDescriptorSet[3] = {};
-	VkPushConstantRange mPushConstantRanges[1] = {};
+	VkPushConstantRange mPushConstantRanges[2] = {};
 	VkDescriptorBufferInfo mDescriptorBufferInfo[2] = {};
 
 	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
