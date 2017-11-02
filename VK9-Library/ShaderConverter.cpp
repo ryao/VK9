@@ -929,6 +929,20 @@ void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t input
 	}
 }
 
+void ShaderConverter::GeneratePushConstantBlock()
+{
+	TypeDescription typeDescription;
+	uint32_t pushConstantElementTypeId;
+
+	typeDescription.PrimaryType = spv::OpTypeVector;
+	typeDescription.SecondaryType = spv::OpTypeFloat;
+	typeDescription.ComponentCount = 4;
+	pushConstantElementTypeId = GetSpirVTypeId(typeDescription);
+
+
+
+}
+
 void ShaderConverter::CombineSpirVOpCodes()
 {
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
@@ -2250,6 +2264,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		}
 
 	}
+
+	GeneratePushConstantBlock();
 
 	//Declare output based on type and hope it all works out.
 	uint32_t outputIndex = 0;

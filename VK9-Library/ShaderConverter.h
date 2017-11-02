@@ -236,6 +236,7 @@ private:
 	uint32_t ApplyWriteMask(const Token& token, uint32_t inputId);
 	void GenerateStore(const Token& token, uint32_t inputId);
 	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, uint32_t usage=-1);
+	void GeneratePushConstantBlock();
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 

@@ -101,6 +101,13 @@ public:
 	~StreamSource();
 };
 
+struct ShaderConstantSlots
+{
+	uint32_t IntegerConstants[16 * 4];
+	BOOL BooleanConstants[16];
+	float FloatConstants[256 * 4];
+};
+
 struct SpecializationConstants
 {
 	int lightCount = 1;
@@ -554,6 +561,7 @@ struct DeviceState
 
 	//Used for shader specialization.
 	SpecializationConstants mSpecializationConstants = {};
+	ShaderConstantSlots mShaderConstantSlots = {};
 };
 
 struct color_A8R8G8B8

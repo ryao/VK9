@@ -740,8 +740,10 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
 
 	context->mSpecializationConstants = mDevice->mDeviceState.mSpecializationConstants;
+	context->mShaderConstantSlots = mDevice->mDeviceState.mShaderConstantSlots;
 
 	SpecializationConstants& constants = context->mSpecializationConstants;
+	ShaderConstantSlots& slots = context->mShaderConstantSlots;
 	constants.lightCount = mDevice->mDeviceState.mLights.size();
 	constants.textureCount = mDevice->mDeviceState.mTextures.size();
 
@@ -769,271 +771,17 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		auto& drawBuffer = (*mDrawBuffer[i]);
 
 		if (drawBuffer.PrimitiveType == context->PrimitiveType
+			&& drawBuffer.StreamCount == context->StreamCount
+			&& drawBuffer.mSpecializationConstants.textureCount == constants.textureCount
+
+			&& drawBuffer.VertexShader == context->VertexShader
+			&& drawBuffer.PixelShader == context->PixelShader	
+	   
 			&& drawBuffer.FVF == context->FVF
 			&& drawBuffer.VertexDeclaration == context->VertexDeclaration
-			&& drawBuffer.VertexShader == context->VertexShader
-			&& drawBuffer.PixelShader == context->PixelShader
-			&& drawBuffer.StreamCount == context->StreamCount
-			&& drawBuffer.mSpecializationConstants.lightCount == constants.lightCount
-			   
-			&& drawBuffer.mSpecializationConstants.textureCount == constants.textureCount
-			   
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_0 == constants.texureCoordinateIndex_0
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_1 == constants.texureCoordinateIndex_1
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_2 == constants.texureCoordinateIndex_2
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_3 == constants.texureCoordinateIndex_3
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_4 == constants.texureCoordinateIndex_4
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_5 == constants.texureCoordinateIndex_5
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_6 == constants.texureCoordinateIndex_6
-			&& drawBuffer.mSpecializationConstants.texureCoordinateIndex_7 == constants.texureCoordinateIndex_7
-			   
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_0 == constants.textureTransformationFlags_0
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_1 == constants.textureTransformationFlags_1
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_2 == constants.textureTransformationFlags_2
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_3 == constants.textureTransformationFlags_3
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_4 == constants.textureTransformationFlags_4
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_5 == constants.textureTransformationFlags_5
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_6 == constants.textureTransformationFlags_6
-			&& drawBuffer.mSpecializationConstants.textureTransformationFlags_7 == constants.textureTransformationFlags_7
-			   
-			&& drawBuffer.mSpecializationConstants.colorOperation_0 == constants.colorOperation_0
-			&& drawBuffer.mSpecializationConstants.colorOperation_1 == constants.colorOperation_1
-			&& drawBuffer.mSpecializationConstants.colorOperation_2 == constants.colorOperation_2
-			&& drawBuffer.mSpecializationConstants.colorOperation_3 == constants.colorOperation_3
-			&& drawBuffer.mSpecializationConstants.colorOperation_4 == constants.colorOperation_4
-			&& drawBuffer.mSpecializationConstants.colorOperation_5 == constants.colorOperation_5
-			&& drawBuffer.mSpecializationConstants.colorOperation_6 == constants.colorOperation_6
-			&& drawBuffer.mSpecializationConstants.colorOperation_7 == constants.colorOperation_7
-			   
-			&& drawBuffer.mSpecializationConstants.colorArgument1_0 == constants.colorArgument1_0
-			&& drawBuffer.mSpecializationConstants.colorArgument1_1 == constants.colorArgument1_1
-			&& drawBuffer.mSpecializationConstants.colorArgument1_2 == constants.colorArgument1_2
-			&& drawBuffer.mSpecializationConstants.colorArgument1_3 == constants.colorArgument1_3
-			&& drawBuffer.mSpecializationConstants.colorArgument1_4 == constants.colorArgument1_4
-			&& drawBuffer.mSpecializationConstants.colorArgument1_5 == constants.colorArgument1_5
-			&& drawBuffer.mSpecializationConstants.colorArgument1_6 == constants.colorArgument1_6
-			&& drawBuffer.mSpecializationConstants.colorArgument1_7 == constants.colorArgument1_7
-			  
-			&& drawBuffer.mSpecializationConstants.colorArgument2_0 == constants.colorArgument2_0
-			&& drawBuffer.mSpecializationConstants.colorArgument2_1 == constants.colorArgument2_1
-			&& drawBuffer.mSpecializationConstants.colorArgument2_2 == constants.colorArgument2_2
-			&& drawBuffer.mSpecializationConstants.colorArgument2_3 == constants.colorArgument2_3
-			&& drawBuffer.mSpecializationConstants.colorArgument2_4 == constants.colorArgument2_4
-			&& drawBuffer.mSpecializationConstants.colorArgument2_5 == constants.colorArgument2_5
-			&& drawBuffer.mSpecializationConstants.colorArgument2_6 == constants.colorArgument2_6
-			&& drawBuffer.mSpecializationConstants.colorArgument2_7 == constants.colorArgument2_7
-			   
-			&& drawBuffer.mSpecializationConstants.alphaOperation_0 == constants.alphaOperation_0
-			&& drawBuffer.mSpecializationConstants.alphaOperation_1 == constants.alphaOperation_1
-			&& drawBuffer.mSpecializationConstants.alphaOperation_2 == constants.alphaOperation_2
-			&& drawBuffer.mSpecializationConstants.alphaOperation_3 == constants.alphaOperation_3
-			&& drawBuffer.mSpecializationConstants.alphaOperation_4 == constants.alphaOperation_4
-			&& drawBuffer.mSpecializationConstants.alphaOperation_5 == constants.alphaOperation_5
-			&& drawBuffer.mSpecializationConstants.alphaOperation_6 == constants.alphaOperation_6
-			&& drawBuffer.mSpecializationConstants.alphaOperation_7 == constants.alphaOperation_7
-			   
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_0 == constants.alphaArgument1_0
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_1 == constants.alphaArgument1_1
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_2 == constants.alphaArgument1_2
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_3 == constants.alphaArgument1_3
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_4 == constants.alphaArgument1_4
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_5 == constants.alphaArgument1_5
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_6 == constants.alphaArgument1_6
-			&& drawBuffer.mSpecializationConstants.alphaArgument1_7 == constants.alphaArgument1_7
-			   
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_0 == constants.alphaArgument2_0
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_1 == constants.alphaArgument2_1
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_2 == constants.alphaArgument2_2
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_3 == constants.alphaArgument2_3
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_4 == constants.alphaArgument2_4
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_5 == constants.alphaArgument2_5
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_6 == constants.alphaArgument2_6
-			&& drawBuffer.mSpecializationConstants.alphaArgument2_7 == constants.alphaArgument2_7
-			   
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_0 == constants.bumpMapMatrix00_0
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_1 == constants.bumpMapMatrix00_1
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_2 == constants.bumpMapMatrix00_2
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_3 == constants.bumpMapMatrix00_3
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_4 == constants.bumpMapMatrix00_4
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_5 == constants.bumpMapMatrix00_5
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_6 == constants.bumpMapMatrix00_6
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix00_7 == constants.bumpMapMatrix00_7
-			   
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_0 == constants.bumpMapMatrix01_0
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_1 == constants.bumpMapMatrix01_1
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_2 == constants.bumpMapMatrix01_2
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_3 == constants.bumpMapMatrix01_3
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_4 == constants.bumpMapMatrix01_4
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_5 == constants.bumpMapMatrix01_5
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_6 == constants.bumpMapMatrix01_6
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix01_7 == constants.bumpMapMatrix01_7
-			   
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_0 == constants.bumpMapMatrix10_0
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_1 == constants.bumpMapMatrix10_1
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_2 == constants.bumpMapMatrix10_2
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_3 == constants.bumpMapMatrix10_3
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_4 == constants.bumpMapMatrix10_4
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_5 == constants.bumpMapMatrix10_5
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_6 == constants.bumpMapMatrix10_6
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix10_7 == constants.bumpMapMatrix10_7
-			   
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_0 == constants.bumpMapMatrix11_0
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_1 == constants.bumpMapMatrix11_1
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_2 == constants.bumpMapMatrix11_2
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_3 == constants.bumpMapMatrix11_3
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_4 == constants.bumpMapMatrix11_4
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_5 == constants.bumpMapMatrix11_5
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_6 == constants.bumpMapMatrix11_6
-			&& drawBuffer.mSpecializationConstants.bumpMapMatrix11_7 == constants.bumpMapMatrix11_7
-			   
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_0 == constants.bumpMapScale_0
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_1 == constants.bumpMapScale_1
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_2 == constants.bumpMapScale_2
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_3 == constants.bumpMapScale_3
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_4 == constants.bumpMapScale_4
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_5 == constants.bumpMapScale_5
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_6 == constants.bumpMapScale_6
-			&& drawBuffer.mSpecializationConstants.bumpMapScale_7 == constants.bumpMapScale_7
-			   
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_0 == constants.bumpMapOffset_0
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_1 == constants.bumpMapOffset_1
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_2 == constants.bumpMapOffset_2
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_3 == constants.bumpMapOffset_3
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_4 == constants.bumpMapOffset_4
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_5 == constants.bumpMapOffset_5
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_6 == constants.bumpMapOffset_6
-			&& drawBuffer.mSpecializationConstants.bumpMapOffset_7 == constants.bumpMapOffset_7
-			   
-			&& drawBuffer.mSpecializationConstants.colorArgument0_0 == constants.colorArgument0_0
-			&& drawBuffer.mSpecializationConstants.colorArgument0_1 == constants.colorArgument0_1
-			&& drawBuffer.mSpecializationConstants.colorArgument0_2 == constants.colorArgument0_2
-			&& drawBuffer.mSpecializationConstants.colorArgument0_3 == constants.colorArgument0_3
-			&& drawBuffer.mSpecializationConstants.colorArgument0_4 == constants.colorArgument0_4
-			&& drawBuffer.mSpecializationConstants.colorArgument0_5 == constants.colorArgument0_5
-			&& drawBuffer.mSpecializationConstants.colorArgument0_6 == constants.colorArgument0_6
-			&& drawBuffer.mSpecializationConstants.colorArgument0_7 == constants.colorArgument0_7
-			   
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_0 == constants.alphaArgument0_0
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_1 == constants.alphaArgument0_1
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_2 == constants.alphaArgument0_2
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_3 == constants.alphaArgument0_3
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_4 == constants.alphaArgument0_4
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_5 == constants.alphaArgument0_5
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_6 == constants.alphaArgument0_6
-			&& drawBuffer.mSpecializationConstants.alphaArgument0_7 == constants.alphaArgument0_7
-			   
-			&& drawBuffer.mSpecializationConstants.Result_0 == constants.Result_0
-			&& drawBuffer.mSpecializationConstants.Result_1 == constants.Result_1
-			&& drawBuffer.mSpecializationConstants.Result_2 == constants.Result_2
-			&& drawBuffer.mSpecializationConstants.Result_3 == constants.Result_3
-			&& drawBuffer.mSpecializationConstants.Result_4 == constants.Result_4
-			&& drawBuffer.mSpecializationConstants.Result_5 == constants.Result_5
-			&& drawBuffer.mSpecializationConstants.Result_6 == constants.Result_6
-			&& drawBuffer.mSpecializationConstants.Result_7 == constants.Result_7
 
-			&& drawBuffer.mSpecializationConstants.zEnable == constants.zEnable
-			&& drawBuffer.mSpecializationConstants.fillMode == constants.fillMode
-			&& drawBuffer.mSpecializationConstants.shadeMode == constants.shadeMode
-			&& drawBuffer.mSpecializationConstants.zWriteEnable == constants.zWriteEnable
-			&& drawBuffer.mSpecializationConstants.alphaTestEnable == constants.alphaTestEnable
-			&& drawBuffer.mSpecializationConstants.lastPixel == constants.lastPixel
-			&& drawBuffer.mSpecializationConstants.sourceBlend == constants.sourceBlend
-			&& drawBuffer.mSpecializationConstants.destinationBlend == constants.destinationBlend
-			&& drawBuffer.mSpecializationConstants.cullMode == constants.cullMode
-			&& drawBuffer.mSpecializationConstants.zFunction == constants.zFunction
-			&& drawBuffer.mSpecializationConstants.alphaReference == constants.alphaReference
-			&& drawBuffer.mSpecializationConstants.alphaFunction == constants.alphaFunction
-			&& drawBuffer.mSpecializationConstants.ditherEnable == constants.ditherEnable
-			&& drawBuffer.mSpecializationConstants.alphaBlendEnable == constants.alphaBlendEnable
-			&& drawBuffer.mSpecializationConstants.fogEnable == constants.fogEnable
-			&& drawBuffer.mSpecializationConstants.specularEnable == constants.specularEnable
-			&& drawBuffer.mSpecializationConstants.fogColor == constants.fogColor
-			&& drawBuffer.mSpecializationConstants.fogTableMode == constants.fogTableMode
-			&& drawBuffer.mSpecializationConstants.fogStart == constants.fogStart
-			&& drawBuffer.mSpecializationConstants.fogEnd == constants.fogEnd
-			&& drawBuffer.mSpecializationConstants.fogDensity == constants.fogDensity
-			&& drawBuffer.mSpecializationConstants.rangeFogEnable == constants.rangeFogEnable
-			&& drawBuffer.mSpecializationConstants.stencilEnable == constants.stencilEnable
-			&& drawBuffer.mSpecializationConstants.stencilFail == constants.stencilFail
-			&& drawBuffer.mSpecializationConstants.stencilZFail == constants.stencilZFail
-			&& drawBuffer.mSpecializationConstants.stencilPass == constants.stencilPass
-			&& drawBuffer.mSpecializationConstants.stencilFunction == constants.stencilFunction
-			&& drawBuffer.mSpecializationConstants.stencilReference == constants.stencilReference
-			&& drawBuffer.mSpecializationConstants.stencilMask == constants.stencilMask
-			&& drawBuffer.mSpecializationConstants.stencilWriteMask == constants.stencilWriteMask
-			&& drawBuffer.mSpecializationConstants.textureFactor == constants.textureFactor
-			&& drawBuffer.mSpecializationConstants.wrap0 == constants.wrap0
-			&& drawBuffer.mSpecializationConstants.wrap1 == constants.wrap1
-			&& drawBuffer.mSpecializationConstants.wrap2 == constants.wrap2
-			&& drawBuffer.mSpecializationConstants.wrap3 == constants.wrap3
-			&& drawBuffer.mSpecializationConstants.wrap4 == constants.wrap4
-			&& drawBuffer.mSpecializationConstants.wrap5 == constants.wrap5
-			&& drawBuffer.mSpecializationConstants.wrap6 == constants.wrap6
-			&& drawBuffer.mSpecializationConstants.wrap7 == constants.wrap7
-			&& drawBuffer.mSpecializationConstants.clipping == constants.clipping
-			&& drawBuffer.mSpecializationConstants.lighting == constants.lighting
-			&& drawBuffer.mSpecializationConstants.ambient == constants.ambient
-			&& drawBuffer.mSpecializationConstants.fogVertexMode == constants.fogVertexMode
-			&& drawBuffer.mSpecializationConstants.colorVertex == constants.colorVertex
-			&& drawBuffer.mSpecializationConstants.localViewer == constants.localViewer
-			&& drawBuffer.mSpecializationConstants.normalizeNormals == constants.normalizeNormals
-			&& drawBuffer.mSpecializationConstants.diffuseMaterialSource == constants.diffuseMaterialSource
-			&& drawBuffer.mSpecializationConstants.specularMaterialSource == constants.specularMaterialSource
-			&& drawBuffer.mSpecializationConstants.ambientMaterialSource == constants.ambientMaterialSource
-			&& drawBuffer.mSpecializationConstants.emissiveMaterialSource == constants.emissiveMaterialSource
-			&& drawBuffer.mSpecializationConstants.vertexBlend == constants.vertexBlend
-			&& drawBuffer.mSpecializationConstants.clipPlaneEnable == constants.clipPlaneEnable
-			&& drawBuffer.mSpecializationConstants.pointSize == constants.pointSize
-			&& drawBuffer.mSpecializationConstants.pointSizeMinimum == constants.pointSizeMinimum
-			&& drawBuffer.mSpecializationConstants.pointSpriteEnable == constants.pointSpriteEnable
-			&& drawBuffer.mSpecializationConstants.pointScaleEnable == constants.pointScaleEnable
-			&& drawBuffer.mSpecializationConstants.pointScaleA == constants.pointScaleA
-			&& drawBuffer.mSpecializationConstants.pointScaleB == constants.pointScaleB
-			&& drawBuffer.mSpecializationConstants.pointScaleC == constants.pointScaleC
-			&& drawBuffer.mSpecializationConstants.multisampleAntiAlias == constants.multisampleAntiAlias
-			&& drawBuffer.mSpecializationConstants.multisampleMask == constants.multisampleMask
-			&& drawBuffer.mSpecializationConstants.patchEdgeStyle == constants.patchEdgeStyle
-			&& drawBuffer.mSpecializationConstants.debugMonitorToken == constants.debugMonitorToken
-			&& drawBuffer.mSpecializationConstants.pointSizeMaximum == constants.pointSizeMaximum
-			&& drawBuffer.mSpecializationConstants.indexedVertexBlendEnable == constants.indexedVertexBlendEnable
-			&& drawBuffer.mSpecializationConstants.colorWriteEnable == constants.colorWriteEnable
-			&& drawBuffer.mSpecializationConstants.tweenFactor == constants.tweenFactor
-			&& drawBuffer.mSpecializationConstants.blendOperation == constants.blendOperation
-			&& drawBuffer.mSpecializationConstants.positionDegree == constants.positionDegree
-			&& drawBuffer.mSpecializationConstants.normalDegree == constants.normalDegree
-			&& drawBuffer.mSpecializationConstants.scissorTestEnable == constants.scissorTestEnable
-			&& drawBuffer.mSpecializationConstants.slopeScaleDepthBias == constants.slopeScaleDepthBias
-			&& drawBuffer.mSpecializationConstants.antiAliasedLineEnable == constants.antiAliasedLineEnable
-			&& drawBuffer.mSpecializationConstants.minimumTessellationLevel == constants.minimumTessellationLevel
-			&& drawBuffer.mSpecializationConstants.maximumTessellationLevel == constants.maximumTessellationLevel
-			&& drawBuffer.mSpecializationConstants.adaptivetessX == constants.adaptivetessX
-			&& drawBuffer.mSpecializationConstants.adaptivetessY == constants.adaptivetessY
-			&& drawBuffer.mSpecializationConstants.adaptivetessZ == constants.adaptivetessZ
-			&& drawBuffer.mSpecializationConstants.adaptivetessW == constants.adaptivetessW
-			&& drawBuffer.mSpecializationConstants.enableAdaptiveTessellation == constants.enableAdaptiveTessellation
-			&& drawBuffer.mSpecializationConstants.twoSidedStencilMode == constants.twoSidedStencilMode
-			&& drawBuffer.mSpecializationConstants.ccwStencilFail == constants.ccwStencilFail
-			&& drawBuffer.mSpecializationConstants.ccwStencilZFail == constants.ccwStencilZFail
-			&& drawBuffer.mSpecializationConstants.ccwStencilPass == constants.ccwStencilPass
-			&& drawBuffer.mSpecializationConstants.ccwStencilFunction == constants.ccwStencilFunction
-			&& drawBuffer.mSpecializationConstants.colorWriteEnable1 == constants.colorWriteEnable1
-			&& drawBuffer.mSpecializationConstants.colorWriteEnable2 == constants.colorWriteEnable2
-			&& drawBuffer.mSpecializationConstants.colorWriteEnable3 == constants.colorWriteEnable3
-			&& drawBuffer.mSpecializationConstants.blendFactor == constants.blendFactor
-			&& drawBuffer.mSpecializationConstants.srgbWriteEnable == constants.srgbWriteEnable
-			&& drawBuffer.mSpecializationConstants.depthBias == constants.depthBias
-			&& drawBuffer.mSpecializationConstants.wrap8 == constants.wrap8
-			&& drawBuffer.mSpecializationConstants.wrap9 == constants.wrap9
-			&& drawBuffer.mSpecializationConstants.wrap10 == constants.wrap10
-			&& drawBuffer.mSpecializationConstants.wrap11 == constants.wrap11
-			&& drawBuffer.mSpecializationConstants.wrap12 == constants.wrap12
-			&& drawBuffer.mSpecializationConstants.wrap13 == constants.wrap13
-			&& drawBuffer.mSpecializationConstants.wrap14 == constants.wrap14
-			&& drawBuffer.mSpecializationConstants.wrap15 == constants.wrap15
-			&& drawBuffer.mSpecializationConstants.separateAlphaBlendEnable == constants.separateAlphaBlendEnable
-			&& drawBuffer.mSpecializationConstants.sourceBlendAlpha == constants.sourceBlendAlpha
-			&& drawBuffer.mSpecializationConstants.destinationBlendAlpha == constants.destinationBlendAlpha
-			&& drawBuffer.mSpecializationConstants.blendOperationAlpha == constants.blendOperationAlpha
+			&& !memcmp(&drawBuffer.mSpecializationConstants, &constants,sizeof(SpecializationConstants))
+			&& !memcmp(&drawBuffer.mShaderConstantSlots, &slots, sizeof(ShaderConstantSlots))
 			)
 		{
 			BOOL isMatch = true;
@@ -1516,6 +1264,11 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 		mDescriptorSetLayoutCreateInfo.bindingCount = convertedShader.mDescriptorSetLayoutBindingCount;
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
+
+		mSpecializationInfo.pData = &mDevice->mDeviceState.mShaderConstantSlots;
+		mSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
+		mSpecializationInfo.pMapEntries = mSlotMapEntries;
+		mSpecializationInfo.mapEntryCount = 288;
 	}
 	else
 	{		
@@ -1553,6 +1306,11 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 			mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.	
 			mPipelineLayoutCreateInfo.setLayoutCount = 1;
 		}
+
+		mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+		mSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+		mSpecializationInfo.pMapEntries = mSpecializationMapEntries;
+		mSpecializationInfo.mapEntryCount = 251;
 	}
 
 	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
