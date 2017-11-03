@@ -89,8 +89,11 @@ BufferManager::BufferManager(CDevice9* device)
 	mPushConstantRanges[0].size = UBO_SIZE*2; //There are 2 matrices one for world transform and one for all transforms.
 	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS; //VK_SHADER_STAGE_VERTEX_BIT
 
-	mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
-	mSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+	mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+	mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+
+	mPixelSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+	mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
 
 	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	mPipelineVertexInputStateCreateInfo.pNext = NULL;
@@ -183,13 +186,13 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineShaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
 	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[0].pName = "main";
-	mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &mSpecializationInfo;
+	mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &mVertexSpecializationInfo;
 
 	mPipelineShaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	mPipelineShaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[1].pName = "main";
-	mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &mSpecializationInfo;
+	mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &mPixelSpecializationInfo;
 
 	mGraphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	mGraphicsPipelineCreateInfo.pVertexInputState = &mPipelineVertexInputStateCreateInfo;
@@ -740,10 +743,13 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
 
 	context->mSpecializationConstants = mDevice->mDeviceState.mSpecializationConstants;
-	context->mShaderConstantSlots = mDevice->mDeviceState.mShaderConstantSlots;
+	context->mVertexShaderConstantSlots = mDevice->mDeviceState.mVertexShaderConstantSlots;
+	context->mPixelShaderConstantSlots = mDevice->mDeviceState.mPixelShaderConstantSlots;
 
 	SpecializationConstants& constants = context->mSpecializationConstants;
-	ShaderConstantSlots& slots = context->mShaderConstantSlots;
+	ShaderConstantSlots& vertexSlots = context->mVertexShaderConstantSlots;
+	ShaderConstantSlots& pixelSlots = context->mPixelShaderConstantSlots;
+
 	constants.lightCount = mDevice->mDeviceState.mLights.size();
 	constants.textureCount = mDevice->mDeviceState.mTextures.size();
 
@@ -781,7 +787,8 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& drawBuffer.VertexDeclaration == context->VertexDeclaration
 
 			&& !memcmp(&drawBuffer.mSpecializationConstants, &constants,sizeof(SpecializationConstants))
-			&& !memcmp(&drawBuffer.mShaderConstantSlots, &slots, sizeof(ShaderConstantSlots))
+			&& !memcmp(&drawBuffer.mVertexShaderConstantSlots, &vertexSlots, sizeof(ShaderConstantSlots))
+			&& !memcmp(&drawBuffer.mPixelShaderConstantSlots, &pixelSlots, sizeof(ShaderConstantSlots))
 			)
 		{
 			BOOL isMatch = true;
@@ -1265,10 +1272,15 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		mDescriptorSetLayoutCreateInfo.bindingCount = convertedShader.mDescriptorSetLayoutBindingCount;
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-		mSpecializationInfo.pData = &mDevice->mDeviceState.mShaderConstantSlots;
-		mSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
-		mSpecializationInfo.pMapEntries = mSlotMapEntries;
-		mSpecializationInfo.mapEntryCount = 288;
+		mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mVertexShaderConstantSlots;
+		mVertexSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
+		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
+		mVertexSpecializationInfo.mapEntryCount = 288;
+
+		mPixelSpecializationInfo.pData = &mDevice->mDeviceState.mPixelShaderConstantSlots;
+		mPixelSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
+		mPixelSpecializationInfo.pMapEntries = mSlotMapEntries;
+		mPixelSpecializationInfo.mapEntryCount = 288;
 	}
 	else
 	{		
@@ -1307,10 +1319,15 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 			mPipelineLayoutCreateInfo.setLayoutCount = 1;
 		}
 
-		mSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
-		mSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		mSpecializationInfo.pMapEntries = mSpecializationMapEntries;
-		mSpecializationInfo.mapEntryCount = 251;
+		mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+		mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+		mVertexSpecializationInfo.pMapEntries = mSpecializationMapEntries;
+		mVertexSpecializationInfo.mapEntryCount = 251;
+
+		mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+		mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+		mVertexSpecializationInfo.pMapEntries = mSpecializationMapEntries;
+		mVertexSpecializationInfo.mapEntryCount = 251;
 	}
 
 	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);

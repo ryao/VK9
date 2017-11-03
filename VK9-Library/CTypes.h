@@ -561,7 +561,9 @@ struct DeviceState
 
 	//Used for shader specialization.
 	SpecializationConstants mSpecializationConstants = {};
-	ShaderConstantSlots mShaderConstantSlots = {};
+
+	ShaderConstantSlots mVertexShaderConstantSlots = {};
+	ShaderConstantSlots mPixelShaderConstantSlots = {};
 };
 
 struct color_A8R8G8B8

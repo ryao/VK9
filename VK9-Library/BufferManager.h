@@ -93,7 +93,8 @@ struct DrawContext
 	int32_t StreamCount = 0;
 
 	//D3d9 State - Lights
-	ShaderConstantSlots mShaderConstantSlots = {};
+	ShaderConstantSlots mVertexShaderConstantSlots = {};
+	ShaderConstantSlots mPixelShaderConstantSlots = {};
 
 	//Constant Registers
 	SpecializationConstants mSpecializationConstants = {};
@@ -759,7 +760,15 @@ public:
 		{ 250 , 250 * sizeof(int) , sizeof(int) }
 	};
 
-	VkSpecializationInfo mSpecializationInfo = 
+	VkSpecializationInfo mVertexSpecializationInfo = 
+	{
+		251,                                           // mapEntryCount
+		mSpecializationMapEntries,                     // pMapEntries
+		sizeof(SpecializationConstants),               // dataSize
+		nullptr,// pData
+	};
+
+	VkSpecializationInfo mPixelSpecializationInfo =
 	{
 		251,                                           // mapEntryCount
 		mSpecializationMapEntries,                     // pMapEntries
