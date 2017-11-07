@@ -732,19 +732,28 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	if (mDevice->mDeviceState.mHasVertexShader)
 	{
-		context->VertexShader = mDevice->mDeviceState.mVertexShader; //vert
+		context->VertexShader = mDevice->mDeviceState.mVertexShader; //vert	
 	}
 
 	if (mDevice->mDeviceState.mHasPixelShader)
 	{
-		context->PixelShader = mDevice->mDeviceState.mPixelShader; //pixel
+		context->PixelShader = mDevice->mDeviceState.mPixelShader; //pixel		
+	}
+
+	if (mDevice->mDeviceState.mVertexShader != nullptr)
+	{
+		context->mVertexShaderConstantSlots = mDevice->mDeviceState.mVertexShader->mConvertedShader.mShaderConstantSlots;
+	}
+
+	if (mDevice->mDeviceState.mPixelShader != nullptr)
+	{
+		context->mPixelShaderConstantSlots = mDevice->mDeviceState.mPixelShader->mConvertedShader.mShaderConstantSlots;
 	}
 
 	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
-
 	context->mSpecializationConstants = mDevice->mDeviceState.mSpecializationConstants;
-	context->mVertexShaderConstantSlots = mDevice->mDeviceState.mVertexShaderConstantSlots;
-	context->mPixelShaderConstantSlots = mDevice->mDeviceState.mPixelShaderConstantSlots;
+	
+	
 
 	SpecializationConstants& constants = context->mSpecializationConstants;
 	ShaderConstantSlots& vertexSlots = context->mVertexShaderConstantSlots;
@@ -839,7 +848,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	}
 	else
 	{
-		vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE * 2, &context->VertexShader->mConvertedShader.mPushConstants);
+		//vkCmdPushConstants(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], context->PipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, UBO_SIZE * 2, &context->VertexShader->mConvertedShader.mPushConstants);
 	}
 
 	/**********************************************
@@ -1258,26 +1267,27 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 	if (context->VertexShader != nullptr)
 	{
-		auto& convertedShader = context->VertexShader->mConvertedShader;
+		auto& convertedVertexShader = context->VertexShader->mConvertedShader;
+		auto& convertedPixelShader = context->PixelShader->mConvertedShader;
 
-		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = convertedShader.mVertexInputAttributeDescriptionCount;
+		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = convertedVertexShader.mVertexInputAttributeDescriptionCount;
 
-		memcpy(&mDescriptorSetLayoutBinding, &convertedShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
+		memcpy(&mDescriptorSetLayoutBinding, &convertedVertexShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
 
 		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 
 		mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 		mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 
-		mDescriptorSetLayoutCreateInfo.bindingCount = convertedShader.mDescriptorSetLayoutBindingCount;
+		mDescriptorSetLayoutCreateInfo.bindingCount = convertedPixelShader.mDescriptorSetLayoutBindingCount;
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-		mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mVertexShaderConstantSlots;
+		mVertexSpecializationInfo.pData = &convertedVertexShader.mShaderConstantSlots;
 		mVertexSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
 		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
 		mVertexSpecializationInfo.mapEntryCount = 288;
 
-		mPixelSpecializationInfo.pData = &mDevice->mDeviceState.mPixelShaderConstantSlots;
+		mPixelSpecializationInfo.pData = &convertedPixelShader.mShaderConstantSlots;
 		mPixelSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
 		mPixelSpecializationInfo.pMapEntries = mSlotMapEntries;
 		mPixelSpecializationInfo.mapEntryCount = 288;

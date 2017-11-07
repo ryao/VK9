@@ -54,7 +54,8 @@ struct ConvertedShader
 	//Actual Payload
 	UINT Size = 0;
 	VkShaderModule ShaderModule = VK_NULL_HANDLE;
-	PushConstants mPushConstants;
+	//PushConstants mPushConstants;
+	ShaderConstantSlots mShaderConstantSlots = {};
 };
 
 //https://msdn.microsoft.com/en-us/library/windows/hardware/ff552738(v=vs.85).aspx
@@ -236,7 +237,7 @@ private:
 	uint32_t ApplyWriteMask(const Token& token, uint32_t inputId);
 	void GenerateStore(const Token& token, uint32_t inputId);
 	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, uint32_t usage=-1);
-	void GeneratePushConstantBlock();
+	void GenerateConstantBlock();
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
