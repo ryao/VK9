@@ -1285,12 +1285,12 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		mVertexSpecializationInfo.pData = &convertedVertexShader.mShaderConstantSlots;
 		mVertexSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
 		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
-		mVertexSpecializationInfo.mapEntryCount = 288;
+		mVertexSpecializationInfo.mapEntryCount = 1024;
 
 		mPixelSpecializationInfo.pData = &convertedPixelShader.mShaderConstantSlots;
 		mPixelSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
 		mPixelSpecializationInfo.pMapEntries = mSlotMapEntries;
-		mPixelSpecializationInfo.mapEntryCount = 288;
+		mPixelSpecializationInfo.mapEntryCount = 1024;
 	}
 	else
 	{		
@@ -1331,12 +1331,12 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 		mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
 		mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		mVertexSpecializationInfo.pMapEntries = mSpecializationMapEntries;
+		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
 		mVertexSpecializationInfo.mapEntryCount = 251;
 
 		mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
 		mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		mVertexSpecializationInfo.pMapEntries = mSpecializationMapEntries;
+		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
 		mVertexSpecializationInfo.mapEntryCount = 251;
 	}
 

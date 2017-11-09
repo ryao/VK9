@@ -105,22 +105,7 @@ _D3DSHADER_PARAM_REGISTER_TYPE ShaderConverter::GetRegisterType(uint32_t token)
 
 uint32_t ShaderConverter::GetRegisterNumber(const Token& token)
 {
-	//D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
-	uint32_t output= 0;
-
-	//switch (registerType)
-	//{
-	//case D3DSPR_RASTOUT:
-	//case D3DSPR_ATTROUT:
-	//case D3DSPR_COLOROUT:
-	//case D3DSPR_DEPTHOUT:
-	//case D3DSPR_OUTPUT:
-	//	output = GetUsageIndex(token.i);
-	//	break;
-	//default:
-	//	output = (token.i & D3DSP_REGNUM_MASK);
-	//	break;
-	//}
+	uint32_t output = 0;
 
 	output = (token.i & D3DSP_REGNUM_MASK);
 
@@ -399,7 +384,28 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token)
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 
-		registerName = "o" + std::to_string(registerNumber);
+		switch ((_D3DDECLUSAGE)GetUsage(token.i))
+		{
+		D3DDECLUSAGE_POSITION:
+			registerName = "oPos" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_FOG:
+			registerName = "oFog" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_PSIZE:
+			registerName = "oPts" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_COLOR:
+			registerName = "oD" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_TEXCOORD:
+			registerName = "oT" + std::to_string(registerNumber);
+			break;
+		default:
+			registerName = "o" + std::to_string(registerNumber);
+			break;
+		}
+		
 		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
 		if (registerName.length() % 4 == 0)
 		{
@@ -466,48 +472,6 @@ void ShaderConverter::SetIdByRegister(const Token& token, uint32_t id)
 
 	mIdsByRegister[registerType][registerNumber] = id;
 	mRegistersById[registerType][id] = registerNumber;
-
-	//Assume that if no type was set then it has not be declared yet.
-	//boost::container::flat_map<uint32_t, TypeDescription>::iterator it1 = mIdTypePairs.find(id);
-	//if (it1 == mIdTypePairs.end())
-	//{
-	//	description.PrimaryType = spv::OpTypePointer;
-	//	description.SecondaryType = spv::OpTypeVector;
-	//	description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
-	//	description.ComponentCount = 4;
-	//	typeId = GetSpirVTypeId(description);
-	//	mIdTypePairs[id] = description;
-
-	//	mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-	//	mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-	//	mTypeInstructions.push_back(id); //Result (Id)
-
-	//	switch (registerType)
-	//	{
-	//	case D3DSPR_TEMP:
-	//		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
-	//		break;
-	//	case D3DSPR_INPUT:
-	//		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
-	//		break;
-	//	case D3DSPR_RASTOUT:
-	//	case D3DSPR_ATTROUT:
-	//	case D3DSPR_COLOROUT:
-	//	case D3DSPR_DEPTHOUT:
-	//	case D3DSPR_OUTPUT:
-	//		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
-	//		break;
-	//	case D3DSPR_CONST:
-	//	case D3DSPR_CONST2:
-	//	case D3DSPR_CONST3:
-	//	case D3DSPR_CONST4:
-	//		mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
-	//		break;
-	//	default:
-	//		BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
-	//		break;
-	//	}
-	//}
 }
 
 TypeDescription ShaderConverter::GetTypeByRegister(const Token& token)
@@ -986,6 +950,11 @@ void ShaderConverter::GenerateConstantBlock()
 			mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
 			mTypeInstructions.push_back(ids[j]); //Result (Id)
 			mTypeInstructions.push_back(0); //Literal Value
+
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(ids[j]); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationSpecId); //Decoration Type (Id)
+			mDecorateInstructions.push_back(specId++);
 		}
 
 		mTypeInstructions.push_back(Pack(3 + 4, spv::OpSpecConstantComposite)); //size,Type
@@ -1005,11 +974,6 @@ void ShaderConverter::GenerateConstantBlock()
 		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
-
-		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-		mDecorateInstructions.push_back(id); //target (Id)
-		mDecorateInstructions.push_back(spv::DecorationSpecId); //Decoration Type (Id)
-		mDecorateInstructions.push_back(specId++);
 
 		mIdTypePairs[id] = typeDescription;
 		mIdsByRegister[D3DSPR_CONSTINT][i] = id;
@@ -1077,6 +1041,11 @@ void ShaderConverter::GenerateConstantBlock()
 			mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
 			mTypeInstructions.push_back(ids[j]); //Result (Id)
 			mTypeInstructions.push_back(0); //Literal Value
+
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(ids[j]); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationSpecId); //Decoration Type (Id)
+			mDecorateInstructions.push_back(specId++);
 		}
 
 		mTypeInstructions.push_back(Pack(3 + 4, spv::OpSpecConstantComposite)); //size,Type
@@ -1096,11 +1065,6 @@ void ShaderConverter::GenerateConstantBlock()
 		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
-
-		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-		mDecorateInstructions.push_back(id); //target (Id)
-		mDecorateInstructions.push_back(spv::DecorationSpecId); //Decoration Type (Id)
-		mDecorateInstructions.push_back(specId++);
 
 		mIdTypePairs[id] = typeDescription;
 		mIdsByRegister[D3DSPR_CONST][i] = id;
@@ -1429,7 +1393,28 @@ void ShaderConverter::Process_DCL_Vertex()
 			mPositionRegister = usageIndex; //might need this later.
 		}
 
-		registerName = "o" + std::to_string(registerNumber);
+		switch ((_D3DDECLUSAGE)GetUsage(token.i))
+		{
+		D3DDECLUSAGE_POSITION:
+			registerName = "oPos" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_FOG:
+			registerName = "oFog" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_PSIZE:
+			registerName = "oPts" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_COLOR:
+			registerName = "oD" + std::to_string(registerNumber);
+			break;
+		D3DDECLUSAGE_TEXCOORD:
+			registerName = "oT" + std::to_string(registerNumber);
+			break;
+		default:
+			registerName = "o" + std::to_string(registerNumber);
+			break;
+		}
+
 		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
 		if (registerName.length() % 4 == 0)
 		{
@@ -1496,72 +1481,40 @@ void ShaderConverter::Process_DCL()
 
 void ShaderConverter::Process_DEF()
 {
-	uint32_t literalIds[4];
 	DWORD literalValue;
 	Token token = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
 
-	uint32_t tokenId = GetNextVersionId(token);
-	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeVector;
-	typeDescription.SecondaryType = spv::OpTypeFloat;
-	typeDescription.ComponentCount = 4;
-	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
-	uint32_t componentTypeId = GetSpirVTypeId(typeDescription.SecondaryType);
-	mIdTypePairs[tokenId] = typeDescription;
-
 	for (size_t i = 0; i < 4; i++)
 	{
-		literalIds[i] = GetNextId();
 		literalValue = GetNextToken().i;
-
 		mConvertedShader.mShaderConstantSlots.FloatConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = bit_cast(literalValue);
 	}
 }
 
 void ShaderConverter::Process_DEFI()
 {
-	uint32_t literalIds[4];
-	uint32_t literalValue;
+	DWORD literalValue;
 	Token token = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
 
-	uint32_t tokenId = GetNextVersionId(token);
-	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeVector;
-	typeDescription.SecondaryType = spv::OpTypeInt;
-	typeDescription.ComponentCount = 4;
-	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
-	uint32_t componentTypeId = GetSpirVTypeId(typeDescription.SecondaryType);
-	mIdTypePairs[tokenId] = typeDescription;
-
 	for (size_t i = 0; i < 4; i++)
 	{
-		literalIds[i] = GetNextId();
 		literalValue = GetNextToken().i;
-
 		mConvertedShader.mShaderConstantSlots.IntegerConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = literalValue;
 	}
 }
 
 void ShaderConverter::Process_DEFB()
 {
-	uint32_t literalValue;
+	DWORD literalValue;
 	Token token = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
 
-	uint32_t tokenId = GetNextVersionId(token);
-	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeBool;
-	uint32_t resultTypeId = GetSpirVTypeId(typeDescription);
-	uint32_t componentTypeId = GetSpirVTypeId(typeDescription.SecondaryType);
-	mIdTypePairs[tokenId] = typeDescription;
-
 	literalValue = GetNextToken().i;
-
 	mConvertedShader.mShaderConstantSlots.BooleanConstants[token.DestinationParameterToken.RegisterNumber * 4] = literalValue;
 }
 
