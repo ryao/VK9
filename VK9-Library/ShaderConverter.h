@@ -203,6 +203,7 @@ private:
 	std::vector<uint32_t> mFunctionDefinitionInstructions;
 
 	uint32_t* mBaseToken = nullptr;
+	uint32_t* mPreviousToken = nullptr;
 	uint32_t* mNextToken = nullptr;
 	uint32_t mBaseId = 1;
 	uint32_t mNextId = 1;
@@ -230,10 +231,10 @@ private:
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2,uint32_t componentCount);
 	uint32_t GetSpirVTypeId(TypeDescription& registerType);
 	uint32_t GetNextVersionId(const Token& token);
-	uint32_t GetIdByRegister(const Token& token);
+	uint32_t GetIdByRegister(const Token& token, _D3DSHADER_PARAM_REGISTER_TYPE type = D3DSPR_FORCE_DWORD);
 	void SetIdByRegister(const Token& token, uint32_t id);
 	TypeDescription GetTypeByRegister(const Token& token);
-	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX);
+	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX, _D3DSHADER_PARAM_REGISTER_TYPE type = D3DSPR_FORCE_DWORD);
 	uint32_t ApplyWriteMask(const Token& token, uint32_t inputId);
 	void GenerateStore(const Token& token, uint32_t inputId);
 	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, uint32_t usage=-1);
