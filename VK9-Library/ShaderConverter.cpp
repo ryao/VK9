@@ -161,6 +161,7 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 	uint32_t columnTypeId = 0;
 	uint32_t pointerTypeId = 0;
 	uint32_t returnTypeId = 0;
+	uint32_t sampledTypeId = 0;
 
 	if (it == mTypeIdPairs.end())
 	{
@@ -206,6 +207,17 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 		case spv::OpTypeSampler:
 			mTypeInstructions.push_back(Pack(2, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
+			break;
+		case spv::OpTypeImage:
+			sampledTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+			mTypeInstructions.push_back(Pack(9, registerType.PrimaryType)); //size,Type
+			mTypeInstructions.push_back(id); //Result (Id)
+			mTypeInstructions.push_back(sampledTypeId); //Sampled Type (Id)
+			mTypeInstructions.push_back(spv::Dim2D); //dimensionality
+			mTypeInstructions.push_back(0); //Depth
+			mTypeInstructions.push_back(0); //Arrayed
+			mTypeInstructions.push_back(0); //MS
+			mTypeInstructions.push_back(0); //Sampled
 			break;
 		case spv::OpTypeFunction:
 		{
@@ -344,6 +356,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
 		break;
+	case D3DSPR_TEXTURE: //Texture could be texcoord
 	case D3DSPR_INPUT:
 		id = GetNextId();
 		description.PrimaryType = spv::OpTypePointer;
@@ -450,6 +463,23 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
+		break;
+
+	case D3DSPR_SAMPLER:
+		id = GetNextId();
+		description.PrimaryType = spv::OpTypePointer;
+		description.SecondaryType = spv::OpTypeImage;
+		description.ComponentCount = 4; //Really this is probably 2 but everything is 1 or 4 so we can swizzle later to get xy.
+		typeId = GetSpirVTypeId(description);
+
+		mIdsByRegister[registerType][registerNumber] = id;
+		mRegistersById[registerType][id] = registerNumber;
+		mIdTypePairs[id] = description;
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
@@ -1238,13 +1268,27 @@ void ShaderConverter::Process_DCL_Pixel()
 		GenerateDecoration(registerNumber, tokenId);
 		break;
 	case D3DSPR_TEXTURE:
-		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
+		resultTypeId = GetSpirVTypeId(typeDescription);
 
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(tokenId); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
-		//Optional initializer
+		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+															 //Optional initializer
+
+		mInputRegisters[registerNumber] = tokenId;
+
+		registerName = "T" + std::to_string(registerNumber);
+		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		if (registerName.length() % 4 == 0)
+		{
+			stringWordSize++;
+		}
+		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+		mNameInstructions.push_back(tokenId); //target (Id)
+		PutStringInVector(registerName, mNameInstructions); //Literal
+
+		GenerateDecoration(registerNumber, tokenId);
 		break;
 	case D3DSPR_SAMPLER:
 		textureType = GetTextureType(token.i);
@@ -1263,12 +1307,11 @@ void ShaderConverter::Process_DCL_Pixel()
 		//	break;
 		//}	
 
-		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler);
-
+		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeImage);
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(tokenId); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
+		mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
 		//Optional initializer
 
 		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = mConvertedShader.mDescriptorSetLayoutBindingCount;
@@ -1279,7 +1322,17 @@ void ShaderConverter::Process_DCL_Pixel()
 
 		mConvertedShader.mDescriptorSetLayoutBindingCount++;
 
-		BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported declare type D3DSPR_SAMPLER";
+		
+		/*
+		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler);
+
+		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+		mTypeInstructions.push_back(tokenId); //Result (Id)
+		mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
+		//Optional initializer	
+		*/
+
 		break;
 	case D3DSPR_TEMP:
 		resultTypeId = GetSpirVTypeId(typeDescription);
