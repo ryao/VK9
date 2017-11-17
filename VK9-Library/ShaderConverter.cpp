@@ -218,6 +218,7 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 			mTypeInstructions.push_back(0); //Arrayed
 			mTypeInstructions.push_back(0); //MS
 			mTypeInstructions.push_back(0); //Sampled
+			mTypeInstructions.push_back(spv::ImageFormatUnknown); //Sampled
 			break;
 		case spv::OpTypeFunction:
 		{
@@ -355,6 +356,17 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
+
+		registerName = "r" + std::to_string(registerNumber);
+		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		if (registerName.length() % 4 == 0)
+		{
+			stringWordSize++;
+		}
+		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+		mNameInstructions.push_back(id); //target (Id)
+		PutStringInVector(registerName, mNameInstructions); //Literal
+
 		break;
 	case D3DSPR_TEXTURE: //Texture could be texcoord
 	case D3DSPR_INPUT:
@@ -409,21 +421,26 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 
-		switch ((_D3DDECLUSAGE)GetUsage(token.i)) //TODO: figure out how to get the usage information for an undeclared output register.
-		{
-		D3DDECLUSAGE_POSITION:
-			registerName = "oPos" + std::to_string(registerNumber);
-			break;
-		D3DDECLUSAGE_FOG:
+		/*
+			D3DDECLUSAGE_FOG:
 			registerName = "oFog" + std::to_string(registerNumber);
 			break;
-		D3DDECLUSAGE_PSIZE:
+
+			D3DDECLUSAGE_PSIZE:
 			registerName = "oPts" + std::to_string(registerNumber);
 			break;
-		D3DDECLUSAGE_COLOR:
+		*/
+
+		switch (registerType)
+		{
+		case D3DSPR_RASTOUT:
+			registerName = "oPos" + std::to_string(registerNumber);
+			break;
+		case D3DSPR_ATTROUT:
+		case D3DSPR_COLOROUT:
 			registerName = "oD" + std::to_string(registerNumber);
 			break;
-		D3DDECLUSAGE_TEXCOORD:
+		case D3DSPR_TEXCRDOUT:
 			registerName = "oT" + std::to_string(registerNumber);
 			break;
 		default:
@@ -431,11 +448,11 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			break;
 		}
 
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
+		stringWordSize = 3 + (registerName.length()/4);
+		//if (registerName.length() % 4 == 0)
+		//{
+		//	stringWordSize++;
+		//}
 		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
@@ -1460,19 +1477,19 @@ void ShaderConverter::Process_DCL_Vertex()
 
 		switch ((_D3DDECLUSAGE)GetUsage(token.i))
 		{
-		D3DDECLUSAGE_POSITION:
+		case D3DDECLUSAGE_POSITION:
 			registerName = "oPos" + std::to_string(registerNumber);
 			break;
-		D3DDECLUSAGE_FOG:
+		case D3DDECLUSAGE_FOG:
 			registerName = "oFog" + std::to_string(registerNumber);
 			break;
-		D3DDECLUSAGE_PSIZE:
+		case D3DDECLUSAGE_PSIZE:
 			registerName = "oPts" + std::to_string(registerNumber);
 			break;
-		D3DDECLUSAGE_COLOR:
+		case D3DDECLUSAGE_COLOR:
 			registerName = "oD" + std::to_string(registerNumber);
 			break;
-		D3DDECLUSAGE_TEXCOORD:
+		case D3DDECLUSAGE_TEXCOORD:
 			registerName = "oT" + std::to_string(registerNumber);
 			break;
 		default:

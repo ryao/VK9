@@ -104,7 +104,14 @@ struct TypeDescription
 
 	bool operator ==(const TypeDescription &value) const
 	{
-		return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType && this->ComponentCount == value.ComponentCount;
+		if (value.PrimaryType == spv::OpTypeVector || value.PrimaryType == spv::OpTypeMatrix)
+		{
+			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
+		}
+		else
+		{
+			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType;
+		}	
 	}
 
 	bool operator <(const TypeDescription &value) const
