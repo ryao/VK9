@@ -823,7 +823,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
 	uint32_t vectorTypeId = 0;
 	uint32_t registerNumber = 0;
-	TypeDescription typeDescription = {};
+	TypeDescription typeDescription; //OpTypeVoid isn't 0 so ={} borks things.
 	D3DSHADER_PARAM_REGISTER_TYPE registerType = {};
 	uint32_t dataTypeId = 0;
 	uint32_t originalId = 0;
@@ -1034,7 +1034,6 @@ void ShaderConverter::GenerateConstantBlock()
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		mIdTypePairs[id] = typeDescription;
 		mIdsByRegister[D3DSPR_CONSTINT][i] = id;
 		mRegistersById[D3DSPR_CONSTINT][id] = i;
 	}
@@ -1071,7 +1070,6 @@ void ShaderConverter::GenerateConstantBlock()
 		mDecorateInstructions.push_back(spv::DecorationSpecId); //Decoration Type (Id)
 		mDecorateInstructions.push_back(specId++);
 
-		mIdTypePairs[id] = typeDescription;
 		mIdsByRegister[D3DSPR_CONSTBOOL][i] = id;
 		mRegistersById[D3DSPR_CONSTBOOL][id] = i;
 	}
@@ -1125,7 +1123,6 @@ void ShaderConverter::GenerateConstantBlock()
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		mIdTypePairs[id] = typeDescription;
 		mIdsByRegister[D3DSPR_CONST][i] = id;
 		mRegistersById[D3DSPR_CONST][id] = i;
 	}

@@ -24,6 +24,7 @@ misrepresented as being the original software.
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <boost/log/trivial.hpp>
 #include <boost/container/flat_map.hpp>
 #include <spirv.hpp>
 #include "CTypes.h"
@@ -104,19 +105,50 @@ struct TypeDescription
 
 	bool operator ==(const TypeDescription &value) const
 	{
-		if (value.PrimaryType == spv::OpTypeVector || value.PrimaryType == spv::OpTypeMatrix)
+		switch (this->PrimaryType)
 		{
-			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
-		}
-		else
-		{
+		case spv::OpTypeBool:
+		case spv::OpTypeInt:
+		case spv::OpTypeFloat:
+		case spv::OpTypeSampler:
+		case spv::OpTypeImage:
+		case spv::OpTypeVoid:
+			return this->PrimaryType == value.PrimaryType;
+		case spv::OpTypeVector:
+		case spv::OpTypeMatrix:
+				return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
+		case spv::OpTypePointer:
+			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType && this->ComponentCount == value.ComponentCount;
+		case spv::OpTypeFunction:
 			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType;
-		}	
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "operator == - Unsupported data type " << this->PrimaryType;
+			break;
+		}
 	}
 
 	bool operator <(const TypeDescription &value) const
 	{
-		return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType || this->ComponentCount < value.ComponentCount;
+		switch (this->PrimaryType)
+		{
+		case spv::OpTypeBool:
+		case spv::OpTypeInt:
+		case spv::OpTypeFloat:
+		case spv::OpTypeSampler:
+		case spv::OpTypeImage:
+		case spv::OpTypeVoid:
+			return this->PrimaryType < value.PrimaryType;
+		case spv::OpTypeVector:
+		case spv::OpTypeMatrix:
+			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->ComponentCount < value.ComponentCount;
+		case spv::OpTypePointer:
+			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType || this->ComponentCount < value.ComponentCount;
+		case spv::OpTypeFunction:
+			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "operator < - Unsupported data type " << this->PrimaryType;
+			break;
+		}
 	}
 };
 
