@@ -211,7 +211,7 @@ private:
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mIdsByRegister;
 	
 	boost::container::flat_map<uint32_t, uint32_t> mInputRegisters;
-	boost::container::flat_map<uint32_t, uint32_t> mOutputRegisters;
+	std::vector<uint32_t> mOutputRegisters;
 	boost::container::flat_map<_D3DDECLUSAGE, uint32_t> mOutputRegisterUsages;
 
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
@@ -265,10 +265,10 @@ private:
 	uint32_t GetRegisterNumber(const Token& token);
 	uint32_t GetUsage(uint32_t token);
 	uint32_t GetUsageIndex(uint32_t token);
-	uint32_t GetSpirVTypeId(spv::Op registerType);
+	uint32_t GetSpirVTypeId(spv::Op registerType, uint32_t id = UINT_MAX);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2,uint32_t componentCount);
-	uint32_t GetSpirVTypeId(TypeDescription& registerType);
+	uint32_t GetSpirVTypeId(TypeDescription& registerType, uint32_t id = UINT_MAX);
 	uint32_t GetNextVersionId(const Token& token);
 	uint32_t GetIdByRegister(const Token& token, _D3DSHADER_PARAM_REGISTER_TYPE type = D3DSPR_FORCE_DWORD);
 	void SetIdByRegister(const Token& token, uint32_t id);

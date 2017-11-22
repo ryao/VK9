@@ -125,13 +125,13 @@ uint32_t ShaderConverter::GetUsageIndex(uint32_t token)
 	return (token & D3DSP_DCL_USAGEINDEX_MASK) >> D3DSP_DCL_USAGEINDEX_SHIFT;
 }
 
-uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType)
+uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType, uint32_t id)
 {
 	TypeDescription description;
 
 	description.PrimaryType = registerType;
 
-	return GetSpirVTypeId(description);
+	return GetSpirVTypeId(description,id);
 }
 
 uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2)
@@ -155,7 +155,7 @@ uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType1, spv::Op register
 	return GetSpirVTypeId(description);
 }
 
-uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
+uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t id)
 {
 	boost::container::flat_map<TypeDescription, uint32_t>::iterator it = mTypeIdPairs.find(registerType);
 	uint32_t columnTypeId = 0;
@@ -165,7 +165,11 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType)
 
 	if (it == mTypeIdPairs.end())
 	{
-		uint32_t id = GetNextId();
+		if (id == UINT_MAX)
+		{
+			id = GetNextId();
+		}
+
 		mTypeIdPairs[registerType] = id;
 		mIdTypePairs[id] = registerType;
 
@@ -457,7 +461,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		mOutputRegisters[registerNumber] = id;
+		mOutputRegisters.push_back(id);
 		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = id;
 		//GenerateDecoration(mOutputRegisterUsages.size(), id);
 		break;
@@ -1503,7 +1507,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		mNameInstructions.push_back(tokenId); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		mOutputRegisters[registerNumber] = tokenId;
+		mOutputRegisters.push_back(tokenId);
 		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = tokenId;
 		//GenerateDecoration(mOutputRegisterUsages.size(), tokenId);
 		break;
@@ -2211,8 +2215,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mMemoryModelInstructions.push_back(spv::AddressingModelLogical); //Addressing Model
 	mMemoryModelInstructions.push_back(spv::MemoryModelGLSL450); //Memory Model
 
-	//End of entry point
-	mEntryPointTypeId = GetSpirVTypeId(spv::OpTypeFunction); //secondary type will be void by default.
+	GenerateConstantBlock();
+
+	//Start of entry point
+	mEntryPointTypeId = GetNextId();
 	mEntryPointId = GetNextId();
 
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFunction)); //size,Type
@@ -2223,8 +2229,6 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
 	mFunctionDefinitionInstructions.push_back(GetNextId()); //result (Id)
-
-	GenerateConstantBlock();
 
 	//Read DXBC instructions
 	while (token != D3DPS_END())
@@ -2491,6 +2495,13 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	}
 
+	//After inputs & outputs are defined set the function type with the type id defined earlier.
+	GetSpirVTypeId(spv::OpTypeFunction, mEntryPointTypeId);
+
+	//End of entry point
+	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpReturn)); //size,Type
+	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpFunctionEnd)); //size,Type
+
 	//Declare output based on type and hope it all works out.
 	uint32_t outputIndex = 0;
 	typedef boost::container::flat_map<_D3DDECLUSAGE, uint32_t> usageMapType;
@@ -2499,23 +2510,19 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		GenerateDecoration(outputIndex++, entry.second, entry.first);
 	}
 
-	//End of entry point
-	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpReturn)); //size,Type
-	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpFunctionEnd)); //size,Type
-
 	//EntryPoint
 	std::string entryPointName = "main";
 	std::vector<uint32_t> interfaceIds;
 	typedef boost::container::flat_map<uint32_t, uint32_t> maptype2;
-	BOOST_FOREACH(const maptype2::value_type& inputRegister, mInputRegisters)
+	for (const auto& inputRegister : mInputRegisters)
 	{
 		interfaceIds.push_back(inputRegister.second);
 		BOOST_LOG_TRIVIAL(info) << inputRegister.second << " (Input)";
 	}
-	BOOST_FOREACH(const maptype2::value_type& outputRegister, mOutputRegisters)
+	for (const auto& outputRegister : mOutputRegisters)
 	{
-		interfaceIds.push_back(outputRegister.second);
-		BOOST_LOG_TRIVIAL(info) << outputRegister.second << " (Output)";
+		interfaceIds.push_back(outputRegister);
+		BOOST_LOG_TRIVIAL(info) << outputRegister << " (Output)";
 	}
 
 	//The spec says 4+variable but there are only 3 before the string literal.
