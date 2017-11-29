@@ -462,7 +462,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
 		mOutputRegisters.push_back(id);
-		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = id;
+		//mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = id;
 		//GenerateDecoration(mOutputRegisterUsages.size(), id);
 		break;
 	case D3DSPR_CONST:
@@ -1476,7 +1476,7 @@ void ShaderConverter::Process_DCL_Vertex()
 			mPositionRegister = usageIndex; //might need this later.
 		}
 
-		switch ((_D3DDECLUSAGE)GetUsage(token.i))
+		switch (usage)
 		{
 		case D3DDECLUSAGE_POSITION:
 			registerName = "oPos" + std::to_string(registerNumber);
@@ -1508,7 +1508,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
 		mOutputRegisters.push_back(tokenId);
-		mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = tokenId;
+		mOutputRegisterUsages[(_D3DDECLUSAGE)usage] = tokenId;
 		//GenerateDecoration(mOutputRegisterUsages.size(), tokenId);
 		break;
 	case D3DSPR_TEMP:
