@@ -131,7 +131,7 @@ uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType, uint32_t id)
 
 	description.PrimaryType = registerType;
 
-	return GetSpirVTypeId(description,id);
+	return GetSpirVTypeId(description, id);
 }
 
 uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2)
@@ -297,7 +297,7 @@ uint32_t ShaderConverter::GetNextVersionId(const Token& token)
 	return id;
 }
 
-uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_REGISTER_TYPE type)
+uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_REGISTER_TYPE type, _D3DDECLUSAGE usage)
 {
 	D3DSHADER_PARAM_REGISTER_TYPE registerType;
 	uint32_t registerNumber = 0;
@@ -402,7 +402,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		GenerateDecoration(registerNumber, id);
+		GenerateDecoration(registerNumber, id, usage, true);
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
@@ -452,7 +452,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			break;
 		}
 
-		stringWordSize = 3 + (registerName.length()/4);
+		stringWordSize = 3 + (registerName.length() / 4);
 		//if (registerName.length() % 4 == 0)
 		//{
 		//	stringWordSize++;
@@ -949,35 +949,50 @@ void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
 	}
 }
 
-void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t inputId, uint32_t usage)
+void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage, bool isInput)
 {
-	switch (usage)
+	if (!isInput || !this->mIsVertexShader)
 	{
-	case D3DDECLUSAGE_POSITION:
-		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-		mDecorateInstructions.push_back(inputId); //target (Id)
-		mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
-		mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
-		break;
-		//can't find anything for fragment color output D3DDECLUSAGE_COLOR
-		//case D3DDECLUSAGE_COLOR:
-		//	mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-		//	mDecorateInstructions.push_back(inputId); //target (Id)
-		//	mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
-		//	mDecorateInstructions.push_back(0); //Location offset
-		//	break;
-	default:
+		switch (usage)
+		{
+		case D3DDECLUSAGE_POSITION:
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(inputId); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
+			mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
+			break;
+		case D3DDECLUSAGE_FOG:
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(inputId); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+			mDecorateInstructions.push_back(0); //Location offset
+			break;
+		case D3DDECLUSAGE_PSIZE:
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(inputId); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+			mDecorateInstructions.push_back(1); //Location offset
+			break;
+		case D3DDECLUSAGE_COLOR:
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(inputId); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+			mDecorateInstructions.push_back(registerNumber + 2); //Location offset
+			break;
+		default:
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(inputId); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+			mDecorateInstructions.push_back(registerNumber + 4); //Location offset
+			break;
+		}
+	}
+	else
+	{
 		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 		mDecorateInstructions.push_back(inputId); //target (Id)
 		mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-
-		/*
-		The location should line up with how the variables are passed in.
-		The register number is also zero indexed so I'm using that to get the right binding.
-		The register numbers are unique per type so input and output should still line up with bindings.
-		*/
 		mDecorateInstructions.push_back(registerNumber); //Location offset
-		break;
 	}
 }
 
@@ -1283,7 +1298,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mNameInstructions.push_back(tokenId); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		GenerateDecoration(registerNumber, tokenId);
+		GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage,true);
 		break;
 	case D3DSPR_TEXTURE:
 		resultTypeId = GetSpirVTypeId(typeDescription);
@@ -1306,7 +1321,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mNameInstructions.push_back(tokenId); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		GenerateDecoration(registerNumber, tokenId);
+		GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage,true);
 		break;
 	case D3DSPR_SAMPLER:
 		textureType = GetTextureType(token.i);
@@ -1340,7 +1355,7 @@ void ShaderConverter::Process_DCL_Pixel()
 
 		mConvertedShader.mDescriptorSetLayoutBindingCount++;
 
-		
+
 		/*
 		resultTypeId = GetSpirVTypeId(spv::OpTypePointer, spv::OpTypeSampler);
 
@@ -1348,7 +1363,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(tokenId); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
-		//Optional initializer	
+		//Optional initializer
 		*/
 
 		break;
@@ -1456,7 +1471,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		mNameInstructions.push_back(tokenId); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		GenerateDecoration(registerNumber, tokenId);
+		GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage,true);
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
@@ -1509,7 +1524,7 @@ void ShaderConverter::Process_DCL_Vertex()
 
 		mOutputRegisters.push_back(tokenId);
 		mOutputRegisterUsages[(_D3DDECLUSAGE)usage] = tokenId;
-		//GenerateDecoration(mOutputRegisterUsages.size(), tokenId);
+		GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage,false);
 		break;
 	case D3DSPR_TEMP:
 		resultTypeId = GetSpirVTypeId(typeDescription);
@@ -2502,13 +2517,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpReturn)); //size,Type
 	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpFunctionEnd)); //size,Type
 
-	//Declare output based on type and hope it all works out.
 	uint32_t outputIndex = 0;
-	typedef boost::container::flat_map<_D3DDECLUSAGE, uint32_t> usageMapType;
-	BOOST_FOREACH(const usageMapType::value_type& entry, mOutputRegisterUsages)
-	{
-		GenerateDecoration(outputIndex++, entry.second, entry.first);
-	}
 
 	//EntryPoint
 	std::string entryPointName = "main";
