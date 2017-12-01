@@ -123,6 +123,7 @@ struct TypeDescription
 			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "operator == - Unsupported data type " << this->PrimaryType;
+			return false;
 			break;
 		}
 	}
@@ -147,7 +148,7 @@ struct TypeDescription
 			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "operator < - Unsupported data type " << this->PrimaryType;
-			break;
+			return false;
 		}
 	}
 };
@@ -274,7 +275,7 @@ private:
 	void SetIdByRegister(const Token& token, uint32_t id);
 	TypeDescription GetTypeByRegister(const Token& token);
 	uint32_t GetSwizzledId(const Token& token, uint32_t inputId = UINT_MAX, _D3DSHADER_PARAM_REGISTER_TYPE type = D3DSPR_FORCE_DWORD);
-	uint32_t ApplyWriteMask(const Token& token, uint32_t inputId);
+	uint32_t ApplyWriteMask(const Token& token, uint32_t inputId, _D3DDECLUSAGE usage = D3DDECLUSAGE_TEXCOORD);
 	void GenerateStore(const Token& token, uint32_t inputId);
 	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage,bool isInput);
 	void GenerateConstantBlock();

@@ -402,7 +402,22 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
 
-		GenerateDecoration(registerNumber, id, usage, true);
+		if (this->mMajorVersion == 3)
+		{
+			GenerateDecoration(registerNumber, id, usage, true);
+		}
+		else
+		{
+			if (registerType == D3DSPR_INPUT)
+			{
+				GenerateDecoration(registerNumber, id, D3DDECLUSAGE_COLOR, true);
+			}
+			else
+			{
+				GenerateDecoration(registerNumber, id, D3DDECLUSAGE_TEXCOORD, true);
+			}
+		}
+		
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
@@ -439,13 +454,16 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		{
 		case D3DSPR_RASTOUT:
 			registerName = "oPos" + std::to_string(registerNumber);
+			usage = D3DDECLUSAGE_POSITION;
 			break;
 		case D3DSPR_ATTROUT:
 		case D3DSPR_COLOROUT:
 			registerName = "oD" + std::to_string(registerNumber);
+			usage = D3DDECLUSAGE_COLOR;
 			break;
 		case D3DSPR_TEXCRDOUT:
 			registerName = "oT" + std::to_string(registerNumber);
+			usage = D3DDECLUSAGE_TEXCOORD;
 			break;
 		default:
 			registerName = "o" + std::to_string(registerNumber);
@@ -463,7 +481,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 
 		mOutputRegisters.push_back(id);
 		//mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = id;
-		//GenerateDecoration(mOutputRegisterUsages.size(), id);
+		GenerateDecoration(registerNumber, id, usage, false);
 		break;
 	case D3DSPR_CONST:
 	case D3DSPR_CONST2:
@@ -822,7 +840,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 	return outputId;
 }
 
-uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId)
+uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId, _D3DDECLUSAGE usage)
 {
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
 	uint32_t vectorTypeId = 0;
@@ -836,7 +854,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 
 	registerType = GetRegisterType(token.i);
 
-	originalId = GetIdByRegister(token);
+	originalId = GetIdByRegister(token, registerType, usage);
 
 	loadedOriginalId = originalId;
 	typeDescription = GetTypeByRegister(token);
@@ -951,7 +969,7 @@ void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
 
 void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage, bool isInput)
 {
-	if (!isInput || !this->mIsVertexShader)
+	if (this->mMajorVersion == 3)
 	{
 		switch (usage)
 		{
@@ -961,38 +979,119 @@ void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t input
 			mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
 			mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
 			break;
-		case D3DDECLUSAGE_FOG:
-			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-			mDecorateInstructions.push_back(inputId); //target (Id)
-			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-			mDecorateInstructions.push_back(0); //Location offset
-			break;
-		case D3DDECLUSAGE_PSIZE:
-			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-			mDecorateInstructions.push_back(inputId); //target (Id)
-			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-			mDecorateInstructions.push_back(1); //Location offset
-			break;
-		case D3DDECLUSAGE_COLOR:
-			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-			mDecorateInstructions.push_back(inputId); //target (Id)
-			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-			mDecorateInstructions.push_back(registerNumber + 2); //Location offset
-			break;
 		default:
 			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 			mDecorateInstructions.push_back(inputId); //target (Id)
 			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-			mDecorateInstructions.push_back(registerNumber + 4); //Location offset
+			mDecorateInstructions.push_back(registerNumber); //Location offset
 			break;
 		}
 	}
 	else
 	{
-		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-		mDecorateInstructions.push_back(inputId); //target (Id)
-		mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-		mDecorateInstructions.push_back(registerNumber); //Location offset
+		if (isInput)
+		{
+			if (this->mIsVertexShader)
+			{
+				mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+				mDecorateInstructions.push_back(inputId); //target (Id)
+				mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+				mDecorateInstructions.push_back(registerNumber); //Location offset
+			}
+			else
+			{
+				switch (usage)
+				{
+				case D3DDECLUSAGE_POSITION:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
+					mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
+					break;
+				case D3DDECLUSAGE_FOG:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(0); //Location offset
+					break;
+				case D3DDECLUSAGE_PSIZE:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(1); //Location offset
+					break;
+				case D3DDECLUSAGE_COLOR:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(registerNumber + 2); //Location offset
+					break;
+				default:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(registerNumber + 4); //Location offset
+					break;
+				}
+			}
+		}
+		else
+		{
+			if (this->mIsVertexShader)
+			{
+				switch (usage)
+				{
+				case D3DDECLUSAGE_POSITION:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
+					mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
+					break;
+				case D3DDECLUSAGE_FOG:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(0); //Location offset
+					break;
+				case D3DDECLUSAGE_PSIZE:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(1); //Location offset
+					break;
+				case D3DDECLUSAGE_COLOR:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(registerNumber + 2); //Location offset
+					break;
+				default:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(registerNumber + 4); //Location offset
+					break;
+				}
+			}
+			else
+			{
+				switch (usage)
+				{
+				case D3DDECLUSAGE_POSITION:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
+					mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
+					break;
+				default:
+					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+					mDecorateInstructions.push_back(inputId); //target (Id)
+					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+					mDecorateInstructions.push_back(registerNumber); //Location offset
+					break;
+				}
+			}
+		}
 	}
 }
 
