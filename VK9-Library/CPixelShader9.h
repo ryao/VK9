@@ -36,7 +36,6 @@ public:
 	DWORD* mFunction = nullptr;
 
 	ShaderConverter mShaderConverter;
-	ConvertedShader mConvertedShader;
 
 	ULONG mReferenceCount = 1;
 	VkResult mResult = VK_SUCCESS;

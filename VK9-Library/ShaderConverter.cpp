@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include <boost/foreach.hpp>
 #include <fstream>
 
+#include "CDevice9.h"
 #include "Utilities.h"
 
 /*
@@ -55,10 +56,19 @@ Khronos at https://www.khronos.org/registry/spir-v/api/spir-v.xml.
 */
 #define SPIR_V_GENERATORS_NUMBER 0x00000000
 
-ShaderConverter::ShaderConverter(VkDevice device)
-	: mDevice(device)
+ShaderConverter::ShaderConverter(CDevice9* device, ShaderConstantSlots& shaderConstantSlots)
+	: mDevice(device), mShaderConstantSlots(shaderConstantSlots)
 {
 
+}
+
+ShaderConverter::~ShaderConverter()
+{
+	if (mConvertedShader.ShaderModule != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule(mDevice->mDevice, mConvertedShader.ShaderModule, NULL);
+		mConvertedShader.ShaderModule = VK_NULL_HANDLE;
+	}
 }
 
 Token ShaderConverter::GetNextToken()
@@ -332,6 +342,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		break;
 	}
 
+	//If a register has already be declared just return the id.
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> >::iterator it1 = mIdsByRegister.find(registerType);
 	if (it1 != mIdsByRegister.end())
 	{
@@ -342,36 +353,15 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		}
 	}
 
+	/*
+	Registers can be defined simply by using them so anything past this point was used before it was declared. 
+	We'll be missing some usage information and some other bits so we'll try to piece together what it should be from context. (also guess some stuff)	
+
+	The rules are different between ps and vs and even between shader models 1, 2, and 3.
+	*/
+
 	switch (registerType)
 	{
-	case D3DSPR_TEMP:
-		id = GetNextId();
-		description.PrimaryType = spv::OpTypePointer;
-		description.SecondaryType = spv::OpTypeVector;
-		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
-		description.ComponentCount = 4;
-		typeId = GetSpirVTypeId(description);
-
-		mIdsByRegister[registerType][registerNumber] = id;
-		mRegistersById[registerType][id] = registerNumber;
-		mIdTypePairs[id] = description;
-
-		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-		mTypeInstructions.push_back(id); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
-
-		registerName = "r" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(id); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
-
-		break;
 	case D3DSPR_TEXTURE: //Texture could be texcoord
 	case D3DSPR_INPUT:
 		id = GetNextId();
@@ -424,6 +414,12 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 	case D3DSPR_COLOROUT:
 	case D3DSPR_DEPTHOUT:
 	case D3DSPR_OUTPUT:
+	case D3DSPR_TEMP:
+		/*
+		D3DSPR_TEMP is included with the outputs because for pixel shaders r0 is the color output. 
+		So rather than duplicate everything I put some logic here and there to decide if it's an output or a temp.
+		*/
+
 		id = GetNextId();
 		description.PrimaryType = spv::OpTypePointer;
 		description.SecondaryType = spv::OpTypeVector;
@@ -438,7 +434,19 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+
+		if (this->mIsVertexShader && registerType != D3DSPR_TEMP)
+		{
+			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+		}
+		else if (!this->mIsVertexShader && registerType == D3DSPR_TEMP && registerNumber == 0) //r0 is used for pixel shader color output because reasons.
+		{
+			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
+		}
+		else
+		{
+			mTypeInstructions.push_back(spv::StorageClassPrivate); //Storage Class
+		}	
 
 		/*
 			D3DDECLUSAGE_FOG:
@@ -465,6 +473,10 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			registerName = "oT" + std::to_string(registerNumber);
 			usage = D3DDECLUSAGE_TEXCOORD;
 			break;
+		case D3DSPR_TEMP:
+			registerName = "r" + std::to_string(registerNumber);
+			usage = D3DDECLUSAGE_COLOR;
+			break;
 		default:
 			registerName = "o" + std::to_string(registerNumber);
 			break;
@@ -478,10 +490,24 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
-
-		mOutputRegisters.push_back(id);
+	
 		//mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = id;
-		GenerateDecoration(registerNumber, id, usage, false);
+		if (this->mIsVertexShader && registerType != D3DSPR_TEMP)
+		{
+			mOutputRegisters.push_back(id);
+
+			GenerateDecoration(registerNumber, id, usage, false);
+		}
+		else if(!this->mIsVertexShader && registerType == D3DSPR_TEMP && registerNumber == 0) //r0 is used for pixel shader color output because reasons.
+		{
+			mOutputRegisters.push_back(id);
+
+			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+			mDecorateInstructions.push_back(id); //target (Id)
+			mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
+			mDecorateInstructions.push_back(0); //Location offset
+		}
+		
 		break;
 	case D3DSPR_CONST:
 	case D3DSPR_CONST2:
@@ -1321,7 +1347,7 @@ void ShaderConverter::CreateSpirVModule()
 	moduleCreateInfo.codeSize = mInstructions.size() * sizeof(uint32_t);
 	moduleCreateInfo.pCode = mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
 	moduleCreateInfo.flags = 0;
-	result = vkCreateShaderModule(mDevice, &moduleCreateInfo, NULL, &mConvertedShader.ShaderModule);
+	result = vkCreateShaderModule(mDevice->mDevice, &moduleCreateInfo, NULL, &mConvertedShader.ShaderModule);
 
 	if (result != VK_SUCCESS)
 	{
@@ -1686,7 +1712,7 @@ void ShaderConverter::Process_DEF()
 	for (size_t i = 0; i < 4; i++)
 	{
 		literalValue = GetNextToken().i;
-		mConvertedShader.mShaderConstantSlots.FloatConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = bit_cast(literalValue);
+		mShaderConstantSlots.FloatConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = bit_cast(literalValue);
 	}
 }
 
@@ -1700,7 +1726,7 @@ void ShaderConverter::Process_DEFI()
 	for (size_t i = 0; i < 4; i++)
 	{
 		literalValue = GetNextToken().i;
-		mConvertedShader.mShaderConstantSlots.IntegerConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = literalValue;
+		mShaderConstantSlots.IntegerConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = literalValue;
 	}
 }
 
@@ -1712,7 +1738,7 @@ void ShaderConverter::Process_DEFB()
 	DestinationParameterToken  destinationParameterToken = token.DestinationParameterToken;
 
 	literalValue = GetNextToken().i;
-	mConvertedShader.mShaderConstantSlots.BooleanConstants[token.DestinationParameterToken.RegisterNumber * 4] = literalValue;
+	mShaderConstantSlots.BooleanConstants[token.DestinationParameterToken.RegisterNumber * 4] = literalValue;
 }
 
 void ShaderConverter::Process_MOV()
@@ -2123,15 +2149,15 @@ void ShaderConverter::Process_TEX()
 		Token argumentToken2 = GetNextToken();
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1);
-		argumentId1 = GetSwizzledId(argumentToken2);
+		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXCRDOUT);
+		argumentId1 = GetSwizzledId(argumentToken2, UINT_MAX, D3DSPR_SAMPLER);
 	}
 	else if (mMajorVersion = 1 && mMinorVersion >= 4)
 	{
 		Token argumentToken1 = GetNextToken();
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1);
+		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXCRDOUT);
 		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_SAMPLER);
 	}
 	else
@@ -2139,7 +2165,7 @@ void ShaderConverter::Process_TEX()
 		Token argumentToken1 = GetNextToken();
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1);
+		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXCRDOUT);
 		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_SAMPLER);
 	}
 
@@ -2285,7 +2311,7 @@ void ShaderConverter::Process_MAD()
 
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 {
-	mConvertedShader = {};
+	//mConvertedShader = {};
 	mInstructions.clear();
 
 	uint32_t stringWordSize = 0;

@@ -26,20 +26,15 @@ misrepresented as being the original software.
 CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
 	: mDevice(device),
 	mFunction((DWORD*)pFunction),
-	mShaderConverter(device->mDevice)
+	mShaderConverter(device, device->mDeviceState.mPixelShaderConstantSlots)
 {
 	BOOST_LOG_TRIVIAL(info) << "CPixelShader9::CPixelShader9";
-	mConvertedShader = mShaderConverter.Convert((uint32_t*)mFunction);
+	mShaderConverter.Convert((uint32_t*)mFunction);
 }
 
 CPixelShader9::~CPixelShader9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CPixelShader9::~CPixelShader9";
-	if (mConvertedShader.ShaderModule != VK_NULL_HANDLE)
-	{
-		vkDestroyShaderModule(mDevice->mDevice, mConvertedShader.ShaderModule, NULL);
-		mConvertedShader.ShaderModule = VK_NULL_HANDLE;
-	}
 }
 
 ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(void)
@@ -162,14 +157,14 @@ HRESULT STDMETHODCALLTYPE CPixelShader9::SetPrivateData(REFGUID refguid, const v
 
 HRESULT STDMETHODCALLTYPE CPixelShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
-	(*pSizeOfData) = mConvertedShader.Size;
+	(*pSizeOfData) = mShaderConverter.mConvertedShader.Size;
 
 	if (pData == nullptr)
 	{
 		return S_OK;
 	}
 
-	memcpy(pData, mFunction, mConvertedShader.Size);
+	memcpy(pData, mFunction, mShaderConverter.mConvertedShader.Size);
 
 	return S_OK;
 }

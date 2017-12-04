@@ -742,12 +742,12 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	if (mDevice->mDeviceState.mVertexShader != nullptr)
 	{
-		context->mVertexShaderConstantSlots = mDevice->mDeviceState.mVertexShader->mConvertedShader.mShaderConstantSlots;
+		context->mVertexShaderConstantSlots = mDevice->mDeviceState.mVertexShaderConstantSlots;
 	}
 
 	if (mDevice->mDeviceState.mPixelShader != nullptr)
 	{
-		context->mPixelShaderConstantSlots = mDevice->mDeviceState.mPixelShader->mConvertedShader.mShaderConstantSlots;
+		context->mPixelShaderConstantSlots = mDevice->mDeviceState.mPixelShaderConstantSlots;
 	}
 
 	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
@@ -1040,8 +1040,8 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	**********************************************/
 	if (context->VertexShader != nullptr)
 	{
-		mPipelineShaderStageCreateInfo[0].module = context->VertexShader->mConvertedShader.ShaderModule;
-		mPipelineShaderStageCreateInfo[1].module = context->PixelShader->mConvertedShader.ShaderModule;
+		mPipelineShaderStageCreateInfo[0].module = context->VertexShader->mShaderConverter.mConvertedShader.ShaderModule;
+		mPipelineShaderStageCreateInfo[1].module = context->PixelShader->mShaderConverter.mConvertedShader.ShaderModule;
 	}
 	else
 	{
@@ -1132,7 +1132,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	if (context->VertexShader != nullptr)
 	{
 		//Revisit, make sure this copies properly.
-		memcpy(&mVertexInputAttributeDescription, &context->VertexShader->mConvertedShader.mVertexInputAttributeDescription, sizeof(mVertexInputAttributeDescription));
+		memcpy(&mVertexInputAttributeDescription, &context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescription, sizeof(mVertexInputAttributeDescription));
 	}
 	else if (context->VertexDeclaration != nullptr)
 	{
@@ -1267,8 +1267,8 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 	if (context->VertexShader != nullptr)
 	{
-		auto& convertedVertexShader = context->VertexShader->mConvertedShader;
-		auto& convertedPixelShader = context->PixelShader->mConvertedShader;
+		auto& convertedVertexShader = context->VertexShader->mShaderConverter.mConvertedShader;
+		auto& convertedPixelShader = context->PixelShader->mShaderConverter.mConvertedShader;
 
 		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = convertedVertexShader.mVertexInputAttributeDescriptionCount;
 
@@ -1282,12 +1282,12 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		mDescriptorSetLayoutCreateInfo.bindingCount = convertedPixelShader.mDescriptorSetLayoutBindingCount;
 		mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-		mVertexSpecializationInfo.pData = &convertedVertexShader.mShaderConstantSlots;
+		mVertexSpecializationInfo.pData = &context->mVertexShaderConstantSlots;
 		mVertexSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
 		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
 		mVertexSpecializationInfo.mapEntryCount = 1024;
 
-		mPixelSpecializationInfo.pData = &convertedPixelShader.mShaderConstantSlots;
+		mPixelSpecializationInfo.pData = &context->mPixelShaderConstantSlots;
 		mPixelSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
 		mPixelSpecializationInfo.pMapEntries = mSlotMapEntries;
 		mPixelSpecializationInfo.mapEntryCount = 1024;

@@ -55,8 +55,6 @@ struct ConvertedShader
 	//Actual Payload
 	UINT Size = 0;
 	VkShaderModule ShaderModule = VK_NULL_HANDLE;
-	//PushConstants mPushConstants;
-	ShaderConstantSlots mShaderConstantSlots = {};
 };
 
 //https://msdn.microsoft.com/en-us/library/windows/hardware/ff552738(v=vs.85).aspx
@@ -197,14 +195,19 @@ inline void PutStringInVector(std::string& text, std::vector<uint32_t>& words)
 
 }
 
+class CDevice9;
+
 class ShaderConverter
 {
 protected:
-	VkDevice mDevice;
-	ConvertedShader mConvertedShader;
+	CDevice9* mDevice;
+	ShaderConstantSlots& mShaderConstantSlots;
 public:
-	ShaderConverter(VkDevice device);
+	ShaderConverter(CDevice9* device, ShaderConstantSlots& shaderConstantSlots);
+	~ShaderConverter();
+
 	ConvertedShader Convert(uint32_t* shader);
+	ConvertedShader mConvertedShader = {};
 private:	
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
 
