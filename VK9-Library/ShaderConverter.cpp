@@ -382,28 +382,48 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 
 		mInputRegisters[registerNumber] = id;
 
-		registerName = "v" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(id); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
-
 		if (this->mMajorVersion == 3)
 		{
+			registerName = "v" + std::to_string(registerNumber);
+			stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+			if (registerName.length() % 4 == 0)
+			{
+				stringWordSize++;
+			}
+			mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+			mNameInstructions.push_back(id); //target (Id)
+			PutStringInVector(registerName, mNameInstructions); //Literal
+
 			GenerateDecoration(registerNumber, id, usage, true);
 		}
 		else
 		{
 			if (registerType == D3DSPR_INPUT)
 			{
+				registerName = "oD" + std::to_string(registerNumber);
+				stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+				if (registerName.length() % 4 == 0)
+				{
+					stringWordSize++;
+				}
+				mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+				mNameInstructions.push_back(id); //target (Id)
+				PutStringInVector(registerName, mNameInstructions); //Literal
+
 				GenerateDecoration(registerNumber, id, D3DDECLUSAGE_COLOR, true);
 			}
 			else
 			{
+				registerName = "oT" + std::to_string(registerNumber);
+				stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+				if (registerName.length() % 4 == 0)
+				{
+					stringWordSize++;
+				}
+				mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+				mNameInstructions.push_back(id); //target (Id)
+				PutStringInVector(registerName, mNameInstructions); //Literal
+
 				GenerateDecoration(registerNumber, id, D3DDECLUSAGE_TEXCOORD, true);
 			}
 		}
@@ -439,7 +459,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		{
 			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 		}
-		else if (!this->mIsVertexShader && registerType == D3DSPR_TEMP && registerNumber == 0) //r0 is used for pixel shader color output because reasons.
+		else if (!this->mIsVertexShader && registerType == D3DSPR_TEMP) //r0 is used for pixel shader color output because reasons.
 		{
 			mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 		}
@@ -498,7 +518,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 
 			GenerateDecoration(registerNumber, id, usage, false);
 		}
-		else if(!this->mIsVertexShader && registerType == D3DSPR_TEMP && registerNumber == 0) //r0 is used for pixel shader color output because reasons.
+		else if(!this->mIsVertexShader && registerType == D3DSPR_TEMP) //r0 is used for pixel shader color output because reasons.
 		{
 			mOutputRegisters.push_back(id);
 
@@ -545,6 +565,23 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
+
+		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+		mDecorateInstructions.push_back(id); //target (Id)
+		mDecorateInstructions.push_back(spv::DecorationBinding); //Decoration Type (Id)
+		mDecorateInstructions.push_back(registerNumber); //Location offset
+
+		registerName = "s" + std::to_string(registerNumber);
+
+		stringWordSize = 3 + (registerName.length() / 4);
+		//if (registerName.length() % 4 == 0)
+		//{
+		//	stringWordSize++;
+		//}
+		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+		mNameInstructions.push_back(id); //target (Id)
+		PutStringInVector(registerName, mNameInstructions); //Literal
+
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
@@ -613,6 +650,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 	TypeDescription typeDescription;
 	D3DSHADER_PARAM_REGISTER_TYPE registerType;
 	uint32_t dataTypeId;
+	std::string registerName;
+	size_t stringWordSize;
 
 	registerType = GetRegisterType(token.i);
 	typeDescription = GetTypeByRegister(token);
@@ -636,6 +675,47 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			mFunctionDefinitionInstructions.push_back(inputId); //result (Id)
 			mFunctionDefinitionInstructions.push_back(GetIdByRegister(token)); //pointer (Id)	
 			inputId = GetSwizzledId(token, inputId);
+
+			if (this->mMajorVersion == 3)
+			{
+				registerName = "v" + std::to_string(registerNumber) + "_loaded";
+				stringWordSize = 3 + (registerName.length() / 4);
+				//if (registerName.length() % 4 == 0)
+				//{
+				//	stringWordSize++;
+				//}
+				mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+				mNameInstructions.push_back(inputId); //target (Id)
+				PutStringInVector(registerName, mNameInstructions); //Literal
+			}
+			else
+			{
+				if (registerType == D3DSPR_INPUT)
+				{
+					registerName = "oD" + std::to_string(registerNumber) + "_loaded";
+					stringWordSize = 3 + (registerName.length() / 4);
+					//if (registerName.length() % 4 == 0)
+					//{
+					//	stringWordSize++;
+					//}
+					mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+					mNameInstructions.push_back(inputId); //target (Id)
+					PutStringInVector(registerName, mNameInstructions); //Literal
+				}
+				else
+				{
+					registerName = "oT" + std::to_string(registerNumber) + "_loaded";
+					stringWordSize = 3 + (registerName.length() / 4);
+					//if (registerName.length() % 4 == 0)
+					//{
+					//	stringWordSize++;
+					//}
+					mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+					mNameInstructions.push_back(inputId); //target (Id)
+					PutStringInVector(registerName, mNameInstructions); //Literal
+				}
+			}
+
 		}
 	}
 
@@ -963,6 +1043,17 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		mFunctionDefinitionInstructions.push_back(originalId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)
 		break;
+	case D3DSPR_TEMP:
+		if (!mIsVertexShader)
+		{
+			/*
+			r0 is used as an output in pixel shaders. (It's the color).
+			*/
+			mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+			mFunctionDefinitionInstructions.push_back(originalId); //result (Id)
+			mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)
+		}
+		break;
 	default:
 		SetIdByRegister(token, outputId);
 		break;
@@ -1034,23 +1125,11 @@ void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t input
 					mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
 					mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
 					break;
-				case D3DDECLUSAGE_FOG:
-					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-					mDecorateInstructions.push_back(inputId); //target (Id)
-					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-					mDecorateInstructions.push_back(0); //Location offset
-					break;
-				case D3DDECLUSAGE_PSIZE:
-					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-					mDecorateInstructions.push_back(inputId); //target (Id)
-					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-					mDecorateInstructions.push_back(1); //Location offset
-					break;
 				case D3DDECLUSAGE_COLOR:
 					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 					mDecorateInstructions.push_back(inputId); //target (Id)
 					mDecorateInstructions.push_back(spv::DecorationLocation); //Decoration Type (Id)
-					mDecorateInstructions.push_back(registerNumber + 2); //Location offset
+					mDecorateInstructions.push_back(registerNumber+2); //Location offset
 					break;
 				default:
 					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
@@ -1897,7 +1976,7 @@ void ShaderConverter::Process_ADD()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	argumentId2 = GetSwizzledId(argumentToken2); //, UINT_MAX, D3DSPR_INPUT
 	resultId = GetNextId();
 
 	switch (dataType)
@@ -2125,8 +2204,10 @@ void ShaderConverter::Process_TEX()
 {
 	spv::Op dataType = spv::OpNop;
 	uint32_t dataTypeId = 0;
+	uint32_t texcoordDataTypeId = 0;
 	uint32_t argumentId1 = 0;
 	uint32_t argumentId2 = 0;
+	uint32_t argumentId2_temp = 0;
 	uint32_t resultId = 0;
 
 	Token resultToken = GetNextToken();
@@ -2140,6 +2221,10 @@ void ShaderConverter::Process_TEX()
 
 	//typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	dataTypeId = GetSpirVTypeId(typeDescription);
+
+	typeDescription.ComponentCount = 2;
+	texcoordDataTypeId = GetSpirVTypeId(typeDescription);
 
 	if (mMajorVersion > 1)
 	{
@@ -2149,45 +2234,39 @@ void ShaderConverter::Process_TEX()
 		Token argumentToken2 = GetNextToken();
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXCRDOUT);
-		argumentId1 = GetSwizzledId(argumentToken2, UINT_MAX, D3DSPR_SAMPLER);
+		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
+		argumentId1 = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
 	}
 	else if (mMajorVersion = 1 && mMinorVersion >= 4)
 	{
 		Token argumentToken1 = GetNextToken();
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXCRDOUT);
-		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_SAMPLER);
+		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
+		argumentId1 = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
 	}
 	else
 	{
-		Token argumentToken1 = GetNextToken();
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(resultToken.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXCRDOUT);
-		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_SAMPLER);
+		argumentId2 = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
+		argumentId1 = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
 	}
-
-	dataType = typeDescription.PrimaryType;
-
-	//Type could be pointer and matrix so checks are run separately.
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
-	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
-	}
-
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
-	}
-
-	dataTypeId = GetSpirVTypeId(typeDescription);
+	
 	resultId = GetNextId();
 
+	//I don't know what swizzle will be done but it will likely be a vec4 output so I need to use a shuffle to get a vec2.
+	argumentId2_temp = argumentId2;
+	argumentId2 = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(5 + 2, spv::OpVectorShuffle)); //size,Type
+	mFunctionDefinitionInstructions.push_back(texcoordDataTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(argumentId2); // Result (Id)
+	mFunctionDefinitionInstructions.push_back(argumentId2_temp); //Vector1 (Id)
+	mFunctionDefinitionInstructions.push_back(argumentId2_temp); //Vector2 (Id)
+	mFunctionDefinitionInstructions.push_back(0); //Component Literal
+	mFunctionDefinitionInstructions.push_back(1); //Component Literal
+
+	//Sample image
 	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageFetch)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
