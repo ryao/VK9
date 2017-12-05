@@ -380,7 +380,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 
-		mInputRegisters[registerNumber] = id;
+		mInputRegisters.push_back(id);
 
 		if (this->mMajorVersion == 3)
 		{
@@ -631,7 +631,9 @@ TypeDescription ShaderConverter::GetTypeByRegister(const Token& token)
 	}
 	else
 	{
-		dataType.PrimaryType = spv::OpTypeFloat;
+		dataType.PrimaryType = spv::OpTypeVector;
+		dataType.SecondaryType = spv::OpTypeFloat;
+		dataType.ComponentCount = 4;
 	}
 
 	return dataType;
@@ -1490,7 +1492,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 		//Optional initializer
 
-		mInputRegisters[registerNumber] = tokenId;
+		mInputRegisters.push_back(tokenId);
 
 		registerName = "v" + std::to_string(registerNumber);
 		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
@@ -1513,7 +1515,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
 															 //Optional initializer
 
-		mInputRegisters[registerNumber] = tokenId;
+		mInputRegisters.push_back(tokenId);
 
 		registerName = "T" + std::to_string(registerNumber);
 		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
@@ -1663,7 +1665,7 @@ void ShaderConverter::Process_DCL_Vertex()
 
 		mConvertedShader.mVertexInputAttributeDescriptionCount++;
 
-		mInputRegisters[registerNumber] = tokenId;
+		mInputRegisters.push_back(tokenId);
 
 		registerName = "v" + std::to_string(registerNumber);
 		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
@@ -2207,6 +2209,7 @@ void ShaderConverter::Process_TEX()
 	uint32_t texcoordDataTypeId = 0;
 	uint32_t argumentId1 = 0;
 	uint32_t argumentId2 = 0;
+	uint32_t argumentId1_temp = 0;
 	uint32_t argumentId2_temp = 0;
 	uint32_t resultId = 0;
 
@@ -2249,8 +2252,19 @@ void ShaderConverter::Process_TEX()
 	{
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(resultToken.i);
 
-		argumentId2 = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
+		argumentId2_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
 		argumentId1 = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
+
+		argumentId2 = GetNextId();
+
+		/*
+		Before PS 1.4 this is a single result register which means the image will always be a binding and the texcoord will always an input.
+		That means we'll always need to load before doing a OpImageFetch on ps 1.0 through 1.3.
+		*/
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2_temp); //pointer (Id)	
 	}
 	
 	resultId = GetNextId();
@@ -2729,8 +2743,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	typedef boost::container::flat_map<uint32_t, uint32_t> maptype2;
 	for (const auto& inputRegister : mInputRegisters)
 	{
-		interfaceIds.push_back(inputRegister.second);
-		BOOST_LOG_TRIVIAL(info) << inputRegister.second << " (Input)";
+		interfaceIds.push_back(inputRegister);
+		BOOST_LOG_TRIVIAL(info) << inputRegister << " (Input)";
 	}
 	for (const auto& outputRegister : mOutputRegisters)
 	{

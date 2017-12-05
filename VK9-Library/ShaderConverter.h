@@ -214,7 +214,7 @@ private:
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mRegistersById;
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mIdsByRegister;
 	
-	boost::container::flat_map<uint32_t, uint32_t> mInputRegisters;
+	std::vector<uint32_t> mInputRegisters;
 	std::vector<uint32_t> mOutputRegisters;
 	boost::container::flat_map<_D3DDECLUSAGE, uint32_t> mOutputRegisterUsages;
 
