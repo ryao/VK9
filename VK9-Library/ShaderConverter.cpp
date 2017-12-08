@@ -172,6 +172,7 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 	uint32_t pointerTypeId = 0;
 	uint32_t returnTypeId = 0;
 	uint32_t sampledTypeId = 0;
+	uint32_t id2 = 0;
 
 	if (it == mTypeIdPairs.end())
 	{
@@ -179,9 +180,6 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 		{
 			id = GetNextId();
 		}
-
-		mTypeIdPairs[registerType] = id;
-		mIdTypePairs[id] = registerType;
 
 		switch (registerType.PrimaryType)
 		{
@@ -215,24 +213,39 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 
 			mTypeInstructions.push_back(Pack(4, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
-			mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+			if (registerType.SecondaryType == spv::OpTypeSampledImage || registerType.SecondaryType == spv::OpTypeImage)
+			{
+				mTypeInstructions.push_back(spv::StorageClassUniformConstant); //Storage Class
+			}
+			else
+			{
+				mTypeInstructions.push_back(spv::StorageClassInput); //Storage Class
+			}
 			mTypeInstructions.push_back(pointerTypeId); // Type
 			break;
 		case spv::OpTypeSampler:
 			mTypeInstructions.push_back(Pack(2, registerType.PrimaryType)); //size,Type
 			mTypeInstructions.push_back(id); //Id
 			break;
+		case spv::OpTypeSampledImage:
 		case spv::OpTypeImage:
+			id2 = id;
+			id = GetNextId();
+
 			sampledTypeId = GetSpirVTypeId(spv::OpTypeFloat);
-			mTypeInstructions.push_back(Pack(9, registerType.PrimaryType)); //size,Type
-			mTypeInstructions.push_back(id); //Result (Id)
+			mTypeInstructions.push_back(Pack(9, spv::OpTypeImage)); //size,Type
+			mTypeInstructions.push_back(id2); //Result (Id)
 			mTypeInstructions.push_back(sampledTypeId); //Sampled Type (Id)
 			mTypeInstructions.push_back(spv::Dim2D); //dimensionality
 			mTypeInstructions.push_back(0); //Depth
 			mTypeInstructions.push_back(0); //Arrayed
 			mTypeInstructions.push_back(0); //MS
-			mTypeInstructions.push_back(0); //Sampled
+			mTypeInstructions.push_back(1); //Sampled
 			mTypeInstructions.push_back(spv::ImageFormatUnknown); //Sampled
+
+			mTypeInstructions.push_back(Pack(3, spv::OpTypeSampledImage)); //size,Type
+			mTypeInstructions.push_back(id); //Result (Id)
+			mTypeInstructions.push_back(id2); //Type (Id)
 			break;
 		case spv::OpTypeFunction:
 		{
@@ -258,6 +271,9 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 			break;
 		}
 
+		mTypeIdPairs[registerType] = id;
+		mIdTypePairs[id] = registerType;
+
 		return id;
 	}
 	else
@@ -266,10 +282,6 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 	}
 
 	/*
-		case spv::OpTypeImage:
-			break;
-		case spv::OpTypeSampledImage:
-			break;
 		case spv::OpTypeArray:
 			break;
 		case spv::OpTypeRuntimeArray:
@@ -428,6 +440,15 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			}
 		}
 		
+		if (this->mIsVertexShader)
+		{
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].binding = 0;//element.Stream; TODO:REVISIT
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].location = registerNumber;  //mConvertedShader.mVertexInputAttributeDescriptionCount;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].offset = 0;//element.Offset;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+			mConvertedShader.mVertexInputAttributeDescriptionCount++;
+		}
+
 		break;
 	case D3DSPR_RASTOUT:
 	case D3DSPR_ATTROUT:
@@ -581,6 +602,17 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
 		mNameInstructions.push_back(id); //target (Id)
 		PutStringInVector(registerName, mNameInstructions); //Literal
+
+		if (!this->mIsVertexShader)
+		{
+			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = registerNumber; //mConvertedShader.mDescriptorSetLayoutBindingCount;
+			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorCount = 1;
+			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].pImmutableSamplers = NULL;
+
+			mConvertedShader.mDescriptorSetLayoutBindingCount++;
+		}
 
 		break;
 	default:
@@ -2212,6 +2244,7 @@ void ShaderConverter::Process_TEX()
 	uint32_t argumentId1_temp = 0;
 	uint32_t argumentId2_temp = 0;
 	uint32_t resultId = 0;
+	uint32_t resultTypeId = 0;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -2221,6 +2254,8 @@ void ShaderConverter::Process_TEX()
 	typeDescription.SecondaryType = spv::OpTypeFloat;
 	typeDescription.ComponentCount = 4;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	resultTypeId = GetSpirVTypeId(spv::OpTypeImage);
 
 	//typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
@@ -2238,7 +2273,14 @@ void ShaderConverter::Process_TEX()
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
 		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
-		argumentId1 = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
+		argumentId1_temp = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
+
+		argumentId1 = GetNextId();
+
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
 	}
 	else if (mMajorVersion = 1 && mMinorVersion >= 4)
 	{
@@ -2246,15 +2288,23 @@ void ShaderConverter::Process_TEX()
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
 		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
-		argumentId1 = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
+		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
+
+		argumentId1 = GetNextId();
+
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
 	}
 	else
 	{
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(resultToken.i);
 
 		argumentId2_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
-		argumentId1 = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
+		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
 
+		argumentId1 = GetNextId();
 		argumentId2 = GetNextId();
 
 		/*
@@ -2265,6 +2315,11 @@ void ShaderConverter::Process_TEX()
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId2_temp); //pointer (Id)	
+
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
 	}
 	
 	resultId = GetNextId();
@@ -2281,7 +2336,7 @@ void ShaderConverter::Process_TEX()
 	mFunctionDefinitionInstructions.push_back(1); //Component Literal
 
 	//Sample image
-	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageFetch)); //size,Type
+	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageSampleImplicitLod)); //size,Type
 	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId1); //Image (Id)
