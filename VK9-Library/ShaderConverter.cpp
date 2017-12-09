@@ -2831,7 +2831,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	{
 		mExecutionModeInstructions.push_back(Pack(3, spv::OpExecutionMode)); //size,Type
 		mExecutionModeInstructions.push_back(mEntryPointId); //Entry Point (Id)
-		mExecutionModeInstructions.push_back(spv::ExecutionModeOriginLowerLeft); //Execution Mode
+		mExecutionModeInstructions.push_back(spv::ExecutionModeOriginUpperLeft); //Execution Mode
 	}
 	else
 	{
