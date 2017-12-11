@@ -585,7 +585,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 		mTypeInstructions.push_back(typeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(id); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
+		mTypeInstructions.push_back(spv::StorageClassUniformConstant); //Storage Class
 
 		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 		mDecorateInstructions.push_back(id); //target (Id)
@@ -1582,7 +1582,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(tokenId); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassImage); //Storage Class
+		mTypeInstructions.push_back(spv::StorageClassUniformConstant); //Storage Class
 		//Optional initializer
 
 		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = mConvertedShader.mDescriptorSetLayoutBindingCount;
@@ -1600,7 +1600,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
 		mTypeInstructions.push_back(resultTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
 		mTypeInstructions.push_back(tokenId); //Result (Id)
-		mTypeInstructions.push_back(spv::StorageClassUniform); //Storage Class  (need to make sure this shouldn't be StorageClassImage)
+		mTypeInstructions.push_back(spv::StorageClassUniform);
 		//Optional initializer
 		*/
 

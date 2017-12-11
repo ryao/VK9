@@ -1272,7 +1272,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 
 		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = convertedVertexShader.mVertexInputAttributeDescriptionCount;
 
-		memcpy(&mDescriptorSetLayoutBinding, &convertedVertexShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
+		memcpy(&mDescriptorSetLayoutBinding, &convertedPixelShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
 
 		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 
@@ -1418,6 +1418,7 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 		mDescriptorBufferInfo[1].offset = 0;
 		mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
 
+		mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
 		mWriteDescriptorSet[0].descriptorCount = 1;
 		mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
@@ -1441,7 +1442,12 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 	}
 	else
 	{
+		mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
+		mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size(); //Revisit
+		mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
 
+		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
 	}
 }
 
