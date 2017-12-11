@@ -118,7 +118,7 @@ C9::C9()
 	mExtensionNames.push_back("VK_EXT_debug_report");
 	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
 
-	HINSTANCE instnace = LoadLibraryA("renderdoc.dll");
+	HINSTANCE instance = LoadLibraryA("renderdoc.dll");
 	HMODULE mod = GetModuleHandleA("renderdoc.dll");
 	if(mod!=nullptr)
 	{

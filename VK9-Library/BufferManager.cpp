@@ -1133,6 +1133,18 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	{
 		//Revisit, make sure this copies properly.
 		memcpy(&mVertexInputAttributeDescription, &context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescription, sizeof(mVertexInputAttributeDescription));
+		mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = mVertexInputAttributeDescription;
+		attributeCount = context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescriptionCount;
+
+//#ifdef _DEBUG	
+//		for (size_t i = 0; i < attributeCount; i++)
+//		{
+//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].binding = " << mVertexInputAttributeDescription[i].binding;
+//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].location = " << mVertexInputAttributeDescription[i].location;
+//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].format = " << mVertexInputAttributeDescription[i].format;
+//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].offset = " << mVertexInputAttributeDescription[i].offset;
+//		}
+//#endif // _DEBUG
 	}
 	else if (context->VertexDeclaration != nullptr)
 	{
@@ -1270,13 +1282,12 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		auto& convertedVertexShader = context->VertexShader->mShaderConverter.mConvertedShader;
 		auto& convertedPixelShader = context->PixelShader->mShaderConverter.mConvertedShader;
 
-		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = convertedVertexShader.mVertexInputAttributeDescriptionCount;
+		mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
+		mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
 
 		memcpy(&mDescriptorSetLayoutBinding, &convertedPixelShader.mDescriptorSetLayoutBinding, sizeof(mDescriptorSetLayoutBinding));
 
 		mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
-
-		mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 		mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 
 		mDescriptorSetLayoutCreateInfo.bindingCount = convertedPixelShader.mDescriptorSetLayoutBindingCount;
@@ -1334,10 +1345,10 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
 		mVertexSpecializationInfo.mapEntryCount = 251;
 
-		mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
-		mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		mVertexSpecializationInfo.pMapEntries = mSlotMapEntries;
-		mVertexSpecializationInfo.mapEntryCount = 251;
+		mPixelSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
+		mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+		mPixelSpecializationInfo.pMapEntries = mSlotMapEntries;
+		mPixelSpecializationInfo.mapEntryCount = 251;
 	}
 
 	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);

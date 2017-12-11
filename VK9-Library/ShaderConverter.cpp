@@ -502,6 +502,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		switch (registerType)
 		{
 		case D3DSPR_RASTOUT:
+			mPositionId = id;
 			registerName = "oPos" + std::to_string(registerNumber);
 			usage = D3DDECLUSAGE_POSITION;
 			break;
@@ -1385,6 +1386,56 @@ void ShaderConverter::GenerateConstantBlock()
 	}
 }
 
+void ShaderConverter::GenerateYFlip()
+{
+	if (!mPositionId)
+	{
+		return;
+	}
+
+	uint32_t typeId = GetSpirVTypeId(spv::OpTypeFloat);	
+	//uint32_t positionId = 0;
+
+	uint32_t id1=GetNextId();
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(typeId); //Result Type (Id)
+	mTypeInstructions.push_back(id1); //Result (Id)
+	mTypeInstructions.push_back(bit_cast(1.0f)); //Literal Value
+
+	uint32_t id2 = GetNextId();
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(typeId); //Result Type (Id)
+	mTypeInstructions.push_back(id2); //Result (Id)
+	mTypeInstructions.push_back(bit_cast(-1.0f)); //Literal Value
+
+	uint32_t compositeTypeId = GetSpirVTypeId(spv::OpTypeVector,spv::OpTypeFloat,4);
+	uint32_t compositeId = GetNextId();
+	mTypeInstructions.push_back(Pack(3 + 4, spv::OpConstantComposite)); //size,Type
+	mTypeInstructions.push_back(compositeTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(compositeId); //Result (Id)
+	mTypeInstructions.push_back(id1); // Value (Id)
+	mTypeInstructions.push_back(id2); // Value (Id)
+	mTypeInstructions.push_back(id1); // Value (Id)
+	mTypeInstructions.push_back(id1); // Value (Id)
+
+	uint32_t positionId = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+	mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(positionId); //result (Id)
+	mFunctionDefinitionInstructions.push_back(mPositionId); //pointer (Id)	
+
+	uint32_t resultId = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
+	mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+	mFunctionDefinitionInstructions.push_back(positionId); //argument1 (Id)
+	mFunctionDefinitionInstructions.push_back(compositeId); //argument2 (Id)
+
+	mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+	mFunctionDefinitionInstructions.push_back(mPositionId); //Pointer (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //Object (Id)
+}
+
 void ShaderConverter::CombineSpirVOpCodes()
 {
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
@@ -1724,14 +1775,11 @@ void ShaderConverter::Process_DCL_Vertex()
 		mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 		//Optional initializer
 
-		if (usage == D3DDECLUSAGE_POSITION)
-		{
-			mPositionRegister = usageIndex; //might need this later.
-		}
-
 		switch (usage)
 		{
 		case D3DDECLUSAGE_POSITION:
+			mPositionRegister = usageIndex; //might need this later.
+			mPositionId = tokenId;
 			registerName = "oPos" + std::to_string(registerNumber);
 			break;
 		case D3DDECLUSAGE_FOG:
@@ -2782,6 +2830,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		}
 
 	}
+
+	GenerateYFlip();
 
 	//After inputs & outputs are defined set the function type with the type id defined earlier.
 	GetSpirVTypeId(spv::OpTypeFunction, mEntryPointTypeId);

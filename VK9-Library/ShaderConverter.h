@@ -257,6 +257,7 @@ private:
 	uint32_t mEntryPointTypeId = -1;
 	uint32_t mEntryPointId = -1;
 	bool mIsVertexShader = false;
+	uint32_t mPositionId = 0;
 
 	Token GetNextToken();
 	void SkipTokens(uint32_t numberToSkip);
@@ -282,6 +283,7 @@ private:
 	void GenerateStore(const Token& token, uint32_t inputId);
 	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage,bool isInput);
 	void GenerateConstantBlock();
+	void GenerateYFlip();
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
