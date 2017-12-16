@@ -1129,24 +1129,15 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	/**********************************************
 	* Figure out attributes
 	**********************************************/
-	if (context->VertexShader != nullptr)
-	{
-		//Revisit, make sure this copies properly.
-		memcpy(&mVertexInputAttributeDescription, &context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescription, sizeof(mVertexInputAttributeDescription));
-		mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = mVertexInputAttributeDescription;
-		attributeCount = context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescriptionCount;
+	//if (context->VertexShader != nullptr)
+	//{
+	//	//Revisit, make sure this copies properly.
+	//	memcpy(&mVertexInputAttributeDescription, &context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescription, sizeof(mVertexInputAttributeDescription));
+	//	mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = mVertexInputAttributeDescription;
+	//	attributeCount = context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescriptionCount;
+	//}
 
-//#ifdef _DEBUG	
-//		for (size_t i = 0; i < attributeCount; i++)
-//		{
-//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].binding = " << mVertexInputAttributeDescription[i].binding;
-//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].location = " << mVertexInputAttributeDescription[i].location;
-//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].format = " << mVertexInputAttributeDescription[i].format;
-//			BOOST_LOG_TRIVIAL(info) << "BufferManager::CreatePipe VertexInputAttributeDescription[" << i << "].offset = " << mVertexInputAttributeDescription[i].offset;
-//		}
-//#endif // _DEBUG
-	}
-	else if (context->VertexDeclaration != nullptr)
+	if (context->VertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
