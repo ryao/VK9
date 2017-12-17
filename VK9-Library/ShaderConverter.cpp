@@ -1006,6 +1006,8 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	uint32_t originalId = 0;
 	uint32_t loadedOriginalId = 0;
 	uint32_t outputId = 0;
+	uint32_t tempResultId = 0;
+	uint32_t compositeTypeId = 0;
 
 	registerType = GetRegisterType(token.i);
 
@@ -1084,6 +1086,15 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	switch (registerType)
 	{
 	case D3DSPR_RASTOUT:
+		//tempResultId = outputId;
+		//outputId = GetNextId();
+		//compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat,4);
+
+		//mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+		//mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
+		//mFunctionDefinitionInstructions.push_back(outputId); //result (Id)
+		//mFunctionDefinitionInstructions.push_back(tempResultId); //argument1 (Id)
+		//mFunctionDefinitionInstructions.push_back(m255Id); //argument2 (Id)
 	case D3DSPR_ATTROUT:
 	case D3DSPR_COLOROUT:
 	case D3DSPR_DEPTHOUT:
@@ -1328,6 +1339,32 @@ void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t input
 	}
 }
 
+void ShaderConverter::Generate255Constants()
+{
+	uint32_t compositeTypeId = 0;
+	uint32_t typeId = 0;
+	uint32_t compositeId = GetNextId();	
+	uint32_t id = GetNextId();
+
+	compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat,4);
+	typeId = GetSpirVTypeId(spv::OpTypeFloat);
+
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(typeId); //Result Type (Id)
+	mTypeInstructions.push_back(id); //Result (Id)
+	mTypeInstructions.push_back(bit_cast(255.0f)); //Literal Value
+
+	mTypeInstructions.push_back(Pack(3 + 4, spv::OpConstantComposite)); //size,Type
+	mTypeInstructions.push_back(compositeTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(compositeId); //Result (Id)
+	mTypeInstructions.push_back(id); // Value (Id)
+	mTypeInstructions.push_back(id); // Value (Id)
+	mTypeInstructions.push_back(id); // Value (Id)
+	mTypeInstructions.push_back(id); // Value (Id)
+
+	m255Id = compositeId;
+}
+
 void ShaderConverter::GenerateConstantBlock()
 {
 	TypeDescription typeDescription; //OpTypeVoid isn't 0 so ={} borks things.
@@ -1448,7 +1485,7 @@ void ShaderConverter::GenerateConstantBlock()
 			mTypeInstructions.push_back(Pack(3 + 1, spv::OpSpecConstant)); //size,Type
 			mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
 			mTypeInstructions.push_back(ids[j]); //Result (Id)
-			mTypeInstructions.push_back(0); //Literal Value
+			mTypeInstructions.push_back(bit_cast(1.0f)); //Literal Value
 
 			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 			mDecorateInstructions.push_back(ids[j]); //target (Id)
@@ -1524,9 +1561,18 @@ void ShaderConverter::GenerateYFlip()
 	mFunctionDefinitionInstructions.push_back(positionId); //argument1 (Id)
 	mFunctionDefinitionInstructions.push_back(compositeId); //argument2 (Id)
 
+	uint32_t resultId2 = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(5+1, spv::OpCompositeInsert)); //size,Type
+	mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
+	mFunctionDefinitionInstructions.push_back(id1); //Object (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //Composite (Id)
+	mFunctionDefinitionInstructions.push_back(3); //Indexes
+
+
 	mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
 	mFunctionDefinitionInstructions.push_back(mPositionId); //Pointer (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //Object (Id)
+	mFunctionDefinitionInstructions.push_back(resultId2); //Object (Id)
 }
 
 void ShaderConverter::CombineSpirVOpCodes()
@@ -2649,6 +2695,42 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mSourceInstructions.push_back(spv::SourceLanguageGLSL); //Source Language
 	mSourceInstructions.push_back(400); //Version
 
+	std::string sourceExtension1 = "GL_ARB_separate_shader_objects";
+	stringWordSize = 2 + (sourceExtension1.length() / 4);
+	if (sourceExtension1.length() % 4 == 0)
+	{
+		stringWordSize++;
+	}
+	mSourceExtensionInstructions.push_back(Pack(stringWordSize, spv::OpSourceExtension)); //size,Type
+	PutStringInVector(sourceExtension1, mSourceExtensionInstructions);
+
+	std::string sourceExtension2 = "GL_ARB_shading_language_420pack";
+	stringWordSize = 2 + (sourceExtension2.length() / 4);
+	if (sourceExtension2.length() % 4 == 0)
+	{
+		stringWordSize++;
+	}
+	mSourceExtensionInstructions.push_back(Pack(stringWordSize, spv::OpSourceExtension)); //size,Type
+	PutStringInVector(sourceExtension2, mSourceExtensionInstructions);
+
+	std::string sourceExtension3 = "GL_GOOGLE_cpp_style_line_directive";
+	stringWordSize = 2 + (sourceExtension3.length() / 4);
+	if (sourceExtension3.length() % 4 == 0)
+	{
+		stringWordSize++;
+	}
+	mSourceExtensionInstructions.push_back(Pack(stringWordSize, spv::OpSourceExtension)); //size,Type
+	PutStringInVector(sourceExtension3, mSourceExtensionInstructions);
+
+	std::string sourceExtension4 = "GL_GOOGLE_include_directive";
+	stringWordSize = 2 + (sourceExtension4.length() / 4);
+	if (sourceExtension4.length() % 4 == 0)
+	{
+		stringWordSize++;
+	}
+	mSourceExtensionInstructions.push_back(Pack(stringWordSize, spv::OpSourceExtension)); //size,Type
+	PutStringInVector(sourceExtension4, mSourceExtensionInstructions);
+
 	GenerateConstantBlock();
 
 	//Start of entry point
@@ -2669,6 +2751,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		GeneratePostition();
 	}
 	
+	Generate255Constants();
+
 	//Read DXBC instructions
 	while (token != D3DPS_END())
 	{
@@ -2999,10 +3083,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 
 	//Write SPIR-V header
-	const GeneratorMagicNumber generatorMagicNumber = {2,8};
+	const GeneratorMagicNumber generatorMagicNumber = {1,13};
 
 	mInstructions.push_back(spv::MagicNumber);
-	mInstructions.push_back(spv::Version);
+	mInstructions.push_back(0x00010000); //spv::Version
 	mInstructions.push_back(generatorMagicNumber.Word); //I don't have a generator number ATM.
 	mInstructions.push_back(GetNextId()); //Bound
 	mInstructions.push_back(0); //Reserved for instruction schema, if needed
