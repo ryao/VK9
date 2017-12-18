@@ -1485,7 +1485,8 @@ void ShaderConverter::GenerateConstantBlock()
 			mTypeInstructions.push_back(Pack(3 + 1, spv::OpSpecConstant)); //size,Type
 			mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
 			mTypeInstructions.push_back(ids[j]); //Result (Id)
-			mTypeInstructions.push_back(bit_cast(1.0f)); //Literal Value
+			//mTypeInstructions.push_back(bit_cast(1.0f)); //Literal Value
+			mTypeInstructions.push_back(bit_cast(0.0f)); //Literal Value
 
 			mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 			mDecorateInstructions.push_back(ids[j]); //target (Id)

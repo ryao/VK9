@@ -2413,9 +2413,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister, 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
 	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	for (size_t i = 0; i < Vector4fCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4fCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		pConstantData[i] = slots.FloatConstants[StartRegister + i];
+		pConstantData[i] = slots.FloatConstants[startIndex + i];
 	}
 
 	return S_OK;
@@ -2424,9 +2426,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister, 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
 	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	for (size_t i = 0; i < Vector4iCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4iCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		pConstantData[i] = slots.IntegerConstants[StartRegister + i];
+		pConstantData[i] = slots.IntegerConstants[startIndex + i];
 	}
 
 	return S_OK;
@@ -3467,9 +3471,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister,
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
 	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	for (size_t i = 0; i < Vector4fCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4fCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		pConstantData[i] = slots.FloatConstants[StartRegister + i];
+		pConstantData[i] = slots.FloatConstants[startIndex + i];
 	}
 
 	return S_OK;
@@ -3478,9 +3484,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister,
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
 	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	for (size_t i = 0; i < Vector4iCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4iCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		pConstantData[i] = slots.IntegerConstants[StartRegister + i];
+		pConstantData[i] = slots.IntegerConstants[startIndex + i];
 	}
 
 	return S_OK;
@@ -3807,9 +3815,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister, 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
 	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	for (size_t i = 0; i < Vector4fCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4fCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		slots.FloatConstants[StartRegister + i] = pConstantData[i];
+		slots.FloatConstants[startIndex + i] = pConstantData[i];
 	}
 
 	return S_OK;
@@ -3818,9 +3828,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister, 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
 	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	for (size_t i = 0; i < Vector4iCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4iCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		slots.IntegerConstants[StartRegister + i] = pConstantData[i];
+		slots.IntegerConstants[startIndex + i] = pConstantData[i];
 	}
 
 	return S_OK;
@@ -5035,9 +5047,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister,
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
 	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	for (size_t i = 0; i < Vector4fCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4fCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		slots.FloatConstants[StartRegister + i] = pConstantData[i];
+		slots.FloatConstants[startIndex + i] = pConstantData[i];
 	}
 
 	return S_OK;
@@ -5046,9 +5060,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
 	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	for (size_t i = 0; i < Vector4iCount; i++)
+	uint32_t startIndex = (StartRegister * 4);
+	uint32_t length = (Vector4iCount * 4);
+	for (size_t i = 0; i < length; i++)
 	{
-		slots.IntegerConstants[StartRegister + i] = pConstantData[i];
+		slots.IntegerConstants[startIndex + i] = pConstantData[i];
 	}
 
 	return S_OK;
