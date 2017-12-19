@@ -108,6 +108,7 @@ struct TypeDescription
 	spv::Op PrimaryType = spv::OpTypeVoid;
 	spv::Op SecondaryType = spv::OpTypeVoid;
 	spv::Op TernaryType = spv::OpTypeVoid;
+	spv::StorageClass StorageClass = spv::StorageClassOutput;
 	uint32_t ComponentCount = 0;
 	std::vector<uint32_t> Arguments;
 
@@ -126,11 +127,36 @@ struct TypeDescription
 		case spv::OpTypeMatrix:
 				return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
 		case spv::OpTypePointer:
-			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType && this->ComponentCount == value.ComponentCount;
+			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType && this->ComponentCount == value.ComponentCount && this->StorageClass == value.StorageClass;
 		case spv::OpTypeFunction:
 			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "operator == - Unsupported data type " << this->PrimaryType;
+			return false;
+			break;
+		}
+	}
+
+	bool operator !=(const TypeDescription &value) const
+	{
+		switch (this->PrimaryType)
+		{
+		case spv::OpTypeBool:
+		case spv::OpTypeInt:
+		case spv::OpTypeFloat:
+		case spv::OpTypeSampler:
+		case spv::OpTypeImage:
+		case spv::OpTypeVoid:
+			return this->PrimaryType != value.PrimaryType;
+		case spv::OpTypeVector:
+		case spv::OpTypeMatrix:
+			return this->PrimaryType != value.PrimaryType || this->SecondaryType != value.SecondaryType || this->ComponentCount != value.ComponentCount;
+		case spv::OpTypePointer:
+			return this->PrimaryType != value.PrimaryType || this->SecondaryType != value.SecondaryType || this->TernaryType != value.TernaryType || this->ComponentCount != value.ComponentCount || this->StorageClass != value.StorageClass;
+		case spv::OpTypeFunction:
+			return this->PrimaryType != value.PrimaryType || this->SecondaryType != value.SecondaryType || this->TernaryType != value.TernaryType;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "operator != - Unsupported data type " << this->PrimaryType;
 			return false;
 			break;
 		}
@@ -151,13 +177,21 @@ struct TypeDescription
 		case spv::OpTypeMatrix:
 			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->ComponentCount < value.ComponentCount;
 		case spv::OpTypePointer:
-			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType || this->ComponentCount < value.ComponentCount;
+			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType || this->ComponentCount < value.ComponentCount || this->StorageClass < value.StorageClass;
 		case spv::OpTypeFunction:
 			return this->PrimaryType < value.PrimaryType || this->SecondaryType < value.SecondaryType || this->TernaryType < value.TernaryType;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "operator < - Unsupported data type " << this->PrimaryType;
 			return false;
 		}
+	}
+};
+
+struct TypeDescriptionComparator
+{
+	bool operator()(const TypeDescription& a, const TypeDescription& b) const
+	{
+		return a < b;
 	}
 };
 
@@ -270,6 +304,11 @@ private:
 	uint32_t mPositionId = 0;
 	uint32_t m255Id = 0;
 
+	uint32_t m0Id = 0;
+	uint32_t m1Id = 0;
+	uint32_t m2Id = 0;
+	uint32_t m3Id = 0;
+
 	Token GetNextToken();
 	void SkipTokens(uint32_t numberToSkip);
 	uint32_t GetNextId();
@@ -284,6 +323,7 @@ private:
 	uint32_t GetSpirVTypeId(spv::Op registerType, uint32_t id = UINT_MAX);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2,uint32_t componentCount);
+	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2, spv::Op registerType3, uint32_t componentCount);
 	uint32_t GetSpirVTypeId(TypeDescription& registerType, uint32_t id = UINT_MAX);
 	uint32_t GetNextVersionId(const Token& token);
 	uint32_t GetIdByRegister(const Token& token, _D3DSHADER_PARAM_REGISTER_TYPE type = D3DSPR_FORCE_DWORD, _D3DDECLUSAGE usage = D3DDECLUSAGE_TEXCOORD);
