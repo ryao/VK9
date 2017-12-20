@@ -302,6 +302,8 @@ private:
 	uint32_t mEntryPointId = -1;
 	bool mIsVertexShader = false;
 	uint32_t mPositionId = 0;
+	uint32_t mColor1Id = 0;
+	uint32_t mColor2Id = 0;
 	uint32_t m255Id = 0;
 
 	uint32_t m0Id = 0;
@@ -336,7 +338,6 @@ private:
 	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage,bool isInput);
 	void Generate255Constants();
 	void GenerateConstantBlock();
-	void GenerateYFlip();
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 

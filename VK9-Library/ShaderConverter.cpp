@@ -506,6 +506,16 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			break;
 		case D3DSPR_ATTROUT:
 		case D3DSPR_COLOROUT:
+
+			if (registerNumber)
+			{
+				mColor2Id = id;
+			}
+			else
+			{
+				mColor1Id = id;
+			}
+
 			registerName = "oD" + std::to_string(registerNumber);
 			usage = D3DDECLUSAGE_COLOR;
 			break;
@@ -592,6 +602,11 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mDecorateInstructions.push_back(id); //target (Id)
 		mDecorateInstructions.push_back(spv::DecorationBinding); //Decoration Type (Id)
 		mDecorateInstructions.push_back(registerNumber); //Location offset
+
+		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
+		mDecorateInstructions.push_back(id); //target (Id)
+		mDecorateInstructions.push_back(spv::DecorationDescriptorSet); //Decoration Type (Id)
+		mDecorateInstructions.push_back(0); //Location offset
 
 		registerName = "s" + std::to_string(registerNumber);
 
@@ -1001,6 +1016,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
 	uint32_t originalId = GetIdByRegister(token, registerType, usage);
 	uint32_t outputId = modifiedId;
+	uint32_t swizzledId = originalId;
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
 	uint32_t vectorTypeId = 0;
 
@@ -1012,8 +1028,20 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 			((token.i & D3DSP_WRITEMASK_0) && (token.i & D3DSP_WRITEMASK_1) && registerType == D3DSPR_TEXCRDOUT)
 			)
 		{
+
+			if (originalId == mColor1Id || originalId == mColor2Id)
+			{
+				uint32_t compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, 4);
+				outputId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(outputId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255Id); //argument2 (Id)
+			}
+
 			mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-			mFunctionDefinitionInstructions.push_back(originalId); //result (Id)
+			mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
 			mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)			
 		}
 		else
@@ -1091,11 +1119,11 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				vectorTypeId = GetSpirVTypeId(pointerType);
 			}
 
-			outputId = GetNextId();
+			swizzledId = GetNextId();
 
 			mFunctionDefinitionInstructions.push_back(Pack(4 + outputComponentCount, spv::OpAccessChain)); //size,Type
 			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); //Result (Id)
+			mFunctionDefinitionInstructions.push_back(swizzledId); //Result (Id)
 			mFunctionDefinitionInstructions.push_back(originalId); //Base (Id)
 
 
@@ -1119,9 +1147,20 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
 			}
 
+			if (originalId == mColor1Id || originalId == mColor2Id)
+			{
+				uint32_t compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, 4);
+				outputId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(outputId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255Id); //argument2 (Id)
+			}
+
 			mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-			mFunctionDefinitionInstructions.push_back(outputId); //result (Id)
-			mFunctionDefinitionInstructions.push_back(modifiedId); //argument1 (Id)	
+			mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
+			mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)	
 
 		}
 	}
@@ -1134,10 +1173,10 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		else
 		{
 			vectorTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, outputComponentCount); //Revisit may not be a float
-			outputId = GetNextId();
+			swizzledId = GetNextId();
 			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
 			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
+			mFunctionDefinitionInstructions.push_back(swizzledId); // Result (Id)
 			mFunctionDefinitionInstructions.push_back(originalId); //Vector1 (Id)
 			mFunctionDefinitionInstructions.push_back(modifiedId); //Vector2 (Id)
 
@@ -1177,7 +1216,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				mFunctionDefinitionInstructions.push_back(3); //Component Literal
 			}
 
-			SetIdByRegister(token, outputId);
+			SetIdByRegister(token, swizzledId);
 		}
 	}
 
@@ -1630,65 +1669,6 @@ void ShaderConverter::GenerateConstantBlock()
 	}
 }
 
-void ShaderConverter::GenerateYFlip()
-{
-	if (!mPositionId)
-	{
-		return;
-	}
-
-	uint32_t typeId = GetSpirVTypeId(spv::OpTypeFloat);
-	//uint32_t positionId = 0;
-
-	uint32_t id1 = GetNextId();
-	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
-	mTypeInstructions.push_back(typeId); //Result Type (Id)
-	mTypeInstructions.push_back(id1); //Result (Id)
-	mTypeInstructions.push_back(bit_cast(1.0f)); //Literal Value
-
-	uint32_t id2 = GetNextId();
-	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
-	mTypeInstructions.push_back(typeId); //Result Type (Id)
-	mTypeInstructions.push_back(id2); //Result (Id)
-	mTypeInstructions.push_back(bit_cast(-1.0f)); //Literal Value
-
-	uint32_t compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, 4);
-	uint32_t compositeId = GetNextId();
-	mTypeInstructions.push_back(Pack(3 + 4, spv::OpConstantComposite)); //size,Type
-	mTypeInstructions.push_back(compositeTypeId); //Result Type (Id)
-	mTypeInstructions.push_back(compositeId); //Result (Id)
-	mTypeInstructions.push_back(id1); // Value (Id)
-	mTypeInstructions.push_back(id2); // Value (Id)
-	mTypeInstructions.push_back(id1); // Value (Id)
-	mTypeInstructions.push_back(id1); // Value (Id)
-
-	uint32_t positionId = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-	mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(positionId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(mPositionId); //pointer (Id)	
-
-	uint32_t resultId = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
-	mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(positionId); //argument1 (Id)
-	mFunctionDefinitionInstructions.push_back(compositeId); //argument2 (Id)
-
-	uint32_t resultId2 = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(5 + 1, spv::OpCompositeInsert)); //size,Type
-	mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
-	mFunctionDefinitionInstructions.push_back(id1); //Object (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //Composite (Id)
-	mFunctionDefinitionInstructions.push_back(3); //Indexes
-
-
-	mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-	mFunctionDefinitionInstructions.push_back(mPositionId); //Pointer (Id)
-	mFunctionDefinitionInstructions.push_back(resultId2); //Object (Id)
-}
-
 void ShaderConverter::CombineSpirVOpCodes()
 {
 	mInstructions.insert(std::end(mInstructions), std::begin(mCapabilityInstructions), std::end(mCapabilityInstructions));
@@ -1892,7 +1872,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mTypeInstructions.push_back(spv::StorageClassUniformConstant); //Storage Class
 		//Optional initializer
 
-		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = mConvertedShader.mDescriptorSetLayoutBindingCount;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = registerNumber; //mConvertedShader.mDescriptorSetLayoutBindingCount;
 		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorCount = 1;
 		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -2045,6 +2025,16 @@ void ShaderConverter::Process_DCL_Vertex()
 			registerName = "oPts" + std::to_string(registerNumber);
 			break;
 		case D3DDECLUSAGE_COLOR:
+
+			if (registerNumber)
+			{
+				mColor2Id = tokenId;
+			}
+			else
+			{
+				mColor1Id = tokenId;
+			}
+
 			registerName = "oD" + std::to_string(registerNumber);
 			break;
 		case D3DDECLUSAGE_TEXCOORD:
@@ -3136,7 +3126,11 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	}
 
-	GenerateYFlip();
+	//if (mIsVertexShader)
+	//{
+	//	GenerateColorCorrection();
+	//	GenerateYFlip();
+	//}
 
 	//After inputs & outputs are defined set the function type with the type id defined earlier.
 	GetSpirVTypeId(spv::OpTypeFunction, mEntryPointTypeId);

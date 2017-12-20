@@ -136,6 +136,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	delete[] extension;
 
 	mExtensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+	mExtensionNames.push_back("VK_KHR_maintenance1");
 #ifdef _DEBUG
 	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif // _DEBUG
@@ -379,8 +380,9 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 the height/width of the surfaces are " << mPresentationParameters.BackBufferHeight << "/" << mPresentationParameters.BackBufferWidth;
 
 	//initialize vulkan/d3d9 viewport and scissor structures.
+	mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
 	mDeviceState.mViewport.width = (float)mPresentationParameters.BackBufferWidth;
-	mDeviceState.mViewport.height = (float)mPresentationParameters.BackBufferHeight;
+	mDeviceState.mViewport.height = -(float)mPresentationParameters.BackBufferHeight;
 	mDeviceState.mViewport.minDepth = (float)0.0f;
 	mDeviceState.mViewport.maxDepth = (float)1.0f;
 
@@ -5076,8 +5078,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 	{
 		this->mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
 
+		this->mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
 		this->mCurrentStateRecording->mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
-		this->mCurrentStateRecording->mDeviceState.mViewport.height = (float)mDeviceState.m9Viewport.Height;
+		this->mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
 		this->mCurrentStateRecording->mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
 		this->mCurrentStateRecording->mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 	}
@@ -5085,6 +5088,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 	{
 		mDeviceState.m9Viewport = (*pViewport);
 
+		mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
 		mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
 		mDeviceState.mViewport.height = (float)mDeviceState.m9Viewport.Height;
 		mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;

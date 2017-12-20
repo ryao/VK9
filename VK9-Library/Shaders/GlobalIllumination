@@ -42,7 +42,7 @@ vec4 GetGlobalIllumination()
 	float spot = 0;
 
 	vectorPosition = ubo.modelTransformation * vec4(position,1.0);
-	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
+	//vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
 	for( int i=0; i<lightCount; ++i )
@@ -50,10 +50,10 @@ vec4 GetGlobalIllumination()
 		if(lights[i].IsEnabled)
 		{		
 			lightPosition = ubo.modelTransformation * lights[i].Position;
-			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
+			//lightPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 			lightDirection = lights[i].Direction;
-			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
+			//lightDirection *= vec4(1.0,-1.0,1.0,1.0);
 
 			lightDistance = abs(distance(vectorPosition.xyz,lightPosition.xyz));
 
