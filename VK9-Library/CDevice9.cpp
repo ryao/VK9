@@ -393,11 +393,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mDeviceState.mScissor.extent.width = mPresentationParameters.BackBufferWidth;
 	mDeviceState.mScissor.extent.height = mPresentationParameters.BackBufferHeight;
-	mDeviceState.mScissor.offset.x = 0; //Do I really need this if I initialize to zero?
-	mDeviceState.mScissor.offset.y = 0; //Do I really need this if I initialize to zero?
+	mDeviceState.mScissor.offset.x = 0;
+	mDeviceState.mScissor.offset.y = 0;
 
-	mDeviceState.m9Scissor.right = mDeviceState.mScissor.extent.width;
-	mDeviceState.m9Scissor.bottom = mDeviceState.mScissor.extent.height;
+	mDeviceState.m9Scissor.right = mPresentationParameters.BackBufferWidth;
+	mDeviceState.m9Scissor.bottom = mPresentationParameters.BackBufferHeight;
 	mDeviceState.m9Scissor.left = 0;
 	mDeviceState.m9Scissor.top = 0;
 
@@ -5090,7 +5090,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 
 		mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
 		mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
-		mDeviceState.mViewport.height = (float)mDeviceState.m9Viewport.Height;
+		mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
 		mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
 		mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 	}

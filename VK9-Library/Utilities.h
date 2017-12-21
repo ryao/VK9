@@ -190,7 +190,7 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 	{
 	case D3DCULL_NONE:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		break;
 	case D3DCULL_CW:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
@@ -204,7 +204,7 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 		break;
 	default:
 		pipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
-		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		pipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		break;
 	}
 }

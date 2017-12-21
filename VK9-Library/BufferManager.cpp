@@ -1032,6 +1032,14 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.ccwStencilPass);
 	mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
 
+	//mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.ccwStencilFail);
+	//mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.ccwStencilPass);
+	//mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+
+	//mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.stencilFail);
+	//mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.stencilPass);
+	//mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.stencilFunction);
+
 	//mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
 	//mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
 
