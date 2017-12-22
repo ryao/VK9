@@ -63,9 +63,10 @@ struct SamplerRequest
 struct ResourceContext
 {
 	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
-
+	
 	//Vulkan State
 	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
+	BOOL WasShader = false; // descriptor set logic is different for shaders so mixing them makes Vulkan angry because the number of attachment is different and stuff.
 
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();

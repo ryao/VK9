@@ -733,6 +733,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	if (mDevice->mDeviceState.mHasVertexShader)
 	{
 		context->VertexShader = mDevice->mDeviceState.mVertexShader; //vert	
+
 	}
 
 	if (mDevice->mDeviceState.mHasPixelShader)
@@ -743,6 +744,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	if (mDevice->mDeviceState.mVertexShader != nullptr)
 	{
 		context->mVertexShaderConstantSlots = mDevice->mDeviceState.mVertexShaderConstantSlots;
+		resourceContext->WasShader = true;
 	}
 
 	if (mDevice->mDeviceState.mPixelShader != nullptr)
@@ -883,7 +885,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 					break;
 				}
 			}
-			if (imageMatches)
+			if (imageMatches && (resourceContext->WasShader == resourceBuffer->WasShader))
 			{
 				resourceContext->DescriptorSet = resourceBuffer->DescriptorSet;
 				resourceContext->mDevice = nullptr; //Not owner.
