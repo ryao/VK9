@@ -1024,21 +1024,27 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	//mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = constants.bound
 	mPipelineDepthStencilStateCreateInfo.stencilTestEnable = constants.stencilEnable; //VK_FALSE;
 
-	mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.stencilFail);
-	mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.stencilPass);
-	mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.stencilFunction);
-	
-	mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.ccwStencilFail);
-	mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.ccwStencilPass);
-	mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+	if (constants.cullMode != D3DCULL_CCW)
+	{
+		mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.ccwStencilFail);
+		mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.ccwStencilPass);
+		mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
 
-	//mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.ccwStencilFail);
-	//mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.ccwStencilPass);
-	//mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+		mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.stencilFail);
+		mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.stencilPass);
+		mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.stencilFunction);
+	}
+	else
+	{
+		mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.stencilFail);
+		mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.stencilPass);
+		mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.stencilFunction);
 
-	//mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.stencilFail);
-	//mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.stencilPass);
-	//mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.stencilFunction);
+		mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.ccwStencilFail);
+		mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.ccwStencilPass);
+		mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+	}
+
 
 	//mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
 	//mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;

@@ -345,6 +345,15 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 	case D3DSPR_CONST4:
 		registerNumber = GetRegisterNumber(token) + 6144;
 		break;
+	case D3DSPR_TEXTURE:
+		registerNumber = GetRegisterNumber(token);
+
+		if (mTextures[registerNumber])
+		{
+			mTextures[registerNumber];
+		}
+
+		break;
 	default:
 		registerNumber = GetRegisterNumber(token);
 		break;
@@ -375,7 +384,16 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		id = GetNextId();
 		description.PrimaryType = spv::OpTypePointer;
 		description.SecondaryType = spv::OpTypeVector;
-		description.TernaryType = spv::OpTypeFloat; //TODO: find a way to tell if this is an integer or float.
+
+		//TODO: find a way to tell if this is an integer or float.
+		if (usage == D3DDECLUSAGE_COLOR)
+		{
+			description.TernaryType = spv::OpTypeInt; //Hint says this is color so it should be a single DWORD that Vulkan splits into a uvec4.
+		}
+		else
+		{
+			description.TernaryType = spv::OpTypeFloat;
+		}	
 		description.ComponentCount = 4;
 		description.StorageClass = spv::StorageClassInput;
 		typeId = GetSpirVTypeId(description);
@@ -510,10 +528,78 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			if (registerNumber)
 			{
 				mColor2Id = id;
+
+				TypeDescription pointerFloatType;
+				pointerFloatType.PrimaryType = spv::OpTypePointer;
+				pointerFloatType.SecondaryType = spv::OpTypeFloat;
+				pointerFloatType.StorageClass = spv::StorageClassOutput;
+				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
+
+				mColor2XId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2XId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+
+				mColor2YId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2YId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+
+				mColor2ZId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2ZId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+
+				mColor2WId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2WId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
 			}
 			else
 			{
 				mColor1Id = id;
+
+				TypeDescription pointerFloatType;
+				pointerFloatType.PrimaryType = spv::OpTypePointer;
+				pointerFloatType.SecondaryType = spv::OpTypeFloat;
+				pointerFloatType.StorageClass = spv::StorageClassOutput;
+				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
+
+				mColor1XId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1XId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+
+				mColor1YId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1YId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+
+				mColor1ZId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1ZId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+
+				mColor1WId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1WId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
 			}
 
 			registerName = "oD" + std::to_string(registerNumber);
@@ -666,11 +752,11 @@ void ShaderConverter::SetIdByRegister(const Token& token, uint32_t id)
 	mRegistersById[registerType][id] = registerNumber;
 }
 
-TypeDescription ShaderConverter::GetTypeByRegister(const Token& token)
+TypeDescription ShaderConverter::GetTypeByRegister(const Token& token, _D3DDECLUSAGE usage)
 {
 	TypeDescription dataType;
 
-	uint32_t id = GetIdByRegister(token);
+	uint32_t id = GetIdByRegister(token, D3DSPR_FORCE_DWORD, usage);
 
 	boost::container::flat_map<uint32_t, TypeDescription>::iterator it2 = mIdTypePairs.find(id);
 	if (it2 != mIdTypePairs.end())
@@ -680,7 +766,14 @@ TypeDescription ShaderConverter::GetTypeByRegister(const Token& token)
 	else
 	{
 		dataType.PrimaryType = spv::OpTypeVector;
-		dataType.SecondaryType = spv::OpTypeFloat;
+		if (usage == D3DDECLUSAGE_COLOR)
+		{
+			dataType.SecondaryType = spv::OpTypeInt;
+		}
+		else
+		{
+			dataType.SecondaryType = spv::OpTypeFloat;
+		}	
 		dataType.ComponentCount = 4;
 	}
 
@@ -691,7 +784,7 @@ TypeDescription ShaderConverter::GetTypeByRegister(const Token& token)
 This function assumes a source register.
 As such it can write out the conversion instructions and then return the new Id for the caller to use instead of the original source register.
 */
-uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D3DSHADER_PARAM_REGISTER_TYPE type)
+uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D3DSHADER_PARAM_REGISTER_TYPE type, _D3DDECLUSAGE usage)
 {
 	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
@@ -704,13 +797,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 	size_t stringWordSize;
 
 	registerType = GetRegisterType(token.i);
-	typeDescription = GetTypeByRegister(token);
+	typeDescription = GetTypeByRegister(token, usage);
 
 	if (inputId == UINT_MAX)
 	{
-		inputId = GetIdByRegister(token, type);
+		inputId = GetIdByRegister(token, type, usage);
 
-		if (typeDescription.PrimaryType == spv::OpTypePointer)
+		if (typeDescription.PrimaryType == spv::OpTypePointer && (mMajorVersion > 1 || registerType != D3DSPR_TEXTURE || mIsVertexShader))
 		{
 			//Shift the result type so we get a register instead of a pointer as the output type.
 			typeDescription.PrimaryType = typeDescription.SecondaryType;
@@ -1020,7 +1113,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
 	uint32_t vectorTypeId = 0;
 
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	if (typeDescription.PrimaryType == spv::OpTypePointer && (mMajorVersion > 1 || registerType != D3DSPR_TEXTURE || mIsVertexShader))
 	{
 		if (
 			(((token.i & D3DSP_WRITEMASK_ALL) == D3DSP_WRITEMASK_ALL) || ((token.i & D3DSP_WRITEMASK_ALL) == 0x00000000))
@@ -1031,18 +1124,124 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 
 			if (originalId == mColor1Id || originalId == mColor2Id)
 			{
-				uint32_t compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, 4);
-				outputId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(outputId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255Id); //argument2 (Id)
-			}
+				uint32_t intTypeId = GetSpirVTypeId(spv::OpTypeInt);
+				uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
 
-			mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-			mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)			
+				uint32_t rId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(rId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(0); //Indexes (Literal)
+				uint32_t r2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(r2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(rId); //Unsigned Value (Id)
+				uint32_t rDividedId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(rDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(r2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				uint32_t gId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(gId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(1); //Indexes (Literal)
+				uint32_t g2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(g2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(gId); //Unsigned Value (Id)
+				uint32_t gDividedId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(gDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(g2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				uint32_t bId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(bId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(2); //Indexes (Literal)
+				uint32_t b2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(b2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(bId); //Unsigned Value (Id)
+				uint32_t bDividedId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(bDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(b2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				uint32_t aId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(aId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(3); //Indexes (Literal)
+				uint32_t a2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(a2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(aId); //Unsigned Value (Id)
+				uint32_t aDividedId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(aDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(a2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				if (originalId == mColor1Id)
+				{
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1XId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1YId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1ZId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1WId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+				}
+				else
+				{
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2XId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2YId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2ZId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2WId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+				}
+			}
+			else
+			{
+				mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+				mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)	
+			}	
 		}
 		else
 		{
@@ -1150,18 +1349,123 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 			if (originalId == mColor1Id || originalId == mColor2Id)
 			{
 				uint32_t compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, 4);
-				outputId = GetNextId();
+				uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+
+				uint32_t rId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(rId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(0); //Indexes (Literal)
+				uint32_t r2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(r2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(rId); //Unsigned Value (Id)
+				uint32_t rDividedId = GetNextId();
 				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(compositeTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(outputId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255Id); //argument2 (Id)
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(rDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(r2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				uint32_t gId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(gId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(1); //Indexes (Literal)
+				uint32_t g2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(g2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(gId); //Unsigned Value (Id)
+				uint32_t gDividedId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(gDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(g2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				uint32_t bId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(bId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(2); //Indexes (Literal)
+				uint32_t b2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(b2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(bId); //Unsigned Value (Id)
+				uint32_t bDividedId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(bDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(b2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				uint32_t aId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(aId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
+				mFunctionDefinitionInstructions.push_back(3); //Indexes (Literal)
+				uint32_t a2Id = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(a2Id); //result (Id)
+				mFunctionDefinitionInstructions.push_back(aId); //Unsigned Value (Id)
+				uint32_t aDividedId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(aDividedId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(a2Id); //argument1 (Id)
+				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+
+				if (originalId == mColor1Id)
+				{
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1XId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1YId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1ZId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor1WId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+				}
+				else
+				{
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2XId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2YId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2ZId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+
+					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+					mFunctionDefinitionInstructions.push_back(mColor2WId); //result (Id)
+					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+				}
 			}
-
-			mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-			mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)	
-
+			else
+			{
+				mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+				mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
+				mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)	
+			}
 		}
 	}
 	else
@@ -1514,7 +1818,8 @@ void ShaderConverter::Generate255Constants()
 	mTypeInstructions.push_back(id); // Value (Id)
 	mTypeInstructions.push_back(id); // Value (Id)
 
-	m255Id = compositeId;
+	m255FloatId = id;
+	m255VectorId = compositeId;
 }
 
 void ShaderConverter::GenerateConstantBlock()
@@ -1924,13 +2229,28 @@ void ShaderConverter::Process_DCL_Vertex()
 
 	typeDescription.PrimaryType = spv::OpTypePointer;
 	typeDescription.SecondaryType = spv::OpTypeVector;
-	typeDescription.TernaryType = spv::OpTypeFloat;
+	if (usage == D3DDECLUSAGE_COLOR)
+	{
+		typeDescription.TernaryType = spv::OpTypeInt;
+	}
+	else
+	{
+		typeDescription.TernaryType = spv::OpTypeFloat;
+	}
 
 	//Magic numbers from ToGL (no whole numbers?)
 	switch (registerComponents)
 	{
 	case 1: //float
-		typeDescription.SecondaryType = spv::OpTypeFloat;
+		if (usage == D3DDECLUSAGE_COLOR)
+		{
+			typeDescription.SecondaryType = spv::OpTypeInt;
+		}
+		else
+		{
+			typeDescription.SecondaryType = spv::OpTypeFloat;
+		}	
+
 		typeDescription.TernaryType = spv::OpTypeVoid;
 		typeDescription.ComponentCount = 1;
 		break;
@@ -2029,10 +2349,78 @@ void ShaderConverter::Process_DCL_Vertex()
 			if (registerNumber)
 			{
 				mColor2Id = tokenId;
+
+				TypeDescription pointerFloatType;
+				pointerFloatType.PrimaryType = spv::OpTypePointer;
+				pointerFloatType.SecondaryType = spv::OpTypeFloat;
+				pointerFloatType.StorageClass = spv::StorageClassOutput;
+				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
+
+				mColor2XId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2XId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+
+				mColor2YId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2YId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+
+				mColor2ZId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2ZId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+
+				mColor2WId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2WId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
 			}
 			else
 			{
 				mColor1Id = tokenId;
+
+				TypeDescription pointerFloatType;
+				pointerFloatType.PrimaryType = spv::OpTypePointer;
+				pointerFloatType.SecondaryType = spv::OpTypeFloat;
+				pointerFloatType.StorageClass = spv::StorageClassOutput;
+				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
+
+				mColor1XId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1XId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+
+				mColor1YId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1YId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+
+				mColor1ZId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1ZId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+
+				mColor1WId = GetNextId();
+				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1WId); //Result (Id)
+				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
+				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
 			}
 
 			registerName = "oD" + std::to_string(registerNumber);
@@ -2167,7 +2555,17 @@ void ShaderConverter::Process_MOV()
 	//resultId = GetNextVersionId(resultToken);	
 	resultId = GetIdByRegister(resultToken);
 	typeDescription = GetTypeByRegister(resultToken);
-	argumentId1 = GetSwizzledId(argumentToken1);
+
+	if (resultId == mColor1Id || resultId == mColor2Id)
+	{
+		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_COLOR);
+	}
+	else
+	{
+		
+		argumentId1 = GetSwizzledId(argumentToken1);
+	}	
+
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
 	resultId = ApplyWriteMask(resultToken, argumentId1);
@@ -2540,6 +2938,8 @@ void ShaderConverter::Process_TEX()
 	uint32_t argumentId2_temp = 0;
 	uint32_t resultId = 0;
 	uint32_t resultTypeId = 0;
+	std::string registerName;
+	uint32_t stringWordSize = 0;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
@@ -2637,7 +3037,22 @@ void ShaderConverter::Process_TEX()
 	mFunctionDefinitionInstructions.push_back(argumentId1); //Image (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId2); //Coordinate (Id)
 
-	resultId = ApplyWriteMask(resultToken, resultId);
+	if (mMajorVersion = 1)
+	{
+		registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
+		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		if (registerName.length() % 4 == 0)
+		{
+			stringWordSize++;
+		}
+		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+		mNameInstructions.push_back(resultId); //target (Id)
+		PutStringInVector(registerName, mNameInstructions); //Literal
+
+		mTextures[resultToken.DestinationParameterToken.RegisterNumber] = resultId;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);	
 }
 
 /*
