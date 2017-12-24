@@ -1574,6 +1574,11 @@ void ShaderConverter::GeneratePostition()
 	positionPointerType.ComponentCount = 4;
 	positionPointerType.StorageClass = spv::StorageClassOutput;
 
+	TypeDescription floatPointerType;
+	floatPointerType.PrimaryType = spv::OpTypePointer;
+	floatPointerType.SecondaryType = spv::OpTypeFloat;
+	uint32_t floatPointerTypeId = GetSpirVTypeId(floatPointerType);
+
 	uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
 	uint32_t intTypeId = GetSpirVTypeId(spv::OpTypeInt);
 	uint32_t positionTypeId = GetSpirVTypeId(positionType);
@@ -1692,7 +1697,7 @@ void ShaderConverter::GeneratePostition()
 	//Add an access chain for later flipping.
 	mPositionYId = GetNextId();
 	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(floatPointerTypeId); //Result Type (Id)
 	mFunctionDefinitionInstructions.push_back(mPositionYId); //Result (Id)
 	mFunctionDefinitionInstructions.push_back(positionPointerId); //Base (Id)
 	mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
