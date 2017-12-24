@@ -1033,4 +1033,102 @@ inline float bit_cast(const DWORD& source)
 	return returnValue;
 }
 
+const std::string mResultStrings[] = 
+{
+	"Unknown",
+	"VK_SUCCESS",
+	"VK_NOT_READY",
+	"VK_TIMEOUT",
+	"VK_EVENT_SET",
+	"VK_EVENT_RESET",
+	"VK_INCOMPLETE",
+	"VK_ERROR_OUT_OF_HOST_MEMORY",
+	"VK_ERROR_OUT_OF_DEVICE_MEMORY",
+	"VK_ERROR_INITIALIZATION_FAILED",
+	"VK_ERROR_DEVICE_LOST",
+	"VK_ERROR_MEMORY_MAP_FAILED",
+	"VK_ERROR_LAYER_NOT_PRESENT",
+	"VK_ERROR_EXTENSION_NOT_PRESENT",
+	"VK_ERROR_FEATURE_NOT_PRESENT",
+	"VK_ERROR_INCOMPATIBLE_DRIVER",
+	"VK_ERROR_TOO_MANY_OBJECTS",
+	"VK_ERROR_FORMAT_NOT_SUPPORTED",
+	"VK_ERROR_FRAGMENTED_POOL",
+	"VK_ERROR_SURFACE_LOST_KHR",
+	"VK_ERROR_NATIVE_WINDOW_IN_USE_KHR",
+	"VK_SUBOPTIMAL_KHR",
+	"VK_ERROR_OUT_OF_DATE_KHR",
+	"VK_ERROR_INCOMPATIBLE_DISPLAY_KHR",
+	"VK_ERROR_VALIDATION_FAILED_EXT",
+	"VK_ERROR_INVALID_SHADER_NV",
+	"VK_ERROR_OUT_OF_POOL_MEMORY_KHR",
+	"VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR",
+	"VK_ERROR_NOT_PERMITTED_EXT"
+};
+
+inline const std::string& GetResultString(VkResult result)
+{
+	switch (result)
+	{
+	case VK_SUCCESS:
+		return mResultStrings[1];
+	case VK_NOT_READY:
+		return mResultStrings[2];
+	case VK_TIMEOUT:
+		return mResultStrings[3];
+	case VK_EVENT_SET:
+		return mResultStrings[4];
+	case VK_EVENT_RESET:
+		return mResultStrings[5];
+	case VK_INCOMPLETE:
+		return mResultStrings[6];
+	case VK_ERROR_OUT_OF_HOST_MEMORY:
+		return mResultStrings[7];
+	case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+		return mResultStrings[8];
+	case VK_ERROR_INITIALIZATION_FAILED:
+		return mResultStrings[9];
+	case VK_ERROR_DEVICE_LOST:
+		return mResultStrings[10];
+	case VK_ERROR_MEMORY_MAP_FAILED:
+		return mResultStrings[11];
+	case VK_ERROR_LAYER_NOT_PRESENT:
+		return mResultStrings[12];
+	case VK_ERROR_EXTENSION_NOT_PRESENT:
+		return mResultStrings[13];
+	case VK_ERROR_FEATURE_NOT_PRESENT:
+		return mResultStrings[14];
+	case VK_ERROR_INCOMPATIBLE_DRIVER:
+		return mResultStrings[15];
+	case VK_ERROR_TOO_MANY_OBJECTS:
+		return mResultStrings[16];
+	case VK_ERROR_FORMAT_NOT_SUPPORTED:
+		return mResultStrings[17];
+	case VK_ERROR_FRAGMENTED_POOL:
+		return mResultStrings[18];
+	case VK_ERROR_SURFACE_LOST_KHR:
+		return mResultStrings[19];
+	case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
+		return mResultStrings[20];
+	case VK_SUBOPTIMAL_KHR:
+		return mResultStrings[21];
+	case VK_ERROR_OUT_OF_DATE_KHR:
+		return mResultStrings[22];
+	case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
+		return mResultStrings[23];
+	case VK_ERROR_VALIDATION_FAILED_EXT:
+		return mResultStrings[24];
+	case VK_ERROR_INVALID_SHADER_NV:
+		return mResultStrings[25];
+	case VK_ERROR_OUT_OF_POOL_MEMORY_KHR:
+		return mResultStrings[26];
+	case VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR:
+		return mResultStrings[27];
+	case VK_ERROR_NOT_PERMITTED_EXT:
+		return mResultStrings[28];
+	default:
+		return mResultStrings[0];
+	}
+}
+
 #endif // UTILITIES_H

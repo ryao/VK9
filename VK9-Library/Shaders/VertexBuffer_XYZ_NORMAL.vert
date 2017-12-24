@@ -62,7 +62,7 @@ out gl_PerVertex
 void main() 
 {
 	gl_Position = ubo.totalTransformation * vec4(position,1.0);
-	//gl_Position *= vec4(1.0,-1.0,1.0,1.0);
+	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
 	if(colorVertex)
@@ -137,7 +137,7 @@ void main()
 	}
 
 	normal = ubo.modelTransformation * vec4(attr,0);
-	//normal *= vec4(1.0,-1.0,1.0,1.0);
+	normal *= vec4(1.0,-1.0,1.0,1.0);
 	normal = normalize(normal);	
 
 	globalIllumination = GetGlobalIllumination();

@@ -393,7 +393,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		else
 		{
 			description.TernaryType = spv::OpTypeFloat;
-		}	
+		}
 		description.ComponentCount = 4;
 		description.StorageClass = spv::StorageClassInput;
 		typeId = GetSpirVTypeId(description);
@@ -773,7 +773,7 @@ TypeDescription ShaderConverter::GetTypeByRegister(const Token& token, _D3DDECLU
 		else
 		{
 			dataType.SecondaryType = spv::OpTypeFloat;
-		}	
+		}
 		dataType.ComponentCount = 4;
 	}
 
@@ -1117,7 +1117,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	{
 		if (
 			(((token.i & D3DSP_WRITEMASK_ALL) == D3DSP_WRITEMASK_ALL) || ((token.i & D3DSP_WRITEMASK_ALL) == 0x00000000))
-			|| 
+			||
 			((token.i & D3DSP_WRITEMASK_0) && (token.i & D3DSP_WRITEMASK_1) && registerType == D3DSPR_TEXCRDOUT)
 			)
 		{
@@ -1241,7 +1241,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
 				mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
 				mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)	
-			}	
+			}
 		}
 		else
 		{
@@ -1527,6 +1527,39 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	return outputId;
 }
 
+void ShaderConverter::GenerateYFlip()
+{
+	if (!mPositionYId)
+	{
+		return;
+	}
+
+	uint32_t typeId = GetSpirVTypeId(spv::OpTypeFloat);
+
+	uint32_t negativeId = GetNextId();
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(typeId); //Result Type (Id)
+	mTypeInstructions.push_back(negativeId); //Result (Id)
+	mTypeInstructions.push_back(bit_cast(-1.0f)); //Literal Value
+
+	uint32_t positionYId = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+	mFunctionDefinitionInstructions.push_back(typeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(positionYId); //result (Id)
+	mFunctionDefinitionInstructions.push_back(mPositionYId); //pointer (Id)	
+
+	uint32_t resultId = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
+	mFunctionDefinitionInstructions.push_back(typeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+	mFunctionDefinitionInstructions.push_back(positionYId); //argument1 (Id)
+	mFunctionDefinitionInstructions.push_back(negativeId); //argument2 (Id)
+
+	mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
+	mFunctionDefinitionInstructions.push_back(mPositionYId); //Pointer (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //Object (Id)
+}
+
 void ShaderConverter::GeneratePostition()
 {
 	TypeDescription positionType;
@@ -1541,6 +1574,7 @@ void ShaderConverter::GeneratePostition()
 	positionPointerType.ComponentCount = 4;
 	positionPointerType.StorageClass = spv::StorageClassOutput;
 
+	uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
 	uint32_t intTypeId = GetSpirVTypeId(spv::OpTypeInt);
 	uint32_t positionTypeId = GetSpirVTypeId(positionType);
 	uint32_t positionPointerTypeId = GetSpirVTypeId(positionPointerType);
@@ -1646,7 +1680,6 @@ void ShaderConverter::GeneratePostition()
 	mFunctionDefinitionInstructions.push_back(positionStructurePointerId); //Base (Id)
 	mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
 
-
 	//Updated tracking structures
 	mPositionId = positionPointerId;
 	mIdsByRegister[D3DSPR_RASTOUT][0] = positionPointerId;
@@ -1655,6 +1688,14 @@ void ShaderConverter::GeneratePostition()
 
 	mOutputRegisters.push_back(positionStructurePointerId);
 	mOutputRegisterUsages[D3DDECLUSAGE_POSITION] = positionPointerId;
+
+	//Add an access chain for later flipping.
+	mPositionYId = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+	mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(mPositionYId); //Result (Id)
+	mFunctionDefinitionInstructions.push_back(positionPointerId); //Base (Id)
+	mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
 }
 
 void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
@@ -2053,7 +2094,7 @@ void ShaderConverter::CreateSpirVModule()
 
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << GetResultString(result);
 		return;
 	}
 }
@@ -2249,7 +2290,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		else
 		{
 			typeDescription.SecondaryType = spv::OpTypeFloat;
-		}	
+		}
 
 		typeDescription.TernaryType = spv::OpTypeVoid;
 		typeDescription.ComponentCount = 1;
@@ -2562,9 +2603,9 @@ void ShaderConverter::Process_MOV()
 	}
 	else
 	{
-		
+
 		argumentId1 = GetSwizzledId(argumentToken1);
-	}	
+	}
 
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 
@@ -3052,7 +3093,7 @@ void ShaderConverter::Process_TEX()
 		mTextures[resultToken.DestinationParameterToken.RegisterNumber] = resultId;
 	}
 
-	resultId = ApplyWriteMask(resultToken, resultId);	
+	resultId = ApplyWriteMask(resultToken, resultId);
 }
 
 /*
@@ -3541,11 +3582,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 
 	}
 
-	//if (mIsVertexShader)
-	//{
-	//	GenerateColorCorrection();
-	//	GenerateYFlip();
-	//}
+	if (mIsVertexShader)
+	{
+		GenerateYFlip();
+	}
 
 	//After inputs & outputs are defined set the function type with the type id defined earlier.
 	GetSpirVTypeId(spv::OpTypeFunction, mEntryPointTypeId);

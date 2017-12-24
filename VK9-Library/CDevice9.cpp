@@ -162,7 +162,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateDevice(mPhysicalDevice, &device_info, nullptr, &mDevice);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateDevice failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateDevice failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -198,7 +198,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateWin32SurfaceKHR(mInstance->mInstance, &surfaceCreateInfo, nullptr, &mSurface);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR failed with a return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateWin32SurfaceKHR failed with a return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -209,7 +209,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mPhysicalDevice, mSurface, &mSurfaceCapabilities);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -231,7 +231,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkGetPhysicalDeviceSurfaceSupportKHR(mPhysicalDevice, i, mSurface, &doesSupportPresentation);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceSupportKHR failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceSupportKHR failed with return code of " << GetResultString(mResult);
 			return;
 		}
 		else
@@ -272,7 +272,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateCommandPool(mDevice, &commandPoolInfo, nullptr, &mCommandPool);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateCommandPool failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateCommandPool failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -346,7 +346,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateDescriptorPool(mDevice, &descriptorPoolCreateInfo, nullptr, &mDescriptorPool);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateDescriptorPool failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateDescriptorPool failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -380,21 +380,22 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 the height/width of the surfaces are " << mPresentationParameters.BackBufferHeight << "/" << mPresentationParameters.BackBufferWidth;
 
 	//initialize vulkan/d3d9 viewport and scissor structures.
-	mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
+	//mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
 	mDeviceState.mViewport.width = (float)mPresentationParameters.BackBufferWidth;
-	mDeviceState.mViewport.height = -(float)mPresentationParameters.BackBufferHeight;
-	mDeviceState.mViewport.minDepth = (float)0.0f;
-	mDeviceState.mViewport.maxDepth = (float)1.0f;
+	//mDeviceState.mViewport.height = -(float)mPresentationParameters.BackBufferHeight;
+	mDeviceState.mViewport.height = (float)mPresentationParameters.BackBufferHeight;
+	mDeviceState.mViewport.minDepth = 0.0f;
+	mDeviceState.mViewport.maxDepth = 1.0f;
 
 	mDeviceState.m9Viewport.Width = (DWORD)mDeviceState.mViewport.width;
 	mDeviceState.m9Viewport.Height = (DWORD)mDeviceState.mViewport.height;
 	mDeviceState.m9Viewport.MinZ = mDeviceState.mViewport.minDepth;
 	mDeviceState.m9Viewport.MaxZ = mDeviceState.mViewport.maxDepth;
 
-	mDeviceState.mScissor.extent.width = mPresentationParameters.BackBufferWidth;
-	mDeviceState.mScissor.extent.height = mPresentationParameters.BackBufferHeight;
 	mDeviceState.mScissor.offset.x = 0;
 	mDeviceState.mScissor.offset.y = 0;
+	mDeviceState.mScissor.extent.width = mPresentationParameters.BackBufferWidth;
+	mDeviceState.mScissor.extent.height = mPresentationParameters.BackBufferHeight;
 
 	mDeviceState.m9Scissor.right = mPresentationParameters.BackBufferWidth;
 	mDeviceState.m9Scissor.bottom = mPresentationParameters.BackBufferHeight;
@@ -404,7 +405,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -415,7 +416,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfaceFormatsKHR(mPhysicalDevice, mSurface, &mSurfaceFormatCount, mSurfaceFormats);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1003,7 +1004,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1014,7 +1015,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetPhysicalDeviceSurfacePresentModesKHR(mPhysicalDevice, mSurface, &mPresentationModeCount, mPresentationModes);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1085,7 +1086,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateSwapchainKHR(mDevice, &swapchainCreateInfo, nullptr, &mSwapchain);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateSwapchainKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateSwapchainKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1102,7 +1103,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetSwapchainImagesKHR(mDevice, mSwapchain, &mSwapchainImageCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1115,7 +1116,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkGetSwapchainImagesKHR(mDevice, mSwapchain, &mSwapchainImageCount, mSwapchainImages);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkGetSwapchainImagesKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1147,7 +1148,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkCreateImageView(mDevice, &color_image_view, nullptr, &mSwapchainViews[i]);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << GetResultString(mResult);
 			return;
 		}
 		else
@@ -1168,7 +1169,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &mSwapchainBuffers[i]);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateCommandBuffers failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateCommandBuffers failed with return code of " << GetResultString(mResult);
 			return;
 		}
 	}
@@ -1211,7 +1212,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateImage(mDevice, &imageCreateInfo, nullptr, &mDepthImage);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImage failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImage failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1232,7 +1233,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkAllocateMemory(mDevice, &mDepthMemoryAllocateInfo, NULL, &mDepthDeviceMemory);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1243,7 +1244,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkBindImageMemory(mDevice, mDepthImage, mDepthDeviceMemory, 0);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkBindImageMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkBindImageMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1257,7 +1258,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateImageView(mDevice, &imageViewCreateInfo, NULL, &mDepthView);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1320,7 +1321,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateRenderPass(mDevice, &renderPassCreateInfo, nullptr, &mStoreRenderPass);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1333,7 +1334,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mResult = vkCreateRenderPass(mDevice, &renderPassCreateInfo, nullptr, &mClearRenderPass);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateRenderPass failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -1366,7 +1367,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		mResult = vkCreateFramebuffer(mDevice, &framebufferCreateInfo, nullptr, &mFramebuffers[i]);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateFramebuffer failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateFramebuffer failed with return code of " << GetResultString(mResult);
 			return;
 		}
 		else
@@ -1629,14 +1630,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	result = vkQueuePresentKHR(mQueue, &mPresentInfo);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueuePresentKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueuePresentKHR failed with return code of " << GetResultString(mResult);
 		return D3DERR_INVALIDCALL;
 	}
 
 	result = vkQueueWaitIdle(mQueue);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << GetResultString(mResult);
 		return D3DERR_INVALIDCALL;
 	}
 
@@ -5078,9 +5079,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
 	{
 		this->mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
 
-		this->mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
+		//this->mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
 		this->mCurrentStateRecording->mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
-		this->mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
+		//this->mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
+		this->mCurrentStateRecording->mDeviceState.mViewport.height = (float)mDeviceState.m9Viewport.Height;
 		this->mCurrentStateRecording->mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
 		this->mCurrentStateRecording->mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
 	}
@@ -5177,7 +5179,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	result = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkAllocateCommandBuffers failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkAllocateCommandBuffers failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -5200,7 +5202,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkBeginCommandBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkBeginCommandBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -5307,7 +5309,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	result = vkEndCommandBuffer(commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkEndCommandBuffer failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -5327,14 +5329,14 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 	result = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueSubmit failed with return code of " << GetResultString(result);
 		return;
 	}
 
 	result = vkQueueWaitIdle(mQueue);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::SetImageLayout vkQueueWaitIdle failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -5352,14 +5354,14 @@ void CDevice9::StartScene(bool clear)
 	result = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkCreateSemaphore failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkCreateSemaphore failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkAcquireNextImageKHR failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkAcquireNextImageKHR failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -5369,7 +5371,7 @@ void CDevice9::StartScene(bool clear)
 	result = vkBeginCommandBuffer(mSwapchainBuffers[mCurrentBuffer], &mCommandBufferBeginInfo);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkBeginCommandBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkBeginCommandBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -5457,21 +5459,21 @@ void CDevice9::StopScene()
 	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkEndCommandBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkEndCommandBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	result = vkQueueSubmit(mQueue, 1, &mSubmitInfo, mNullFence);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	//result = vkQueueWaitIdle(mQueue);
 	//if (result != VK_SUCCESS)
 	//{
-	//	BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << mResult;
+	//	BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueWaitIdle failed with return code of " << GetResultString(mResult);
 	//	return;
 	//}
 }

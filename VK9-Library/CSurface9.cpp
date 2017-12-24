@@ -103,7 +103,7 @@ void CSurface9::Init()
 	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mStagingImage);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkCreateImage failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkCreateImage failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -125,14 +125,14 @@ void CSurface9::Init()
 	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mStagingDeviceMemory);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkAllocateMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkAllocateMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	mResult = vkBindImageMemory(mDevice->mDevice, mStagingImage, mStagingDeviceMemory, 0);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkBindImageMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CSurface9::Prepare vkBindImageMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -325,7 +325,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 		mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkMapMemory failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "CSurface9::LockRect vkMapMemory failed with return code of " << GetResultString(mResult);
 			if ((mFlags & D3DLOCK_DONOTWAIT) == D3DLOCK_DONOTWAIT)
 			{
 				return D3DERR_WASSTILLDRAWING;
@@ -405,7 +405,7 @@ void CSurface9::Flush()
 	mResult = vkAllocateCommandBuffers(mDevice->mDevice, &commandBufferInfo, &commandBuffer);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkAllocateCommandBuffers failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkAllocateCommandBuffers failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -428,7 +428,7 @@ void CSurface9::Flush()
 	mResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkBeginCommandBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkBeginCommandBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -440,7 +440,7 @@ void CSurface9::Flush()
 	mResult = vkEndCommandBuffer(commandBuffer);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkEndCommandBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkEndCommandBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -460,14 +460,14 @@ void CSurface9::Flush()
 	mResult = vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, nullFence);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueSubmit failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueSubmit failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	mResult = vkQueueWaitIdle(mDevice->mQueue);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueWaitIdle failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueWaitIdle failed with return code of " << GetResultString(mResult);
 		return;
 	}
 

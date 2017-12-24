@@ -75,7 +75,7 @@ C9::C9()
 	mResult = vkEnumerateInstanceLayerProperties(&mLayerPropertyCount, nullptr);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumerateInstanceLayerProperties failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumerateInstanceLayerProperties failed with return code of " << GetResultString(mResult);
 		return;
 	}
 	else
@@ -193,7 +193,7 @@ C9::C9()
 		mResult = vkCreateDebugReportCallbackEXT(mInstance, &callbackCreateInfo, nullptr, &mCallback);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkCreateDebugReportCallbackEXT failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkCreateDebugReportCallbackEXT failed with return code of " << GetResultString(mResult);
 			return;
 		}
 		else
@@ -206,7 +206,7 @@ C9::C9()
 		mResult = vkEnumeratePhysicalDevices(mInstance, &mGpuCount, NULL);
 		if (mResult != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices failed with return code of " << mResult;
+			BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices failed with return code of " << GetResultString(mResult);
 			return;
 		}
 		else
@@ -220,7 +220,7 @@ C9::C9()
 			mResult = vkEnumeratePhysicalDevices(mInstance, &mGpuCount, mPhysicalDevices);
 			if (mResult != VK_SUCCESS)
 			{
-				BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices failed with return code of " << mResult;
+				BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkEnumeratePhysicalDevices failed with return code of " << GetResultString(mResult);
 				return;
 			}
 
@@ -229,7 +229,7 @@ C9::C9()
 				mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, nullptr);
 				if (mResult != VK_SUCCESS)
 				{
-					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << mResult;
+					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << GetResultString(mResult);
 					return;
 				}
 
@@ -238,7 +238,7 @@ C9::C9()
 				mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, mDisplayProperties);
 				if (mResult != VK_SUCCESS)
 				{
-					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << mResult;
+					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << GetResultString(mResult);
 					return;
 				}
 			}

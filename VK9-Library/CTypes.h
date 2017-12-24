@@ -130,12 +130,12 @@ struct SpecializationConstants
 	int alphaArgument0_0 = D3DTA_CURRENT;
 	int alphaArgument1_0 = D3DTA_TEXTURE;
 	int alphaArgument2_0 = D3DTA_CURRENT;
-	float bumpMapMatrix00_0 = 0.0;
-	float bumpMapMatrix01_0 = 0.0;
-	float bumpMapMatrix10_0 = 0.0;
-	float bumpMapMatrix11_0 = 0.0;
-	float bumpMapScale_0 = 0.0;
-	float bumpMapOffset_0 = 0.0;
+	float bumpMapMatrix00_0 = 0.0f;
+	float bumpMapMatrix01_0 = 0.0f;
+	float bumpMapMatrix10_0 = 0.0f;
+	float bumpMapMatrix11_0 = 0.0f;
+	float bumpMapScale_0 = 0.0f;
+	float bumpMapOffset_0 = 0.0f;
 
 	//Texture Stage _1
 	int Constant_1 = 0;
@@ -150,12 +150,12 @@ struct SpecializationConstants
 	int alphaArgument0_1 = D3DTA_CURRENT;
 	int alphaArgument1_1 = D3DTA_TEXTURE;
 	int alphaArgument2_1 = D3DTA_CURRENT;
-	float bumpMapMatrix00_1 = 0.0;
-	float bumpMapMatrix01_1 = 0.0;
-	float bumpMapMatrix10_1 = 0.0;
-	float bumpMapMatrix11_1 = 0.0;
-	float bumpMapScale_1 = 0.0;
-	float bumpMapOffset_1 = 0.0;
+	float bumpMapMatrix00_1 = 0.0f;
+	float bumpMapMatrix01_1 = 0.0f;
+	float bumpMapMatrix10_1 = 0.0f;
+	float bumpMapMatrix11_1 = 0.0f;
+	float bumpMapScale_1 = 0.0f;
+	float bumpMapOffset_1 = 0.0f;
 
 	//Texture Stage _2
 	int Constant_2 = 0;
@@ -170,12 +170,12 @@ struct SpecializationConstants
 	int alphaArgument0_2 = D3DTA_CURRENT;
 	int alphaArgument1_2 = D3DTA_TEXTURE;
 	int alphaArgument2_2 = D3DTA_CURRENT;
-	float bumpMapMatrix00_2 = 0.0;
-	float bumpMapMatrix01_2 = 0.0;
-	float bumpMapMatrix10_2 = 0.0;
-	float bumpMapMatrix11_2 = 0.0;
-	float bumpMapScale_2 = 0.0;
-	float bumpMapOffset_2 = 0.0;
+	float bumpMapMatrix00_2 = 0.0f;
+	float bumpMapMatrix01_2 = 0.0f;
+	float bumpMapMatrix10_2 = 0.0f;
+	float bumpMapMatrix11_2 = 0.0f;
+	float bumpMapScale_2 = 0.0f;
+	float bumpMapOffset_2 = 0.0f;
 
 	//Texture Stage _3
 	int Constant_3 = 0;
@@ -190,12 +190,12 @@ struct SpecializationConstants
 	int alphaArgument0_3 = D3DTA_CURRENT;
 	int alphaArgument1_3 = D3DTA_TEXTURE;
 	int alphaArgument2_3 = D3DTA_CURRENT;
-	float bumpMapMatrix00_3 = 0.0;
-	float bumpMapMatrix01_3 = 0.0;
-	float bumpMapMatrix10_3 = 0.0;
-	float bumpMapMatrix11_3 = 0.0;
-	float bumpMapScale_3 = 0.0;
-	float bumpMapOffset_3 = 0.0;
+	float bumpMapMatrix00_3 = 0.0f;
+	float bumpMapMatrix01_3 = 0.0f;
+	float bumpMapMatrix10_3 = 0.0f;
+	float bumpMapMatrix11_3 = 0.0f;
+	float bumpMapScale_3 = 0.0f;
+	float bumpMapOffset_3 = 0.0f;
 
 	//Texture Stage _4
 	int Constant_4 = 0;
@@ -210,12 +210,12 @@ struct SpecializationConstants
 	int alphaArgument0_4 = D3DTA_CURRENT;
 	int alphaArgument1_4 = D3DTA_TEXTURE;
 	int alphaArgument2_4 = D3DTA_CURRENT;
-	float bumpMapMatrix00_4 = 0.0;
-	float bumpMapMatrix01_4 = 0.0;
-	float bumpMapMatrix10_4 = 0.0;
-	float bumpMapMatrix11_4 = 0.0;
-	float bumpMapScale_4 = 0.0;
-	float bumpMapOffset_4 = 0.0;
+	float bumpMapMatrix00_4 = 0.0f;
+	float bumpMapMatrix01_4 = 0.0f;
+	float bumpMapMatrix10_4 = 0.0f;
+	float bumpMapMatrix11_4 = 0.0f;
+	float bumpMapScale_4 = 0.0f;
+	float bumpMapOffset_4 = 0.0f;
 
 	//Texture Stage _5
 	int Constant_5 = 0;
@@ -230,12 +230,12 @@ struct SpecializationConstants
 	int alphaArgument0_5 = D3DTA_CURRENT;
 	int alphaArgument1_5 = D3DTA_TEXTURE;
 	int alphaArgument2_5 = D3DTA_CURRENT;
-	float bumpMapMatrix00_5 = 0.0;
-	float bumpMapMatrix01_5 = 0.0;
-	float bumpMapMatrix10_5 = 0.0;
-	float bumpMapMatrix11_5 = 0.0;
-	float bumpMapScale_5 = 0.0;
-	float bumpMapOffset_5 = 0.0;
+	float bumpMapMatrix00_5 = 0.0f;
+	float bumpMapMatrix01_5 = 0.0f;
+	float bumpMapMatrix10_5 = 0.0f;
+	float bumpMapMatrix11_5 = 0.0f;
+	float bumpMapScale_5 = 0.0f;
+	float bumpMapOffset_5 = 0.0f;
 
 	//Texture Stage _6
 	int Constant_6 = 0;
@@ -250,12 +250,12 @@ struct SpecializationConstants
 	int alphaArgument0_6 = D3DTA_CURRENT;
 	int alphaArgument1_6 = D3DTA_TEXTURE;
 	int alphaArgument2_6 = D3DTA_CURRENT;
-	float bumpMapMatrix00_6 = 0.0;
-	float bumpMapMatrix01_6 = 0.0;
-	float bumpMapMatrix10_6 = 0.0;
-	float bumpMapMatrix11_6 = 0.0;
-	float bumpMapScale_6 = 0.0;
-	float bumpMapOffset_6 = 0.0;
+	float bumpMapMatrix00_6 = 0.0f;
+	float bumpMapMatrix01_6 = 0.0f;
+	float bumpMapMatrix10_6 = 0.0f;
+	float bumpMapMatrix11_6 = 0.0f;
+	float bumpMapScale_6 = 0.0f;
+	float bumpMapOffset_6 = 0.0f;
 
 	//Texture Stage _7
 	int Constant_7 = 0;
@@ -270,12 +270,12 @@ struct SpecializationConstants
 	int alphaArgument0_7 = D3DTA_CURRENT;
 	int alphaArgument1_7 = D3DTA_TEXTURE;
 	int alphaArgument2_7 = D3DTA_CURRENT;
-	float bumpMapMatrix00_7 = 0.0;
-	float bumpMapMatrix01_7 = 0.0;
-	float bumpMapMatrix10_7 = 0.0;
-	float bumpMapMatrix11_7 = 0.0;
-	float bumpMapScale_7 = 0.0;
-	float bumpMapOffset_7 = 0.0;
+	float bumpMapMatrix00_7 = 0.0f;
+	float bumpMapMatrix01_7 = 0.0f;
+	float bumpMapMatrix10_7 = 0.0f;
+	float bumpMapMatrix11_7 = 0.0f;
+	float bumpMapScale_7 = 0.0f;
+	float bumpMapOffset_7 = 0.0f;
 
 	//Render State
 	int zEnable = D3DZB_TRUE;
@@ -349,7 +349,7 @@ struct SpecializationConstants
 	int positionDegree = D3DDEGREE_CUBIC;
 	int normalDegree = D3DDEGREE_LINEAR;
 	int scissorTestEnable = false;
-	float slopeScaleDepthBias = 0.0;
+	float slopeScaleDepthBias = 0.00f;
 	int antiAliasedLineEnable = false;
 	float minimumTessellationLevel = 1.0f;
 	float maximumTessellationLevel = 1.0f;
@@ -368,7 +368,7 @@ struct SpecializationConstants
 	int colorWriteEnable3 = 0x0000000f;
 	uint32_t blendFactor = 0xffffffff;
 	int srgbWriteEnable = 0;
-	float depthBias = 0;
+	float depthBias = 0.00f;
 	int wrap8 = 0;
 	int wrap9 = 0;
 	int wrap10 = 0;

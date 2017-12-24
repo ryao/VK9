@@ -112,7 +112,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	mPipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 
-	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;  //VK_TRUE;
 	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
 	mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
@@ -211,7 +211,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mResult = vkCreatePipelineCache(mDevice->mDevice, &mPipelineCacheCreateInfo, nullptr, &mPipelineCache);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreatePipelineCache failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreatePipelineCache failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -252,7 +252,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateImage failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateImage failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -265,14 +265,14 @@ BufferManager::BufferManager(CDevice9* device)
 	mResult = vkAllocateMemory(mDevice->mDevice, &memoryAllocateInfo, NULL, &mDeviceMemory);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkAllocateMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkAllocateMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	mResult = vkBindImageMemory(mDevice->mDevice, mImage, mDeviceMemory, 0);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkBindImageMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkBindImageMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -291,7 +291,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mResult = vkMapMemory(mDevice->mDevice, mDeviceMemory, 0, memoryAllocateInfo.allocationSize, 0, &data);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkMapMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkMapMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -342,7 +342,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &mSampler);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateSampler failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateSampler failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -351,7 +351,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL, &mImageView);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateImageView failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BufferManager vkCreateImageView failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -675,7 +675,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			request->AddressModeW = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSW];
 			request->MaxAnisotropy = mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAXANISOTROPY];
 			request->MipmapMode = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPFILTER];
-			request->MipLodBias = bit_cast(mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPMAPLODBIAS]);
+			request->MipLodBias = mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPMAPLODBIAS]; //bit_cast();
 			request->MaxLod = pair1.second->mLevels;
 
 			for (size_t i = 0; i < mSamplerRequests.size(); i++)
@@ -1361,7 +1361,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	result = vkCreateDescriptorSetLayout(mDevice->mDevice, &mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -1372,7 +1372,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	result = vkCreatePipelineLayout(mDevice->mDevice, &mPipelineLayoutCreateInfo, nullptr, &context->PipelineLayout);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreatePipelineLayout failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreatePipelineLayout failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -1382,7 +1382,7 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	//result = vkCreateGraphicsPipelines(mDevice->mDevice, VK_NULL_HANDLE, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreateGraphicsPipelines failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::BeginDraw vkCreateGraphicsPipelines failed with return code of " << GetResultString(result);
 	}
 
 	this->mDrawBuffer.push_back(context);
@@ -1419,7 +1419,7 @@ void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, st
 		result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &resourceContext->DescriptorSet);
 		if (result != VK_SUCCESS)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << result;
+			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << GetResultString(result);
 			return;
 		}
 	}
@@ -1522,7 +1522,7 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	mResult = vkCreateSampler(mDevice->mDevice, &samplerCreateInfo, NULL, &request->Sampler);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateSampler vkCreateSampler failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::GenerateSampler vkCreateSampler failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -1655,7 +1655,7 @@ void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, Vk
 	result = vkCreateBuffer(mDevice->mDevice, &bufferInfo, nullptr, &buffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateBuffer vkCreateBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateBuffer vkCreateBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -1676,7 +1676,7 @@ void BufferManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, Vk
 	result = vkAllocateMemory(mDevice->mDevice, &allocInfo, nullptr, &deviceMemory);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateBuffer vkCreateBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateBuffer vkCreateBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 

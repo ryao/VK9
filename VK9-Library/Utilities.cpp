@@ -59,7 +59,7 @@ VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename)
 			result = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &module);
 			if (result != VK_SUCCESS)
 			{
-				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile vkCreateShaderModule failed with return code of " << result;
+				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile vkCreateShaderModule failed with return code of " << GetResultString(result);
 			}
 			else
 			{
@@ -115,7 +115,7 @@ VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource)
 				result = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &module);
 				if (result != VK_SUCCESS)
 				{
-					BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource vkCreateShaderModule failed with return code of " << result;
+					BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource vkCreateShaderModule failed with return code of " << GetResultString(result);
 				}
 				else
 				{

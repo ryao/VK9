@@ -66,7 +66,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -88,14 +88,14 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mDeviceMemory);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkAllocateMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkAllocateMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	mResult = vkBindImageMemory(mDevice->mDevice, mImage, mDeviceMemory, 0);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -117,7 +117,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL, &mImageView);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -303,7 +303,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	result = vkAllocateCommandBuffers(mDevice->mDevice, &commandBufferInfo, &commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkAllocateCommandBuffers failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkAllocateCommandBuffers failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -326,7 +326,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkBeginCommandBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkBeginCommandBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -390,7 +390,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	result = vkEndCommandBuffer(commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkEndCommandBuffer failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkEndCommandBuffer failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -410,14 +410,14 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	result = vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, nullFence);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueSubmit failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueSubmit failed with return code of " << GetResultString(result);
 		return;
 	}
 
 	result = vkQueueWaitIdle(mDevice->mQueue);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueWaitIdle failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueWaitIdle failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -540,7 +540,7 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 	result = vkAllocateCommandBuffers(mDevice->mDevice, &commandBufferInfo, &commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkAllocateCommandBuffers failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkAllocateCommandBuffers failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -563,7 +563,7 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkBeginCommandBuffer failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkBeginCommandBuffer failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -598,7 +598,7 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 	result = vkEndCommandBuffer(commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkEndCommandBuffer failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkEndCommandBuffer failed with return code of " << GetResultString(result);
 		return;
 	}
 
@@ -618,14 +618,14 @@ void CTexture9::CopyImage(VkImage srcImage, VkImage dstImage, uint32_t width, ui
 	result = vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, nullFence);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueSubmit failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueSubmit failed with return code of " << GetResultString(result);
 		return;
 	}
 
 	result = vkQueueWaitIdle(mDevice->mQueue);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueWaitIdle failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueWaitIdle failed with return code of " << GetResultString(result);
 		return;
 	}
 

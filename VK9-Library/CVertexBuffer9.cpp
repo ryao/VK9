@@ -58,7 +58,7 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mResult = vkCreateBuffer(mDevice->mDevice, &bufferCreateInfo, NULL, &mBuffer);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkCreateBuffer failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkCreateBuffer failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -71,14 +71,14 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mResult = vkAllocateMemory(mDevice->mDevice, &memoryAllocateInfo, NULL, &mMemory);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkAllocateMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkAllocateMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
 	mResult = vkBindBufferMemory(mDevice->mDevice, mBuffer, mMemory, 0);
 	if (mResult != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkBindBufferMemory failed with return code of " << mResult;
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::CVertexBuffer9 vkBindBufferMemory failed with return code of " << GetResultString(mResult);
 		return;
 	}
 
@@ -306,7 +306,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::Lock vkMapMemory failed with return code of " << result;
+		BOOST_LOG_TRIVIAL(fatal) << "CVertexBuffer9::Lock vkMapMemory failed with return code of " << GetResultString(result);
 		*ppbData = nullptr;
 
 		return D3DERR_INVALIDCALL;
