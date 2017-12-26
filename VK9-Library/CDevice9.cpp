@@ -1380,6 +1380,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mPresentCompleteSemaphoreCreateInfo.pNext = nullptr;
 	mPresentCompleteSemaphoreCreateInfo.flags = 0;
 
+	mResult = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateSemaphore failed with return code of " << GetResultString(mResult);
+		return;
+	}
+
 	mCommandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
 	mCommandBufferInheritanceInfo.pNext = nullptr;
 	mCommandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
@@ -1445,6 +1452,11 @@ CDevice9::~CDevice9()
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
 
 	mGarbageManager.DestroyHandles();
+
+	if (mPresentCompleteSemaphore != VK_NULL_HANDLE)
+	{
+		vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
+	}
 
 	for (size_t i = 0; i < mSwapChains.size(); i++)
 	{
@@ -1640,8 +1652,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << GetResultString(mResult);
 		return D3DERR_INVALIDCALL;
 	}
-
-	vkDestroySemaphore(mDevice, mPresentCompleteSemaphore, nullptr);
 
 	vkResetCommandBuffer(mSwapchainBuffers[mCurrentBuffer], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
@@ -5351,12 +5361,12 @@ void CDevice9::StartScene(bool clear)
 
 	//BeginPaint(mFocusWindow, mPaintInformation);
 
-	result = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkCreateSemaphore failed with return code of " << GetResultString(mResult);
-		return;
-	}
+	//result = vkCreateSemaphore(mDevice, &mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
+	//if (result != VK_SUCCESS)
+	//{
+	//	BOOST_LOG_TRIVIAL(fatal) << "CDevice9::StartScene vkCreateSemaphore failed with return code of " << GetResultString(mResult);
+	//	return;
+	//}
 
 	result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, (VkFence)0, &mCurrentBuffer);
 	if (result != VK_SUCCESS)

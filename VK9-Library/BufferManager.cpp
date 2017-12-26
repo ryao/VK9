@@ -660,6 +660,9 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	/**********************************************
 	* Update the textures that are currently mapped.
 	**********************************************/
+	auto& deviceState = mDevice->mDeviceState;
+	auto& samplerStates = deviceState.mSamplerStates;
+
 	BOOST_FOREACH(const auto& pair1, mDevice->mDeviceState.mTextures)
 	{
 		VkDescriptorImageInfo& targetSampler = mDevice->mDeviceState.mDescriptorImageInfo[pair1.first];
@@ -667,15 +670,16 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 		if (pair1.second != nullptr)
 		{
 			std::shared_ptr<SamplerRequest> request = std::make_shared<SamplerRequest>(mDevice);
+			auto& currentSampler = samplerStates[request->SamplerIndex];
 
-			request->MagFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAGFILTER];
-			request->MinFilter = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MINFILTER];
-			request->AddressModeU = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSU];
-			request->AddressModeV = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSV];
-			request->AddressModeW = (D3DTEXTUREADDRESS)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_ADDRESSW];
-			request->MaxAnisotropy = mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MAXANISOTROPY];
-			request->MipmapMode = (D3DTEXTUREFILTERTYPE)mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPFILTER];
-			request->MipLodBias = mDevice->mDeviceState.mSamplerStates[request->SamplerIndex][D3DSAMP_MIPMAPLODBIAS]; //bit_cast();
+			request->MagFilter = (D3DTEXTUREFILTERTYPE)currentSampler[D3DSAMP_MAGFILTER];
+			request->MinFilter = (D3DTEXTUREFILTERTYPE)currentSampler[D3DSAMP_MINFILTER];
+			request->AddressModeU = (D3DTEXTUREADDRESS)currentSampler[D3DSAMP_ADDRESSU];
+			request->AddressModeV = (D3DTEXTUREADDRESS)currentSampler[D3DSAMP_ADDRESSV];
+			request->AddressModeW = (D3DTEXTUREADDRESS)currentSampler[D3DSAMP_ADDRESSW];
+			request->MaxAnisotropy = currentSampler[D3DSAMP_MAXANISOTROPY];
+			request->MipmapMode = (D3DTEXTUREFILTERTYPE)currentSampler[D3DSAMP_MIPFILTER];
+			request->MipLodBias = currentSampler[D3DSAMP_MIPMAPLODBIAS]; //bit_cast();
 			request->MaxLod = pair1.second->mLevels;
 
 			for (size_t i = 0; i < mSamplerRequests.size(); i++)
@@ -721,39 +725,39 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	if (mDevice->mDeviceState.mHasVertexDeclaration)
 	{
-		context->VertexDeclaration = mDevice->mDeviceState.mVertexDeclaration;
+		context->VertexDeclaration = deviceState.mVertexDeclaration;
 	}
 	else if (mDevice->mDeviceState.mHasFVF)
 	{
-		context->FVF = mDevice->mDeviceState.mFVF;
+		context->FVF = deviceState.mFVF;
 	}
 
 	//TODO: revisit if it's valid to have declaration or FVF with either shader type.
 
 	if (mDevice->mDeviceState.mHasVertexShader)
 	{
-		context->VertexShader = mDevice->mDeviceState.mVertexShader; //vert	
+		context->VertexShader = deviceState.mVertexShader; //vert	
 
 	}
 
 	if (mDevice->mDeviceState.mHasPixelShader)
 	{
-		context->PixelShader = mDevice->mDeviceState.mPixelShader; //pixel		
+		context->PixelShader = deviceState.mPixelShader; //pixel		
 	}
 
 	if (mDevice->mDeviceState.mVertexShader != nullptr)
 	{
-		context->mVertexShaderConstantSlots = mDevice->mDeviceState.mVertexShaderConstantSlots;
+		context->mVertexShaderConstantSlots = deviceState.mVertexShaderConstantSlots;
 		resourceContext->WasShader = true;
 	}
 
 	if (mDevice->mDeviceState.mPixelShader != nullptr)
 	{
-		context->mPixelShaderConstantSlots = mDevice->mDeviceState.mPixelShaderConstantSlots;
+		context->mPixelShaderConstantSlots = deviceState.mPixelShaderConstantSlots;
 	}
 
-	context->StreamCount = mDevice->mDeviceState.mStreamSources.size();
-	context->mSpecializationConstants = mDevice->mDeviceState.mSpecializationConstants;
+	context->StreamCount = deviceState.mStreamSources.size();
+	context->mSpecializationConstants = deviceState.mSpecializationConstants;
 	
 	
 
@@ -761,14 +765,14 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	ShaderConstantSlots& vertexSlots = context->mVertexShaderConstantSlots;
 	ShaderConstantSlots& pixelSlots = context->mPixelShaderConstantSlots;
 
-	constants.lightCount = mDevice->mDeviceState.mLights.size();
-	constants.textureCount = mDevice->mDeviceState.mTextures.size();
+	constants.lightCount = deviceState.mLights.size();
+	constants.textureCount = deviceState.mTextures.size();
 
-	mDevice->mDeviceState.mSpecializationConstants.lightCount = constants.lightCount;
-	mDevice->mDeviceState.mSpecializationConstants.textureCount = constants.textureCount;
+	deviceState.mSpecializationConstants.lightCount = constants.lightCount;
+	deviceState.mSpecializationConstants.textureCount = constants.textureCount;
 
 	int i = 0;
-	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)
+	BOOST_FOREACH(map_type::value_type& source, deviceState.mStreamSources)
 	{
 		mVertexInputBindingDescription[i].binding = source.first;
 		mVertexInputBindingDescription[i].stride = source.second.Stride;
@@ -802,16 +806,16 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& !memcmp(&drawBuffer.mPixelShaderConstantSlots, &pixelSlots, sizeof(ShaderConstantSlots))
 			)
 		{
-			BOOL isMatch = true;
-			BOOST_FOREACH(const auto& pair, context->Bindings)
-			{
-				if (mDrawBuffer[i]->Bindings.count(pair.first) == 0 || pair.second != mDrawBuffer[i]->Bindings[pair.first])
-				{
-					isMatch = false;
-					break;
-				}
-			}
-			if (isMatch)
+			//BOOL isMatch = true;
+			//for (size_t j = 0; j < 64; j++)
+			//{
+			//	if (context->Bindings[j] != mDrawBuffer[i]->Bindings[j])
+			//	{
+			//		isMatch = false;
+			//		break;
+			//	}
+			//}
+			if ( !memcmp(&drawBuffer.Bindings, &context->Bindings, 64 * sizeof(UINT)) )
 			{
 				context->Pipeline = mDrawBuffer[i]->Pipeline;
 				context->PipelineLayout = mDrawBuffer[i]->PipelineLayout;
@@ -859,7 +863,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	if (context->DescriptorSetLayout != VK_NULL_HANDLE)
 	{
-		std::copy(std::begin(mDevice->mDeviceState.mDescriptorImageInfo), std::end(mDevice->mDeviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
+		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
 		//Loop over cached descriptor information.
 		for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
@@ -922,7 +926,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 	if (mDevice->mDeviceState.mIndexBuffer != nullptr)
 	{
-		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mDevice->mDeviceState.mIndexBuffer->mBuffer, 0, mDevice->mDeviceState.mIndexBuffer->mIndexType);
+		vkCmdBindIndexBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], deviceState.mIndexBuffer->mBuffer, 0, deviceState.mIndexBuffer->mIndexType);
 	}
 
 	BOOST_FOREACH(map_type::value_type& source, mDevice->mDeviceState.mStreamSources)

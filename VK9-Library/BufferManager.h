@@ -83,7 +83,8 @@ struct DrawContext
 	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 
 	//Misc
-	boost::container::flat_map<UINT, UINT> Bindings;
+	//boost::container::flat_map<UINT, UINT> Bindings;
+	UINT Bindings[64] = {};
 
 	//D3D9 State - Pipe
 	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
