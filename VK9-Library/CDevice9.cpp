@@ -3488,7 +3488,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister,
 	uint32_t length = (Vector4fCount * 4);
 	for (size_t i = 0; i < length; i++)
 	{
-		pConstantData[i] = slots.FloatConstants[startIndex + i];
+		if ((startIndex + i) < 128)
+		{
+			pConstantData[i] = mDeviceState.mPushConstants[startIndex + i];
+		}
+		else
+		{
+			pConstantData[i] = slots.FloatConstants[startIndex + i];
+		}
 	}
 
 	return S_OK;
@@ -5064,7 +5071,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,
 	uint32_t length = (Vector4fCount * 4);
 	for (size_t i = 0; i < length; i++)
 	{
-		slots.FloatConstants[startIndex + i] = pConstantData[i];
+		if ((startIndex + i) < 128)
+		{
+			mDeviceState.mPushConstants[startIndex + i] = pConstantData[i];
+		}
+		else
+		{
+			slots.FloatConstants[startIndex + i] = pConstantData[i];
+		}	
 	}
 
 	return S_OK;

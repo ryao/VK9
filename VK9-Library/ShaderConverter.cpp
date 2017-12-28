@@ -1560,6 +1560,185 @@ void ShaderConverter::GenerateYFlip()
 	mFunctionDefinitionInstructions.push_back(resultId); //Object (Id)
 }
 
+void ShaderConverter::GeneratePushConstant()
+{
+	TypeDescription registerPointerType;	
+	registerPointerType.PrimaryType = spv::OpTypePointer;
+	registerPointerType.SecondaryType = spv::OpTypeVector;
+	registerPointerType.TernaryType = spv::OpTypeFloat;
+	registerPointerType.ComponentCount = 4;
+	registerPointerType.StorageClass = spv::StorageClassPushConstant;
+
+	TypeDescription registerType;
+	registerType.PrimaryType = spv::OpTypeVector;
+	registerType.SecondaryType = spv::OpTypeFloat;
+	registerType.ComponentCount = 4;
+
+	std::string registerName;
+	uint32_t stringWordSize = 0;
+	uint32_t registerPointerTypeId = GetSpirVTypeId(registerPointerType);
+	uint32_t registerTypeId = GetSpirVTypeId(registerType);
+	uint32_t pushConstantTypeId = GetNextId();
+	uint32_t pushConstantPointerTypeId = GetNextId();
+	uint32_t pushConstantPointerId = GetNextId();
+
+	mTypeInstructions.push_back(Pack(2 + 4, spv::OpTypeStruct)); //size,Type
+	mTypeInstructions.push_back(pushConstantTypeId); //Result (Id)
+	mTypeInstructions.push_back(registerTypeId); //Member 0 type (Id)
+	mTypeInstructions.push_back(registerTypeId); //Member 1 type (Id)
+	mTypeInstructions.push_back(registerTypeId); //Member 2 type (Id)
+	mTypeInstructions.push_back(registerTypeId); //Member 3 type (Id)
+
+	//Name and decorate push constant structure type.
+	registerName = "PushConstants";
+	stringWordSize = 3 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+	mDecorateInstructions.push_back(Pack(3, spv::OpDecorate)); //size,Type
+	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
+	mDecorateInstructions.push_back(spv::DecorationBlock); //Decoration Type (Id)
+
+	//Name Members
+	registerName = "c0";
+	stringWordSize = 4 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
+	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
+	mNameInstructions.push_back(0); //Member (Literal)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+	registerName = "c1";
+	stringWordSize = 4 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
+	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
+	mNameInstructions.push_back(1); //Member (Literal)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+	registerName = "c2";
+	stringWordSize = 4 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
+	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
+	mNameInstructions.push_back(2); //Member (Literal)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+	registerName = "c3";
+	stringWordSize = 4 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
+	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
+	mNameInstructions.push_back(3); //Member (Literal)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+	//Set member offsets
+	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
+	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
+	mDecorateInstructions.push_back(0); //Member (Literal)
+	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
+	mDecorateInstructions.push_back(0);
+
+	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
+	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
+	mDecorateInstructions.push_back(1); //Member (Literal)
+	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
+	mDecorateInstructions.push_back(16);
+
+	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
+	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
+	mDecorateInstructions.push_back(2); //Member (Literal)
+	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
+	mDecorateInstructions.push_back(32);
+
+	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
+	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
+	mDecorateInstructions.push_back(3); //Member (Literal)
+	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
+	mDecorateInstructions.push_back(48);
+
+	//Create Pointer type and variable
+	mTypeInstructions.push_back(Pack(4, spv::OpTypePointer)); //size,Type
+	mTypeInstructions.push_back(pushConstantPointerTypeId); //Result (Id)
+	mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
+	mTypeInstructions.push_back(pushConstantTypeId); //type (Id)
+
+	mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+	mTypeInstructions.push_back(pushConstantPointerTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+	mTypeInstructions.push_back(pushConstantPointerId); //Result (Id)
+	mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
+
+	registerName = "PC";
+	stringWordSize = 3 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+	mNameInstructions.push_back(pushConstantPointerId); //target (Id)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+	//Create Access Chains
+	uint32_t c0 = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c0); //Result (Id)
+	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
+	mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+
+	uint32_t c1 = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c1); //Result (Id)
+	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
+	mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+
+	uint32_t c2 = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c2); //Result (Id)
+	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
+	mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+
+	uint32_t c3 = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c3); //Result (Id)
+	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
+	mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+
+	//Load Access Chains
+	uint32_t c0_loaded = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c0_loaded); //result (Id)
+	mFunctionDefinitionInstructions.push_back(c0); //pointer (Id)
+
+	uint32_t c1_loaded = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c1_loaded); //result (Id)
+	mFunctionDefinitionInstructions.push_back(c1); //pointer (Id)	
+
+	uint32_t c2_loaded = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c2_loaded); //result (Id)
+	mFunctionDefinitionInstructions.push_back(c2); //pointer (Id)	
+
+	uint32_t c3_loaded = GetNextId();
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(c3_loaded); //result (Id)
+	mFunctionDefinitionInstructions.push_back(c3); //pointer (Id)	
+
+	//Remap c0-c3 to push constant.
+	mIdsByRegister[D3DSPR_CONST][0] = c0_loaded;
+	mRegistersById[D3DSPR_CONST][c0_loaded] = 0;
+
+	mIdsByRegister[D3DSPR_CONST][1] = c1_loaded;
+	mRegistersById[D3DSPR_CONST][c1_loaded] = 1;
+
+	mIdsByRegister[D3DSPR_CONST][2] = c2_loaded;
+	mRegistersById[D3DSPR_CONST][c2_loaded] = 2;
+
+	mIdsByRegister[D3DSPR_CONST][3] = c3_loaded;
+	mRegistersById[D3DSPR_CONST][c3_loaded] = 3;
+}
+
 void ShaderConverter::GeneratePostition()
 {
 	TypeDescription positionType;
@@ -3321,6 +3500,11 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	}
 
 	Generate255Constants();
+
+	if (mIsVertexShader)
+	{
+		GeneratePushConstant();
+	}
 
 	//Read DXBC instructions
 	while (token != D3DPS_END())

@@ -562,7 +562,7 @@ struct DeviceState
 	//Used for shader specialization.
 	SpecializationConstants mSpecializationConstants = {};
 
-	//PushConstants mPushConstants;
+	float mPushConstants[64] = {};
 	ShaderConstantSlots mVertexShaderConstantSlots;
 	ShaderConstantSlots mPixelShaderConstantSlots;
 
