@@ -104,10 +104,10 @@ C9::C9()
 	for (size_t i = 0; i < extensionCount; i++)
 	{
 		BOOST_LOG_TRIVIAL(info) << "C9::C9 extension available: " << extension[i].extensionName;
-		if (strcmp(extension[i].extensionName, "VK_KHR_display")==0)
-		{
-			mExtensionNames.push_back("VK_KHR_display");
-		}
+		//if (strcmp(extension[i].extensionName, "VK_KHR_display")==0)
+		//{
+		//	mExtensionNames.push_back("VK_KHR_display");
+		//}
 	}
 
 	delete[] extension;
@@ -173,8 +173,8 @@ C9::C9()
 	//Get an instance handle.
 	if (VK_SUCCESS == vkCreateInstance(&inst_info, NULL, &mInstance))
 	{
-		vkGetPhysicalDeviceDisplayPropertiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceDisplayPropertiesKHR>(vkGetInstanceProcAddr(mInstance, "vkGetPhysicalDeviceDisplayPropertiesKHR"));
-		vkGetDisplayModePropertiesKHR = reinterpret_cast<PFN_vkGetDisplayModePropertiesKHR>(vkGetInstanceProcAddr(mInstance, "vkGetDisplayModePropertiesKHR"));
+		//vkGetPhysicalDeviceDisplayPropertiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceDisplayPropertiesKHR>(vkGetInstanceProcAddr(mInstance, "vkGetPhysicalDeviceDisplayPropertiesKHR"));
+		//vkGetDisplayModePropertiesKHR = reinterpret_cast<PFN_vkGetDisplayModePropertiesKHR>(vkGetInstanceProcAddr(mInstance, "vkGetDisplayModePropertiesKHR"));
 
 #ifdef _DEBUG
 		/* Load VK_EXT_debug_report entry points in debug builds */
@@ -224,24 +224,24 @@ C9::C9()
 				return;
 			}
 
-			if (vkGetPhysicalDeviceDisplayPropertiesKHR!=nullptr)
-			{
-				mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, nullptr);
-				if (mResult != VK_SUCCESS)
-				{
-					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << GetResultString(mResult);
-					return;
-				}
+			//if (vkGetPhysicalDeviceDisplayPropertiesKHR!=nullptr)
+			//{
+			//	mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, nullptr);
+			//	if (mResult != VK_SUCCESS)
+			//	{
+			//		BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << GetResultString(mResult);
+			//		return;
+			//	}
 
-				mDisplayProperties = new VkDisplayPropertiesKHR[mDisplayCount]();
+			//	mDisplayProperties = new VkDisplayPropertiesKHR[mDisplayCount]();
 
-				mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, mDisplayProperties);
-				if (mResult != VK_SUCCESS)
-				{
-					BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << GetResultString(mResult);
-					return;
-				}
-			}
+			//	mResult = vkGetPhysicalDeviceDisplayPropertiesKHR(mPhysicalDevices[0], &mDisplayCount, mDisplayProperties);
+			//	if (mResult != VK_SUCCESS)
+			//	{
+			//		BOOST_LOG_TRIVIAL(fatal) << "C9::C9 vkGetPhysicalDeviceDisplayPropertiesKHR failed with return code of " << GetResultString(mResult);
+			//		return;
+			//	}
+			//}
 		}
 		else
 		{
@@ -264,7 +264,7 @@ C9::~C9()
 {
 	BOOST_LOG_TRIVIAL(info) << "C9::~C9";
 
-	delete[] mDisplayProperties;
+	//delete[] mDisplayProperties;
 	delete[] mPhysicalDevices;
 	delete[] mLayerProperties;
 

@@ -52,7 +52,7 @@ public:
 	VkPhysicalDevice* mPhysicalDevices = nullptr;
 	uint32_t mGpuCount = 0;
 
-	VkDisplayPropertiesKHR* mDisplayProperties = nullptr;
+	//VkDisplayPropertiesKHR* mDisplayProperties = nullptr;
 	uint32_t mDisplayCount = 0;
 
 	VkLayerProperties* mLayerProperties = nullptr;
@@ -75,8 +75,8 @@ public:
 	VkDebugReportCallbackEXT mCallback;
 #endif
 
-	PFN_vkGetDisplayModePropertiesKHR vkGetDisplayModePropertiesKHR;
-	PFN_vkGetPhysicalDeviceDisplayPropertiesKHR vkGetPhysicalDeviceDisplayPropertiesKHR;
+	//PFN_vkGetDisplayModePropertiesKHR vkGetDisplayModePropertiesKHR;
+	//PFN_vkGetPhysicalDeviceDisplayPropertiesKHR vkGetPhysicalDeviceDisplayPropertiesKHR;
 
 public:
 	//IUnknown

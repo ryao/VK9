@@ -90,7 +90,7 @@ union GeneratorMagicNumber
 	struct
 	{
 		uint16_t Version;
-		uint16_t Type;	
+		uint16_t Type;
 	};
 	uint32_t Word;
 };
@@ -125,7 +125,7 @@ struct TypeDescription
 			return this->PrimaryType == value.PrimaryType;
 		case spv::OpTypeVector:
 		case spv::OpTypeMatrix:
-				return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
+			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->ComponentCount == value.ComponentCount;
 		case spv::OpTypePointer:
 			return this->PrimaryType == value.PrimaryType && this->SecondaryType == value.SecondaryType && this->TernaryType == value.TernaryType && this->ComponentCount == value.ComponentCount && this->StorageClass == value.StorageClass;
 		case spv::OpTypeFunction:
@@ -209,10 +209,10 @@ inline uint32_t Pack(uint32_t wordCount, spv::Op opcode)
 inline void PutStringInVector(std::string& text, std::vector<uint32_t>& words)
 {
 	const char* value = text.c_str();
-	for (size_t i = 0; i < text.length(); i+=4)
+	for (size_t i = 0; i < text.length(); i += 4)
 	{
 		uint32_t difference = text.length() - (i);
-		
+
 		switch (difference)
 		{
 		case 0:
@@ -227,17 +227,159 @@ inline void PutStringInVector(std::string& text, std::vector<uint32_t>& words)
 			words.push_back(PACK('\0', value[i + 2], value[i + 1], value[i]));
 			break;
 		default:
-			words.push_back(PACK(value[i+3], value[i + 2], value[i + 1], value[i]));
+			words.push_back(PACK(value[i + 3], value[i + 2], value[i + 1], value[i]));
 			break;
-		}	
+		}
 	}
 
 	if (text.length() % 4 == 0)
 	{
 		words.push_back(0); //null terminator if all words have characters.
 	}
-
 }
+
+inline _D3DSHADER_PARAM_REGISTER_TYPE GetRegisterType(uint32_t token)
+{
+	return (_D3DSHADER_PARAM_REGISTER_TYPE)(((token & D3DSP_REGTYPE_MASK2) >> D3DSP_REGTYPE_SHIFT2) | ((token & D3DSP_REGTYPE_MASK) >> D3DSP_REGTYPE_SHIFT));
+}
+
+inline const char* GetRegisterTypeName(_D3DSHADER_PARAM_REGISTER_TYPE token)
+{
+	switch (token)
+	{
+	case D3DSPR_TEMP:
+		return "D3DSPR_TEMP";
+	case D3DSPR_INPUT:
+		return "D3DSPR_INPUT";
+	case D3DSPR_CONST:
+		return "D3DSPR_CONST";
+	case D3DSPR_TEXTURE:
+		return "D3DSPR_TEXTURE";
+	case D3DSPR_RASTOUT:
+		return "D3DSPR_RASTOUT";
+	case D3DSPR_ATTROUT:
+		return "D3DSPR_ATTROUT";
+	case D3DSPR_OUTPUT:
+		return "D3DSPR_OUTPUT";
+	case D3DSPR_CONSTINT:
+		return "D3DSPR_CONSTINT";
+	case D3DSPR_COLOROUT:
+		return "D3DSPR_COLOROUT";
+	case D3DSPR_DEPTHOUT:
+		return "D3DSPR_DEPTHOUT";
+	case D3DSPR_SAMPLER:
+		return "D3DSPR_SAMPLER";
+	case D3DSPR_CONST2:
+		return "D3DSPR_CONST2";
+	case D3DSPR_CONST3:
+		return "D3DSPR_CONST3";
+	case D3DSPR_CONST4:
+		return "D3DSPR_CONST4";
+	case D3DSPR_CONSTBOOL:
+		return "D3DSPR_CONSTBOOL";
+	case D3DSPR_LOOP:
+		return "D3DSPR_LOOP";
+	case D3DSPR_TEMPFLOAT16:
+		return "D3DSPR_TEMPFLOAT16";
+	case D3DSPR_MISCTYPE:
+		return "D3DSPR_MISCTYPE";
+	case D3DSPR_LABEL:
+		return "D3DSPR_LABEL";
+	case D3DSPR_PREDICATE:
+		return "D3DSPR_PREDICATE";
+	default:
+		return "";
+	}
+}
+
+inline const char* GetRegisterTypeName(uint32_t token)
+{
+	return GetRegisterTypeName(GetRegisterType(token));
+}
+
+//inline const char* GetUsageName(uint32_t usage)
+//{
+//	return GetUsageName((_D3DDECLUSAGE)usage);
+//}
+
+inline const char* GetUsageName(_D3DDECLUSAGE usage)
+{
+	switch (usage)
+	{
+	case D3DDECLUSAGE_POSITION:
+		return "D3DDECLUSAGE_POSITION";
+	case D3DDECLUSAGE_BLENDWEIGHT:
+		return "D3DDECLUSAGE_BLENDWEIGHT";
+	case D3DDECLUSAGE_BLENDINDICES:
+		return "D3DDECLUSAGE_BLENDINDICES";
+	case D3DDECLUSAGE_NORMAL:
+		return "D3DDECLUSAGE_NORMAL";
+	case D3DDECLUSAGE_PSIZE:
+		return "D3DDECLUSAGE_PSIZE";
+	case D3DDECLUSAGE_TEXCOORD:
+		return "D3DDECLUSAGE_TEXCOORD";
+	case D3DDECLUSAGE_TANGENT:
+		return "D3DDECLUSAGE_TANGENT";
+	case D3DDECLUSAGE_BINORMAL:
+		return "D3DDECLUSAGE_BINORMAL";
+	case D3DDECLUSAGE_TESSFACTOR:
+		return "D3DDECLUSAGE_TESSFACTOR";
+	case D3DDECLUSAGE_POSITIONT:
+		return "D3DDECLUSAGE_POSITIONT";
+	case D3DDECLUSAGE_COLOR:
+		return "D3DDECLUSAGE_COLOR";
+	case D3DDECLUSAGE_FOG:
+		return "D3DDECLUSAGE_FOG";
+	case D3DDECLUSAGE_DEPTH:
+		return "D3DDECLUSAGE_DEPTH";
+	case D3DDECLUSAGE_SAMPLE:
+		return "D3DDECLUSAGE_SAMPLE";
+	default:
+		return "";
+	}
+}
+
+inline uint32_t GetOpcode(uint32_t token)
+{
+	return (token & D3DSI_OPCODE_MASK);
+}
+
+inline uint32_t GetOpcodeData(uint32_t token)
+{
+	return ((token & D3DSP_OPCODESPECIFICCONTROL_MASK) >> D3DSP_OPCODESPECIFICCONTROL_SHIFT);
+}
+
+inline uint32_t GetTextureType(uint32_t token)
+{
+	return (token & D3DSP_TEXTURETYPE_MASK); // Note this one doesn't shift due to weird D3DSAMPLER_TEXTURE_TYPE enum
+}
+
+inline uint32_t GetRegisterNumber(const Token& token)
+{
+	uint32_t output = 0;
+
+	output = (token.i & D3DSP_REGNUM_MASK);
+
+	return output;
+}
+
+inline uint32_t GetUsage(uint32_t token)
+{
+	return token & D3DSP_DCL_USAGE_MASK;
+}
+
+inline uint32_t GetUsageIndex(uint32_t token)
+{
+	return (token & D3DSP_DCL_USAGEINDEX_MASK) >> D3DSP_DCL_USAGEINDEX_SHIFT;
+}
+
+inline void PrintTokenInformation(const char* tokenName, Token result, Token argument1, Token argument2)
+{
+	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
+		<< result.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(result.i) << ") "
+		<< argument1.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument1.i) << ") "
+		<< argument2.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument2.i) << ")";
+};
 
 class CDevice9;
 
@@ -252,12 +394,12 @@ public:
 
 	ConvertedShader Convert(uint32_t* shader);
 	ConvertedShader mConvertedShader = {};
-private:	
+private:
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
 
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mRegistersById;
 	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mIdsByRegister;
-	
+
 	std::vector<uint32_t> mInputRegisters;
 	std::vector<uint32_t> mOutputRegisters;
 	boost::container::flat_map<_D3DDECLUSAGE, uint32_t> mOutputRegisterUsages;
@@ -331,16 +473,9 @@ private:
 	void SkipTokens(uint32_t numberToSkip);
 	uint32_t GetNextId();
 	void SkipIds(uint32_t numberToSkip);
-	uint32_t GetOpcode(uint32_t token);
-	uint32_t GetOpcodeData(uint32_t token);
-	uint32_t GetTextureType(uint32_t token);
-	_D3DSHADER_PARAM_REGISTER_TYPE GetRegisterType(uint32_t token);
-	uint32_t GetRegisterNumber(const Token& token);
-	uint32_t GetUsage(uint32_t token);
-	uint32_t GetUsageIndex(uint32_t token);
 	uint32_t GetSpirVTypeId(spv::Op registerType, uint32_t id = UINT_MAX);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2);
-	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2,uint32_t componentCount);
+	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2, uint32_t componentCount);
 	uint32_t GetSpirVTypeId(spv::Op registerType1, spv::Op registerType2, spv::Op registerType3, uint32_t componentCount);
 	uint32_t GetSpirVTypeId(TypeDescription& registerType, uint32_t id = UINT_MAX);
 	uint32_t GetNextVersionId(const Token& token);
@@ -353,7 +488,7 @@ private:
 	void GeneratePushConstant();
 	void GeneratePostition();
 	void GenerateStore(const Token& token, uint32_t inputId);
-	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage,bool isInput);
+	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage, bool isInput);
 	void Generate255Constants();
 	void GenerateConstantBlock();
 	void CombineSpirVOpCodes();
@@ -369,6 +504,7 @@ private:
 
 	//Unary Operators
 	void Process_MOV();
+	void Process_MOVA();
 
 	//Binary Operators
 	void Process_MUL();

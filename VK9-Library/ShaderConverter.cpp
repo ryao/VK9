@@ -96,45 +96,6 @@ void ShaderConverter::SkipIds(uint32_t numberToSkip)
 	mNextId += numberToSkip;
 }
 
-uint32_t ShaderConverter::GetOpcode(uint32_t token)
-{
-	return (token & D3DSI_OPCODE_MASK);
-}
-
-uint32_t ShaderConverter::GetOpcodeData(uint32_t token)
-{
-	return ((token & D3DSP_OPCODESPECIFICCONTROL_MASK) >> D3DSP_OPCODESPECIFICCONTROL_SHIFT);
-}
-
-uint32_t ShaderConverter::GetTextureType(uint32_t token)
-{
-	return (token & D3DSP_TEXTURETYPE_MASK); // Note this one doesn't shift due to weird D3DSAMPLER_TEXTURE_TYPE enum
-}
-
-_D3DSHADER_PARAM_REGISTER_TYPE ShaderConverter::GetRegisterType(uint32_t token)
-{
-	return (_D3DSHADER_PARAM_REGISTER_TYPE)(((token & D3DSP_REGTYPE_MASK2) >> D3DSP_REGTYPE_SHIFT2) | ((token & D3DSP_REGTYPE_MASK) >> D3DSP_REGTYPE_SHIFT));
-}
-
-uint32_t ShaderConverter::GetRegisterNumber(const Token& token)
-{
-	uint32_t output = 0;
-
-	output = (token.i & D3DSP_REGNUM_MASK);
-
-	return output;
-}
-
-uint32_t ShaderConverter::GetUsage(uint32_t token)
-{
-	return token & D3DSP_DCL_USAGE_MASK;
-}
-
-uint32_t ShaderConverter::GetUsageIndex(uint32_t token)
-{
-	return (token & D3DSP_DCL_USAGEINDEX_MASK) >> D3DSP_DCL_USAGEINDEX_SHIFT;
-}
-
 uint32_t ShaderConverter::GetSpirVTypeId(spv::Op registerType, uint32_t id)
 {
 	TypeDescription description;
@@ -720,6 +681,12 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "GetIdByRegister - Id not found register " << registerNumber << " (" << registerType << ")";
 		break;
+	}
+
+
+	if (!id)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetIdByRegister - Id was zero!";
 	}
 
 	return id;
@@ -1522,6 +1489,26 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 
 			SetIdByRegister(token, swizzledId);
 		}
+	}
+
+	if (!originalId)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::ApplyWriteMask - originalId was zero!";
+	}
+
+	if (!modifiedId)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::ApplyWriteMask - modifiedId was zero!";
+	}
+
+	if (!swizzledId)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::ApplyWriteMask - swizzledId was zero!";
+	}
+
+	if (!outputId)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::ApplyWriteMask - outputId was zero!";
 	}
 
 	return outputId;
@@ -2435,6 +2422,8 @@ void ShaderConverter::Process_DCL_Pixel()
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Pixel unsupported register type " << registerType;
 		break;
 	}
+
+	BOOST_LOG_TRIVIAL(info) << "DCL " << GetUsageName((_D3DDECLUSAGE)usage) << " - " << registerNumber << "(" << GetRegisterTypeName(registerType) << ") ";
 }
 
 void ShaderConverter::Process_DCL_Vertex()
@@ -2685,6 +2674,8 @@ void ShaderConverter::Process_DCL_Vertex()
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Vertex unsupported register type " << registerType;
 		break;
 	}
+
+	BOOST_LOG_TRIVIAL(info) << "DCL " << GetUsageName((_D3DDECLUSAGE)usage) << " - " << registerNumber << "(" << GetRegisterTypeName(registerType) << ") ";
 }
 
 void ShaderConverter::Process_DCL()
@@ -2735,6 +2726,8 @@ void ShaderConverter::Process_DEF()
 		literalValue = GetNextToken().i;
 		mShaderConstantSlots.FloatConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = bit_cast(literalValue);
 	}
+
+	PrintTokenInformation("DEF", token, token, token);
 }
 
 void ShaderConverter::Process_DEFI()
@@ -2749,6 +2742,8 @@ void ShaderConverter::Process_DEFI()
 		literalValue = GetNextToken().i;
 		mShaderConstantSlots.IntegerConstants[token.DestinationParameterToken.RegisterNumber * 4 + i] = literalValue;
 	}
+
+	PrintTokenInformation("DEFI", token, token, token);
 }
 
 void ShaderConverter::Process_DEFB()
@@ -2760,6 +2755,8 @@ void ShaderConverter::Process_DEFB()
 
 	literalValue = GetNextToken().i;
 	mShaderConstantSlots.BooleanConstants[token.DestinationParameterToken.RegisterNumber * 4] = literalValue;
+
+	PrintTokenInformation("DEFB", token, token, token);
 }
 
 void ShaderConverter::Process_MOV()
@@ -2813,6 +2810,58 @@ void ShaderConverter::Process_MOV()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	}
+}
+
+void ShaderConverter::Process_MOVA()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = spv::OpTypeInt;
+	}
+	else
+	{
+		typeDescription.PrimaryType = spv::OpTypeInt;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertFToS)); //size,Type
+	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+	mFunctionDefinitionInstructions.push_back(argumentId1); //Operand (Id)
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("MOVA", resultToken, argumentToken1, argumentToken1);
 }
 
 void ShaderConverter::Process_MUL()
@@ -2887,6 +2936,7 @@ void ShaderConverter::Process_MUL()
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
+	PrintTokenInformation("MUL", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_ADD()
@@ -2961,6 +3011,7 @@ void ShaderConverter::Process_ADD()
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
+	PrintTokenInformation("ADD", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_SUB()
@@ -3035,6 +3086,7 @@ void ShaderConverter::Process_SUB()
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
+	PrintTokenInformation("SUB", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_MIN()
@@ -3098,6 +3150,8 @@ void ShaderConverter::Process_DP3()
 	mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("DP3", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_DP4()
@@ -3150,6 +3204,8 @@ void ShaderConverter::Process_DP4()
 	mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("DP4", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_TEX()
@@ -3201,6 +3257,8 @@ void ShaderConverter::Process_TEX()
 		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+
+		PrintTokenInformation("TEX_2_0", resultToken, argumentToken1, argumentToken2);
 	}
 	else if (mMajorVersion = 1 && mMinorVersion >= 4)
 	{
@@ -3216,6 +3274,8 @@ void ShaderConverter::Process_TEX()
 		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+
+		PrintTokenInformation("TEX_1_4", resultToken, argumentToken1, argumentToken1);
 	}
 	else
 	{
@@ -3240,6 +3300,8 @@ void ShaderConverter::Process_TEX()
 		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
 		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+
+		PrintTokenInformation("TEX_1_0", resultToken, resultToken, resultToken);
 	}
 
 	resultId = GetNextId();
@@ -3410,18 +3472,21 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	if ((token & 0xFFFF0000) == 0xFFFF0000)
 	{
 		mIsVertexShader = false;
+		BOOST_LOG_TRIVIAL(info) << "PS " << mMajorVersion << "." << mMinorVersion;
 	}
 	else
 	{
 		mIsVertexShader = true;
+		BOOST_LOG_TRIVIAL(info) << "VS" << mMajorVersion << "." << mMinorVersion;
 	}
 	//Probably more info in this word but I'll handle that later.
+	
 
 	//Capability
 	mCapabilityInstructions.push_back(Pack(2, spv::OpCapability)); //size,Type
 	mCapabilityInstructions.push_back(spv::CapabilityShader); //Capability
 
-															  //Import
+	//Import
 	std::string importStatement = "GLSL.std.450";
 	//The spec says 3+variable but there are only 2 before string literal.
 	stringWordSize = 2 + (importStatement.length() / 4);
@@ -3618,7 +3683,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_NRM.";
 			break;
 		case D3DSIO_MOVA:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_MOVA.";
+			Process_MOVA();
 			break;
 		case D3DSIO_MOV:
 			Process_MOV();
