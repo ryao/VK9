@@ -187,10 +187,14 @@ void CSurface9::Init()
 	}
 
 	mSubresource.mipLevel = 0;
-	mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
+	//mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 	mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-	vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayout);
+	for (size_t i = 0; i < mLayerCount; i++)
+	{
+		mSubresource.arrayLayer = i;
+		vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayouts[i]);
+	}
 }
 
 CSurface9::~CSurface9()
@@ -388,20 +392,20 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 
 		bytes = (char*)mData;
 
-		if (mLayout.offset)
+		if (mLayouts[0].offset)
 		{
-			bytes += mLayout.offset;
+			bytes += mLayouts[0].offset;
 		}
 
 		if (pRect != nullptr)
 		{
-			bytes += (mLayout.rowPitch * pRect->top);
+			bytes += (mLayouts[0].rowPitch * pRect->top);
 			bytes += (4 * pRect->left);
 		}
 	}
 
 	pLockedRect->pBits = (void*)bytes;
-	pLockedRect->Pitch = mLayout.rowPitch;
+	pLockedRect->Pitch = mLayouts[0].rowPitch;
 
 	mIsFlushed = false;
 
@@ -423,7 +427,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 	{
 		if (mFormat == D3DFMT_X8R8G8B8)
 		{
-			SetAlpha((char*)mData, mHeight, mWidth, mLayout.rowPitch);
+			SetAlpha((char*)mData, mHeight, mWidth, mLayouts[0].rowPitch);
 		}
 
 		vkUnmapMemory(mDevice->mDevice, mStagingDeviceMemory);

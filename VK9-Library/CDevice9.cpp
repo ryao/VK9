@@ -183,7 +183,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	surfaceCreateInfo.hwnd = hFocusWindow;
 
 	if (!mPresentationParameters.Windowed)
-	{	
+	{
 		DEVMODE newSettings = {};
 		EnumDisplaySettings(0, 0, &newSettings);
 		newSettings.dmPelsWidth = mPresentationParameters.BackBufferWidth;
@@ -1578,7 +1578,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 		mClearColorValue.float32[3] = D3DCOLOR_A(Color); //FLT_MAX; 
 		mClearColorValue.float32[2] = D3DCOLOR_B(Color);
 		mClearColorValue.float32[1] = D3DCOLOR_G(Color);
-		mClearColorValue.float32[0] = D3DCOLOR_R(Color);		
+		mClearColorValue.float32[0] = D3DCOLOR_R(Color);
 	}
 
 	if (Count > 0 && pRects != nullptr)
@@ -5078,7 +5078,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,
 		else
 		{
 			slots.FloatConstants[startIndex + i] = pConstantData[i];
-		}	
+		}
 	}
 
 	return S_OK;
@@ -5167,6 +5167,45 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSource
 		return D3DERR_INVALIDCALL;
 	}
 
+	VkCommandBuffer commandBuffer;
+
+	VkCommandBufferAllocateInfo commandBufferInfo = {};
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferInfo.pNext = nullptr;
+	commandBufferInfo.commandPool = mCommandPool;
+	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferInfo.commandBufferCount = 1;
+
+	mResult = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &commandBuffer);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkAllocateCommandBuffers failed with return code of " << GetResultString(mResult);
+		return D3DERR_INVALIDCALL;
+	}
+
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	commandBufferInheritanceInfo.pNext = nullptr;
+	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	commandBufferInheritanceInfo.queryFlags = 0;
+	commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo;
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.pNext = nullptr;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+	mResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkBeginCommandBuffer failed with return code of " << GetResultString(mResult);
+		return D3DERR_INVALIDCALL;
+	}
+
 	//TODO: Handle dirty regions and multiple mip levels.
 
 	if (pSourceTexture->GetType() != D3DRTYPE_CUBETEXTURE)
@@ -5174,15 +5213,57 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSource
 		CTexture9& source = (*(CTexture9*)pSourceTexture);
 		CTexture9& target = (*(CTexture9*)pDestinationTexture);
 
-		CopyImage(source.mImage, target.mImage, 0, 0, source.mWidth, source.mHeight, 0, 0);
+		ReallySetImageLayout(commandBuffer, source.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0, 6);
+		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 0, 6);
+		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mWidth, source.mHeight, 0, 0);
+		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 0, 6);
 	}
 	else
 	{
 		CCubeTexture9& source = (*(CCubeTexture9*)pSourceTexture);
-		CCubeTexture9& target = (*(CCubeTexture9*)pDestinationTexture);		
+		CCubeTexture9& target = (*(CCubeTexture9*)pDestinationTexture);
 
-		CopyImage(source.mImage, target.mImage, 0, 0, source.mEdgeLength, source.mEdgeLength, 0, 0);
+		ReallySetImageLayout(commandBuffer, source.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0, 6);
+		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 0, 6);
+		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mEdgeLength, source.mEdgeLength, 0, 0);
+		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 0, 6);
 	}
+
+	mResult = vkEndCommandBuffer(commandBuffer);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkEndCommandBuffer failed with return code of " << GetResultString(mResult);
+		return D3DERR_INVALIDCALL;
+	}
+
+	VkCommandBuffer commandBuffers[] = { commandBuffer };
+	VkFence nullFence = VK_NULL_HANDLE;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = NULL;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = NULL;
+	submitInfo.pWaitDstStageMask = NULL;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = NULL;
+
+	mResult = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkQueueSubmit failed with return code of " << GetResultString(mResult);
+		return D3DERR_INVALIDCALL;
+	}
+
+	mResult = vkQueueWaitIdle(mQueue);
+	if (mResult != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkQueueWaitIdle failed with return code of " << GetResultString(mResult);
+		return D3DERR_INVALIDCALL;
+	}
+
+	vkFreeCommandBuffers(mDevice, mCommandPool, 1, commandBuffers);
 
 	return S_OK;
 }
@@ -5441,7 +5522,7 @@ void CDevice9::StartScene(bool clear)
 
 	vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); //why doesn't this return a result.
 	//Set the pass back to store so draw calls won't be lost if they require stop/start of render pass.
-	mRenderPassBeginInfo.renderPass = mStoreRenderPass; 
+	mRenderPassBeginInfo.renderPass = mStoreRenderPass;
 	vkCmdSetViewport(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mViewport);
 	vkCmdSetScissor(mSwapchainBuffers[mCurrentBuffer], 0, 1, &mDeviceState.mScissor);
 }

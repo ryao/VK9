@@ -64,7 +64,7 @@ public:
 
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
 	VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_GENERAL;
-	VkSubresourceLayout mLayout = {};
+	VkSubresourceLayout mLayouts[6] = {};
 	VkImageSubresource mSubresource = {};
 
 	uint32_t mMipIndex = 0;

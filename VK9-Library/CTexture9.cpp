@@ -501,22 +501,12 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurfac
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
-{
-	//if (Level == 0)
-	//{
-	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::LockRect Level:" << Level << " Handle: " << this;
-	//}
-	
+{	
 	return mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
-	//if (Level == 0)
-	//{
-	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::UnlockRect Level:" << Level << " Handle: " << this;
-	//}
-	
 	return mSurfaces[Level]->UnlockRect();
 }
 

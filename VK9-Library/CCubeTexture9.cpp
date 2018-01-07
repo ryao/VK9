@@ -494,20 +494,30 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DES
 
 HRESULT CCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::LockRect is not implemented!";
-
-	return E_NOTIMPL;
+	//if (Level == 0)
+	//{
+	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::LockRect Level:" << Level << " Handle: " << this;
+	//}
+	HRESULT result = mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
+	VkDeviceSize offset = mSurfaces[Level]->mLayouts[FaceType].offset - mSurfaces[Level]->mLayouts[0].offset;
+	if (offset)
+	{
+		char* bytes = bytes = (char*)pLockedRect->pBits;
+		bytes += offset;
+		pLockedRect->pBits = (void*)bytes;
+	}
+	
+	return result;
 }
 
 HRESULT CCubeTexture9::UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CCubeTexture9::UnlockRect is not implemented!";
-
-	return E_NOTIMPL;
+	//if (Level == 0)
+	//{
+	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::UnlockRect Level:" << Level << " Handle: " << this;
+	//}
+	HRESULT result = mSurfaces[Level]->UnlockRect();
+	return result;
 }
 
 void CCubeTexture9::Flush()
