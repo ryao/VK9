@@ -1642,14 +1642,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	result = vkQueuePresentKHR(mQueue, &mPresentInfo);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueuePresentKHR failed with return code of " << GetResultString(mResult);
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueuePresentKHR failed with return code of " << GetResultString(result);
 		return D3DERR_INVALIDCALL;
 	}
 
 	result = vkQueueWaitIdle(mQueue);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << GetResultString(mResult);
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << GetResultString(result);
 		return D3DERR_INVALIDCALL;
 	}
 
@@ -1759,7 +1759,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateDepthStencilSurface(UINT Width, UINT H
 {
 	HRESULT result = S_OK;
 
-	CSurface9* obj = new CSurface9(this, nullptr, Width, Height, Format, MultiSample, MultisampleQuality, Discard, pSharedHandle);
+	CSurface9* obj = new CSurface9(this, (CTexture9*)nullptr, Width, Height, Format, MultiSample, MultisampleQuality, Discard, pSharedHandle);
 
 	if (obj->mResult != VK_SUCCESS)
 	{
@@ -1797,7 +1797,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width, UINT
 {
 	HRESULT result = S_OK;
 
-	CSurface9* ptr = new CSurface9(this, nullptr, Width, Height, 1, 0, Format, Pool, pSharedHandle);
+	CSurface9* ptr = new CSurface9(this, (CTexture9*)nullptr, Width, Height, 1, 0, Format, Pool, pSharedHandle);
 
 	if (ptr->mResult != VK_SUCCESS)
 	{
@@ -5162,11 +5162,29 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurf
 
 HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture)
 {
-	//TODO: Implement.
+	if (pSourceTexture == nullptr || pDestinationTexture == nullptr)
+	{
+		return D3DERR_INVALIDCALL;
+	}
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::UpdateTexture is not implemented!";
+	//TODO: Handle dirty regions and multiple mip levels.
 
-	return E_NOTIMPL;
+	if (pSourceTexture->GetType() != D3DRTYPE_CUBETEXTURE)
+	{
+		CTexture9& source = (*(CTexture9*)pSourceTexture);
+		CTexture9& target = (*(CTexture9*)pDestinationTexture);
+
+		CopyImage(source.mImage, target.mImage, 0, 0, source.mWidth, source.mHeight, 0, 0);
+	}
+	else
+	{
+		CCubeTexture9& source = (*(CCubeTexture9*)pSourceTexture);
+		CCubeTexture9& target = (*(CCubeTexture9*)pDestinationTexture);		
+
+		CopyImage(source.mImage, target.mImage, 0, 0, source.mEdgeLength, source.mEdgeLength, 0, 0);
+	}
+
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::ValidateDevice(DWORD *pNumPasses)
@@ -5178,14 +5196,93 @@ HRESULT STDMETHODCALLTYPE CDevice9::ValidateDevice(DWORD *pNumPasses)
 	return S_OK;
 }
 
-void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex)
+void CDevice9::CopyImage(VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
+{
+	VkResult result = VK_SUCCESS;
+	VkCommandBuffer commandBuffer;
+
+	VkCommandBufferAllocateInfo commandBufferInfo = {};
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferInfo.pNext = nullptr;
+	commandBufferInfo.commandPool = mCommandPool;
+	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferInfo.commandBufferCount = 1;
+
+	result = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &commandBuffer);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkAllocateCommandBuffers failed with return code of " << GetResultString(result);
+		return;
+	}
+
+	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
+	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+	commandBufferInheritanceInfo.pNext = nullptr;
+	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	commandBufferInheritanceInfo.queryFlags = 0;
+	commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo;
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.pNext = nullptr;
+	commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkBeginCommandBuffer failed with return code of " << GetResultString(result);
+		return;
+	}
+
+	ReallyCopyImage(commandBuffer, srcImage, dstImage, x, y, width, height, srcMip, dstMip);
+
+	result = vkEndCommandBuffer(commandBuffer);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkEndCommandBuffer failed with return code of " << GetResultString(result);
+		return;
+	}
+
+	VkCommandBuffer commandBuffers[] = { commandBuffer };
+	VkFence nullFence = VK_NULL_HANDLE;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = NULL;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = NULL;
+	submitInfo.pWaitDstStageMask = NULL;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = NULL;
+
+	result = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueSubmit failed with return code of " << GetResultString(result);
+		return;
+	}
+
+	result = vkQueueWaitIdle(mQueue);
+	if (result != VK_SUCCESS)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueWaitIdle failed with return code of " << GetResultString(result);
+		return;
+	}
+
+	vkFreeCommandBuffers(mDevice, mCommandPool, 1, commandBuffers);
+}
+
+void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount)
 {
 	/*
 	This is just a helper method to reduce repeat code.
 	*/
 	VkResult result = VK_SUCCESS;
-	VkPipelineStageFlags sourceStages = 0; //VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-	VkPipelineStageFlags destinationStages = 0; //VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
 	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 
 	if (aspectMask == 0)
@@ -5230,105 +5327,7 @@ void CDevice9::SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkIm
 		return;
 	}
 
-	VkImageMemoryBarrier imageMemoryBarrier = {};
-	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageMemoryBarrier.oldLayout = oldImageLayout;
-	imageMemoryBarrier.newLayout = newImageLayout;
-	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.image = image;
-	imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
-	imageMemoryBarrier.subresourceRange.baseMipLevel = mipIndex;
-	imageMemoryBarrier.subresourceRange.levelCount = levelCount;
-	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-	imageMemoryBarrier.subresourceRange.layerCount = 1;
-
-	switch (oldImageLayout)
-	{
-	case VK_IMAGE_LAYOUT_UNDEFINED:
-		break;
-	case VK_IMAGE_LAYOUT_GENERAL:
-		break;
-	case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; //Added based on validation layer complaints.
-																				 //sourceStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-		break;
-	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-		break;
-	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-		break;
-	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		sourceStages  |= VK_PIPELINE_STAGE_TRANSFER_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		sourceStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_PREINITIALIZED:
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-		sourceStages |= VK_PIPELINE_STAGE_HOST_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		break;
-	default:
-		break;
-	}
-
-	switch (newImageLayout)
-	{
-	case VK_IMAGE_LAYOUT_UNDEFINED:
-		break;
-	case VK_IMAGE_LAYOUT_GENERAL:
-		break;
-	case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-		imageMemoryBarrier.srcAccessMask |= VK_ACCESS_MEMORY_READ_BIT;
-
-		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		destinationStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		destinationStages |= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-		break;
-	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-		destinationStages |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_TRANSFER_READ_BIT;
-		destinationStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_TRANSFER_WRITE_BIT;
-		destinationStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_PREINITIALIZED:
-		imageMemoryBarrier.dstAccessMask |= VK_ACCESS_HOST_WRITE_BIT;
-		destinationStages |= VK_PIPELINE_STAGE_HOST_BIT;
-		break;
-	case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		break;
-	default:
-		break;
-	}
-
-	if (sourceStages==0)
-	{
-		sourceStages=VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	}
-	if (destinationStages == 0)
-	{
-		destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	}
-
-	vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+	ReallySetImageLayout(commandBuffer, image, aspectMask, oldImageLayout, newImageLayout, levelCount, mipIndex, layerCount);
 
 	result = vkEndCommandBuffer(commandBuffer);
 	if (result != VK_SUCCESS)
@@ -5483,14 +5482,14 @@ void CDevice9::StopScene()
 	result = vkEndCommandBuffer(mSwapchainBuffers[mCurrentBuffer]);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkEndCommandBuffer failed with return code of " << GetResultString(mResult);
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkEndCommandBuffer failed with return code of " << GetResultString(result);
 		return;
 	}
 
 	result = vkQueueSubmit(mQueue, 1, &mSubmitInfo, mNullFence);
 	if (result != VK_SUCCESS)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << GetResultString(mResult);
+		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::EndScene vkQueueSubmit failed with return code of " << GetResultString(result);
 		return;
 	}
 

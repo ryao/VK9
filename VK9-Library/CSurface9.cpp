@@ -21,12 +21,27 @@ misrepresented as being the original software.
 #include "CSurface9.h"
 #include "CDevice9.h"
 #include "CTexture9.h"
+#include "CCubeTexture9.h"
 #include "Utilities.h"
 #include "CTypes.h"
 
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle)
 	: mDevice(Device),
 	mTexture(Texture),
+	mWidth(Width),
+	mHeight(Height),
+	mFormat(Format),
+	mMultiSample(MultiSample),
+	mMultisampleQuality(MultisampleQuality),
+	mDiscard(Discard),
+	mSharedHandle(pSharedHandle)
+{
+	Init();
+}
+
+CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle)
+	: mDevice(Device),
+	mCubeTexture(Texture),
 	mWidth(Width),
 	mHeight(Height),
 	mFormat(Format),
@@ -52,6 +67,20 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	Init();
 }
 
+CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle, int32_t filler)
+	: mDevice(Device),
+	mCubeTexture(Texture),
+	mWidth(Width),
+	mHeight(Height),
+	mFormat(Format),
+	mMultiSample(MultiSample),
+	mMultisampleQuality(MultisampleQuality),
+	mLockable(Lockable),
+	mSharedHandle(pSharedHandle)
+{
+	Init();
+}
+
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
 	: mDevice(Device),
 	mTexture(Texture),
@@ -65,9 +94,30 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	Init();
 }
 
+CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
+	: mDevice(Device),
+	mCubeTexture(Texture),
+	mWidth(Width),
+	mHeight(Height),
+	mUsage(Usage),
+	mFormat(Format),
+	mPool(Pool),
+	mSharedHandle(pSharedHandle)
+{
+	Init();
+}
+
 void CSurface9::Init()
 {
 	//mDevice->AddRef();
+	if (mCubeTexture != nullptr)
+	{
+		mLayerCount = 6;
+	}
+	else
+	{
+		mLayerCount = 1;
+	}
 
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172611(v=vs.85).aspx
@@ -93,7 +143,7 @@ void CSurface9::Init()
 	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
 	imageCreateInfo.extent = { mWidth, mHeight, 1 };
 	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.arrayLayers = mLayerCount;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
 	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -319,7 +369,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	{
 		if (mIsFlushed)
 		{
-			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 1, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mLayerCount, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 		}
 
 		mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
@@ -432,10 +482,10 @@ void CSurface9::Flush()
 		return;
 	}
 
-	SetImageLayout(commandBuffer, mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0);
-	SetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex);
-	CopyImage(commandBuffer, mStagingImage, mTexture->mImage, mWidth, mHeight, 0, this->mMipIndex);
-	SetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex);
+	ReallySetImageLayout(commandBuffer, mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0,mLayerCount);
+	ReallySetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex, mLayerCount);
+	ReallyCopyImage(commandBuffer, mStagingImage, mTexture->mImage,0,0, mWidth, mHeight, 0, this->mMipIndex);
+	ReallySetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex, mLayerCount);
 
 	mResult = vkEndCommandBuffer(commandBuffer);
 	if (mResult != VK_SUCCESS)

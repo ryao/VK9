@@ -57,8 +57,8 @@ HMODULE GetModule(HMODULE module = 0);
 VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
 
 VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
-void CopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
-void SetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex);
+void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
+void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount);
 
 inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
@@ -286,8 +286,12 @@ inline VkFilter ConvertFilter(D3DTEXTUREFILTERTYPE input)
 		output = VK_FILTER_LINEAR;
 		break;
 	case D3DTEXF_ANISOTROPIC:	// anisotropic
-		//output = VK_FILTER_LINEAR;
-		output = VK_FILTER_CUBIC_IMG; //revisit
+		/*
+		https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html
+		If either magFilter or minFilter is VK_FILTER_CUBIC_IMG, anisotropyEnable must be VK_FALSE
+		*/
+		output = VK_FILTER_LINEAR;
+		//output = VK_FILTER_CUBIC_IMG; //revisit
 		break;
 	case D3DTEXF_PYRAMIDALQUAD:	// 4-sample tent
 		output = VK_FILTER_CUBIC_IMG; //revisit

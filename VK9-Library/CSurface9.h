@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "CResource9.h"
 
 class CTexture9;
+class CCubeTexture9;
 
 class CSurface9 : public IDirect3DSurface9
 {
@@ -35,12 +36,16 @@ private:
 	VkDeviceMemory mStagingDeviceMemory = VK_NULL_HANDLE;
 public:
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
+	CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle,int32_t filler); //CreateRenderTarget
+	CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle, int32_t filler); //CreateRenderTarget
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
+	CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CSurface9();
 
 	CDevice9* mDevice = nullptr;
 	CTexture9* mTexture = nullptr;
+	CCubeTexture9* mCubeTexture = nullptr;
 	UINT mWidth = 0;
 	UINT mHeight = 0;
 	DWORD mUsage = D3DUSAGE_RENDERTARGET;
@@ -63,6 +68,7 @@ public:
 	VkImageSubresource mSubresource = {};
 
 	uint32_t mMipIndex = 0;
+	uint32_t mLayerCount = 0;
 
 	uint32_t counter = 0;
 	BOOL mIsFlushed = false;

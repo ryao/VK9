@@ -268,7 +268,8 @@ public:
 	
 	PAINTSTRUCT* mPaintInformation = {};
 
-	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0);
+	void CopyImage(VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
+	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
 	void StartScene(bool clear = false);
 	void StopScene();
 };

@@ -136,7 +136,7 @@ VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource)
 	return module;
 }
 
-void CopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
+void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
 {
 	VkResult result = VK_SUCCESS;
 
@@ -155,8 +155,8 @@ void CopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage
 	VkImageCopy region = {};
 	region.srcSubresource = subResource1;
 	region.dstSubresource = subResource2;
-	region.srcOffset = { 0, 0, 0 };
-	region.dstOffset = { 0, 0, 0 };
+	region.srcOffset = { x, y, 0 };
+	region.dstOffset = { x, y, 0 };
 	region.extent.width = width;
 	region.extent.height = height;
 	region.extent.depth = 1;
@@ -169,7 +169,7 @@ void CopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage
 	);
 }
 
-void SetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex)
+void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount)
 {
 	VkResult result = VK_SUCCESS;
 	VkPipelineStageFlags sourceStages = 0; //VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
@@ -191,7 +191,7 @@ void SetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectF
 	imageMemoryBarrier.subresourceRange.baseMipLevel = mipIndex;
 	imageMemoryBarrier.subresourceRange.levelCount = levelCount;
 	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-	imageMemoryBarrier.subresourceRange.layerCount = 1;
+	imageMemoryBarrier.subresourceRange.layerCount = layerCount;
 
 	switch (oldImageLayout)
 	{

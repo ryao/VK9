@@ -21,30 +21,45 @@ misrepresented as being the original software.
 #ifndef CCUBETEXTURE9_H
 #define CCUBETEXTURE9_H
 
+#include <boost/container/small_vector.hpp>
 #include "d3d9.h" // Base class: IDirect3DCubeTexture9
 #include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
 #include "CSurface9.h"
 
-class CCubeTexture9 : public IDirect3DCubeTexture9,CBaseTexture9
-{
-private:
-	CDevice9* mDevice;
-	
+class CCubeTexture9 : public IDirect3DCubeTexture9
+{		
 public:
 	CCubeTexture9(CDevice9* Device,UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CCubeTexture9();
 
-	UINT mEdgeLength;
-	UINT mLevels;
-	DWORD mUsage;
-	D3DFORMAT mFormat;
-	D3DPOOL mPool;
-	HANDLE* mSharedHandle;
+	CDevice9* mDevice;
+	UINT mEdgeLength = 0;
+	UINT mLevels = 0;
+	DWORD mUsage = D3DUSAGE_RENDERTARGET;
+	D3DFORMAT mFormat = D3DFMT_UNKNOWN;
+	D3DPOOL mPool = D3DPOOL_DEFAULT;
+	HANDLE* mSharedHandle = nullptr;
 
-	ULONG mReferenceCount;
-	VkResult mResult;
+	ULONG mReferenceCount = 1;
+	VkResult mResult = VK_SUCCESS;
+	D3DTEXTUREFILTERTYPE mMipFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
 
+	VkFormat mRealFormat = VK_FORMAT_UNDEFINED;
+
+	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
+
+	VkImage mImage = VK_NULL_HANDLE;
+	VkDeviceMemory mDeviceMemory = VK_NULL_HANDLE;
+
+	VkSampler mSampler = VK_NULL_HANDLE;
+	VkImageView mImageView = VK_NULL_HANDLE;
+
+	boost::container::small_vector<CSurface9*, 5> mSurfaces;
+
+	void Flush();
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

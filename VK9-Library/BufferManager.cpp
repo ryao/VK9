@@ -1490,7 +1490,11 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request->MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.mipLodBias = request->MipLodBias;
 
-	if (mDevice->mDeviceFeatures.samplerAnisotropy)
+	/*
+	https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html
+	If either magFilter or minFilter is VK_FILTER_CUBIC_IMG, anisotropyEnable must be VK_FALSE
+	*/
+	if (mDevice->mDeviceFeatures.samplerAnisotropy && samplerCreateInfo.minFilter != VK_FILTER_CUBIC_IMG && samplerCreateInfo.magFilter != VK_FILTER_CUBIC_IMG)
 	{
 		// Use max. level of anisotropy for this example
 		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy, mDevice->mDeviceProperties.limits.maxSamplerAnisotropy);
@@ -1507,7 +1511,7 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	}
 	else
 	{
-		// The device does not support anisotropic filtering
+		// The device does not support anisotropic filtering or cubic is currently in use.
 		samplerCreateInfo.maxAnisotropy = 1.0;
 		samplerCreateInfo.anisotropyEnable = VK_FALSE;
 	}
