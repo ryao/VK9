@@ -114,6 +114,7 @@ C9::C9()
 
 	mExtensionNames.push_back("VK_KHR_surface");
 	mExtensionNames.push_back("VK_KHR_win32_surface");	
+	mExtensionNames.push_back("VK_KHR_get_physical_device_properties2");
 #ifdef _DEBUG
 	mExtensionNames.push_back("VK_EXT_debug_report");
 	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");

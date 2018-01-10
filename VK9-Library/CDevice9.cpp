@@ -137,6 +137,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	mExtensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 	mExtensionNames.push_back("VK_KHR_maintenance1");
+	mExtensionNames.push_back("VK_KHR_push_descriptor");
+	mExtensionNames.push_back("VK_KHR_sampler_mirror_clamp_to_edge");
 #ifdef _DEBUG
 	mLayerExtensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif // _DEBUG

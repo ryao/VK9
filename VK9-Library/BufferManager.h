@@ -65,6 +65,8 @@ struct ResourceContext
 	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
 	
 	//Vulkan State
+	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
+	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
 	BOOL WasShader = false; // descriptor set logic is different for shaders so mixing them makes Vulkan angry because the number of attachment is different and stuff.
 
@@ -1254,9 +1256,6 @@ public:
 	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
 	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;
 
-	boost::container::small_vector< std::shared_ptr<ResourceContext>, 16> mUsedResourceBuffer;
-	boost::container::small_vector< std::shared_ptr<ResourceContext>, 16> mUnusedResourceBuffer;
-
 	VkDescriptorSet mLastDescriptorSet = VK_NULL_HANDLE;
 	VkPipeline mLastVkPipeline = VK_NULL_HANDLE;
 
@@ -1264,9 +1263,10 @@ public:
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();
 
+	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR;
+
 	void BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type);
 	void CreatePipe(std::shared_ptr<DrawContext> context);
-	void CreateDescriptorSet(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext);
 	void CreateSampler(std::shared_ptr<SamplerRequest> request);
 
 	void UpdateBuffer();

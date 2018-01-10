@@ -169,6 +169,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mDescriptorSetLayoutCreateInfo.pNext = NULL;
 	mDescriptorSetLayoutCreateInfo.bindingCount = 1;
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
+	mDescriptorSetLayoutCreateInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
 
 	mDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	mDescriptorSetAllocateInfo.pNext = NULL;
@@ -461,6 +462,8 @@ BufferManager::BufferManager(CDevice9* device)
 	//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
 	CreateBuffer(sizeof(Light)*4, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mLightBuffer, mLightBufferMemory);
 	CreateBuffer(sizeof(D3DMATERIAL9), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mMaterialBuffer, mMaterialBufferMemory);
+
+	vkCmdPushDescriptorSetKHR = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(vkGetDeviceProcAddr(mDevice->mDevice, "vkCmdPushDescriptorSetKHR"));
 }
 
 BufferManager::~BufferManager()
@@ -637,9 +640,6 @@ BufferManager::~BufferManager()
 
 	mDrawBuffer.clear();
 	mSamplerRequests.clear();
-
-	mUsedResourceBuffer.clear();
-	mUnusedResourceBuffer.clear();
 }
 
 void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
@@ -793,7 +793,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 
 		if (drawBuffer.PrimitiveType == context->PrimitiveType
 			&& drawBuffer.StreamCount == context->StreamCount
-			&& drawBuffer.mSpecializationConstants.textureCount == constants.textureCount
 
 			&& drawBuffer.VertexShader == context->VertexShader
 			&& drawBuffer.PixelShader == context->PixelShader	
@@ -806,15 +805,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			&& !memcmp(&drawBuffer.mPixelShaderConstantSlots, &pixelSlots, sizeof(ShaderConstantSlots))
 			)
 		{
-			//BOOL isMatch = true;
-			//for (size_t j = 0; j < 64; j++)
-			//{
-			//	if (context->Bindings[j] != mDrawBuffer[i]->Bindings[j])
-			//	{
-			//		isMatch = false;
-			//		break;
-			//	}
-			//}
 			if ( !memcmp(&drawBuffer.Bindings, &context->Bindings, 64 * sizeof(UINT)) )
 			{
 				context->Pipeline = mDrawBuffer[i]->Pipeline;
@@ -865,42 +855,46 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	{
 		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
-		//Loop over cached descriptor information.
-		for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
+		if (context->VertexShader == nullptr)
 		{
-			auto& resourceBuffer = mUsedResourceBuffer[i];
-			BOOL imageMatches = true;
+			mDescriptorBufferInfo[0].buffer = mLightBuffer;
+			mDescriptorBufferInfo[0].offset = 0;
+			mDescriptorBufferInfo[0].range = sizeof(Light) * mDevice->mDeviceState.mLights.size(); //4; 
 
-			//The image info array is currently always 16.
-			for (int32_t j = 0; j < 16; j++)
+			mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
+			mDescriptorBufferInfo[1].offset = 0;
+			mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
+
+			mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
+			mWriteDescriptorSet[0].descriptorCount = 1;
+			mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
+
+			mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
+			mWriteDescriptorSet[1].descriptorCount = 1;
+			mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
+
+			mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
+			mWriteDescriptorSet[2].descriptorCount = mDevice->mDeviceState.mTextures.size();
+			mWriteDescriptorSet[2].pImageInfo = resourceContext->DescriptorImageInfo;
+
+			if (mDevice->mDeviceState.mTextures.size())
 			{
-				auto& imageData1 = resourceBuffer->DescriptorImageInfo[j];
-				auto& imageData2 = resourceContext->DescriptorImageInfo[j];
-
-				if (imageData1.imageLayout == imageData2.imageLayout
-					&& imageData1.imageView == imageData2.imageView
-					&& imageData1.sampler == imageData2.sampler)
-				{
-					//nothing?
-				}
-				else
-				{
-					imageMatches = false;
-					break;
-				}
+				vkCmdPushDescriptorSetKHR(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 3, mWriteDescriptorSet);
 			}
-			if (imageMatches && (resourceContext->WasShader == resourceBuffer->WasShader))
+			else
 			{
-				resourceContext->DescriptorSet = resourceBuffer->DescriptorSet;
-				resourceContext->mDevice = nullptr; //Not owner.
-				resourceBuffer->LastUsed = std::chrono::steady_clock::now();
-				break;
+				vkCmdPushDescriptorSetKHR(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 2, mWriteDescriptorSet);
 			}
 		}
-
-		if (resourceContext->DescriptorSet == VK_NULL_HANDLE)
+		else
 		{
-			CreateDescriptorSet(context, resourceContext);
+			mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
+			mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size(); //Revisit
+			mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
+
+			vkCmdPushDescriptorSetKHR(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, mWriteDescriptorSet);
 		}
 	}
 
@@ -909,12 +903,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	**********************************************/
 
 	//TODO: I need to find a way to prevent binding on every draw call.
-
-	if (resourceContext->DescriptorSet != VK_NULL_HANDLE)
-	{
-		vkCmdBindDescriptorSets(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], VK_PIPELINE_BIND_POINT_GRAPHICS, context->PipelineLayout, 0, 1, &resourceContext->DescriptorSet, 0, nullptr);
-		//mLastDescriptorSet = resourceContext->DescriptorSet;
-	}
 
 	//if (!mIsDirty || mLastVkPipeline != context->Pipeline)
 	//{
@@ -1392,87 +1380,6 @@ void BufferManager::CreatePipe(std::shared_ptr<DrawContext> context)
 	this->mDrawBuffer.push_back(context);
 }
 
-void BufferManager::CreateDescriptorSet(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext)
-{
-	VkResult result = VK_SUCCESS;
-
-	if (context->DescriptorSetLayout == VK_NULL_HANDLE)
-	{
-		resourceContext->DescriptorSet = VK_NULL_HANDLE;
-		return;
-	}
-
-	mDescriptorSetAllocateInfo.pSetLayouts = &context->DescriptorSetLayout;
-	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
-
-	/**********************************************
-	* Create descriptor set if there are none left over, otherwise reuse an existing descriptor set.
-	**********************************************/
-
-	if (mUnusedResourceBuffer.size())
-	{
-		auto& buffer = mUnusedResourceBuffer.back();
-		buffer->mDevice = nullptr;
-
-		resourceContext->DescriptorSet = buffer->DescriptorSet;
-
-		mUnusedResourceBuffer.pop_back();
-	}
-	else
-	{
-		result = vkAllocateDescriptorSets(mDevice->mDevice, &mDescriptorSetAllocateInfo, &resourceContext->DescriptorSet);
-		if (result != VK_SUCCESS)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "BufferManager::CreateDescriptorSet vkAllocateDescriptorSets failed with return code of " << GetResultString(result);
-			return;
-		}
-	}
-
-	mUsedResourceBuffer.push_back(resourceContext);
-  
-	if (context->VertexShader == nullptr)
-	{
-		mDescriptorBufferInfo[0].buffer = mLightBuffer;
-		mDescriptorBufferInfo[0].offset = 0;
-		mDescriptorBufferInfo[0].range = sizeof(Light) * mDevice->mDeviceState.mLights.size(); //4; 
-
-		mDescriptorBufferInfo[1].buffer = mMaterialBuffer;
-		mDescriptorBufferInfo[1].offset = 0;
-		mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
-
-		mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-		mWriteDescriptorSet[0].descriptorCount = 1;
-		mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
-
-		mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
-		mWriteDescriptorSet[1].descriptorCount = 1;
-		mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
-
-		mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-		mWriteDescriptorSet[2].descriptorCount = mDevice->mDeviceState.mTextures.size();
-		mWriteDescriptorSet[2].pImageInfo = resourceContext->DescriptorImageInfo;
-
-		if (mDevice->mDeviceState.mTextures.size())
-		{
-			vkUpdateDescriptorSets(mDevice->mDevice, 3, mWriteDescriptorSet, 0, nullptr);
-		}
-		else
-		{
-			vkUpdateDescriptorSets(mDevice->mDevice, 2, mWriteDescriptorSet, 0, nullptr);
-		}
-	}
-	else
-	{
-		mWriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-		mWriteDescriptorSet[0].descriptorCount = mDevice->mDeviceState.mTextures.size(); //Revisit
-		mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
-
-		vkUpdateDescriptorSets(mDevice->mDevice, 1, mWriteDescriptorSet, 0, nullptr);
-	}
-}
-
 void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 {
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172602(v=vs.85).aspx
@@ -1633,19 +1540,6 @@ void BufferManager::FlushDrawBufffer()
 	*/
 	mDrawBuffer.erase(std::remove_if(mDrawBuffer.begin(), mDrawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mDrawBuffer.end());
 	mSamplerRequests.erase(std::remove_if(mSamplerRequests.begin(), mSamplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mSamplerRequests.end());
-
-	/*
-	Add expired buffers to unused list so they can be reused and then remove them from the used queue.
-	*/
-
-	for (size_t i = 0; i < mUsedResourceBuffer.size(); i++)
-	{
-		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - mUsedResourceBuffer[i]->LastUsed).count() > CACHE_SECONDS)
-		{
-			mUnusedResourceBuffer.push_back(mUsedResourceBuffer[i]);
-		}
-	}
-	mUsedResourceBuffer.erase(std::remove_if(mUsedResourceBuffer.begin(), mUsedResourceBuffer.end(), [](const std::shared_ptr<ResourceContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), mUsedResourceBuffer.end());
 
 	mIsDirty = true;
 }

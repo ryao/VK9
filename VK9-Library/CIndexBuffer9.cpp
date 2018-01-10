@@ -45,7 +45,7 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.pNext = NULL;
 	bufferCreateInfo.size = mLength;
-	bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	bufferCreateInfo.flags = 0;
 
 	VkMemoryAllocateInfo memoryAllocateInfo = {};
