@@ -508,15 +508,7 @@ HRESULT CCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED
 	//{
 	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::LockRect Level:" << Level << " Handle: " << this;
 	//}
-	HRESULT result = mSurfaces[FaceType][Level]->LockRect(pLockedRect, pRect, Flags);
-	VkDeviceSize offset = mSurfaces[FaceType][Level]->mLayouts[FaceType].offset - mSurfaces[FaceType][Level]->mLayouts[0].offset;
-	if (offset)
-	{
-		char* bytes = bytes = (char*)pLockedRect->pBits;
-		bytes += offset;
-		pLockedRect->pBits = (void*)bytes;
-	}
-	
+	HRESULT result = mSurfaces[FaceType][Level]->LockRect(pLockedRect, pRect, Flags);	
 	return result;
 }
 
