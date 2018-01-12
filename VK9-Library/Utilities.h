@@ -57,7 +57,7 @@ HMODULE GetModule(HMODULE module = 0);
 VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
 
 VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
-void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
+void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer);
 void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount);
 
 inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties)

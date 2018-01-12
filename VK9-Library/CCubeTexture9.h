@@ -57,7 +57,7 @@ public:
 	VkSampler mSampler = VK_NULL_HANDLE;
 	VkImageView mImageView = VK_NULL_HANDLE;
 
-	boost::container::small_vector<CSurface9*, 5> mSurfaces;
+	boost::container::small_vector<boost::container::small_vector<CSurface9*, 5>, 6> mSurfaces;
 
 	void Flush();
 public:

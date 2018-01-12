@@ -25,6 +25,7 @@ misrepresented as being the original software.
 #include "BufferManager.h"
 #include "CDevice9.h"
 #include "CTexture9.h"
+#include "CCubeTexture9.h"
 
 #include "Utilities.h"
 
@@ -672,6 +673,21 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			std::shared_ptr<SamplerRequest> request = std::make_shared<SamplerRequest>(mDevice);
 			auto& currentSampler = samplerStates[request->SamplerIndex];
 
+			if (pair1.second->GetType() == D3DRTYPE_CUBETEXTURE)
+			{
+				CCubeTexture9* texture = (CCubeTexture9*)pair1.second;
+
+				request->MaxLod = texture->mLevels;
+				targetSampler.imageView = texture->mImageView;
+			}
+			else
+			{
+				CTexture9* texture = (CTexture9*)pair1.second;
+
+				request->MaxLod = texture->mLevels;
+				targetSampler.imageView = texture->mImageView;
+			}
+
 			request->MagFilter = (D3DTEXTUREFILTERTYPE)currentSampler[D3DSAMP_MAGFILTER];
 			request->MinFilter = (D3DTEXTUREFILTERTYPE)currentSampler[D3DSAMP_MINFILTER];
 			request->AddressModeU = (D3DTEXTUREADDRESS)currentSampler[D3DSAMP_ADDRESSU];
@@ -680,7 +696,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 			request->MaxAnisotropy = currentSampler[D3DSAMP_MAXANISOTROPY];
 			request->MipmapMode = (D3DTEXTUREFILTERTYPE)currentSampler[D3DSAMP_MIPFILTER];
 			request->MipLodBias = currentSampler[D3DSAMP_MIPMAPLODBIAS]; //bit_cast();
-			request->MaxLod = pair1.second->mLevels;
+			
 
 			for (size_t i = 0; i < mSamplerRequests.size(); i++)
 			{
@@ -706,8 +722,7 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 				CreateSampler(request);
 			}
 
-			targetSampler.sampler = request->Sampler;
-			targetSampler.imageView = pair1.second->mImageView;
+			targetSampler.sampler = request->Sampler;		
 			targetSampler.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 		else
@@ -759,8 +774,6 @@ void BufferManager::BeginDraw(std::shared_ptr<DrawContext> context, std::shared_
 	context->StreamCount = deviceState.mStreamSources.size();
 	context->mSpecializationConstants = deviceState.mSpecializationConstants;
 	
-	
-
 	SpecializationConstants& constants = context->mSpecializationConstants;
 	ShaderConstantSlots& vertexSlots = context->mVertexShaderConstantSlots;
 	ShaderConstantSlots& pixelSlots = context->mPixelShaderConstantSlots;

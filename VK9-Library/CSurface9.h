@@ -64,15 +64,16 @@ public:
 
 	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
 	VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_GENERAL;
-	VkSubresourceLayout mLayouts[6] = {};
+	VkSubresourceLayout mLayouts[1] = {};
 	VkImageSubresource mSubresource = {};
 
 	uint32_t mMipIndex = 0;
-	uint32_t mLayerCount = 0;
 
 	uint32_t counter = 0;
 	BOOL mIsFlushed = false;
 	DWORD mFlags = 0;
+
+	uint32_t mTargetLayer = 0;
 
 	void Init();
 

@@ -110,14 +110,6 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 void CSurface9::Init()
 {
 	//mDevice->AddRef();
-	if (mCubeTexture != nullptr)
-	{
-		mLayerCount = 6;
-	}
-	else
-	{
-		mLayerCount = 1;
-	}
 
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172611(v=vs.85).aspx
@@ -143,10 +135,16 @@ void CSurface9::Init()
 	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
 	imageCreateInfo.extent = { mWidth, mHeight, 1 };
 	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = mLayerCount;
+	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
 	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+	if (mCubeTexture != nullptr)
+	{
+		imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+	}
+
 	imageCreateInfo.flags = 0;
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 
@@ -189,12 +187,9 @@ void CSurface9::Init()
 	mSubresource.mipLevel = 0;
 	//mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 	mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	mSubresource.arrayLayer = 0;
 
-	for (size_t i = 0; i < mLayerCount; i++)
-	{
-		mSubresource.arrayLayer = i;
-		vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayouts[i]);
-	}
+	vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayouts[1]);
 }
 
 CSurface9::~CSurface9()
@@ -373,7 +368,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	{
 		if (mIsFlushed)
 		{
-			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mLayerCount, 0); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+			this->mDevice->SetImageLayout(mStagingImage, 0, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 		}
 
 		mResult = vkMapMemory(mDevice->mDevice, mStagingDeviceMemory, 0, mMemoryAllocateInfo.allocationSize, 0, &mData);
@@ -486,10 +481,10 @@ void CSurface9::Flush()
 		return;
 	}
 
-	ReallySetImageLayout(commandBuffer, mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0,mLayerCount);
-	ReallySetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex, mLayerCount);
-	ReallyCopyImage(commandBuffer, mStagingImage, mTexture->mImage,0,0, mWidth, mHeight, 0, this->mMipIndex);
-	ReallySetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex, mLayerCount);
+	ReallySetImageLayout(commandBuffer, mStagingImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0,1);
+	ReallySetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, mMipIndex, mTargetLayer+1);
+	ReallyCopyImage(commandBuffer, mStagingImage, mTexture->mImage,0,0, mWidth, mHeight, 0, this->mMipIndex, 0, mTargetLayer);
+	ReallySetImageLayout(commandBuffer, mTexture->mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, mMipIndex, mTargetLayer+1);
 
 	mResult = vkEndCommandBuffer(commandBuffer);
 	if (mResult != VK_SUCCESS)

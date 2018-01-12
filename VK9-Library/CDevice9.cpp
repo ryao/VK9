@@ -2864,9 +2864,26 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetSwapChain(UINT  iSwapChain, IDirect3DSwap
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTexture(DWORD Stage, IDirect3DBaseTexture9 **ppTexture)
 {
-	//TODO: Implement.
+	DeviceState* state = NULL;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetTexture is not implemented!";
+	if (this->mCurrentStateRecording != nullptr)
+	{
+		state = &this->mCurrentStateRecording->mDeviceState;
+	}
+	else
+	{
+		state = &mDeviceState;
+	}
+
+	auto it = state->mTextures.find(Stage);
+	if (it != state->mTextures.end())
+	{
+		(*ppTexture) = it->second;
+	}
+	else
+	{
+		(*ppTexture) = nullptr;
+	}
 
 	return S_OK;
 }
@@ -4383,7 +4400,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber, UINT 
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTexture9 *pTexture)
 {
-	auto texture = (CTexture9*)pTexture; //Check for compiler bugs.
 	DeviceState* state = NULL;
 
 	if (this->mCurrentStateRecording != nullptr)
@@ -4405,7 +4421,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTextu
 	}
 	else
 	{
-		state->mTextures[Sampler] = texture;
+		state->mTextures[Sampler] = pTexture;
 		//texture->AddRef();
 	}
 
@@ -5215,10 +5231,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSource
 		CTexture9& source = (*(CTexture9*)pSourceTexture);
 		CTexture9& target = (*(CTexture9*)pDestinationTexture);
 
-		ReallySetImageLayout(commandBuffer, source.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0, 6);
-		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 0, 6);
-		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mWidth, source.mHeight, 0, 0);
-		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 0, 6);
+		ReallySetImageLayout(commandBuffer, source.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0, 1);
+		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 0, 1);
+		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mWidth, source.mHeight, 0, 0, 0, 0);
+		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 0, 1);
 	}
 	else
 	{
@@ -5227,7 +5243,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSource
 
 		ReallySetImageLayout(commandBuffer, source.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0, 6);
 		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 0, 6);
-		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mEdgeLength, source.mEdgeLength, 0, 0);
+		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mEdgeLength, source.mEdgeLength, 0, 0, 0, 0);
 		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 0, 6);
 	}
 
@@ -5321,7 +5337,7 @@ void CDevice9::CopyImage(VkImage srcImage, VkImage dstImage, int32_t x, int32_t 
 		return;
 	}
 
-	ReallyCopyImage(commandBuffer, srcImage, dstImage, x, y, width, height, srcMip, dstMip);
+	ReallyCopyImage(commandBuffer, srcImage, dstImage, x, y, width, height, srcMip, dstMip, 0,0);
 
 	result = vkEndCommandBuffer(commandBuffer);
 	if (result != VK_SUCCESS)

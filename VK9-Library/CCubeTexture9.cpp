@@ -56,9 +56,10 @@ CCubeTexture9::CCubeTexture9(CDevice9* Device, UINT EdgeLength, UINT Levels, DWO
 	imageCreateInfo.arrayLayers = 6;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-	imageCreateInfo.flags = 0;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //VK_IMAGE_LAYOUT_PREINITIALIZED;
+	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
 	if (mResult != VK_SUCCESS)
@@ -103,11 +104,10 @@ CCubeTexture9::CCubeTexture9(CDevice9* Device, UINT EdgeLength, UINT Levels, DWO
 	imageViewCreateInfo.format = mRealFormat;
 	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	//imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.levelCount = mLevels;
 	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewCreateInfo.subresourceRange.layerCount = 6;
-
-	imageViewCreateInfo.subresourceRange.levelCount = mLevels;
 
 	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL, &mImageView);
 	if (mResult != VK_SUCCESS)
@@ -116,19 +116,26 @@ CCubeTexture9::CCubeTexture9(CDevice9* Device, UINT EdgeLength, UINT Levels, DWO
 		return;
 	}
 
-	mSurfaces.reserve(mLevels);
-	UINT width = mEdgeLength;
-	UINT height = mEdgeLength;
-	for (size_t i = 0; i < mLevels; i++)
+	mSurfaces.reserve(6);
+
+	for (size_t i = 0; i < 6; i++)
 	{
-		CSurface9* ptr = new CSurface9(mDevice, this, width, height, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+		UINT width = mEdgeLength;
+		UINT height = mEdgeLength;
+		boost::container::small_vector<CSurface9*, 5> surfaces;
+		for (size_t j = 0; j < mLevels; j++)
+		{
+			CSurface9* ptr = new CSurface9(mDevice, this, width, height, mLevels, mUsage, mFormat, mPool, mSharedHandle);
 
-		ptr->mMipIndex = i;
+			ptr->mMipIndex = j;
+			ptr->mTargetLayer = i;
 
-		mSurfaces.push_back(ptr);
+			surfaces.push_back(ptr);
 
-		width /= 2;
-		height /= 2;
+			width /= 2;
+			height /= 2;
+		}
+		mSurfaces.push_back(surfaces);
 	}
 }
 
@@ -157,9 +164,12 @@ CCubeTexture9::~CCubeTexture9()
 		vkFreeMemory(mDevice->mDevice, mDeviceMemory, NULL);
 	}
 
-	for (size_t i = 0; i < mSurfaces.size(); i++)
+	for (size_t i = 0; i < 6; i++)
 	{
-		mSurfaces[i]->Release();
+		for (size_t j = 0; j < mSurfaces.size(); j++)
+		{
+			mSurfaces[i][j]->Release();
+		}		
 	}
 
 	//mDevice->Release();	
@@ -489,7 +499,7 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::GetCubeMapSurface(D3DCUBEMAP_FACES Face
 
 HRESULT STDMETHODCALLTYPE CCubeTexture9::GetLevelDesc(UINT Level, D3DSURFACE_DESC* pDesc)
 {
-	return mSurfaces[Level]->GetDesc(pDesc);
+	return mSurfaces[0][Level]->GetDesc(pDesc);
 }
 
 HRESULT CCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
@@ -498,8 +508,8 @@ HRESULT CCubeTexture9::LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED
 	//{
 	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::LockRect Level:" << Level << " Handle: " << this;
 	//}
-	HRESULT result = mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
-	VkDeviceSize offset = mSurfaces[Level]->mLayouts[FaceType].offset - mSurfaces[Level]->mLayouts[0].offset;
+	HRESULT result = mSurfaces[FaceType][Level]->LockRect(pLockedRect, pRect, Flags);
+	VkDeviceSize offset = mSurfaces[FaceType][Level]->mLayouts[FaceType].offset - mSurfaces[FaceType][Level]->mLayouts[0].offset;
 	if (offset)
 	{
 		char* bytes = bytes = (char*)pLockedRect->pBits;
@@ -516,14 +526,17 @@ HRESULT CCubeTexture9::UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level)
 	//{
 	//	BOOST_LOG_TRIVIAL(info) << "CTexture9::UnlockRect Level:" << Level << " Handle: " << this;
 	//}
-	HRESULT result = mSurfaces[Level]->UnlockRect();
+	HRESULT result = mSurfaces[FaceType][Level]->UnlockRect();
 	return result;
 }
 
 void CCubeTexture9::Flush()
 {
-	for (size_t i = 0; i < mSurfaces.size(); i++)
+	for (size_t i = 0; i < 6; i++)
 	{
-		mSurfaces[i]->Flush();
+		for (size_t j = 0; j < mSurfaces.size(); j++)
+		{
+			mSurfaces[i][j]->Flush();
+		}
 	}
 }

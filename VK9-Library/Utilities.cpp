@@ -136,19 +136,19 @@ VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource)
 	return module;
 }
 
-void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
+void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer)
 {
 	VkResult result = VK_SUCCESS;
 
 	VkImageSubresourceLayers subResource1 = {};
 	subResource1.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subResource1.baseArrayLayer = 0;
+	subResource1.baseArrayLayer = srcLayer;
 	subResource1.mipLevel = srcMip;
 	subResource1.layerCount = 1;
 
 	VkImageSubresourceLayers subResource2 = {};
 	subResource2.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subResource2.baseArrayLayer = 0;
+	subResource2.baseArrayLayer = dstLayer;
 	subResource2.mipLevel = dstMip;
 	subResource2.layerCount = 1;
 
@@ -191,7 +191,7 @@ void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageA
 	imageMemoryBarrier.subresourceRange.baseMipLevel = mipIndex;
 	imageMemoryBarrier.subresourceRange.levelCount = levelCount;
 	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-	imageMemoryBarrier.subresourceRange.layerCount = layerCount;
+	imageMemoryBarrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
 	switch (oldImageLayout)
 	{
