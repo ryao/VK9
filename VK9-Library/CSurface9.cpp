@@ -189,7 +189,7 @@ void CSurface9::Init()
 	mSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	mSubresource.arrayLayer = 0;
 
-	vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayouts[1]);
+	vkGetImageSubresourceLayout(mDevice->mDevice, mStagingImage, &mSubresource, &mLayouts[0]);
 }
 
 CSurface9::~CSurface9()
