@@ -208,6 +208,9 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="GarbageManager.cpp" />
+    <ClCompile Include="Perf_CommandStreamManager.cpp" />
+    <ClCompile Include="Perf_RenderManager.cpp" />
+    <ClCompile Include="Perf_StateManager.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
     <ClCompile Include="VK9-Library.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -237,6 +240,9 @@
     <ClInclude Include="CVertexShader9.h" />
     <ClInclude Include="CVolumeTexture9.h" />
     <ClInclude Include="GarbageManager.h" />
+    <ClInclude Include="Perf_CommandStreamManager.h" />
+    <ClInclude Include="Perf_RenderManager.h" />
+    <ClInclude Include="Perf_StateManager.h" />
     <ClInclude Include="PrivateTypes.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderConverter.h" />
