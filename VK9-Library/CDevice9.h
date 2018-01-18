@@ -44,13 +44,82 @@ misrepresented as being the original software.
 #include "BufferManager.h"
 #include "GarbageManager.h"
 
+#include "Perf_CommandStreamManager.h"
+
 class C9;
 
 class CDevice9 : public IDirect3DDevice9
 {	
 public:
-	CDevice9(C9* Instance,UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters);
+	CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters);
 	~CDevice9();
+
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+	size_t mId;
+
+	//Creation Parameters
+	C9* mInstance = nullptr;
+	UINT mAdapter = 0;
+	D3DDEVTYPE mDeviceType = D3DDEVTYPE_HAL;
+	HWND mFocusWindow = 0;
+	DWORD mBehaviorFlags = 0;
+	D3DPRESENT_PARAMETERS mPresentationParameters = {};
+
+	//Managers
+	BufferManager* mBufferManager = nullptr;
+	GarbageManager mGarbageManager;
+
+	//Device State	
+	CStateBlock9* mCurrentStateRecording = nullptr;
+
+
+	//Swapchain / surface / display
+	VkColorSpaceKHR mColorSpace = {};
+	VkDisplayKHR* mDisplays = nullptr;
+	uint32_t mSurfaceFormatCount = 0;
+	VkImage* mSwapchainImages = nullptr;
+	VkCommandBuffer* mSwapchainBuffers = nullptr;
+	VkImageView* mSwapchainViews = nullptr;
+	uint32_t mSwapchainImageCount = 0;
+	
+	uint32_t mDisplayCount = 0;
+	VkFramebuffer* mFramebuffers = nullptr;
+	boost::container::small_vector<CSwapChain9*, 2> mSwapChains;
+	VkAttachmentDescription mRenderAttachments[2] = {};
+
+	//Misc
+	ULONG mReferenceCount = 1;
+	uint32_t mCurrentBuffer = 0;
+	VkQueue mQueue = VK_NULL_HANDLE;
+	VkSemaphore mPresentCompleteSemaphore = VK_NULL_HANDLE;
+	VkFence mNullFence = VK_NULL_HANDLE;
+	VkRenderPass mStoreRenderPass = VK_NULL_HANDLE;
+	VkRenderPass mClearRenderPass = VK_NULL_HANDLE;
+	VkClearColorValue mClearColorValue = {};
+	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
+	VkCommandBufferInheritanceInfo mCommandBufferInheritanceInfo = {};
+	VkCommandBufferBeginInfo mCommandBufferBeginInfo = {};
+	VkClearValue mClearValues[2] = {};
+	VkRenderPassBeginInfo mRenderPassBeginInfo = {};
+	VkImageMemoryBarrier mImageMemoryBarrier = {};
+	VkSubmitInfo mSubmitInfo = {};
+	VkImageMemoryBarrier mPrePresentBarrier = {};
+	VkPresentInfoKHR mPresentInfo = {};
+	VkPushConstantRange mPushConstants[1] = {};
+	VkPipelineStageFlags mPipeStageFlags = {};
+	boost::container::small_vector<CRenderTargetSurface9*, 16> mRenderTargets;
+
+	BOOL mIsDirty = true;
+	BOOL mIsSceneStarted = false;
+
+	PAINTSTRUCT* mPaintInformation = {};
+
+	void CopyImage(VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
+	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
+	void StartScene(bool clear = false);
+	void StopScene();
+
+public:
 
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);
@@ -174,104 +243,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE UpdateSurface(IDirect3DSurface9 *pSourceSurface,const RECT *pSourceRect,IDirect3DSurface9 *pDestinationSurface,const POINT *pDestinationPoint);
 	virtual HRESULT STDMETHODCALLTYPE UpdateTexture(IDirect3DBaseTexture9* pSourceTexture,IDirect3DBaseTexture9* pDestinationTexture);
 	virtual HRESULT STDMETHODCALLTYPE ValidateDevice(DWORD *pNumPasses);
-	
-public:
-	//Creation Parameters
-	C9* mInstance = nullptr;
-	UINT mAdapter = 0;
-	D3DDEVTYPE mDeviceType = D3DDEVTYPE_HAL;
-	HWND mFocusWindow = 0;
-	DWORD mBehaviorFlags = 0;
-	D3DPRESENT_PARAMETERS mPresentationParameters = {};
-
-	//Managers
-	BufferManager* mBufferManager = nullptr;
-	GarbageManager mGarbageManager;
-
-	//Device Vulkan Handles
-	VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-	VkDevice mDevice = VK_NULL_HANDLE;
-
-	//Device State
-	DeviceState mDeviceState = {};
-	CStateBlock9* mCurrentStateRecording = nullptr;
-
-	//Device Information
-	VkPhysicalDeviceProperties mDeviceProperties = {};
-	VkPhysicalDeviceFeatures mDeviceFeatures = {};
-	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties = {};
-	VkQueueFamilyProperties* mQueueFamilyProperties = nullptr;
-
-	//Swapchain / surface / display
-	VkSurfaceCapabilitiesKHR mSurfaceCapabilities = {};
-	VkSurfaceKHR mSurface = VK_NULL_HANDLE;
-	VkSwapchainKHR mSwapchain = VK_NULL_HANDLE;
-	VkExtent2D mSwapchainExtent = {};
-	VkColorSpaceKHR mColorSpace = {};
-	VkSurfaceFormatKHR* mSurfaceFormats = nullptr;
-	VkDisplayKHR* mDisplays = nullptr;
-	uint32_t mSurfaceFormatCount = 0;
-	VkPresentModeKHR mSwapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-	VkPresentModeKHR* mPresentationModes = nullptr;
-	uint32_t mPresentationModeCount = 0;
-	VkImage* mSwapchainImages = nullptr;
-	VkCommandBuffer* mSwapchainBuffers = nullptr;
-	VkImageView* mSwapchainViews = nullptr;
-	uint32_t mSwapchainImageCount = 0;
-	VkFormat mFormat = VK_FORMAT_UNDEFINED;
-	VkSurfaceTransformFlagBitsKHR mTransformFlags;
-	uint32_t mDisplayCount = 0;
-	VkFramebuffer* mFramebuffers = nullptr;
-	boost::container::small_vector<CSwapChain9*,2> mSwapChains;
-	VkAttachmentDescription mRenderAttachments[2] = {};
-
-	//Depth
-	VkFormat mDepthFormat = VK_FORMAT_UNDEFINED;
-	VkMemoryAllocateInfo mDepthMemoryAllocateInfo;
-	VkImage mDepthImage = VK_NULL_HANDLE;
-	VkDeviceMemory mDepthDeviceMemory = VK_NULL_HANDLE;
-	VkImageView mDepthView = VK_NULL_HANDLE;
-
-	//Misc
-	VkResult mResult = VK_SUCCESS;		
-	uint32_t mQueueCount = 0;
-	uint32_t mGraphicsQueueIndex = UINT32_MAX;
-	uint32_t mPresentationQueueIndex = UINT32_MAX;
-	ULONG mReferenceCount = 1;
-	boost::container::small_vector<char*,16> mExtensionNames;
-	boost::container::small_vector<char*,16> mLayerExtensionNames;
-	uint32_t mCurrentBuffer = 0;
-	VkCommandPool mCommandPool = VK_NULL_HANDLE;
-	VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
-	VkCommandBuffer mCommandBuffer = VK_NULL_HANDLE;
-	VkQueue mQueue = VK_NULL_HANDLE;
-	VkSemaphore mPresentCompleteSemaphore = VK_NULL_HANDLE;
-	VkFence mNullFence = VK_NULL_HANDLE;
-	VkRenderPass mStoreRenderPass = VK_NULL_HANDLE;
-	VkRenderPass mClearRenderPass = VK_NULL_HANDLE;
-	VkClearColorValue mClearColorValue = {};	
-	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
-	VkCommandBufferInheritanceInfo mCommandBufferInheritanceInfo = {};
-	VkCommandBufferBeginInfo mCommandBufferBeginInfo = {};
-	VkClearValue mClearValues[2] = {};
-	VkRenderPassBeginInfo mRenderPassBeginInfo = {};
-	VkImageMemoryBarrier mImageMemoryBarrier = {};
-	VkSubmitInfo mSubmitInfo = {};
-	VkImageMemoryBarrier mPrePresentBarrier = {};
-	VkPresentInfoKHR mPresentInfo = {};
-	VkPushConstantRange mPushConstants[1] = {};
-	VkPipelineStageFlags mPipeStageFlags = {};
-	boost::container::small_vector<CRenderTargetSurface9*,16> mRenderTargets;
-
-	BOOL mIsDirty = true;
-	BOOL mIsSceneStarted = false;
-	
-	PAINTSTRUCT* mPaintInformation = {};
-
-	void CopyImage(VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
-	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
-	void StartScene(bool clear = false);
-	void StopScene();
 };
 
 

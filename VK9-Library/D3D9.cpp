@@ -36,12 +36,6 @@ IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion)
 {
 	C9* instance = new C9();
 
-	if (instance->mResult != VK_SUCCESS)
-	{
-		delete instance;
-		instance = nullptr;
-	}
-
 	return (IDirect3D9*)instance;
 }
 

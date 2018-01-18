@@ -18,20 +18,11 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <atomic>
 #include <thread>
 #include <boost/lockfree/queue.hpp>
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
 
 #include "Perf_RenderManager.h"
 
@@ -40,7 +31,12 @@ misrepresented as being the original software.
 
 enum WorkItemType
 {
-	CreateInstance
+	Instance_Create
+	,Instance_GetAdapterIdentifier
+	,Instance_GetDeviceCaps
+	,Instance_Destroy
+	,Device_Create
+	,Device_Destroy
 };
 
 struct WorkItem
@@ -58,15 +54,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager);
 
 struct CommandStreamManager
 { 	
+	boost::program_options::variables_map mOptions;
+	boost::program_options::options_description mOptionDescriptions;
 	std::thread mWorkerThread;
 	RenderManager mRenderManager;
 	boost::lockfree::queue<WorkItem> mWorkItems;
-	bool IsRunning = 1;
+	std::atomic_bool IsRunning = 1;
+	std::atomic_bool IsBusy = 0;
 
 	CommandStreamManager();
 	~CommandStreamManager();
 
 	size_t RequestWork(const WorkItem& workItem);
+	size_t RequestWorkAndWait(const WorkItem& workItem);
 };
 
 #endif // COMMANDSTREAMMANAGER_H

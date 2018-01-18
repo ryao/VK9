@@ -29,10 +29,7 @@ misrepresented as being the original software.
 //#include <boost/log/utility/setup/file.hpp>
 //#include <boost/log/sinks/sync_frontend.hpp>
 #include "CTypes.h"
-
-#ifdef _DEBUG
-#include "renderdoc_app.h"
-#endif // _DEBUG
+#include "Perf_CommandStreamManager.h"
 
 class C9 : public IDirect3D9
 {
@@ -42,41 +39,13 @@ public:
 	C9();
 	~C9();
 
-#ifdef _DEBUG
-	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
-#endif // _DEBUG
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+	size_t mId;
 
-	VkResult mResult = VK_SUCCESS;
-	VkInstance mInstance = VK_NULL_HANDLE;
-
-	VkPhysicalDevice* mPhysicalDevices = nullptr;
-	uint32_t mGpuCount = 0;
-
-	//VkDisplayPropertiesKHR* mDisplayProperties = nullptr;
 	uint32_t mDisplayCount = 0;
-
-	VkLayerProperties* mLayerProperties = nullptr;
-	uint32_t mLayerPropertyCount = 0;
 	
-	boost::container::small_vector<char*,16> mExtensionNames;
-	boost::container::small_vector<char*,16> mLayerExtensionNames;
 	boost::container::small_vector<Monitor,3> mMonitors;
 	bool mValidationPresent = false;
-
-	boost::program_options::variables_map mOptions;
-	boost::program_options::options_description mOptionDescriptions;
-	//std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mSink;	
-
-#ifdef _DEBUG
-	/* Load VK_EXT_debug_report entry points in debug builds */
-	PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
-	PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
-	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
-	VkDebugReportCallbackEXT mCallback;
-#endif
-
-	//PFN_vkGetDisplayModePropertiesKHR vkGetDisplayModePropertiesKHR;
-	//PFN_vkGetPhysicalDeviceDisplayPropertiesKHR vkGetPhysicalDeviceDisplayPropertiesKHR;
 
 public:
 	//IUnknown
@@ -100,8 +69,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps);
 	virtual HRESULT STDMETHODCALLTYPE RegisterSoftwareDevice(void *pInitializeFunction);
 };
-
-VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
 
 BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
 

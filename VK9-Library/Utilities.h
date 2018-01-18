@@ -27,6 +27,7 @@ misrepresented as being the original software.
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
+#include <vulkan/vulkan.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -60,6 +61,19 @@ VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
 void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer);
 void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount);
 
+inline uint32_t FindMemoryType(vk::PhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeFilter, vk::MemoryPropertyFlagBits properties)
+{
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+	{
+		if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+		{
+			return i;
+		}
+	}
+
+	return 0;
+}
+
 inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
 	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
@@ -71,6 +85,24 @@ inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryPropertie
 	}
 
 	return 0;
+}
+
+inline bool GetMemoryTypeFromProperties(vk::PhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits, vk::MemoryPropertyFlagBits requirements_mask, uint32_t *typeIndex)
+{
+	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)
+	{
+		if ((typeBits & 1) == 1)
+		{
+			if ((memoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask)
+			{
+				*typeIndex = i;
+				return true;
+			}
+		}
+		typeBits >>= 1;
+	}
+
+	return false;
 }
 
 inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex)
@@ -368,6 +400,24 @@ inline VkPrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input)
 	*/
 
 	return output;
+}
+
+inline bool GetMemoryTypeFromProperties(const vk::PhysicalDeviceMemoryProperties& deviceMemoryProperties, uint32_t typeBits, vk::MemoryPropertyFlagBits requirements_mask, uint32_t *typeIndex)
+{
+	// Search memtypes to find first index with those properties
+	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
+		if ((typeBits & 1) == 1) {
+			// Type is available, does it match user properties?
+			if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask)
+			{
+				*typeIndex = i;
+				return true;
+			}
+		}
+		typeBits >>= 1;
+	}
+	// No memory types matched, return failure
+	return false;
 }
 
 inline bool GetMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& deviceMemoryProperties, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex)
@@ -1008,7 +1058,7 @@ Optimizing compilers are magic. The memcpy should go away. If not performance wi
 template <class TargetType, class SourceType>
 inline void assign(TargetType& target, const SourceType& source)
 {
-	static_assert(sizeof(TargetType) == sizeof(SourceType),"To do a bitwise assign both types must be the same size.");
+	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise assign both types must be the same size.");
 	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
 	memcpy(&target, &source, sizeof(target));
 }
@@ -1037,7 +1087,7 @@ inline float bit_cast(const DWORD& source)
 	return returnValue;
 }
 
-const std::string mResultStrings[] = 
+const std::string mResultStrings[] =
 {
 	"Unknown",
 	"VK_SUCCESS",
