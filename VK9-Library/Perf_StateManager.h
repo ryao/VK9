@@ -35,55 +35,6 @@ misrepresented as being the original software.
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
 
-struct RealWindow
-{
-	//Command, queue, and render pass stuff
-	vk::CommandPool mCommandPool;
-	vk::Queue mQueue;
-	vk::CommandBuffer* mSwapchainBuffers;
-	
-	//Surface stuff
-	vk::SurfaceKHR mSurface;
-	vk::SurfaceCapabilitiesKHR mSurfaceCapabilities;
-	uint32_t mSurfaceFormatCount;
-	vk::SurfaceFormatKHR* mSurfaceFormats;
-
-	//Presentation Mode stuff
-	uint32_t mPresentationModeCount;
-	vk::PresentModeKHR* mPresentationModes;
-	
-
-	//Swapchain & depth stuff
-	vk::SwapchainKHR mSwapchain;
-	vk::PresentModeKHR mSwapchainPresentMode;
-	uint32_t mSwapchainImageCount;
-	vk::Image* mSwapchainImages;
-	vk::ImageView* mSwapchainViews;
-	vk::Image mDepthImage;
-	vk::DeviceMemory mDepthDeviceMemory;
-	vk::ImageView mDepthView;
-
-	RealWindow();
-	~RealWindow();
-};
-
-struct RealDevice
-{
-	//Feature and property information
-	vk::PhysicalDeviceProperties mPhysicalDeviceProperties;
-	vk::PhysicalDeviceFeatures mPhysicalDeviceFeatures;
-	vk::PhysicalDeviceMemoryProperties mPhysicalDeviceMemoryProperties;
-	vk::QueueFamilyProperties* mQueueFamilyProperties;
-	uint32_t mQueueFamilyPropertyCount;
-
-	//Stuff that does things.
-	vk::Device mDevice;
-	vk::DescriptorPool mDescriptorPool;
-
-	RealDevice();
-	 ~RealDevice();
-};
-
 struct RealInstance
 {
 	vk::Instance mInstance;
@@ -101,6 +52,87 @@ struct RealInstance
 	~RealInstance();
 };
 
+struct RealDevice
+{
+	//Feature and property information
+	vk::PhysicalDeviceProperties mPhysicalDeviceProperties;
+	vk::PhysicalDeviceFeatures mPhysicalDeviceFeatures;
+	vk::PhysicalDeviceMemoryProperties mPhysicalDeviceMemoryProperties;
+	vk::QueueFamilyProperties* mQueueFamilyProperties;
+	uint32_t mQueueFamilyPropertyCount;
+
+	//Stuff that does things.
+	vk::Device mDevice;
+	vk::DescriptorPool mDescriptorPool;
+
+	RealDevice();
+	~RealDevice();
+};
+
+struct RealWindow
+{
+	RealInstance& mRealInstance;
+	RealDevice& mRealDevice;
+
+	//Command, queue, and render pass stuff
+	vk::CommandPool mCommandPool;
+	vk::Queue mQueue;
+	vk::CommandBuffer* mSwapchainBuffers;
+	uint32_t mCurrentSwapchainBuffer = 0;
+	vk::AttachmentDescription mRenderAttachments[2];
+	vk::RenderPass mStoreRenderPass;
+	vk::RenderPass mClearRenderPass;
+	vk::Framebuffer* mFramebuffers;
+	vk::CommandBufferInheritanceInfo mCommandBufferInheritanceInfo;
+	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
+	vk::RenderPassBeginInfo mRenderPassBeginInfo;
+	vk::ImageMemoryBarrier mImageMemoryBarrier;
+	vk::Extent2D mSwapchainExtent;
+	vk::ClearValue mClearValues[2];
+	vk::ColorSpaceKHR mColorSpace;
+	vk::ClearColorValue mClearColorValue;
+	vk::SubmitInfo mSubmitInfo;
+	vk::PushConstantRange mPushConstants[1];
+	vk::PipelineStageFlags mPipeStageFlags;
+
+	bool mIsSceneStarted = false;
+
+	//Surface stuff
+	vk::SurfaceKHR mSurface;
+	vk::SurfaceCapabilitiesKHR mSurfaceCapabilities;
+	uint32_t mSurfaceFormatCount;
+	vk::SurfaceFormatKHR* mSurfaceFormats;
+
+	//Presentation Mode stuff
+	uint32_t mPresentationModeCount;
+	vk::PresentModeKHR* mPresentationModes;
+	vk::SemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo;
+	vk::Semaphore mPresentCompleteSemaphore;
+	vk::PresentInfoKHR mPresentInfo;
+	vk::ImageMemoryBarrier mPrePresentBarrier;
+
+	//Swapchain & depth stuff
+	vk::SwapchainKHR mSwapchain;
+	vk::PresentModeKHR mSwapchainPresentMode;
+	uint32_t mSwapchainImageCount;
+	vk::Image* mSwapchainImages;
+	vk::ImageView* mSwapchainViews;
+	vk::Image mDepthImage;
+	vk::DeviceMemory mDepthDeviceMemory;
+	vk::ImageView mDepthView;
+
+	//Misc Handles
+	vk::Fence mNullFence;
+
+	//Misc State
+	DeviceState mDeviceState = {};
+
+	RealWindow(RealInstance& realInstance,RealDevice& realDevice);
+	~RealWindow();
+
+	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
+};
+
 struct StateManager
 {
 	boost::container::small_vector< std::shared_ptr<RealInstance> ,1> mInstances;
@@ -108,8 +140,6 @@ struct StateManager
 
 	boost::container::small_vector< std::shared_ptr<RealWindow>, 1> mWindows;
 	std::atomic_size_t mWindowsKey = 0;
-
-	DeviceState mDeviceState = {};
 
 	StateManager();
 	~StateManager();

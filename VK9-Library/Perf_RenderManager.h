@@ -30,6 +30,11 @@ struct RenderManager
 
 	RenderManager();
 	~RenderManager();
+
+	void UpdateBuffer(RealWindow& realWindow);
+	void StartScene(RealWindow& realWindow,bool clear = false);
+	void StopScene(RealWindow& realWindow);
+
 };
 
 #endif // RENDERMANAGER_H

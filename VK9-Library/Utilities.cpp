@@ -136,6 +136,37 @@ VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource)
 	return module;
 }
 
+void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer)
+{
+	vk::Result result;
+
+	vk::ImageSubresourceLayers subResource1;
+	subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
+	subResource1.baseArrayLayer = srcLayer;
+	subResource1.mipLevel = srcMip;
+	subResource1.layerCount = 1;
+
+	vk::ImageSubresourceLayers subResource2;
+	subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
+	subResource2.baseArrayLayer = dstLayer;
+	subResource2.mipLevel = dstMip;
+	subResource2.layerCount = 1;
+
+	vk::ImageCopy region;
+	region.srcSubresource = subResource1;
+	region.dstSubresource = subResource2;
+	region.srcOffset = { x, y, 0 };
+	region.dstOffset = { x, y, 0 };
+	region.extent.width = width;
+	region.extent.height = height;
+	region.extent.depth = 1;
+
+	commandBuffer.copyImage(
+		srcImage, vk::ImageLayout::eTransferSrcOptimal,
+		dstImage, vk::ImageLayout::eTransferDstOptimal,
+		1, &region);
+}
+
 void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer)
 {
 	VkResult result = VK_SUCCESS;
@@ -167,6 +198,117 @@ void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage ds
 		dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1, &region
 	);
+}
+
+void ReallySetImageLayout(vk::CommandBuffer commandBuffer, vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount)
+{
+	VkResult result;
+	vk::PipelineStageFlags sourceStages; //VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+	vk::PipelineStageFlags destinationStages; //VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+
+	if (aspectMask == vk::ImageAspectFlags()) //0
+	{
+		aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+
+	vk::ImageMemoryBarrier imageMemoryBarrier;
+	imageMemoryBarrier.oldLayout = oldImageLayout;
+	imageMemoryBarrier.newLayout = newImageLayout;
+	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.image = image;
+	imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
+	imageMemoryBarrier.subresourceRange.baseMipLevel = mipIndex;
+	imageMemoryBarrier.subresourceRange.levelCount = levelCount;
+	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+	imageMemoryBarrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+
+	switch (oldImageLayout)
+	{
+	case vk::ImageLayout::eUndefined:
+		break;
+	case vk::ImageLayout::eGeneral:
+		break;
+	case vk::ImageLayout::eColorAttachmentOptimal:
+		imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite; //Added based on validation layer complaints.
+		sourceStages |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		break;
+	case vk::ImageLayout::eDepthStencilAttachmentOptimal:
+		break;
+	case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
+		break;
+	case vk::ImageLayout::eShaderReadOnlyOptimal:
+		break;
+	case vk::ImageLayout::eTransferSrcOptimal:
+		imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+		sourceStages  |= vk::PipelineStageFlagBits::eTransfer;
+		break;
+	case vk::ImageLayout::eTransferDstOptimal:
+		imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+		sourceStages |= vk::PipelineStageFlagBits::eTransfer;
+		break;
+	case vk::ImageLayout::ePreinitialized:
+		imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eHostWrite;
+		sourceStages |= vk::PipelineStageFlagBits::eHost;
+		break;
+	case vk::ImageLayout::ePresentSrcKHR:
+		imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		break;
+	default:
+		break;
+	}
+
+	switch (newImageLayout)
+	{
+	case vk::ImageLayout::eUndefined:
+		break;
+	case vk::ImageLayout::eGeneral:
+		break;
+	case vk::ImageLayout::eColorAttachmentOptimal:
+		imageMemoryBarrier.srcAccessMask |= vk::AccessFlagBits::eMemoryRead;
+		imageMemoryBarrier.dstAccessMask |= vk::AccessFlagBits::eColorAttachmentWrite;
+		destinationStages |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		break;
+	case vk::ImageLayout::eDepthStencilAttachmentOptimal:
+		imageMemoryBarrier.dstAccessMask |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+		destinationStages |= vk::PipelineStageFlagBits::eLateFragmentTests;
+		break;
+	case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
+		break;
+	case vk::ImageLayout::eShaderReadOnlyOptimal:
+		imageMemoryBarrier.dstAccessMask |= vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eInputAttachmentRead;
+		destinationStages |= vk::PipelineStageFlagBits::eFragmentShader;
+		break;
+	case vk::ImageLayout::eTransferSrcOptimal:
+		imageMemoryBarrier.dstAccessMask |= vk::AccessFlagBits::eTransferRead;
+		destinationStages |= vk::PipelineStageFlagBits::eTransfer;
+		break;
+	case vk::ImageLayout::eTransferDstOptimal:
+		imageMemoryBarrier.dstAccessMask |= vk::AccessFlagBits::eTransferWrite;
+		destinationStages |= vk::PipelineStageFlagBits::eTransfer;
+		break;
+	case vk::ImageLayout::ePreinitialized:
+		imageMemoryBarrier.dstAccessMask |= vk::AccessFlagBits::eHostWrite;
+		destinationStages |= vk::PipelineStageFlagBits::eHost;
+		break;
+	case vk::ImageLayout::ePresentSrcKHR:
+		imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		break;
+	default:
+		break;
+	}
+
+	if (sourceStages == vk::PipelineStageFlags())
+	{
+		sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
+	}
+
+	if (destinationStages == vk::PipelineStageFlags())
+	{
+		destinationStages = vk::PipelineStageFlagBits::eTopOfPipe;
+	}
+
+	commandBuffer.pipelineBarrier(sourceStages, destinationStages, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 }
 
 void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount)
@@ -211,7 +353,7 @@ void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageA
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		sourceStages  |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		sourceStages |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;

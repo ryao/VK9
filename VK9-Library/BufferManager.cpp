@@ -1457,24 +1457,6 @@ void BufferManager::CreateSampler(std::shared_ptr<SamplerRequest> request)
 	mSamplerRequests.push_back(request);
 }
 
-void BufferManager::UpdateBuffer()
-{ //Vulkan doesn't allow vkCmdUpdateBuffer inside of a render pass.
-
-	//The dirty flag for lights can be set by enable light or set light.
-	if (mDevice->mDeviceState.mAreLightsDirty)
-	{
-		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mLightBuffer, 0, sizeof(Light)*mDevice->mDeviceState.mLights.size(), mDevice->mDeviceState.mLights.data()); //context->mSpecializationConstants.lightCount
-		mDevice->mDeviceState.mAreLightsDirty = false;
-	}
-
-	//
-	if (mDevice->mDeviceState.mIsMaterialDirty)
-	{
-		vkCmdUpdateBuffer(mDevice->mSwapchainBuffers[mDevice->mCurrentBuffer], mMaterialBuffer, 0, sizeof(D3DMATERIAL9), &mDevice->mDeviceState.mMaterial);
-		mDevice->mDeviceState.mIsMaterialDirty = false;
-	}
-}
-
 void BufferManager::UpdatePushConstants(std::shared_ptr<DrawContext> context)
 {
 	VkResult result = VK_SUCCESS;

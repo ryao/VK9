@@ -36,6 +36,7 @@ enum WorkItemType
 	,Instance_GetDeviceCaps
 	,Instance_Destroy
 	,Device_Create
+	,Device_BeginScene
 	,Device_Destroy
 };
 

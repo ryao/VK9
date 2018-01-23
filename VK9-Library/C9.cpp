@@ -37,9 +37,7 @@ misrepresented as being the original software.
 //#endif
 
 C9::C9()
-	: 
-	mOptionDescriptions("Allowed options"),
-	mMonitors(4)
+	: mMonitors(4)
 {
 	mCommandStreamManager = std::make_shared<CommandStreamManager>();
 

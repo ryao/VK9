@@ -526,7 +526,7 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetScissorRect
 	RECT m9Scissor = {};
-	VkRect2D mScissor = {};
+	vk::Rect2D mScissor = {};
 
 	//IDirect3DDevice9::SetStreamSource
 	boost::container::flat_map<UINT, StreamSource> mStreamSources;
@@ -545,7 +545,7 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetViewport
 	D3DVIEWPORT9 m9Viewport = {};
-	VkViewport mViewport = {};
+	vk::Viewport mViewport = {};
 
 	//IDirect3DDevice9::SetVertexDeclaration
 	CVertexDeclaration9* mVertexDeclaration = nullptr;

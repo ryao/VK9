@@ -1269,8 +1269,6 @@ public:
 	void CreatePipe(std::shared_ptr<DrawContext> context);
 	void CreateSampler(std::shared_ptr<SamplerRequest> request);
 
-	void UpdateBuffer();
-
 	void UpdatePushConstants(std::shared_ptr<DrawContext> context);
 	void FlushDrawBufffer();
 

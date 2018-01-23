@@ -58,7 +58,9 @@ HMODULE GetModule(HMODULE module = 0);
 VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
 
 VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
+void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer);
 void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer);
+void ReallySetImageLayout(vk::CommandBuffer commandBuffer, vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount);
 void ReallySetImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount);
 
 inline uint32_t FindMemoryType(vk::PhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeFilter, vk::MemoryPropertyFlagBits properties)
@@ -214,6 +216,31 @@ inline int32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType,
 	}
 
 	return output;
+}
+
+inline void SetCulling(vk::PipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
+{
+	switch (input)
+	{
+	case D3DCULL_NONE:
+		pipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eNone;
+		pipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
+		break;
+	case D3DCULL_CW:
+		pipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eBack;
+		pipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eCounterClockwise;
+		//pipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
+		break;
+	case D3DCULL_CCW:
+		pipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eBack;
+		pipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
+		//pipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eCounterClockwise;
+		break;
+	default:
+		pipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eNone;
+		pipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
+		break;
+	}
 }
 
 inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)

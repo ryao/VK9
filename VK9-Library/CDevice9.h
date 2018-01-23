@@ -54,6 +54,7 @@ public:
 	CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters);
 	~CDevice9();
 
+	//CSMT
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 	size_t mId;
 
@@ -67,57 +68,18 @@ public:
 
 	//Managers
 	BufferManager* mBufferManager = nullptr;
-	GarbageManager mGarbageManager;
-
-	//Device State	
-	CStateBlock9* mCurrentStateRecording = nullptr;
-
-
-	//Swapchain / surface / display
-	VkColorSpaceKHR mColorSpace = {};
-	VkDisplayKHR* mDisplays = nullptr;
-	uint32_t mSurfaceFormatCount = 0;
-	VkImage* mSwapchainImages = nullptr;
-	VkCommandBuffer* mSwapchainBuffers = nullptr;
-	VkImageView* mSwapchainViews = nullptr;
-	uint32_t mSwapchainImageCount = 0;
-	
-	uint32_t mDisplayCount = 0;
-	VkFramebuffer* mFramebuffers = nullptr;
-	boost::container::small_vector<CSwapChain9*, 2> mSwapChains;
-	VkAttachmentDescription mRenderAttachments[2] = {};
 
 	//Misc
 	ULONG mReferenceCount = 1;
-	uint32_t mCurrentBuffer = 0;
-	VkQueue mQueue = VK_NULL_HANDLE;
-	VkSemaphore mPresentCompleteSemaphore = VK_NULL_HANDLE;
-	VkFence mNullFence = VK_NULL_HANDLE;
-	VkRenderPass mStoreRenderPass = VK_NULL_HANDLE;
-	VkRenderPass mClearRenderPass = VK_NULL_HANDLE;
-	VkClearColorValue mClearColorValue = {};
-	VkSemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo = {};
-	VkCommandBufferInheritanceInfo mCommandBufferInheritanceInfo = {};
-	VkCommandBufferBeginInfo mCommandBufferBeginInfo = {};
-	VkClearValue mClearValues[2] = {};
-	VkRenderPassBeginInfo mRenderPassBeginInfo = {};
-	VkImageMemoryBarrier mImageMemoryBarrier = {};
-	VkSubmitInfo mSubmitInfo = {};
-	VkImageMemoryBarrier mPrePresentBarrier = {};
-	VkPresentInfoKHR mPresentInfo = {};
-	VkPushConstantRange mPushConstants[1] = {};
-	VkPipelineStageFlags mPipeStageFlags = {};
+	uint32_t mDisplayCount = 0;
+	CStateBlock9* mCurrentStateRecording = nullptr;
+	boost::container::small_vector<CSwapChain9*, 2> mSwapChains;
 	boost::container::small_vector<CRenderTargetSurface9*, 16> mRenderTargets;
-
 	BOOL mIsDirty = true;
-	BOOL mIsSceneStarted = false;
-
+	
 	PAINTSTRUCT* mPaintInformation = {};
 
 	void CopyImage(VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip);
-	void SetImageLayout(VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
-	void StartScene(bool clear = false);
-	void StopScene();
 
 public:
 

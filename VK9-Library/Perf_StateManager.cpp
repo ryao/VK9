@@ -24,6 +24,7 @@ misrepresented as being the original software.
 
 #include "C9.h"
 #include "CDevice9.h"
+#include "Utilities.h"
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -62,14 +63,133 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, 
 	return VK_FALSE;
 }
 
-RealWindow::RealWindow()
+RealWindow::RealWindow(RealInstance& realInstance,RealDevice& realDevice)
+	: mRealInstance(realInstance)
+	,mRealDevice(realDevice)
 {
 
 }
 
 RealWindow::~RealWindow()
 {
+	auto& device = mRealDevice.mDevice;
+	auto& instance = mRealInstance.mInstance;
 
+	device.destroySemaphore(mPresentCompleteSemaphore, nullptr);
+
+	if (mFramebuffers != nullptr)
+	{
+		for (size_t i = 0; i < mSwapchainImageCount; i++)
+		{
+			if (mFramebuffers[i] != nullptr)
+			{
+				device.destroyFramebuffer(mFramebuffers[i], nullptr);
+			}
+		}
+		delete[] mFramebuffers;
+	}
+
+	device.destroyRenderPass(mStoreRenderPass, nullptr);
+	device.destroyRenderPass(mClearRenderPass, nullptr);
+	device.freeCommandBuffers(mCommandPool, mSwapchainImageCount, mSwapchainBuffers);
+	delete[] mSwapchainBuffers;
+	device.destroyImageView(mDepthView, nullptr);
+	device.destroyImage(mDepthImage, nullptr);
+	device.freeMemory(mDepthDeviceMemory, nullptr);
+	device.destroyCommandPool(mCommandPool, nullptr);
+	device.destroySwapchainKHR(mSwapchain, nullptr);
+
+	if (mSwapchainViews != nullptr)
+	{
+		for (size_t i = 0; i < mSwapchainImageCount; i++)
+		{
+			if (mSwapchainViews[i] != nullptr)
+			{
+				device.destroyImageView(mSwapchainViews[i], nullptr);
+			}
+		}
+		delete[] mSwapchainViews;
+	}
+
+	//if (mSwapchainImages != nullptr)
+	//{
+	//For some reason destroying the images causes a crash. I'm guessing it's a double free or something like that because the views have already been destroyed.
+	//for (int32_t i = 0; i < mSwapchainImageCount; i++)
+	//{
+	//	if (mSwapchainImages[i] != VK_NULL_HANDLE)
+	//	{
+	//		vkDestroyImage(mDevice, mSwapchainImages[i], nullptr);
+	//	}	
+	//}
+	delete[] mSwapchainImages;
+	//}
+
+	instance.destroySurfaceKHR(mSurface, nullptr);
+
+	delete[] mPresentationModes;
+	delete[] mSurfaceFormats;
+}
+
+void RealWindow::SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount)
+{
+	/*
+	This is just a helper method to reduce repeat code.
+	*/
+	vk::Result result;
+	vk::CommandBuffer commandBuffer;
+
+	if (aspectMask == vk::ImageAspectFlags())
+	{
+		aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+
+	vk::CommandBufferAllocateInfo commandBufferInfo = {};
+	commandBufferInfo.commandPool = mCommandPool;
+	commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
+	commandBufferInfo.commandBufferCount = 1;
+
+	result = mRealDevice.mDevice.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealWindow::SetImageLayout vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+
+	vk::CommandBufferBeginInfo commandBufferBeginInfo;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+	result = commandBuffer.begin(&commandBufferBeginInfo);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealWindow::SetImageLayout vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ReallySetImageLayout(commandBuffer, image, aspectMask, oldImageLayout, newImageLayout, levelCount, mipIndex, layerCount);
+
+	commandBuffer.end();
+
+	vk::CommandBuffer commandBuffers[] = { commandBuffer };
+	vk::Fence nullFence;
+	vk::SubmitInfo submitInfo;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = 0;
+
+	result = mQueue.submit(1, &submitInfo, nullFence);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealWindow::SetImageLayout vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	mQueue.waitIdle();
+	mRealDevice.mDevice.freeCommandBuffers(mCommandPool, 1, commandBuffers);
 }
 
 RealDevice::RealDevice()
@@ -80,7 +200,7 @@ RealDevice::RealDevice()
 RealDevice::~RealDevice()
 {
 	delete[] mQueueFamilyProperties;
-	mDevice.destroyDescriptorPool(mDescriptorPool);
+	mDevice.destroyDescriptorPool(mDescriptorPool, nullptr);
 	mDevice.destroy();
 }
 
@@ -114,17 +234,16 @@ void StateManager::DestroyWindow(size_t id)
 
 void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 {
-	auto ptr = std::make_shared<RealWindow>();
 	vk::Result result;
 	auto instance = mInstances[id];
 	CDevice9* device9 = (CDevice9*)argument1;
 	auto& physicaldevice = instance->mPhysicalDevices[device9->mAdapter];
 	auto& device = instance->mDevices[device9->mAdapter];
+	auto ptr = std::make_shared<RealWindow>((*instance),device);
 	vk::Bool32 doesSupportPresentation = false;
 	vk::Bool32 doesSupportGraphics = false;
 	uint32_t graphicsQueueIndex = 0;
 	uint32_t presentationQueueIndex = 0;
-	vk::Extent2D swapchainExtent = {};
 	vk::Format format = vk::Format::eUndefined;
 	vk::Format depthFormat = vk::Format::eD16Unorm;
 	vk::SurfaceTransformFlagBitsKHR transformFlags;
@@ -186,39 +305,39 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 				if (ptr->mSurfaceCapabilities.currentExtent.width < (uint32_t)1 || ptr->mSurfaceCapabilities.currentExtent.height < (uint32_t)1)
 				{
 					//If the height/width are -1 then just set it to the requested size and hope for the best.
-					swapchainExtent.width = device9->mPresentationParameters.BackBufferWidth;
-					swapchainExtent.height = device9->mPresentationParameters.BackBufferHeight;
+					ptr->mSwapchainExtent.width = device9->mPresentationParameters.BackBufferWidth;
+					ptr->mSwapchainExtent.height = device9->mPresentationParameters.BackBufferHeight;
 				}
 				else
 				{
 					//Apparently the swap chain size must match the surface size if it is defined.
-					swapchainExtent = ptr->mSurfaceCapabilities.currentExtent;
+					ptr->mSwapchainExtent = ptr->mSurfaceCapabilities.currentExtent;
 					device9->mPresentationParameters.BackBufferWidth = ptr->mSurfaceCapabilities.currentExtent.width;
 					device9->mPresentationParameters.BackBufferHeight = ptr->mSurfaceCapabilities.currentExtent.height;
 				}
 
 				//initialize vulkan/d3d9 viewport and scissor structures.
 				//mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
-				mDeviceState.mViewport.width = (float)device9->mPresentationParameters.BackBufferWidth;
+				ptr->mDeviceState.mViewport.width = (float)device9->mPresentationParameters.BackBufferWidth;
 				//mDeviceState.mViewport.height = -(float)mPresentationParameters.BackBufferHeight;
-				mDeviceState.mViewport.height = (float)device9->mPresentationParameters.BackBufferHeight;
-				mDeviceState.mViewport.minDepth = 0.0f;
-				mDeviceState.mViewport.maxDepth = 1.0f;
+				ptr->mDeviceState.mViewport.height = (float)device9->mPresentationParameters.BackBufferHeight;
+				ptr->mDeviceState.mViewport.minDepth = 0.0f;
+				ptr->mDeviceState.mViewport.maxDepth = 1.0f;
 
-				mDeviceState.m9Viewport.Width = (DWORD)mDeviceState.mViewport.width;
-				mDeviceState.m9Viewport.Height = (DWORD)mDeviceState.mViewport.height;
-				mDeviceState.m9Viewport.MinZ = mDeviceState.mViewport.minDepth;
-				mDeviceState.m9Viewport.MaxZ = mDeviceState.mViewport.maxDepth;
+				ptr->mDeviceState.m9Viewport.Width = (DWORD)ptr->mDeviceState.mViewport.width;
+				ptr->mDeviceState.m9Viewport.Height = (DWORD)ptr->mDeviceState.mViewport.height;
+				ptr->mDeviceState.m9Viewport.MinZ = ptr->mDeviceState.mViewport.minDepth;
+				ptr->mDeviceState.m9Viewport.MaxZ = ptr->mDeviceState.mViewport.maxDepth;
 
-				mDeviceState.mScissor.offset.x = 0;
-				mDeviceState.mScissor.offset.y = 0;
-				mDeviceState.mScissor.extent.width = device9->mPresentationParameters.BackBufferWidth;
-				mDeviceState.mScissor.extent.height = device9->mPresentationParameters.BackBufferHeight;
+				ptr->mDeviceState.mScissor.offset.x = 0;
+				ptr->mDeviceState.mScissor.offset.y = 0;
+				ptr->mDeviceState.mScissor.extent.width = device9->mPresentationParameters.BackBufferWidth;
+				ptr->mDeviceState.mScissor.extent.height = device9->mPresentationParameters.BackBufferHeight;
 
-				mDeviceState.m9Scissor.right = device9->mPresentationParameters.BackBufferWidth;
-				mDeviceState.m9Scissor.bottom = device9->mPresentationParameters.BackBufferHeight;
-				mDeviceState.m9Scissor.left = 0;
-				mDeviceState.m9Scissor.top = 0;
+				ptr->mDeviceState.m9Scissor.right = device9->mPresentationParameters.BackBufferWidth;
+				ptr->mDeviceState.m9Scissor.bottom = device9->mPresentationParameters.BackBufferHeight;
+				ptr->mDeviceState.m9Scissor.left = 0;
+				ptr->mDeviceState.m9Scissor.top = 0;
 
 				result = physicaldevice.getSurfaceFormatsKHR(ptr->mSurface, &ptr->mSurfaceFormatCount, nullptr);
 				if (result == vk::Result::eSuccess)
@@ -281,7 +400,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 								swapchainCreateInfo.minImageCount = ptr->mSurfaceCapabilities.minImageCount + 1;
 								swapchainCreateInfo.imageFormat = format;
 								swapchainCreateInfo.imageColorSpace = ptr->mSurfaceFormats[0].colorSpace;
-								swapchainCreateInfo.imageExtent = swapchainExtent;
+								swapchainCreateInfo.imageExtent = ptr->mSwapchainExtent;
 								swapchainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
 								swapchainCreateInfo.preTransform = transformFlags;
 								swapchainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
@@ -373,7 +492,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 													//c++ version doesn't result a result code.... I don't think I like that.
 													device.mDevice.bindImageMemory(ptr->mDepthImage, ptr->mDepthDeviceMemory, 0);
 
-													SetImageLayout(ptr->mDepthImage, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+													ptr->SetImageLayout(ptr->mDepthImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
 													vk::ImageViewCreateInfo imageViewCreateInfo;
 													imageViewCreateInfo.format = depthFormat;
@@ -408,8 +527,118 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 														subpass.preserveAttachmentCount = 0;
 														subpass.pPreserveAttachments = nullptr;
 
+														/*
+														Now setup the render pass.
+														*/
+														ptr->mRenderAttachments[0].format = format;
+														ptr->mRenderAttachments[0].samples = vk::SampleCountFlagBits::e1;
+														ptr->mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
+														ptr->mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
+														ptr->mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+														ptr->mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+														ptr->mRenderAttachments[0].initialLayout = vk::ImageLayout::ePresentSrcKHR;
+														ptr->mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
+														ptr->mRenderAttachments[1].format = depthFormat;
+														ptr->mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
+														ptr->mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
+														ptr->mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
+														ptr->mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+														ptr->mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+														ptr->mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+														ptr->mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
+														vk::RenderPassCreateInfo renderPassCreateInfo;
+														renderPassCreateInfo.attachmentCount = 2; //revisit
+														renderPassCreateInfo.pAttachments = ptr->mRenderAttachments;
+														renderPassCreateInfo.subpassCount = 1;
+														renderPassCreateInfo.pSubpasses = &subpass;
+														renderPassCreateInfo.dependencyCount = 0;
+														renderPassCreateInfo.pDependencies = nullptr;
+
+														result = device.mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &ptr->mStoreRenderPass);
+														if (result == vk::Result::eSuccess)
+														{
+															ptr->mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
+															result = device.mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &ptr->mClearRenderPass);
+															if (result == vk::Result::eSuccess)
+															{
+																/*
+																Setup framebuffers to tie everything together.
+																*/
+
+																vk::ImageView attachments[2];
+																attachments[1] = ptr->mDepthView;
+
+																vk::FramebufferCreateInfo framebufferCreateInfo;
+																framebufferCreateInfo.renderPass = ptr->mStoreRenderPass;
+																framebufferCreateInfo.attachmentCount = 2; //revisit
+																framebufferCreateInfo.pAttachments = attachments;
+																framebufferCreateInfo.width = ptr->mSwapchainExtent.width; //revisit
+																framebufferCreateInfo.height = ptr->mSwapchainExtent.height; //revisit
+																framebufferCreateInfo.layers = 1;
+
+																ptr->mFramebuffers = new vk::Framebuffer[ptr->mSwapchainImageCount];
+
+																for (size_t i = 0; i < ptr->mSwapchainImageCount; i++)
+																{
+																	attachments[0] = ptr->mSwapchainViews[i];
+																	result = device.mDevice.createFramebuffer(&framebufferCreateInfo, nullptr, &ptr->mFramebuffers[i]);
+																	if (result != vk::Result::eSuccess)
+																	{
+																		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateFramebuffer failed with return code of " << GetResultString((VkResult)result);
+																	}
+																}
+
+																result = device.mDevice.createSemaphore(&ptr->mPresentCompleteSemaphoreCreateInfo, nullptr, &ptr->mPresentCompleteSemaphore);
+																if (result == vk::Result::eSuccess)
+																{
+																	ptr->mPresentInfo.swapchainCount = 1;
+																	ptr->mPresentInfo.pSwapchains = &ptr->mSwapchain;
+																	ptr->mCommandBufferInheritanceInfo.subpass = 0;
+																	ptr->mCommandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+																	ptr->mCommandBufferBeginInfo.pInheritanceInfo = &ptr->mCommandBufferInheritanceInfo;
+
+																	for (int32_t i = 0; i < 16; i++)
+																	{
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
+																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
+																	}
+
+																	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
+																	ptr->mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
+
+																	Light light = {};
+																	ptr->mDeviceState.mLights.push_back(light);
+																	//mDeviceState.mLights.push_back(light);
+																	//mDeviceState.mLights.push_back(light);
+																	//mDeviceState.mLights.push_back(light);
+																}
+																else
+																{
+																	BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSemaphore failed with return code of " << GetResultString((VkResult)result);
+																}
+															}
+															else
+															{
+																BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+															}
+														}
+														else
+														{
+															BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+														}
 													}
 													else
 													{
