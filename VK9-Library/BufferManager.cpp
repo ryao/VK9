@@ -29,8 +29,6 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
-#define CACHE_SECONDS 1
-
 typedef boost::container::flat_map<UINT, StreamSource> map_type;
 
 BufferManager::BufferManager()
@@ -59,68 +57,10 @@ BufferManager::BufferManager(CDevice9* device)
 	//	0, 0, 1, 0,
 	//	0, 0, 0, 1;
 
-	mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
-	mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
 
-	mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
-	mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
 
-	mVertShaderModule_XYZ_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX2.vert.spv");
-	mFragShaderModule_XYZ_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_TEX2.frag.spv");
 
-	mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
-	mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
 
-	mVertShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv");
-	mFragShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv");
-
-	mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
-	mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
-
-	mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
-	mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
-
-	mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.spv");
-	mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.spv");
-
-	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
-	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
-
-	mPushConstantRanges[0].offset = 0;
-	mPushConstantRanges[0].size = UBO_SIZE*2; //There are 2 matrices one for world transform and one for all transforms.
-	mPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS; //VK_SHADER_STAGE_VERTEX_BIT
-
-	mVertexSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
-	mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-
-	mPixelSpecializationInfo.pData = &mDevice->mDeviceState.mSpecializationConstants;
-	mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-
-	mPipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	mPipelineVertexInputStateCreateInfo.pNext = NULL;
-	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
-	mPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = mVertexInputBindingDescription;
-	mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2; //reset later.
-	mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = mVertexInputAttributeDescription;
-
-	mPipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	mPipelineDynamicStateCreateInfo.pDynamicStates = mDynamicStateEnables;
-	mPipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-	mPipelineRasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	mPipelineRasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-	mPipelineRasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	mPipelineRasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
-	mPipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-
-	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;  //VK_TRUE;
-	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
-	mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
-
-	mPipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
-	mPipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
-	mPipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
 
 	mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
 	mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
@@ -145,9 +85,7 @@ BufferManager::BufferManager(CDevice9* device)
 	mPipelineViewportStateCreateInfo.viewportCount = 1;
 	mPipelineViewportStateCreateInfo.scissorCount = 1;
 
-	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_VIEWPORT;
-	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_SCISSOR;
-	mDynamicStateEnables[mPipelineDynamicStateCreateInfo.dynamicStateCount++] = VK_DYNAMIC_STATE_DEPTH_BIAS;
+
 
 	mPipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	mPipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;

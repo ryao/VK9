@@ -624,6 +624,69 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 																	//mDeviceState.mLights.push_back(light);
 																	//mDeviceState.mLights.push_back(light);
 																	//mDeviceState.mLights.push_back(light);
+
+																	//Load fixed function shaders.
+																	ptr->mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
+																	ptr->mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
+																	ptr->mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_TEX2 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_TEX2.vert.spv");
+																	ptr->mFragShaderModule_XYZ_TEX2 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_TEX2.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
+																	ptr->mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv");
+																	ptr->mFragShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
+																	ptr->mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
+																	ptr->mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.spv");
+																	ptr->mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.spv");
+
+																	ptr->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
+																	ptr->mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(device.mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
+
+																	//pipeline stuff.
+																	ptr->mPushConstantRanges[0].offset = 0;
+																	ptr->mPushConstantRanges[0].size = UBO_SIZE * 2; //There are 2 matrices one for world transform and one for all transforms.
+																	ptr->mPushConstantRanges[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics; //VK_SHADER_STAGE_ALL_GRAPHICS
+
+																	ptr->mVertexSpecializationInfo.pData = &ptr->mDeviceState.mSpecializationConstants;
+																	ptr->mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+
+																	ptr->mPixelSpecializationInfo.pData = &ptr->mDeviceState.mSpecializationConstants;
+																	ptr->mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+
+																	ptr->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
+																	ptr->mPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = ptr->mVertexInputBindingDescription;
+																	ptr->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2; //reset later.
+																	ptr->mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = ptr->mVertexInputAttributeDescription;
+
+																	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eViewport;
+																	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eScissor;
+																	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eDepthBias;
+																	ptr->mPipelineDynamicStateCreateInfo.pDynamicStates = ptr->mDynamicStateEnables;
+																	
+																	ptr->mPipelineRasterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
+																	ptr->mPipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eBack;
+																	ptr->mPipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
+																	ptr->mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+																	ptr->mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
+																	ptr->mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
+																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
+																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
+
+																	ptr->mPipelineInputAssemblyStateCreateInfo.topology = vk::PrimitiveTopology::eTriangleList;
+
 																}
 																else
 																{

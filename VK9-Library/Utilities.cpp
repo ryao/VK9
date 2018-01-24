@@ -36,6 +36,48 @@ HMODULE GetModule(HMODULE module)
 	return dllModule;
 }
 
+vk::ShaderModule LoadShaderFromFile(vk::Device device, const char *filename)
+{
+	vk::ShaderModuleCreateInfo moduleCreateInfo;
+	vk::ShaderModule module;
+	vk::Result result;
+	FILE *fp = fopen(filename, "rb");
+	if (fp != nullptr)
+	{
+		fseek(fp, 0L, SEEK_END);
+		int32_t dataSize = ftell(fp);
+		fseek(fp, 0L, SEEK_SET);
+		void* data = (uint32_t*)malloc(dataSize);
+		if (data != nullptr && fread(data, dataSize, 1, fp))
+		{
+			moduleCreateInfo.codeSize = dataSize;
+			moduleCreateInfo.pCode = (uint32_t*)data; //Why is this uint32_t* if the size is in bytes?
+
+			result = device.createShaderModule(&moduleCreateInfo, nullptr, &module);
+			if (result != vk::Result::eSuccess)
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile vkCreateShaderModule failed with return code of " << GetResultString((VkResult)result);
+			}
+			else
+			{
+				BOOST_LOG_TRIVIAL(info) << "LoadShaderFromFile vkCreateShaderModule succeeded.";
+			}
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile unable to read file.";
+		}
+		free(data);
+		fclose(fp);
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile unable to open file.";
+	}
+
+	return module;
+}
+
 VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename)
 {
 	VkShaderModuleCreateInfo moduleCreateInfo = {};

@@ -55,6 +55,7 @@ misrepresented as being the original software.
 
 HMODULE GetModule(HMODULE module = 0);
 
+vk::ShaderModule LoadShaderFromFile(vk::Device device, const char *filename);
 VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
 
 VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);

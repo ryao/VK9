@@ -28,6 +28,8 @@ struct RenderManager
 {
 	StateManager mStateManager;
 
+	float mEpsilon = std::numeric_limits<float>::epsilon();
+
 	RenderManager();
 	~RenderManager();
 
