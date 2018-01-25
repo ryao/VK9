@@ -68,8 +68,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	workItem.Argument2 = (void*)GetModuleHandle(nullptr);
 	mId = mCommandStreamManager->RequestWork(workItem);
 
-	mBufferManager = new BufferManager(this);
-
 	//Add implicit swap chain.
 	CSwapChain9* ptr = new CSwapChain9(pPresentationParameters);
 	mSwapChains.push_back(ptr);
@@ -94,8 +92,6 @@ CDevice9::~CDevice9()
 	{
 		delete mSwapChains[i];
 	}
-
-	delete mBufferManager;
 
 	delete[] mDisplays;
 }

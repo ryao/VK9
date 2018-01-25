@@ -66,9 +66,6 @@ public:
 	DWORD mBehaviorFlags = 0;
 	D3DPRESENT_PARAMETERS mPresentationParameters = {};
 
-	//Managers
-	BufferManager* mBufferManager = nullptr;
-
 	//Misc
 	ULONG mReferenceCount = 1;
 	uint32_t mDisplayCount = 0;

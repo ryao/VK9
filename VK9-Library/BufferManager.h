@@ -124,25 +124,24 @@ public:
 	bool mIsDirty = true;
 
 	
-	VkPipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1] = {};
+	
 
 	
 	
 	
-	VkPipelineColorBlendStateCreateInfo mPipelineColorBlendStateCreateInfo = {};
-	VkPipelineDepthStencilStateCreateInfo mPipelineDepthStencilStateCreateInfo = {};
-	VkPipelineViewportStateCreateInfo mPipelineViewportStateCreateInfo = {};
-	VkPipelineMultisampleStateCreateInfo mPipelineMultisampleStateCreateInfo = {};
 	
-	VkGraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo = {};
-	VkPipelineCacheCreateInfo mPipelineCacheCreateInfo = {};
+	
+	
+	
+	
+	
+	
 
-	VkPipelineShaderStageCreateInfo mPipelineShaderStageCreateInfo[2] = {};
+	
 
-	VkDescriptorSetAllocateInfo mDescriptorSetAllocateInfo = {};
-	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
-	VkDescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo = {};
-	VkPipelineLayoutCreateInfo mPipelineLayoutCreateInfo = {};
+	
+
+	
 	VkWriteDescriptorSet mWriteDescriptorSet[3] = {};
 	VkDescriptorBufferInfo mDescriptorBufferInfo[2] = {};
 
@@ -155,7 +154,7 @@ public:
 
 	//VkDescriptorSetLayout mDescriptorSetLayout;
 	//VkPipelineLayout mPipelineLayout;
-	VkPipelineCache mPipelineCache = VK_NULL_HANDLE;
+	
 	//VkDescriptorSet mDescriptorSet;
 	//VkPipeline mPipeline;
 

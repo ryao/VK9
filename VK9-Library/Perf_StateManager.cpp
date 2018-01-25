@@ -687,6 +687,83 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 
 																	ptr->mPipelineInputAssemblyStateCreateInfo.topology = vk::PrimitiveTopology::eTriangleList;
 
+																	//ptr->mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
+																	ptr->mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
+																	ptr->mPipelineColorBlendAttachmentState[0].colorBlendOp = vk::BlendOp::eAdd;
+																	ptr->mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+																	ptr->mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+																	ptr->mPipelineColorBlendAttachmentState[0].alphaBlendOp = vk::BlendOp::eAdd;
+																	ptr->mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = vk::BlendFactor::eOne;
+																	ptr->mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = vk::BlendFactor::eZero;
+
+																	ptr->mPipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+																	ptr->mPipelineColorBlendStateCreateInfo.logicOp = vk::LogicOp::eNoOp;
+																	ptr->mPipelineColorBlendStateCreateInfo.attachmentCount = 1;
+																	ptr->mPipelineColorBlendStateCreateInfo.pAttachments = ptr->mPipelineColorBlendAttachmentState;
+																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[0] = 1.0f;
+																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[1] = 1.0f;
+																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[2] = 1.0f;
+																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[3] = 1.0f;
+
+																	ptr->mPipelineViewportStateCreateInfo.viewportCount = 1;
+																	ptr->mPipelineViewportStateCreateInfo.scissorCount = 1;
+
+																	ptr->mPipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+																	ptr->mPipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+																	ptr->mPipelineDepthStencilStateCreateInfo.depthCompareOp = vk::CompareOp::eLessOrEqual;
+																	ptr->mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+																	ptr->mPipelineDepthStencilStateCreateInfo.back.failOp = vk::StencilOp::eKeep;
+																	ptr->mPipelineDepthStencilStateCreateInfo.back.passOp = vk::StencilOp::eKeep;
+																	ptr->mPipelineDepthStencilStateCreateInfo.back.compareOp = vk::CompareOp::eAlways;
+																	ptr->mPipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+																	ptr->mPipelineDepthStencilStateCreateInfo.front = ptr->mPipelineDepthStencilStateCreateInfo.back;
+																	ptr->mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
+																	ptr->mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
+
+																	ptr->mPipelineMultisampleStateCreateInfo.pSampleMask = nullptr;
+																	ptr->mPipelineMultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
+
+																	ptr->mDescriptorSetLayoutCreateInfo.bindingCount = 1;
+																	ptr->mDescriptorSetLayoutCreateInfo.pBindings = ptr->mDescriptorSetLayoutBinding;
+																	ptr->mDescriptorSetLayoutCreateInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptorKHR;
+
+																	ptr->mDescriptorSetAllocateInfo.descriptorPool = device.mDescriptorPool;
+																	ptr->mDescriptorSetAllocateInfo.descriptorSetCount = 1;
+																	//mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
+
+																	ptr->mPipelineLayoutCreateInfo.setLayoutCount = 1;
+
+																	ptr->mPipelineShaderStageCreateInfo[0].stage = vk::ShaderStageFlagBits::eVertex;
+																	ptr->mPipelineShaderStageCreateInfo[0].module = ptr->mVertShaderModule_XYZ_DIFFUSE;
+																	ptr->mPipelineShaderStageCreateInfo[0].pName = "main";
+																	ptr->mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &ptr->mVertexSpecializationInfo;
+
+																	ptr->mPipelineShaderStageCreateInfo[1].stage = vk::ShaderStageFlagBits::eFragment;
+																	ptr->mPipelineShaderStageCreateInfo[1].module = ptr->mFragShaderModule_XYZ_DIFFUSE;
+																	ptr->mPipelineShaderStageCreateInfo[1].pName = "main";
+																	ptr->mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &ptr->mPixelSpecializationInfo;
+
+																	ptr->mGraphicsPipelineCreateInfo.pVertexInputState = &ptr->mPipelineVertexInputStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.pInputAssemblyState = &ptr->mPipelineInputAssemblyStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.pRasterizationState = &ptr->mPipelineRasterizationStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.pColorBlendState = &ptr->mPipelineColorBlendStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.pDepthStencilState = &ptr->mPipelineDepthStencilStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.pViewportState = &ptr->mPipelineViewportStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.pMultisampleState = &ptr->mPipelineMultisampleStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.pStages = ptr->mPipelineShaderStageCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.renderPass = ptr->mStoreRenderPass;
+																	ptr->mGraphicsPipelineCreateInfo.pDynamicState = &ptr->mPipelineDynamicStateCreateInfo;
+																	ptr->mGraphicsPipelineCreateInfo.stageCount = 2;
+
+																	result = device.mDevice.createPipelineCache(&ptr->mPipelineCacheCreateInfo, nullptr, &ptr->mPipelineCache);
+																	if (result == vk::Result::eSuccess)
+																	{
+
+																	}
+																	else
+																	{
+																		BOOST_LOG_TRIVIAL(fatal) << "StateManager::BufferManager vkCreatePipelineCache failed with return code of " << GetResultString((VkResult)result);
+																	}
 																}
 																else
 																{

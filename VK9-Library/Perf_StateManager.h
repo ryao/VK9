@@ -1208,12 +1208,24 @@ struct RealWindow
 	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
 	vk::VertexInputBindingDescription mVertexInputBindingDescription[16];
 	vk::VertexInputAttributeDescription mVertexInputAttributeDescription[32];
-
 	vk::PipelineVertexInputStateCreateInfo mPipelineVertexInputStateCreateInfo;
 	vk::PipelineDynamicStateCreateInfo mPipelineDynamicStateCreateInfo;
 	vk::DynamicState mDynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE];
 	vk::PipelineRasterizationStateCreateInfo mPipelineRasterizationStateCreateInfo;
 	vk::PipelineInputAssemblyStateCreateInfo mPipelineInputAssemblyStateCreateInfo;
+	vk::PipelineColorBlendAttachmentState mPipelineColorBlendAttachmentState[1];
+	vk::PipelineColorBlendStateCreateInfo mPipelineColorBlendStateCreateInfo;
+	vk::PipelineViewportStateCreateInfo mPipelineViewportStateCreateInfo;
+	vk::PipelineDepthStencilStateCreateInfo mPipelineDepthStencilStateCreateInfo;
+	vk::PipelineMultisampleStateCreateInfo mPipelineMultisampleStateCreateInfo;
+	vk::DescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16];
+	vk::DescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo;
+	vk::DescriptorSetAllocateInfo mDescriptorSetAllocateInfo;
+	vk::PipelineLayoutCreateInfo mPipelineLayoutCreateInfo;
+	vk::PipelineShaderStageCreateInfo mPipelineShaderStageCreateInfo[2];
+	vk::GraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
+	vk::PipelineCacheCreateInfo mPipelineCacheCreateInfo;
+	vk::PipelineCache mPipelineCache;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	RealWindow(RealInstance& realInstance, RealDevice& realDevice);
