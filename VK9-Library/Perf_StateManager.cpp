@@ -36,6 +36,8 @@ misrepresented as being the original software.
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/format.hpp>
 
+typedef boost::container::flat_map<UINT, StreamSource> map_type;
+
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData)
 {
 	switch (flags)
@@ -190,6 +192,58 @@ void RealWindow::SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask
 
 	mQueue.waitIdle();
 	mRealDevice.mDevice.freeCommandBuffers(mCommandPool, 1, commandBuffers);
+}
+
+void RealWindow::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlagBits usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory)
+{
+	vk::Result result; // = VK_SUCCESS
+
+	vk::BufferCreateInfo bufferInfo;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+
+	result = mRealDevice.mDevice.createBuffer(&bufferInfo, nullptr, &buffer);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealWindow::CreateBuffer vkCreateBuffer failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	mRealDevice.mDevice.getBufferMemoryRequirements(buffer, &memoryRequirements);
+
+	vk::MemoryAllocateInfo allocInfo;
+	allocInfo.allocationSize = memoryRequirements.size;
+	//allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (!GetMemoryTypeFromProperties(mRealDevice.mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, properties, &allocInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "Memory type index not found!";
+		return;
+	}
+
+	result = mRealDevice.mDevice.allocateMemory(&allocInfo, nullptr, &deviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealWindow::CreateBuffer vkCreateBuffer failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	mRealDevice.mDevice.bindBufferMemory(buffer, deviceMemory, 0);
+}
+
+void RealWindow::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
+{
+	mCommandBuffer.begin(&mBeginInfo);
+	{
+		mCopyRegion.size = size;
+		mCommandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &mCopyRegion);
+	}
+	mCommandBuffer.end();
+	mQueue.submit(1, &mSubmitInfo, nullptr);
+	mQueue.waitIdle();
+	mCommandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources); //So far resetting a command buffer is about 10 times faster than allocating a new one.
 }
 
 RealDevice::RealDevice()
@@ -758,11 +812,180 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 																	result = device.mDevice.createPipelineCache(&ptr->mPipelineCacheCreateInfo, nullptr, &ptr->mPipelineCache);
 																	if (result == vk::Result::eSuccess)
 																	{
+																		/*
+																		Setup the texture to be written into the descriptor set.
+																		*/
+																		const vk::Format textureFormat = vk::Format::eB8G8R8A8Unorm;
+																		vk::FormatProperties formatProperties;
+																		const uint32_t textureColors[2] = { 0xffff0000, 0xff00ff00 };
+																		const int32_t textureWidth = 1;
+																		const int32_t textureHeight = 1;
 
+																		physicaldevice.getFormatProperties(textureFormat, &formatProperties);
+
+																		vk::ImageCreateInfo imageCreateInfo;
+																		imageCreateInfo.imageType = vk::ImageType::e2D;
+																		imageCreateInfo.format = textureFormat;
+																		imageCreateInfo.extent = { textureWidth, textureHeight, 1 };
+																		imageCreateInfo.mipLevels = 1;
+																		imageCreateInfo.arrayLayers = 1;
+																		imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+																		imageCreateInfo.tiling = vk::ImageTiling::eLinear;
+																		imageCreateInfo.usage = vk::ImageUsageFlagBits::eSampled;
+																		//imageCreateInfo.flags = 0;
+																		imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+
+																		vk::MemoryAllocateInfo memoryAllocateInfo;
+																		memoryAllocateInfo.allocationSize = 0;
+																		memoryAllocateInfo.memoryTypeIndex = 0;
+
+																		vk::MemoryRequirements memoryRequirements;
+
+																		result = device.mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+																		if (result == vk::Result::eSuccess)
+																		{
+																			device.mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
+																			memoryAllocateInfo.allocationSize = memoryRequirements.size;
+																			GetMemoryTypeFromProperties(device.mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible, &memoryAllocateInfo.memoryTypeIndex);
+
+																			result = device.mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+																			if (result == vk::Result::eSuccess)
+																			{
+																				device.mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+
+																				vk::ImageSubresource imageSubresource;
+																				imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+																				imageSubresource.mipLevel = 0;
+																				imageSubresource.arrayLayer = 0;
+
+																				vk::SubresourceLayout subresourceLayout;
+																				void* data = nullptr;
+																				int32_t x = 0;
+																				int32_t y = 0;
+
+																				device.mDevice.getImageSubresourceLayout(ptr->mImage, &imageSubresource, &subresourceLayout);
+
+																				data = device.mDevice.mapMemory(ptr->mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags());
+																				if (data!= nullptr)
+																				{
+																					for (y = 0; y < textureHeight; y++) 
+																					{
+																						uint32_t *row = (uint32_t *)((char *)data + subresourceLayout.rowPitch * y);
+																						for (x = 0; x < textureWidth; x++)
+																						{
+																							row[x] = textureColors[(x & 1) ^ (y & 1)];
+																						}
+																					}
+
+																					device.mDevice.unmapMemory(ptr->mDeviceMemory);
+																					ptr->mImageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+																					ptr->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::ePreinitialized, ptr->mImageLayout);
+
+																					vk::SamplerCreateInfo samplerCreateInfo;
+																					samplerCreateInfo.magFilter = vk::Filter::eNearest;
+																					samplerCreateInfo.minFilter = vk::Filter::eNearest;
+																					samplerCreateInfo.mipmapMode = vk::SamplerMipmapMode::eNearest;
+																					samplerCreateInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
+																					samplerCreateInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
+																					samplerCreateInfo.addressModeW = vk::SamplerAddressMode::eRepeat;
+																					samplerCreateInfo.mipLodBias = 0.0f;
+																					samplerCreateInfo.anisotropyEnable = VK_FALSE;
+																					samplerCreateInfo.maxAnisotropy = 1;
+																					samplerCreateInfo.compareOp = vk::CompareOp::eNever;
+																					samplerCreateInfo.minLod = 0.0f;
+																					samplerCreateInfo.maxLod = 0.0f;
+																					samplerCreateInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;
+																					samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+
+																					result = device.mDevice.createSampler(&samplerCreateInfo, NULL, &ptr->mSampler);
+																					if (result == vk::Result::eSuccess)
+																					{
+																						vk::ImageViewCreateInfo imageViewCreateInfo;
+																						imageViewCreateInfo.image = ptr->mImage;
+																						imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
+																						imageViewCreateInfo.format = textureFormat;
+																						imageViewCreateInfo.components =
+																						{
+																							VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+																							VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
+																						};
+																						imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+																						//imageViewCreateInfo.flags = 0;
+
+																						result = device.mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+																						if (result == vk::Result::eSuccess)
+																						{
+																							for (size_t i = 0; i < 26; i++)
+																							{
+																								ptr->mDeviceState.mDescriptorImageInfo[i].sampler = ptr->mSampler;
+																								ptr->mDeviceState.mDescriptorImageInfo[i].imageView = ptr->mImageView;
+																								ptr->mDeviceState.mDescriptorImageInfo[i].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+																							}
+
+																							//mWriteDescriptorSet[0].dstSet = descriptorSet;
+																							ptr->mWriteDescriptorSet[0].dstBinding = 0;
+																							ptr->mWriteDescriptorSet[0].dstArrayElement = 0;
+																							ptr->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
+																							ptr->mWriteDescriptorSet[0].descriptorCount = 1;
+																							ptr->mWriteDescriptorSet[0].pBufferInfo = &ptr->mDescriptorBufferInfo[0];
+																							
+																							//mWriteDescriptorSet[1].dstSet = descriptorSet;
+																							ptr->mWriteDescriptorSet[1].dstBinding = 1;
+																							ptr->mWriteDescriptorSet[1].dstArrayElement = 0;
+																							ptr->mWriteDescriptorSet[1].descriptorType = vk::DescriptorType::eUniformBuffer;
+																							ptr->mWriteDescriptorSet[1].descriptorCount = 1;
+																							ptr->mWriteDescriptorSet[1].pBufferInfo = &ptr->mDescriptorBufferInfo[1];
+																							
+																							//mWriteDescriptorSet[2].dstSet = descriptorSet;
+																							ptr->mWriteDescriptorSet[2].dstBinding = 2;
+																							ptr->mWriteDescriptorSet[2].dstArrayElement = 0;
+																							ptr->mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+																							ptr->mWriteDescriptorSet[2].descriptorCount = 1;
+																							ptr->mWriteDescriptorSet[2].pImageInfo = ptr->mDeviceState.mDescriptorImageInfo;
+
+																							ptr->mCommandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
+																							ptr->mCommandBufferAllocateInfo.commandPool = ptr->mCommandPool;
+																							ptr->mCommandBufferAllocateInfo.commandBufferCount = 1;
+
+																							device.mDevice.allocateCommandBuffers(&ptr->mCommandBufferAllocateInfo, &ptr->mCommandBuffer);
+
+																							ptr->mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
+																							ptr->mSubmitInfo.commandBufferCount = 1;
+																							ptr->mSubmitInfo.pCommandBuffers = &ptr->mCommandBuffer;
+
+																							//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
+																							ptr->CreateBuffer(sizeof(Light) * 4, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, ptr->mLightBuffer, ptr->mLightBufferMemory);
+																							ptr->CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, ptr->mMaterialBuffer, ptr->mMaterialBufferMemory);
+																						}
+																						else
+																						{
+																							BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+																						}
+																					}
+																					else
+																					{
+																						BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSampler failed with return code of " << GetResultString((VkResult)result);
+																					}
+																				}
+																				else
+																				{
+																					BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkMapMemory failed.";
+																				}
+																			}
+																			else
+																			{
+																				BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+																			}
+																		}
+																		else
+																		{
+																			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+																		}
 																	}
 																	else
 																	{
-																		BOOST_LOG_TRIVIAL(fatal) << "StateManager::BufferManager vkCreatePipelineCache failed with return code of " << GetResultString((VkResult)result);
+																		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreatePipelineCache failed with return code of " << GetResultString((VkResult)result);
 																	}
 																}
 																else

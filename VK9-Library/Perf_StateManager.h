@@ -1226,12 +1226,30 @@ struct RealWindow
 	vk::GraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
 	vk::PipelineCacheCreateInfo mPipelineCacheCreateInfo;
 	vk::PipelineCache mPipelineCache;
+	vk::Image mImage;
+	vk::DeviceMemory mDeviceMemory;
+	vk::ImageLayout mImageLayout;
+	vk::Sampler mSampler;
+	vk::ImageView mImageView;
+	vk::DescriptorBufferInfo mDescriptorBufferInfo[2];
+	vk::WriteDescriptorSet mWriteDescriptorSet[3];
+	vk::CommandBufferAllocateInfo mCommandBufferAllocateInfo;
+	vk::CommandBuffer mCommandBuffer = VK_NULL_HANDLE;
+	vk::CommandBufferBeginInfo mBeginInfo;
+	vk::BufferCopy mCopyRegion;
+	vk::SubmitInfo mSubmitInfo;
+	vk::Buffer mLightBuffer;
+	vk::DeviceMemory mLightBufferMemory;
+	vk::Buffer mMaterialBuffer;
+	vk::DeviceMemory mMaterialBufferMemory;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	RealWindow(RealInstance& realInstance, RealDevice& realDevice);
 	~RealWindow();
 
 	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
+	void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlagBits usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory);
+	void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 };
 
 struct StateManager

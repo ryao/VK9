@@ -124,57 +124,10 @@ public:
 	bool mIsDirty = true;
 
 	
-	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-
-	
-
-	
-	VkWriteDescriptorSet mWriteDescriptorSet[3] = {};
-	VkDescriptorBufferInfo mDescriptorBufferInfo[2] = {};
-
-	//Command Buffer & Buffer Copy Setup
-	VkCommandBufferAllocateInfo mCommandBufferAllocateInfo = {};
-	VkCommandBuffer mCommandBuffer = VK_NULL_HANDLE;
-	VkCommandBufferBeginInfo mBeginInfo = {};
-	VkBufferCopy mCopyRegion = {};
-	VkSubmitInfo mSubmitInfo = {};
-
-	//VkDescriptorSetLayout mDescriptorSetLayout;
-	//VkPipelineLayout mPipelineLayout;
-	
-	//VkDescriptorSet mDescriptorSet;
-	//VkPipeline mPipeline;
-
-
-
-	VkSampler mSampler = VK_NULL_HANDLE;
-	VkImage mImage = VK_NULL_HANDLE;
-	VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	VkDeviceMemory mDeviceMemory = VK_NULL_HANDLE;
-	VkImageView mImageView = VK_NULL_HANDLE;
 	int32_t mTextureWidth = 0;
 	int32_t mTextureHeight = 0;
 
 	int32_t mVertexCount = 0;
-
-	VkBuffer mLightBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory mLightBufferMemory = VK_NULL_HANDLE;
-	VkBuffer mMaterialBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory mMaterialBufferMemory = VK_NULL_HANDLE;
-
 
 	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
 	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;
@@ -184,17 +137,12 @@ public:
 
 	Transformations mTransformations;
 
-	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR;
-
 	void BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type);
 	void CreatePipe(std::shared_ptr<DrawContext> context);
 	void CreateSampler(std::shared_ptr<SamplerRequest> request);
 
 	void UpdatePushConstants(std::shared_ptr<DrawContext> context);
 	void FlushDrawBufffer();
-
-	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& deviceMemory);
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 private:
 
