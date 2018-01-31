@@ -18,6 +18,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+//#include <any>
+#include <boost/any.hpp>
 #include <atomic>
 #include <thread>
 #include <boost/lockfree/queue.hpp>
@@ -37,6 +39,7 @@ enum WorkItemType
 	,Instance_Destroy
 	,Device_Create
 	,Device_BeginScene
+	,Device_Clear
 	,Device_Destroy
 };
 
@@ -44,9 +47,12 @@ struct WorkItem
 {
 	WorkItemType WorkItemType;
 	size_t Id;
-	void* Argument1;
-	void* Argument2;
-	void* Argument3;
+	boost::any Argument1;
+	boost::any Argument2;
+	boost::any Argument3;
+	boost::any Argument4;
+	boost::any Argument5;
+	boost::any Argument6;
 };
 
 struct CommandStreamManager;

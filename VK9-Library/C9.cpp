@@ -183,16 +183,7 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 {
 	HRESULT result = S_OK;
 
-	//TODO: create different code path for D3DCREATE_MULTITHREADED. It's not recommended so I'll probably do that after the thread unsafe version is working correctly.
-
 	CDevice9* obj = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
-
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
 
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
 
@@ -254,7 +245,9 @@ HRESULT STDMETHODCALLTYPE C9::EnumAdapterModes(UINT Adapter,D3DFORMAT Format,UIN
 
 UINT STDMETHODCALLTYPE C9::GetAdapterCount()
 {
-	return mGpuCount;
+	BOOST_LOG_TRIVIAL(warning) << "C9::GetAdapterCount is not implemented!";
+
+	return 1;
 }
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE *pMode)
@@ -277,11 +270,11 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
 {		
 	WorkItem workItem;
-	workItem.WorkItemType = WorkItemType::DestroyInstance;
+	workItem.WorkItemType = WorkItemType::Instance_GetAdapterIdentifier;
 	workItem.Id = mId;
-	workItem.Argument1 = (void*)Adapter;
-	workItem.Argument2 = (void*)Flags;
-	workItem.Argument3 = (void*)pIdentifier;
+	workItem.Argument1 = Adapter;
+	workItem.Argument2 = Flags;
+	workItem.Argument3 = pIdentifier;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;	
@@ -313,11 +306,11 @@ HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
 {
 	WorkItem workItem;
-	workItem.WorkItemType = WorkItemType::DestroyInstance;
+	workItem.WorkItemType = WorkItemType::Instance_GetDeviceCaps;
 	workItem.Id = mId;
-	workItem.Argument1 = (void*)Adapter;
-	workItem.Argument2 = (void*)DeviceType;
-	workItem.Argument3 = (void*)pCaps;
+	workItem.Argument1 = Adapter;
+	workItem.Argument2 = DeviceType;
+	workItem.Argument3 = pCaps;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;	

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 #include "d3d9types.h"
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
+#include <vulkan/vulkan.hpp>
 
 #include <vector>
 #include <boost/container/small_vector.hpp>
@@ -526,7 +527,7 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetScissorRect
 	RECT m9Scissor = {};
-	vk::Rect2D mScissor = {};
+	vk::Rect2D mScissor;
 
 	//IDirect3DDevice9::SetStreamSource
 	boost::container::flat_map<UINT, StreamSource> mStreamSources;

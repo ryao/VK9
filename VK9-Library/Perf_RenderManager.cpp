@@ -30,6 +30,8 @@ misrepresented as being the original software.
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/format.hpp>
 
+#include "Utilities.h"
+
 RenderManager::RenderManager()
 {
 
@@ -165,4 +167,104 @@ void RenderManager::StopScene(RealWindow& realWindow)
 		return;
 	}
 
+}
+
+void RenderManager::CopyImage(RealWindow& realWindow, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
+{
+	vk::Result result;
+	vk::CommandBuffer commandBuffer;
+	auto& device = realWindow.mRealDevice.mDevice;
+
+	vk::CommandBufferAllocateInfo commandBufferInfo;
+	commandBufferInfo.commandPool = realWindow.mCommandPool;
+	commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
+	commandBufferInfo.commandBufferCount = 1;
+
+	result = device.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CopyImage vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
+	commandBufferInheritanceInfo.renderPass = nullptr;
+	commandBufferInheritanceInfo.subpass = 0;
+	commandBufferInheritanceInfo.framebuffer = nullptr;
+	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	//commandBufferInheritanceInfo.queryFlags = 0;
+	//commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+	vk::CommandBufferBeginInfo commandBufferBeginInfo;
+	//commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+	result = commandBuffer.begin(&commandBufferBeginInfo);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CopyImage vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ReallyCopyImage(commandBuffer, srcImage, dstImage, x, y, width, height, srcMip, dstMip, 0, 0);
+
+	commandBuffer.end();
+
+	vk::CommandBuffer commandBuffers[] = { commandBuffer };
+	vk::Fence nullFence;
+	vk::SubmitInfo submitInfo;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+
+	result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CopyImage vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	realWindow.mQueue.waitIdle();
+	device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+}
+
+void RenderManager::Clear(RealWindow& realWindow, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
+{
+	if ((Flags & D3DCLEAR_TARGET) == D3DCLEAR_TARGET)
+	{
+		//VK_FORMAT_B8G8R8A8_UNORM 
+		//Revisit the byte order could be difference based on the surface format so I need a better way to handle this.
+		realWindow.mClearColorValue.float32[3] = D3DCOLOR_A(Color); //FLT_MAX; 
+		realWindow.mClearColorValue.float32[2] = D3DCOLOR_B(Color);
+		realWindow.mClearColorValue.float32[1] = D3DCOLOR_G(Color);
+		realWindow.mClearColorValue.float32[0] = D3DCOLOR_R(Color);
+	}
+
+	if (Count > 0 && pRects != nullptr)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "RenderManager::Clear is not fully implemented!";
+		return;
+	}
+
+	vk::ImageSubresourceRange subResourceRange;
+	subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subResourceRange.baseMipLevel = 0;
+	subResourceRange.levelCount = 1;
+	subResourceRange.baseArrayLayer = 0;
+	subResourceRange.layerCount = 1;
+
+	if (realWindow.mIsSceneStarted)
+	{
+		realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].endRenderPass();
+		realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].clearColorImage(realWindow.mSwapchainImages[realWindow.mCurrentSwapchainBuffer], vk::ImageLayout::eTransferDstOptimal, &realWindow.mClearColorValue, 1, &subResourceRange);
+		realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].beginRenderPass(&realWindow.mRenderPassBeginInfo, vk::SubpassContents::eInline);
+	}
+	else
+	{
+		this->StartScene(realWindow);
+	}
 }

@@ -38,23 +38,6 @@ misrepresented as being the original software.
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
 
-struct RealInstance
-{
-	vk::Instance mInstance;
-	vk::PhysicalDevice* mPhysicalDevices = nullptr;
-	uint32_t mPhysicalDeviceCount = 0;
-
-	boost::container::small_vector<RealDevice, 1> mDevices;
-
-#ifdef _DEBUG
-	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
-	vk::DebugReportCallbackEXT mCallback;
-#endif // _DEBUG
-
-	RealInstance();
-	~RealInstance();
-};
-
 struct RealDevice
 {
 	//Feature and property information
@@ -70,6 +53,23 @@ struct RealDevice
 
 	RealDevice();
 	~RealDevice();
+};
+
+struct RealInstance
+{
+	vk::Instance mInstance;
+	vk::PhysicalDevice* mPhysicalDevices = nullptr;
+	uint32_t mPhysicalDeviceCount = 0;
+
+	boost::container::small_vector<RealDevice, 1> mDevices;
+
+#ifdef _DEBUG
+	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
+	vk::DebugReportCallbackEXT mCallback;
+#endif // _DEBUG
+
+	RealInstance();
+	~RealInstance();
 };
 
 struct RealWindow
@@ -1237,7 +1237,6 @@ struct RealWindow
 	vk::CommandBuffer mCommandBuffer = VK_NULL_HANDLE;
 	vk::CommandBufferBeginInfo mBeginInfo;
 	vk::BufferCopy mCopyRegion;
-	vk::SubmitInfo mSubmitInfo;
 	vk::Buffer mLightBuffer;
 	vk::DeviceMemory mLightBufferMemory;
 	vk::Buffer mMaterialBuffer;
@@ -1264,7 +1263,7 @@ struct StateManager
 	~StateManager();
 
 	void DestroyWindow(size_t id);
-	void CreateWindow1(size_t id, void* argument1, void* argument2);
+	void CreateWindow1(size_t id, boost::any argument1, boost::any argument2);
 
 	void DestroyInstance(size_t id);
 	void CreateInstance();

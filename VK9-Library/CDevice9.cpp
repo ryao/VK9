@@ -64,8 +64,8 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	WorkItem workItem;
 	workItem.Id = mId;
 	workItem.WorkItemType = WorkItemType::Device_Create;
-	workItem.Argument1 = (void*)this;
-	workItem.Argument2 = (void*)GetModuleHandle(nullptr);
+	workItem.Argument1 = this;
+	workItem.Argument2 = GetModuleHandle(nullptr);
 	mId = mCommandStreamManager->RequestWork(workItem);
 
 	//Add implicit swap chain.
@@ -92,45 +92,20 @@ CDevice9::~CDevice9()
 	{
 		delete mSwapChains[i];
 	}
-
-	delete[] mDisplays;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
-	if ((Flags & D3DCLEAR_TARGET) == D3DCLEAR_TARGET)
-	{
-		//VK_FORMAT_B8G8R8A8_UNORM 
-		//Revisit the byte order could be difference based on the surface format so I need a better way to handle this.
-		mClearColorValue.float32[3] = D3DCOLOR_A(Color); //FLT_MAX; 
-		mClearColorValue.float32[2] = D3DCOLOR_B(Color);
-		mClearColorValue.float32[1] = D3DCOLOR_G(Color);
-		mClearColorValue.float32[0] = D3DCOLOR_R(Color);
-	}
-
-	if (Count > 0 && pRects != nullptr)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::Clear is not fully implemented!";
-		return E_NOTIMPL;
-	}
-
-	VkImageSubresourceRange subResourceRange = {};
-	subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subResourceRange.baseMipLevel = 0;
-	subResourceRange.levelCount = 1;
-	subResourceRange.baseArrayLayer = 0;
-	subResourceRange.layerCount = 1;
-
-	if (mIsSceneStarted)
-	{
-		vkCmdEndRenderPass(mSwapchainBuffers[mCurrentBuffer]);
-		vkCmdClearColorImage(mSwapchainBuffers[mCurrentBuffer], mSwapchainImages[mCurrentBuffer], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColorValue, 1, &subResourceRange);
-		vkCmdBeginRenderPass(mSwapchainBuffers[mCurrentBuffer], &mRenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-	}
-	else
-	{
-		this->StartScene(true);
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_Clear;
+	workItem.Id = mId;
+	workItem.Argument1 = Count;
+	workItem.Argument2 = pRects;
+	workItem.Argument3 = Flags;
+	workItem.Argument4 = Color;
+	workItem.Argument5 = Z;
+	workItem.Argument6 = Stencil;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -3818,85 +3793,4 @@ HRESULT STDMETHODCALLTYPE CDevice9::ValidateDevice(DWORD *pNumPasses)
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::ValidateDevice is not implemented!";
 
 	return S_OK;
-}
-
-void CDevice9::CopyImage(VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
-{
-	VkResult result = VK_SUCCESS;
-	VkCommandBuffer commandBuffer;
-
-	VkCommandBufferAllocateInfo commandBufferInfo = {};
-	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandBufferInfo.pNext = nullptr;
-	commandBufferInfo.commandPool = mCommandPool;
-	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	commandBufferInfo.commandBufferCount = 1;
-
-	result = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &commandBuffer);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkAllocateCommandBuffers failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
-	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-	commandBufferInheritanceInfo.pNext = nullptr;
-	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.subpass = 0;
-	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
-	commandBufferInheritanceInfo.queryFlags = 0;
-	commandBufferInheritanceInfo.pipelineStatistics = 0;
-
-	VkCommandBufferBeginInfo commandBufferBeginInfo;
-	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	commandBufferBeginInfo.pNext = nullptr;
-	commandBufferBeginInfo.flags = 0;
-	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
-
-	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkBeginCommandBuffer failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	ReallyCopyImage(commandBuffer, srcImage, dstImage, x, y, width, height, srcMip, dstMip, 0,0);
-
-	result = vkEndCommandBuffer(commandBuffer);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkEndCommandBuffer failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	VkCommandBuffer commandBuffers[] = { commandBuffer };
-	VkFence nullFence = VK_NULL_HANDLE;
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = NULL;
-	submitInfo.waitSemaphoreCount = 0;
-	submitInfo.pWaitSemaphores = NULL;
-	submitInfo.pWaitDstStageMask = NULL;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = commandBuffers;
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = NULL;
-
-	result = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueSubmit failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	result = vkQueueWaitIdle(mQueue);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CopyImage vkQueueWaitIdle failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	vkFreeCommandBuffers(mDevice, mCommandPool, 1, commandBuffers);
 }

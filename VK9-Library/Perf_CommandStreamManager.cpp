@@ -60,11 +60,24 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.mStateManager.DestroyWindow(workItem.Id);
 			}
 			break;
+			case Device_Clear:
+			{
+				DWORD Count = boost::any_cast<DWORD>(workItem.Argument1);
+				D3DRECT* pRects = boost::any_cast<D3DRECT*>(workItem.Argument2);
+				DWORD Flags = boost::any_cast<DWORD>(workItem.Argument3);
+				D3DCOLOR Color = boost::any_cast<D3DCOLOR>(workItem.Argument4);
+				float Z = boost::any_cast<float>(workItem.Argument5);
+				DWORD Stencil = boost::any_cast<DWORD>(workItem.Argument6);
+
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				commandStreamManager->mRenderManager.Clear(realWindow, Count, pRects, Flags, Color, Z, Stencil);
+			}
+			break;
 			case Instance_GetAdapterIdentifier:
 			{
-				UINT Adapter = (UINT)workItem.Argument1;
-				DWORD Flags = (DWORD)workItem.Argument2;
-				D3DADAPTER_IDENTIFIER9* pIdentifier = (D3DADAPTER_IDENTIFIER9*)workItem.Argument3;
+				UINT Adapter = boost::any_cast<UINT>(workItem.Argument1);
+				DWORD Flags = boost::any_cast<DWORD>(workItem.Argument2);
+				D3DADAPTER_IDENTIFIER9* pIdentifier = boost::any_cast<D3DADAPTER_IDENTIFIER9*>(workItem.Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem.Id];
 				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter].mPhysicalDeviceProperties; //mPhysicalDeviceProperties
 
@@ -85,9 +98,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Instance_GetDeviceCaps:
 			{
-				UINT Adapter = (UINT)workItem.Argument1;
-				D3DDEVTYPE DeviceType = (D3DDEVTYPE)(UINT)workItem.Argument2;
-				D3DCAPS9* pCaps = (D3DCAPS9*)workItem.Argument3;
+				UINT Adapter = boost::any_cast<UINT>(workItem.Argument1);
+				D3DDEVTYPE DeviceType = boost::any_cast<D3DDEVTYPE>(workItem.Argument2);
+				D3DCAPS9* pCaps = boost::any_cast<D3DCAPS9*>(workItem.Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem.Id];
 				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter].mPhysicalDeviceProperties;
 				vk::PhysicalDeviceFeatures& features = instance->mDevices[Adapter].mPhysicalDeviceFeatures;

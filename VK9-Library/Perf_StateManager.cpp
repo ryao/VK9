@@ -77,6 +77,35 @@ RealWindow::~RealWindow()
 	auto& device = mRealDevice.mDevice;
 	auto& instance = mRealInstance.mInstance;
 
+	device.freeCommandBuffers(mCommandPool, 1, &mCommandBuffer);
+	device.destroyBuffer(mLightBuffer, nullptr);
+	device.freeMemory(mLightBufferMemory, nullptr);
+	device.destroyBuffer(mMaterialBuffer, nullptr);
+	device.freeMemory(mMaterialBufferMemory, nullptr);
+	device.destroyImageView(mImageView, nullptr);
+	device.destroyImage(mImage, nullptr);
+	device.freeMemory(mDeviceMemory, nullptr);
+	device.destroySampler(mSampler, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_TEX1, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_TEX1, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_TEX2, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_TEX2, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE_TEX1, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE_TEX1, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE_TEX2, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE_TEX2, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_TEX1, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_TEX1, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_DIFFUSE, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_DIFFUSE, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, nullptr);
+	device.destroyPipelineCache(mPipelineCache, nullptr);
+
 	device.destroySemaphore(mPresentCompleteSemaphore, nullptr);
 
 	if (mFramebuffers != nullptr)
@@ -286,11 +315,11 @@ void StateManager::DestroyWindow(size_t id)
 	mWindows[id].reset();
 }
 
-void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
+void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any argument2)
 {
 	vk::Result result;
 	auto instance = mInstances[id];
-	CDevice9* device9 = (CDevice9*)argument1;
+	CDevice9* device9 = boost::any_cast<CDevice9*>(argument1);
 	auto& physicaldevice = instance->mPhysicalDevices[device9->mAdapter];
 	auto& device = instance->mDevices[device9->mAdapter];
 	auto ptr = std::make_shared<RealWindow>((*instance),device);
@@ -303,7 +332,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	vk::SurfaceTransformFlagBitsKHR transformFlags;
 
 	vk::Win32SurfaceCreateInfoKHR surfaceCreateInfo;
-	surfaceCreateInfo.hinstance = (HINSTANCE)argument2;
+	surfaceCreateInfo.hinstance = boost::any_cast<HINSTANCE>(argument2);
 	surfaceCreateInfo.hwnd = device9->mFocusWindow; //hFocusWindow;
 
 	result = instance->mInstance.createWin32SurfaceKHR(&surfaceCreateInfo, nullptr, &ptr->mSurface);
@@ -826,7 +855,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 																		vk::ImageCreateInfo imageCreateInfo;
 																		imageCreateInfo.imageType = vk::ImageType::e2D;
 																		imageCreateInfo.format = textureFormat;
-																		imageCreateInfo.extent = { textureWidth, textureHeight, 1 };
+																		imageCreateInfo.extent = { (uint32_t)textureWidth, (uint32_t)textureHeight, 1 };
 																		imageCreateInfo.mipLevels = 1;
 																		imageCreateInfo.arrayLayers = 1;
 																		imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
