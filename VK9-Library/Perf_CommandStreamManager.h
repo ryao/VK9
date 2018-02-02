@@ -40,6 +40,8 @@ enum WorkItemType
 	,Device_Create
 	,Device_BeginScene
 	,Device_Clear
+	,Device_Present
+	,Device_BeginScene
 	,Device_Destroy
 };
 

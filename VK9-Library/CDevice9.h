@@ -56,6 +56,7 @@ public:
 
 	//CSMT
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+	size_t mInstanceId;
 	size_t mId;
 
 	//Creation Parameters

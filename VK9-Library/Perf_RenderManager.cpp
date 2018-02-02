@@ -251,7 +251,7 @@ void RenderManager::Clear(RealWindow& realWindow, DWORD Count, const D3DRECT *pR
 	}
 
 	vk::ImageSubresourceRange subResourceRange;
-	subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subResourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
 	subResourceRange.baseMipLevel = 0;
 	subResourceRange.levelCount = 1;
 	subResourceRange.baseArrayLayer = 0;
@@ -267,4 +267,35 @@ void RenderManager::Clear(RealWindow& realWindow, DWORD Count, const D3DRECT *pR
 	{
 		this->StartScene(realWindow);
 	}
+}
+
+void RenderManager::Present(RealWindow& realWindow, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
+{
+	if (!realWindow.mIsSceneStarted)
+	{
+		this->StartScene(realWindow);
+	}
+	this->StopScene(realWindow);
+
+	vk::Result result;
+
+	realWindow.mPresentInfo.pImageIndices = &realWindow.mCurrentSwapchainBuffer;
+
+	result = realWindow.mQueue.presentKHR(&realWindow.mPresentInfo);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::Present vkQueuePresentKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	realWindow.mQueue.waitIdle();
+	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+
+	//Clean up pipes.
+	//mBufferManager->FlushDrawBufffer();
+
+	//Clean up unreferenced resources.
+	//mGarbageManager.DestroyHandles();
+
+	//Print(mDeviceState.mTransforms);
 }

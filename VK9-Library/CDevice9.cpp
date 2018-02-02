@@ -46,7 +46,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 	mCommandStreamManager = mInstance->mCommandStreamManager;
-	mId = mInstance->mId;
+	mInstanceId = mInstance->mId;
 
 	if (!mPresentationParameters.Windowed)
 	{
@@ -62,7 +62,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	WorkItem workItem;
-	workItem.Id = mId;
+	workItem.Id = mInstanceId;
 	workItem.WorkItemType = WorkItemType::Device_Create;
 	workItem.Argument1 = this;
 	workItem.Argument2 = GetModuleHandle(nullptr);
@@ -113,11 +113,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 {
 	//According to a tip from the Nine team games don't always use the begin/end scene functions correctly.
-
-	if (!mIsSceneStarted)
-	{
-		this->StartScene();
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_BeginScene;
+	workItem.Id = mId;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return D3D_OK;
 }
@@ -131,39 +130,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 
 HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
-	if (!mIsSceneStarted)
-	{
-		this->StartScene();
-	}
-	this->StopScene();
-
-	VkResult result; // = VK_SUCCESS
-
-	mPresentInfo.pImageIndices = &mCurrentBuffer;
-
-	result = vkQueuePresentKHR(mQueue, &mPresentInfo);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueuePresentKHR failed with return code of " << GetResultString(result);
-		return D3DERR_INVALIDCALL;
-	}
-
-	result = vkQueueWaitIdle(mQueue);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::Present vkQueueWaitIdle failed with return code of " << GetResultString(result);
-		return D3DERR_INVALIDCALL;
-	}
-
-	vkResetCommandBuffer(mSwapchainBuffers[mCurrentBuffer], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
-
-	//Clean up pipes.
-	mBufferManager->FlushDrawBufffer();
-
-	//Clean up unreferenced resources.
-	mGarbageManager.DestroyHandles();
-
-	//Print(mDeviceState.mTransforms);
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_Present;
+	workItem.Id = mId;
+	workItem.Argument1 = pSourceRect;
+	workItem.Argument2 = pDestRect;
+	workItem.Argument3 = hDestWindowOverride;
+	workItem.Argument4 = pDirtyRegion;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return D3D_OK;
 }
@@ -245,13 +219,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateCubeTexture(UINT EdgeLength, UINT Leve
 
 	CCubeTexture9* obj = new CCubeTexture9(this, EdgeLength, Levels, Usage, Format, Pool, pSharedHandle);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppCubeTexture) = (IDirect3DCubeTexture9*)obj;
 
 	return result;
@@ -262,13 +229,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateDepthStencilSurface(UINT Width, UINT H
 	HRESULT result = S_OK;
 
 	CSurface9* obj = new CSurface9(this, (CTexture9*)nullptr, Width, Height, Format, MultiSample, MultisampleQuality, Discard, pSharedHandle);
-
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
 
 	(*ppSurface) = (IDirect3DSurface9*)obj;
 
@@ -281,16 +241,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length, DWORD Usage, 
 
 	CIndexBuffer9* obj = new CIndexBuffer9(this, Length, Usage, Format, Pool, pSharedHandle);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppIndexBuffer) = (IDirect3DIndexBuffer9*)obj;
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateTexture Length:" << Length << " Usage:" << Usage << " Format:" << Format << " Pool:" << Pool;
 
 	return result;
 }
@@ -300,13 +251,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width, UINT
 	HRESULT result = S_OK;
 
 	CSurface9* ptr = new CSurface9(this, (CTexture9*)nullptr, Width, Height, 1, 0, Format, Pool, pSharedHandle);
-
-	if (ptr->mResult != VK_SUCCESS)
-	{
-		delete ptr;
-		ptr = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
 
 	(*ppSurface) = (IDirect3DSurface9*)ptr;
 
@@ -318,13 +262,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction, ID
 	HRESULT result = S_OK;
 
 	CPixelShader9* obj = new CPixelShader9(this, pFunction);
-
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
 
 	(*ppShader) = (IDirect3DPixelShader9*)obj;
 
@@ -347,13 +284,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type, IDirect3DQuer
 
 	CQuery9* obj = new CQuery9(this, Type);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppQuery) = (IDirect3DQuery9*)obj;
 
 	return result;
@@ -366,13 +296,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width, UINT Height, 
 	//I added an extra int at the end so the signature would be different for this version. Locakable/Discard are both BOOL.
 	CRenderTargetSurface9* obj = new CRenderTargetSurface9(this, Width, Height, Format);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppSurface) = (IDirect3DSurface9*)obj;
 
 	return result;
@@ -384,16 +307,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type, IDi
 
 	CStateBlock9* obj = new CStateBlock9(this, Type);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppSB) = (IDirect3DStateBlock9*)obj;
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateStateBlock " << obj;
 
 	return result;
 }
@@ -404,16 +318,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width, UINT Height, UINT 
 
 	CTexture9* obj = new CTexture9(this, Width, Height, Levels, Usage, Format, Pool, pSharedHandle);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppTexture) = (IDirect3DTexture9*)obj;
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateTexture Width:" << Width << " Height:" << Height << " Levels:" << Levels << " Usage:" << Usage << " Format:" << Format << " Pool:" << Pool;
 
 	return result;
 }
@@ -424,16 +329,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length, DWORD Usage,
 
 	CVertexBuffer9* obj = new CVertexBuffer9(this, Length, Usage, FVF, Pool, pSharedHandle);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppVertexBuffer) = (IDirect3DVertexBuffer9*)obj;
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::CreateTexture Length:" << Length << " Usage:" << Usage << " Pool:" << Pool;
 
 	return result;
 }
@@ -443,13 +339,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexDeclaration(const D3DVERTEXELEME
 	HRESULT result = S_OK;
 
 	CVertexDeclaration9* obj = new CVertexDeclaration9(this, pVertexElements);
-
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
 
 	(*ppDecl) = (IDirect3DVertexDeclaration9*)obj;
 
@@ -462,13 +351,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction, I
 
 	CVertexShader9* obj = new CVertexShader9(this, pFunction);
 
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
-
 	(*ppShader) = (IDirect3DVertexShader9*)obj;
 
 	return result;
@@ -479,13 +361,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVolumeTexture(UINT Width, UINT Height,
 	HRESULT result = S_OK;
 
 	CVolumeTexture9* obj = new CVolumeTexture9(this, Width, Height, Depth, Levels, Usage, Format, Pool, pSharedHandle);
-
-	if (obj->mResult != VK_SUCCESS)
-	{
-		delete obj;
-		obj = nullptr;
-		result = D3DERR_INVALIDCALL;
-	}
 
 	(*ppVolumeTexture) = (IDirect3DVolumeTexture9*)obj;
 

@@ -73,6 +73,27 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.Clear(realWindow, Count, pRects, Flags, Color, Z, Stencil);
 			}
 			break;
+			case Device_BeginScene:
+			{
+				auto& renderManager = commandStreamManager->mRenderManager;
+				auto& realWindow = (*renderManager.mStateManager.mWindows[workItem.Id]);
+				if (!realWindow.mIsSceneStarted)
+				{
+					renderManager.StartScene(realWindow);
+				}
+			}
+			break;
+			case Device_Present:
+			{
+				RECT* pSourceRect = boost::any_cast<RECT*>(workItem.Argument1);
+				RECT* pDestRect = boost::any_cast<RECT*>(workItem.Argument2);
+				HWND hDestWindowOverride = boost::any_cast<HWND>(workItem.Argument3);
+				RGNDATA* pDirtyRegion = boost::any_cast<RGNDATA*>(workItem.Argument4);
+
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				commandStreamManager->mRenderManager.Present(realWindow, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+			}
+			break;
 			case Instance_GetAdapterIdentifier:
 			{
 				UINT Adapter = boost::any_cast<UINT>(workItem.Argument1);
