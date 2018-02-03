@@ -29,86 +29,11 @@ misrepresented as being the original software.
 #include <boost/container/small_vector.hpp>
 #include <Eigen/Dense>
 #include <memory>
-#include <chrono>
 
 #include "CTypes.h"
 #include "CIndexBuffer9.h"
 
 class CDevice9;
-
-struct SamplerRequest
-{
-	//Vulkan State
-	VkSampler Sampler = VK_NULL_HANDLE;
-
-	//D3D9 State
-	DWORD SamplerIndex = 0;
-	D3DTEXTUREFILTERTYPE MagFilter = D3DTEXF_NONE;
-	D3DTEXTUREFILTERTYPE MinFilter = D3DTEXF_NONE;
-	D3DTEXTUREADDRESS AddressModeU = D3DTADDRESS_FORCE_DWORD;
-	D3DTEXTUREADDRESS AddressModeV = D3DTADDRESS_FORCE_DWORD;
-	D3DTEXTUREADDRESS AddressModeW = D3DTADDRESS_FORCE_DWORD;
-	DWORD MaxAnisotropy = 0;
-	D3DTEXTUREFILTERTYPE MipmapMode = D3DTEXF_NONE;
-	float MipLodBias = 0.0f;
-	float MaxLod = 1.0f;
-
-	//Resource Handling.
-	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	CDevice9* mDevice = nullptr;
-	SamplerRequest(CDevice9* device) : mDevice(device) {}
-	~SamplerRequest();
-};
-
-struct ResourceContext
-{
-	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
-	
-	//Vulkan State
-	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
-	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-	VkDescriptorSet DescriptorSet = VK_NULL_HANDLE;
-	BOOL WasShader = false; // descriptor set logic is different for shaders so mixing them makes Vulkan angry because the number of attachment is different and stuff.
-
-	//Resource Handling.
-	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	CDevice9* mDevice = nullptr;
-	ResourceContext(CDevice9* device) : mDevice(device) {}
-	~ResourceContext();
-};
-
-struct DrawContext
-{
-	//Vulkan State
-	VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
-	VkPipeline Pipeline = VK_NULL_HANDLE;
-	VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-
-	//Misc
-	//boost::container::flat_map<UINT, UINT> Bindings;
-	UINT Bindings[64] = {};
-
-	//D3D9 State - Pipe
-	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
-	DWORD FVF = 0;
-	CVertexDeclaration9* VertexDeclaration = nullptr;
-	CVertexShader9* VertexShader = nullptr;
-	CPixelShader9* PixelShader = nullptr;
-	int32_t StreamCount = 0;
-
-	//D3d9 State - Lights
-	ShaderConstantSlots mVertexShaderConstantSlots = {};
-	ShaderConstantSlots mPixelShaderConstantSlots = {};
-
-	//Constant Registers
-	SpecializationConstants mSpecializationConstants = {};
-
-	//Resource Handling.
-	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	CDevice9* mDevice = nullptr;
-	DrawContext(CDevice9* device) : mDevice(device) {}
-	~DrawContext();
-};
 
 class BufferManager
 {
@@ -127,7 +52,7 @@ public:
 	int32_t mTextureWidth = 0;
 	int32_t mTextureHeight = 0;
 
-	int32_t mVertexCount = 0;
+	
 
 	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
 	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;

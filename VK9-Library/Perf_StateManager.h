@@ -1241,6 +1241,7 @@ struct RealWindow
 	vk::DeviceMemory mLightBufferMemory;
 	vk::Buffer mMaterialBuffer;
 	vk::DeviceMemory mMaterialBufferMemory;
+	int32_t mVertexCount = 0;
 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	RealWindow(RealInstance& realInstance, RealDevice& realDevice);

@@ -42,6 +42,9 @@ enum WorkItemType
 	,Device_Clear
 	,Device_Present
 	,Device_BeginScene
+	,Device_DrawIndexedPrimitive
+	,Device_DrawPrimitive
+	,Device_GetFVF
 	,Device_Destroy
 };
 

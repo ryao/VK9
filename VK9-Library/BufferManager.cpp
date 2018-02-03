@@ -945,38 +945,3 @@ void BufferManager::FlushDrawBufffer()
 	mIsDirty = true;
 }
 
-SamplerRequest::~SamplerRequest()
-{
-	if (mDevice != nullptr && Sampler != VK_NULL_HANDLE)
-	{
-		vkDestroySampler(mDevice->mDevice, Sampler, NULL);
-	}
-}
-
-ResourceContext::~ResourceContext()
-{
-	if (mDevice != nullptr && DescriptorSet != VK_NULL_HANDLE)
-	{
-		vkFreeDescriptorSets(mDevice->mDevice, mDevice->mDescriptorPool, 1, &DescriptorSet);
-	}
-}
-
-DrawContext::~DrawContext()
-{
-	if (mDevice != nullptr)
-	{
-		if (Pipeline != VK_NULL_HANDLE)
-		{
-			vkDestroyPipeline(mDevice->mDevice, Pipeline, NULL);
-		}
-		if (PipelineLayout != VK_NULL_HANDLE)
-		{
-			vkDestroyPipelineLayout(mDevice->mDevice, PipelineLayout, NULL);
-		}
-		if (DescriptorSetLayout != VK_NULL_HANDLE)
-		{
-			vkDestroyDescriptorSetLayout(mDevice->mDevice, DescriptorSetLayout, NULL);
-		}
-	}
-
-}

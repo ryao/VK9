@@ -32,6 +32,35 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
+SamplerRequest::~SamplerRequest()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroySampler(Sampler, nullptr);
+	}
+}
+
+ResourceContext::~ResourceContext()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.freeDescriptorSets(device.mDescriptorPool, 1, &DescriptorSet);
+	}
+}
+
+DrawContext::~DrawContext()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroyPipeline(Pipeline, nullptr);
+		device.mDevice.destroyPipelineLayout(PipelineLayout, nullptr);
+		device.mDevice.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);
+	}
+}
+
 RenderManager::RenderManager()
 {
 
@@ -298,4 +327,44 @@ void RenderManager::Present(RealWindow& realWindow, const RECT *pSourceRect, con
 	//mGarbageManager.DestroyHandles();
 
 	//Print(mDeviceState.mTransforms);
+}
+
+void RenderManager::DrawIndexedPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
+{
+	if (realWindow.mDeviceState.mIndexBuffer == nullptr)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitive called with null index buffer.";
+		return;
+	}
+
+	if (!realWindow.mIsSceneStarted)
+	{
+		this->StartScene(realWindow);
+	}
+
+	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(this);
+	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(this);
+
+	mBufferManager->BeginDraw(context, resourceContext, Type);
+
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
+	https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
+	*/
+	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].drawIndexed(min(realWindow.mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
+}
+
+void RenderManager::DrawPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
+{
+	if (!realWindow.mIsSceneStarted)
+	{
+		this->StartScene(realWindow);
+	}
+
+	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(this);
+	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(this);
+
+	mBufferManager->BeginDraw(context, resourceContext, PrimitiveType);
+
+	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].draw(min(realWindow.mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount)), 1, StartVertex, 0);
 }

@@ -94,6 +94,37 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.Present(realWindow, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 			}
 			break;
+			case Device_DrawIndexedPrimitive:
+			{
+				D3DPRIMITIVETYPE Type = boost::any_cast<D3DPRIMITIVETYPE>(workItem.Argument1);
+				INT BaseVertexIndex = boost::any_cast<INT>(workItem.Argument2);
+				UINT MinIndex = boost::any_cast<UINT>(workItem.Argument3);
+				UINT NumVertices = boost::any_cast<UINT>(workItem.Argument4);
+				UINT StartIndex = boost::any_cast<UINT>(workItem.Argument5);
+				UINT PrimitiveCount = boost::any_cast<UINT>(workItem.Argument6);
+
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				commandStreamManager->mRenderManager.DrawIndexedPrimitive(realWindow,  Type,  BaseVertexIndex,  MinIndex,  NumVertices,  StartIndex,  PrimitiveCount);
+			}
+			break;
+			case Device_DrawPrimitive:
+			{
+				D3DPRIMITIVETYPE PrimitiveType = boost::any_cast<D3DPRIMITIVETYPE>(workItem.Argument1);
+				UINT StartVertex = boost::any_cast<UINT>(workItem.Argument2);
+				UINT PrimitiveCount = boost::any_cast<UINT>(workItem.Argument3);
+
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				commandStreamManager->mRenderManager.DrawPrimitive(realWindow, PrimitiveType, StartVertex, PrimitiveCount);
+			}
+			break;
+			case Device_GetFVF:
+			{
+				DWORD* pFVF = boost::any_cast<DWORD*>(workItem.Argument1);
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+
+				(*pFVF) = realWindow.mDeviceState.mFVF;
+			}
+			break;
 			case Instance_GetAdapterIdentifier:
 			{
 				UINT Adapter = boost::any_cast<UINT>(workItem.Argument1);
