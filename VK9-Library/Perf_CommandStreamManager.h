@@ -44,7 +44,16 @@ enum WorkItemType
 	,Device_BeginScene
 	,Device_DrawIndexedPrimitive
 	,Device_DrawPrimitive
+	,Device_GetDisplayMode
 	,Device_GetFVF
+	,Device_GetLight
+	,Device_GetLightEnable
+	,Device_GetMaterial
+	,Device_GetNPatchMode
+	,Device_GetPixelShader
+	,Device_GetPixelShaderConstantB
+	,Device_GetPixelShaderConstantF
+	,Device_GetPixelShaderConstantI
 	,Device_Destroy
 };
 

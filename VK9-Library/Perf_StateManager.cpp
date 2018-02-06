@@ -327,7 +327,6 @@ void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any arg
 	vk::Bool32 doesSupportGraphics = false;
 	uint32_t graphicsQueueIndex = 0;
 	uint32_t presentationQueueIndex = 0;
-	vk::Format format = vk::Format::eUndefined;
 	vk::Format depthFormat = vk::Format::eD16Unorm;
 	vk::SurfaceTransformFlagBitsKHR transformFlags;
 
@@ -431,11 +430,11 @@ void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any arg
 					{
 						if (ptr->mSurfaceFormatCount == 1 && ptr->mSurfaceFormats[0].format == vk::Format::eUndefined)
 						{
-							format = vk::Format::eB8G8R8A8Unorm; //No preferred format so set a default.
+							ptr->mFormat = vk::Format::eB8G8R8A8Unorm; //No preferred format so set a default.
 						}
 						else
 						{
-							format = ptr->mSurfaceFormats[0].format; //Pull the preferred format.
+							ptr->mFormat = ptr->mSurfaceFormats[0].format; //Pull the preferred format.
 						}
 
 						if (ptr->mSurfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)
@@ -481,7 +480,7 @@ void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any arg
 								vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 								swapchainCreateInfo.surface = ptr->mSurface;
 								swapchainCreateInfo.minImageCount = ptr->mSurfaceCapabilities.minImageCount + 1;
-								swapchainCreateInfo.imageFormat = format;
+								swapchainCreateInfo.imageFormat = ptr->mFormat;
 								swapchainCreateInfo.imageColorSpace = ptr->mSurfaceFormats[0].colorSpace;
 								swapchainCreateInfo.imageExtent = ptr->mSwapchainExtent;
 								swapchainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
@@ -512,7 +511,7 @@ void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any arg
 											for (size_t i = 0; i < ptr->mSwapchainImageCount; i++)
 											{
 												vk::ImageViewCreateInfo color_image_view;
-												color_image_view.format = format;
+												color_image_view.format = ptr->mFormat;
 												color_image_view.components.r = vk::ComponentSwizzle::eIdentity;
 												color_image_view.components.g = vk::ComponentSwizzle::eIdentity;
 												color_image_view.components.b = vk::ComponentSwizzle::eIdentity;
@@ -613,7 +612,7 @@ void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any arg
 														/*
 														Now setup the render pass.
 														*/
-														ptr->mRenderAttachments[0].format = format;
+														ptr->mRenderAttachments[0].format = ptr->mFormat;
 														ptr->mRenderAttachments[0].samples = vk::SampleCountFlagBits::e1;
 														ptr->mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
 														ptr->mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;

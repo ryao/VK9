@@ -618,6 +618,66 @@ inline VkFormat ConvertFormat(D3DFORMAT format)
 	}
 }
 
+inline D3DFORMAT ConvertFormat(vk::Format format)
+{
+	/*
+	https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/xhtml/vkspec.html#VkFormat
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172558(v=vs.85).aspx
+	*/
+	switch ((VkFormat)format)
+	{
+	case VK_FORMAT_UNDEFINED:
+		return D3DFMT_UNKNOWN;
+	case VK_FORMAT_R8G8B8_UNORM:
+		return D3DFMT_R8G8B8;
+	case VK_FORMAT_B8G8R8A8_UNORM:
+		return D3DFMT_A8R8G8B8;
+	case VK_FORMAT_B5G6R5_UNORM_PACK16:
+		return D3DFMT_R5G6B5;
+	case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
+		return D3DFMT_A1R5G5B5;
+	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+		return D3DFMT_A4R4G4B4;
+	case VK_FORMAT_R8G8B8A8_UNORM:
+		return D3DFMT_A8B8G8R8;
+	case VK_FORMAT_R16G16_UNORM:
+		return D3DFMT_G16R16;
+	case VK_FORMAT_R16G16B16A16_UNORM:
+		return D3DFMT_A16B16G16R16;
+	case VK_FORMAT_R8G8_SNORM:
+		return D3DFMT_V8U8;
+	case VK_FORMAT_R8G8B8A8_SNORM:
+		return D3DFMT_Q8W8V8U8;
+	case VK_FORMAT_R16G16_SNORM:
+		return D3DFMT_V16U16;
+	case VK_FORMAT_D24_UNORM_S8_UINT:
+		return D3DFMT_D24S8;
+	case VK_FORMAT_D16_UNORM:
+		return D3DFMT_D16;
+	case VK_FORMAT_D32_SFLOAT:
+		return D3DFMT_D32F_LOCKABLE;
+	case VK_FORMAT_R16_UINT:
+		return D3DFMT_INDEX16;
+	case VK_FORMAT_R32_UINT:
+		return D3DFMT_INDEX32;
+	case VK_FORMAT_R16G16B16A16_SNORM:
+		return D3DFMT_Q16W16V16U16;
+	case VK_FORMAT_R16_SFLOAT:
+		return D3DFMT_R16F;
+	case VK_FORMAT_R16G16_SFLOAT:
+		return D3DFMT_G16R16F;
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+		return D3DFMT_A16B16G16R16F;
+	case VK_FORMAT_R32_SFLOAT:
+		return D3DFMT_R32F;
+	case VK_FORMAT_R32G32_SFLOAT:
+		return D3DFMT_G32R32F;
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+		return D3DFMT_A32B32G32R32F;
+	default:
+		return D3DFMT_UNKNOWN;
+	}
+}
 
 inline D3DFORMAT ConvertFormat(VkFormat format)
 {

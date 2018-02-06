@@ -569,23 +569,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDirect3D(IDirect3D9 **ppD3D9)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain, D3DDISPLAYMODE *pMode)
 {
-	if (iSwapChain)
-	{
-		//TODO: Implement.
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetDisplayMode multiple swapchains are not implemented!";
-	}
-	else
-	{
-		pMode->Height = this->mSwapchainExtent.height;
-		pMode->Width = this->mSwapchainExtent.width;
-		pMode->RefreshRate = 60; //fake it till you make it.
-		pMode->Format = ConvertFormat(this->mFormat);
-	}
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Height: " << pMode->Height;
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Width: " << pMode->Width;
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode RefreshRate: " << pMode->RefreshRate;
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::GetDisplayMode Format: " << pMode->Format;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetDisplayMode;
+	workItem.Id = mId;
+	workItem.Argument1 = iSwapChain;
+	workItem.Argument2 = pMode;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
@@ -631,44 +620,50 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexDa
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
 {
-	auto& light = mDeviceState.mLights[Index];
-
-	pLight->Type = (*(D3DLIGHTTYPE*)light.Type);
-	pLight->Diffuse = (*(D3DCOLORVALUE*)light.Diffuse);
-	pLight->Specular = (*(D3DCOLORVALUE*)light.Specular);
-	pLight->Ambient = (*(D3DCOLORVALUE*)light.Ambient);
-
-	pLight->Position = (*(D3DVECTOR*)light.Position);
-	pLight->Direction = (*(D3DVECTOR*)light.Direction);
-
-	pLight->Range = light.Range;
-	pLight->Falloff = light.Falloff;
-	pLight->Attenuation0 = light.Attenuation0;
-	pLight->Attenuation1 = light.Attenuation1;
-	pLight->Attenuation2 = light.Attenuation2;
-	pLight->Theta = light.Theta;
-	pLight->Phi = light.Phi;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetLight;
+	workItem.Id = mId;
+	workItem.Argument1 = Index;
+	workItem.Argument2 = pLight;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLightEnable(DWORD Index, BOOL *pEnable)
 {
-	(*pEnable) = mDeviceState.mLights[Index].IsEnabled;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetLightEnable;
+	workItem.Id = mId;
+	workItem.Argument1 = Index;
+	workItem.Argument2 = pEnable;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetMaterial(D3DMATERIAL9 *pMaterial)
 {
-	(*pMaterial) = mDeviceState.mMaterial;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetMaterial;
+	workItem.Id = mId;
+	workItem.Argument1 = pMaterial;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 FLOAT STDMETHODCALLTYPE CDevice9::GetNPatchMode()
 {
-	return mDeviceState.mNSegments;
+	FLOAT output;
+
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetMaterial;
+	workItem.Id = mId;
+	workItem.Argument1 = &output;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	return output;
 }
 
 UINT STDMETHODCALLTYPE CDevice9::GetNumberOfSwapChains()
@@ -691,44 +686,50 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPaletteEntries(UINT PaletteNumber, PALETT
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppShader)
 {
-	(*ppShader) = (IDirect3DPixelShader9*)mDeviceState.mPixelShader;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetPixelShader;
+	workItem.Id = mId;
+	workItem.Argument1 = ppShader;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
-	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	for (size_t i = 0; i < BoolCount; i++)
-	{
-		pConstantData[i] = slots.BooleanConstants[StartRegister + i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetPixelShaderConstantB;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = BoolCount;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
-	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4fCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		pConstantData[i] = slots.FloatConstants[startIndex + i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetPixelShaderConstantF;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4fCount;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
-	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4iCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		pConstantData[i] = slots.IntegerConstants[startIndex + i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetPixelShaderConstantI;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4iCount;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }

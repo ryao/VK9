@@ -104,7 +104,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT PrimitiveCount = boost::any_cast<UINT>(workItem.Argument6);
 
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
-				commandStreamManager->mRenderManager.DrawIndexedPrimitive(realWindow,  Type,  BaseVertexIndex,  MinIndex,  NumVertices,  StartIndex,  PrimitiveCount);
+				commandStreamManager->mRenderManager.DrawIndexedPrimitive(realWindow, Type, BaseVertexIndex, MinIndex, NumVertices, StartIndex, PrimitiveCount);
 			}
 			break;
 			case Device_DrawPrimitive:
@@ -117,12 +117,135 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.DrawPrimitive(realWindow, PrimitiveType, StartVertex, PrimitiveCount);
 			}
 			break;
+			case Device_GetDisplayMode:
+			{
+				UINT iSwapChain = boost::any_cast<UINT>(workItem.Argument1);
+				D3DDISPLAYMODE* pMode = boost::any_cast<D3DDISPLAYMODE*>(workItem.Argument2);
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+
+				if (iSwapChain)
+				{
+					//TODO: Implement.
+					BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetDisplayMode multiple swapchains are not implemented!";
+				}
+				else
+				{
+					pMode->Height = realWindow.mSwapchainExtent.height;
+					pMode->Width = realWindow.mSwapchainExtent.width;
+					pMode->RefreshRate = 60; //fake it till you make it.
+					pMode->Format = ConvertFormat(realWindow.mFormat);
+				}
+			}
+			break;
 			case Device_GetFVF:
 			{
 				DWORD* pFVF = boost::any_cast<DWORD*>(workItem.Argument1);
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
 
 				(*pFVF) = realWindow.mDeviceState.mFVF;
+			}
+			break;
+			case Device_GetLight:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				DWORD Index = boost::any_cast<DWORD>(workItem.Argument1);
+				D3DLIGHT9* pLight = boost::any_cast<D3DLIGHT9*>(workItem.Argument2);
+				auto& light = realWindow.mDeviceState.mLights[Index];
+
+				pLight->Type = (*(D3DLIGHTTYPE*)light.Type);
+				pLight->Diffuse = (*(D3DCOLORVALUE*)light.Diffuse);
+				pLight->Specular = (*(D3DCOLORVALUE*)light.Specular);
+				pLight->Ambient = (*(D3DCOLORVALUE*)light.Ambient);
+
+				pLight->Position = (*(D3DVECTOR*)light.Position);
+				pLight->Direction = (*(D3DVECTOR*)light.Direction);
+
+				pLight->Range = light.Range;
+				pLight->Falloff = light.Falloff;
+				pLight->Attenuation0 = light.Attenuation0;
+				pLight->Attenuation1 = light.Attenuation1;
+				pLight->Attenuation2 = light.Attenuation2;
+				pLight->Theta = light.Theta;
+				pLight->Phi = light.Phi;
+			}
+			break;
+			case Device_GetLightEnable:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				DWORD Index = boost::any_cast<DWORD>(workItem.Argument1);
+				BOOL* pEnable = boost::any_cast<BOOL*>(workItem.Argument2);
+
+				(*pEnable) = realWindow.mDeviceState.mLights[Index].IsEnabled;
+			}
+			break;
+			case Device_GetMaterial:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				D3DMATERIAL9* pMaterial = boost::any_cast<D3DMATERIAL9*>(workItem.Argument1);
+
+				(*pMaterial) = realWindow.mDeviceState.mMaterial;
+			}
+			break;
+			case Device_GetNPatchMode:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				FLOAT* output = boost::any_cast<FLOAT*>(workItem.Argument1);
+
+				(*output) = realWindow.mDeviceState.mNSegments;
+			}
+			break;
+			case Device_GetPixelShader:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				IDirect3DPixelShader9** ppShader = boost::any_cast<IDirect3DPixelShader9**>(workItem.Argument1);
+
+				(*ppShader) = (IDirect3DPixelShader9*)realWindow.mDeviceState.mPixelShader;
+			}
+			break;
+			case Device_GetPixelShaderConstantB:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				UINT StartRegister = boost::any_cast<UINT>(workItem.Argument1);
+				BOOL* pConstantData = boost::any_cast<BOOL*>(workItem.Argument2);
+				UINT BoolCount = boost::any_cast<UINT>(workItem.Argument3);
+
+				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				for (size_t i = 0; i < BoolCount; i++)
+				{
+					pConstantData[i] = slots.BooleanConstants[StartRegister + i];
+				}
+			}
+			break;
+			case Device_GetPixelShaderConstantF:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				UINT StartRegister = boost::any_cast<UINT>(workItem.Argument1);
+				float* pConstantData = boost::any_cast<float*>(workItem.Argument2);
+				UINT Vector4fCount = boost::any_cast<UINT>(workItem.Argument3);
+
+				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				uint32_t startIndex = (StartRegister * 4);
+				uint32_t length = (Vector4fCount * 4);
+				for (size_t i = 0; i < length; i++)
+				{
+					pConstantData[i] = slots.FloatConstants[startIndex + i];
+				}
+			}
+			break;
+			case Device_GetPixelShaderConstantI:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				UINT StartRegister = boost::any_cast<UINT>(workItem.Argument1);
+				int* pConstantData = boost::any_cast<int*>(workItem.Argument2);
+				UINT Vector4iCount = boost::any_cast<UINT>(workItem.Argument3);
+
+				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				uint32_t startIndex = (StartRegister * 4);
+				uint32_t length = (Vector4iCount * 4);
+				for (size_t i = 0; i < length; i++)
+				{
+					pConstantData[i] = slots.IntegerConstants[startIndex + i];
+				}
 			}
 			break;
 			case Instance_GetAdapterIdentifier:

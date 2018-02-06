@@ -113,6 +113,7 @@ struct RealWindow
 	vk::Semaphore mPresentCompleteSemaphore;
 	vk::PresentInfoKHR mPresentInfo;
 	vk::ImageMemoryBarrier mPrePresentBarrier;
+	vk::Format mFormat;
 
 	//Swapchain & depth stuff
 	vk::SwapchainKHR mSwapchain;
