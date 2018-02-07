@@ -41,7 +41,6 @@ enum WorkItemType
 	,Device_BeginScene
 	,Device_Clear
 	,Device_Present
-	,Device_BeginScene
 	,Device_DrawIndexedPrimitive
 	,Device_DrawPrimitive
 	,Device_GetDisplayMode
@@ -54,6 +53,10 @@ enum WorkItemType
 	,Device_GetPixelShaderConstantB
 	,Device_GetPixelShaderConstantF
 	,Device_GetPixelShaderConstantI
+	,Device_GetRenderState
+	,Device_GetSamplerState
+	,Device_GetScissorRect
+	,Device_GetStreamSource
 	,Device_Destroy
 };
 

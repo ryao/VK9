@@ -39,7 +39,6 @@ misrepresented as being the original software.
 #include "CBaseTexture9.h"
 #include "CSwapChain9.h"
 #include "CRenderTargetSurface9.h"
-#include "CStateBlock9.h"
 
 #include "BufferManager.h"
 #include "GarbageManager.h"
@@ -69,8 +68,7 @@ public:
 
 	//Misc
 	ULONG mReferenceCount = 1;
-	uint32_t mDisplayCount = 0;
-	CStateBlock9* mCurrentStateRecording = nullptr;
+	uint32_t mDisplayCount = 0;	
 	boost::container::small_vector<CSwapChain9*, 2> mSwapChains;
 	boost::container::small_vector<CRenderTargetSurface9*, 16> mRenderTargets;
 	BOOL mIsDirty = true;

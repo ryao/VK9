@@ -24,6 +24,7 @@ misrepresented as being the original software.
 
 #include "C9.h"
 #include "CDevice9.h"
+#include "CStateBlock9.h"
 #include "Utilities.h"
 
 #include <boost/log/core.hpp>
@@ -223,7 +224,7 @@ void RealWindow::SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask
 	mRealDevice.mDevice.freeCommandBuffers(mCommandPool, 1, commandBuffers);
 }
 
-void RealWindow::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlagBits usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory)
+void RealWindow::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory)
 {
 	vk::Result result; // = VK_SUCCESS
 

@@ -38,6 +38,8 @@ misrepresented as being the original software.
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
 
+class CStateBlock9;
+
 struct RealDevice
 {
 	//Feature and property information
@@ -127,6 +129,7 @@ struct RealWindow
 
 	//Misc Handles
 	vk::Fence mNullFence;
+	CStateBlock9* mCurrentStateRecording = nullptr;
 
 	//Misc State
 	DeviceState mDeviceState = {};
@@ -1249,7 +1252,7 @@ struct RealWindow
 	~RealWindow();
 
 	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
-	void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlagBits usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory);
+	void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory);
 	void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 };
 

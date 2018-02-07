@@ -743,339 +743,19 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain, D3DRASTER_
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWORD *pValue)
+HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWORD* pValue)
 {
-	SpecializationConstants* constants = nullptr;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		constants = &this->mCurrentStateRecording->mDeviceState.mSpecializationConstants;
-	}
-	else
-	{
-		constants = &mDeviceState.mSpecializationConstants;
-	}
-
-	switch (State)
-	{
-	case D3DRS_ZENABLE:
-		(*pValue) = constants->zEnable;
-		break;
-	case D3DRS_FILLMODE:
-		(*pValue) = constants->fillMode;
-		break;
-	case D3DRS_SHADEMODE:
-		(*pValue) = constants->shadeMode;
-		break;
-	case D3DRS_ZWRITEENABLE:
-		(*pValue) = constants->zWriteEnable;
-		break;
-	case D3DRS_ALPHATESTENABLE:
-		(*pValue) = constants->alphaTestEnable;
-		break;
-	case D3DRS_LASTPIXEL:
-		(*pValue) = constants->lastPixel;
-		break;
-	case D3DRS_SRCBLEND:
-		(*pValue) = constants->sourceBlend;
-		break;
-	case D3DRS_DESTBLEND:
-		(*pValue) = constants->destinationBlend;
-		break;
-	case D3DRS_CULLMODE:
-		(*pValue) = constants->cullMode;
-		break;
-	case D3DRS_ZFUNC:
-		(*pValue) = constants->zFunction;
-		break;
-	case D3DRS_ALPHAREF:
-		(*pValue) = constants->alphaReference;
-		break;
-	case D3DRS_ALPHAFUNC:
-		(*pValue) = constants->alphaFunction;
-		break;
-	case D3DRS_DITHERENABLE:
-		(*pValue) = constants->ditherEnable;
-		break;
-	case D3DRS_ALPHABLENDENABLE:
-		(*pValue) = constants->alphaBlendEnable;
-		break;
-	case D3DRS_FOGENABLE:
-		(*pValue) = constants->fogEnable;
-		break;
-	case D3DRS_SPECULARENABLE:
-		(*pValue) = constants->specularEnable;
-		break;
-	case D3DRS_FOGCOLOR:
-		(*pValue) = constants->fogColor;
-		break;
-	case D3DRS_FOGTABLEMODE:
-		(*pValue) = constants->fogTableMode;
-		break;
-	case D3DRS_FOGSTART:
-		(*pValue) = bit_cast(constants->fogStart);
-		break;
-	case D3DRS_FOGEND:
-		(*pValue) = bit_cast(constants->fogEnd);
-		break;
-	case D3DRS_FOGDENSITY:
-		(*pValue) = bit_cast(constants->fogDensity);
-		break;
-	case D3DRS_RANGEFOGENABLE:
-		(*pValue) = constants->rangeFogEnable;
-		break;
-	case D3DRS_STENCILENABLE:
-		(*pValue) = constants->stencilEnable;
-		break;
-	case D3DRS_STENCILFAIL:
-		(*pValue) = constants->stencilFail;
-		break;
-	case D3DRS_STENCILZFAIL:
-		(*pValue) = constants->stencilZFail;
-		break;
-	case D3DRS_STENCILPASS:
-		(*pValue) = constants->stencilPass;
-		break;
-	case D3DRS_STENCILFUNC:
-		(*pValue) = constants->stencilFunction;
-		break;
-	case D3DRS_STENCILREF:
-		(*pValue) = constants->stencilReference;
-		break;
-	case D3DRS_STENCILMASK:
-		(*pValue) = constants->stencilMask;
-		break;
-	case D3DRS_STENCILWRITEMASK:
-		(*pValue) = constants->stencilWriteMask;
-		break;
-	case D3DRS_TEXTUREFACTOR:
-		(*pValue) = constants->textureFactor;
-		break;
-	case D3DRS_WRAP0:
-		(*pValue) = constants->wrap0;
-		break;
-	case D3DRS_WRAP1:
-		(*pValue) = constants->wrap1;
-		break;
-	case D3DRS_WRAP2:
-		(*pValue) = constants->wrap2;
-		break;
-	case D3DRS_WRAP3:
-		(*pValue) = constants->wrap3;
-		break;
-	case D3DRS_WRAP4:
-		(*pValue) = constants->wrap4;
-		break;
-	case D3DRS_WRAP5:
-		(*pValue) = constants->wrap5;
-		break;
-	case D3DRS_WRAP6:
-		(*pValue) = constants->wrap6;
-		break;
-	case D3DRS_WRAP7:
-		(*pValue) = constants->wrap7;
-		break;
-	case D3DRS_CLIPPING:
-		(*pValue) = constants->clipping;
-		break;
-	case D3DRS_LIGHTING:
-		(*pValue) = constants->lighting;
-		break;
-	case D3DRS_AMBIENT:
-		(*pValue) = constants->ambient;
-		break;
-	case D3DRS_FOGVERTEXMODE:
-		(*pValue) = constants->fogVertexMode;
-		break;
-	case D3DRS_COLORVERTEX:
-		(*pValue) = constants->colorVertex;
-		break;
-	case D3DRS_LOCALVIEWER:
-		(*pValue) = constants->localViewer;
-		break;
-	case D3DRS_NORMALIZENORMALS:
-		(*pValue) = constants->normalizeNormals;
-		break;
-	case D3DRS_DIFFUSEMATERIALSOURCE:
-		(*pValue) = constants->diffuseMaterialSource;
-		break;
-	case D3DRS_SPECULARMATERIALSOURCE:
-		(*pValue) = constants->specularMaterialSource;
-		break;
-	case D3DRS_AMBIENTMATERIALSOURCE:
-		(*pValue) = constants->ambientMaterialSource;
-		break;
-	case D3DRS_EMISSIVEMATERIALSOURCE:
-		(*pValue) = constants->emissiveMaterialSource;
-		break;
-	case D3DRS_VERTEXBLEND:
-		(*pValue) = constants->vertexBlend;
-		break;
-	case D3DRS_CLIPPLANEENABLE:
-		(*pValue) = constants->clipPlaneEnable;
-		break;
-	case D3DRS_POINTSIZE:
-		(*pValue) = constants->pointSize;
-		break;
-	case D3DRS_POINTSIZE_MIN:
-		(*pValue) = bit_cast(constants->pointSizeMinimum);
-		break;
-	case D3DRS_POINTSPRITEENABLE:
-		(*pValue) = constants->pointSpriteEnable;
-		break;
-	case D3DRS_POINTSCALEENABLE:
-		(*pValue) = constants->pointScaleEnable;
-		break;
-	case D3DRS_POINTSCALE_A:
-		(*pValue) = bit_cast(constants->pointScaleA);
-		break;
-	case D3DRS_POINTSCALE_B:
-		(*pValue) = bit_cast(constants->pointScaleB);
-		break;
-	case D3DRS_POINTSCALE_C:
-		(*pValue) = bit_cast(constants->pointScaleC);
-		break;
-	case D3DRS_MULTISAMPLEANTIALIAS:
-		(*pValue) = constants->multisampleAntiAlias;
-		break;
-	case D3DRS_MULTISAMPLEMASK:
-		(*pValue) = constants->multisampleMask;
-		break;
-	case D3DRS_PATCHEDGESTYLE:
-		(*pValue) = constants->patchEdgeStyle;
-		break;
-	case D3DRS_DEBUGMONITORTOKEN:
-		(*pValue) = constants->debugMonitorToken;
-		break;
-	case D3DRS_POINTSIZE_MAX:
-		(*pValue) = bit_cast(constants->pointSizeMaximum);
-		break;
-	case D3DRS_INDEXEDVERTEXBLENDENABLE:
-		(*pValue) = constants->indexedVertexBlendEnable;
-		break;
-	case D3DRS_COLORWRITEENABLE:
-		(*pValue) = constants->colorWriteEnable;
-		break;
-	case D3DRS_TWEENFACTOR:
-		(*pValue) = bit_cast(constants->tweenFactor);
-		break;
-	case D3DRS_BLENDOP:
-		(*pValue) = constants->blendOperation;
-		break;
-	case D3DRS_POSITIONDEGREE:
-		(*pValue) = constants->positionDegree;
-		break;
-	case D3DRS_NORMALDEGREE:
-		(*pValue) = constants->normalDegree;
-		break;
-	case D3DRS_SCISSORTESTENABLE:
-		(*pValue) = constants->scissorTestEnable;
-		break;
-	case D3DRS_SLOPESCALEDEPTHBIAS:
-		(*pValue) = bit_cast(constants->slopeScaleDepthBias);
-		break;
-	case D3DRS_ANTIALIASEDLINEENABLE:
-		(*pValue) = constants->antiAliasedLineEnable;
-		break;
-	case D3DRS_MINTESSELLATIONLEVEL:
-		(*pValue) = bit_cast(constants->minimumTessellationLevel);
-		break;
-	case D3DRS_MAXTESSELLATIONLEVEL:
-		(*pValue) = bit_cast(constants->maximumTessellationLevel);
-		break;
-	case D3DRS_ADAPTIVETESS_X:
-		(*pValue) = bit_cast(constants->adaptivetessX);
-		break;
-	case D3DRS_ADAPTIVETESS_Y:
-		(*pValue) = bit_cast(constants->adaptivetessY);
-		break;
-	case D3DRS_ADAPTIVETESS_Z:
-		(*pValue) = bit_cast(constants->adaptivetessZ);
-		break;
-	case D3DRS_ADAPTIVETESS_W:
-		(*pValue) = bit_cast(constants->adaptivetessW);
-		break;
-	case D3DRS_ENABLEADAPTIVETESSELLATION:
-		(*pValue) = constants->enableAdaptiveTessellation;
-		break;
-	case D3DRS_TWOSIDEDSTENCILMODE:
-		(*pValue) = constants->twoSidedStencilMode;
-		break;
-	case D3DRS_CCW_STENCILFAIL:
-		(*pValue) = constants->ccwStencilFail;
-		break;
-	case D3DRS_CCW_STENCILZFAIL:
-		(*pValue) = constants->ccwStencilZFail;
-		break;
-	case D3DRS_CCW_STENCILPASS:
-		(*pValue) = constants->ccwStencilPass;
-		break;
-	case D3DRS_CCW_STENCILFUNC:
-		(*pValue) = constants->ccwStencilFunction;
-		break;
-	case D3DRS_COLORWRITEENABLE1:
-		(*pValue) = constants->colorWriteEnable1;
-		break;
-	case D3DRS_COLORWRITEENABLE2:
-		(*pValue) = constants->colorWriteEnable2;
-		break;
-	case D3DRS_COLORWRITEENABLE3:
-		(*pValue) = constants->colorWriteEnable3;
-		break;
-	case D3DRS_BLENDFACTOR:
-		(*pValue) = constants->blendFactor;
-		break;
-	case D3DRS_SRGBWRITEENABLE:
-		(*pValue) = constants->srgbWriteEnable;
-		break;
-	case D3DRS_DEPTHBIAS:
-		(*pValue) = bit_cast(constants->depthBias);
-		break;
-	case D3DRS_WRAP8:
-		(*pValue) = constants->wrap8;
-		break;
-	case D3DRS_WRAP9:
-		(*pValue) = constants->wrap9;
-		break;
-	case D3DRS_WRAP10:
-		(*pValue) = constants->wrap10;
-		break;
-	case D3DRS_WRAP11:
-		(*pValue) = constants->wrap11;
-		break;
-	case D3DRS_WRAP12:
-		(*pValue) = constants->wrap12;
-		break;
-	case D3DRS_WRAP13:
-		(*pValue) = constants->wrap13;
-		break;
-	case D3DRS_WRAP14:
-		(*pValue) = constants->wrap14;
-		break;
-	case D3DRS_WRAP15:
-		(*pValue) = constants->wrap15;
-		break;
-	case D3DRS_SEPARATEALPHABLENDENABLE:
-		(*pValue) = constants->separateAlphaBlendEnable;
-		break;
-	case D3DRS_SRCBLENDALPHA:
-		(*pValue) = constants->sourceBlendAlpha;
-		break;
-	case D3DRS_DESTBLENDALPHA:
-		(*pValue) = constants->destinationBlendAlpha;
-		break;
-	case D3DRS_BLENDOPALPHA:
-		(*pValue) = constants->blendOperationAlpha;
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetRenderState unknown state! " << State;
-		break;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetRenderState;
+	workItem.Id = mId;
+	workItem.Argument1 = State;
+	workItem.Argument2 = pValue;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 **ppRenderTarget)
+HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9** ppRenderTarget)
 {
 	(*ppRenderTarget) = mRenderTargets[RenderTargetIndex];
 
@@ -1091,16 +771,26 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTargetData(IDirect3DSurface9 *pRend
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD *pValue)
+HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD* pValue)
 {
-	(*pValue) = mDeviceState.mSamplerStates[Sampler][Type];
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetSamplerState;
+	workItem.Id = mId;
+	workItem.Argument1 = Sampler;
+	workItem.Argument2 = Type;
+	workItem.Argument3 = pValue;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetScissorRect(RECT *pRect)
+HRESULT STDMETHODCALLTYPE CDevice9::GetScissorRect(RECT* pRect)
 {
-	(*pRect) = mDeviceState.m9Scissor;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetScissorRect;
+	workItem.Id = mId;
+	workItem.Argument1 = pRect;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
@@ -1114,17 +804,16 @@ BOOL STDMETHODCALLTYPE CDevice9::GetSoftwareVertexProcessing()
 	return true;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9 **ppStreamData, UINT *pOffsetInBytes, UINT *pStride)
+HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9** ppStreamData, UINT* pOffsetInBytes, UINT* pStride)
 {
-	StreamSource& value = mDeviceState.mStreamSources[StreamNumber];
-
-	(*ppStreamData) = (IDirect3DVertexBuffer9*)value.StreamData;
-	/*
-	Vulkan wants 64bit uint but d3d9 uses 32bit uint. This cast just keeps compiler from complaining.
-	This should be safe because only 32bit can be set and d3d9 is x86 only so endianness issues shouldn't come into play.
-	*/
-	(*pOffsetInBytes) = (UINT)value.OffsetInBytes;
-	(*pStride) = value.Stride;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetStreamSource;
+	workItem.Id = mId;
+	workItem.Argument1 = StreamNumber;
+	workItem.Argument2 = ppStreamData;
+	workItem.Argument3 = pOffsetInBytes;
+	workItem.Argument4 = pStride;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
