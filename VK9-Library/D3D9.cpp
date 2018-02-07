@@ -50,15 +50,44 @@ HRESULT WINAPI Direct3DCreate9Ex(UINT SDKVersion, IDirect3D9Ex** out)
 	return E_NOTIMPL;
 }
 
-/* Other things to possibly implement.
+int WINAPI D3DPERF_BeginEvent(DWORD col, LPCWSTR wszName)
+{
+	return 0;
+}
 
-D3DPERF_BeginEvent
-D3DPERF_EndEvent
-D3DPERF_SetMarker
-D3DPERF_SetRegion
-D3DPERF_QueryRepeatFrame
-D3DPERF_SetOptions
-D3DPERF_GetStatus
+int WINAPI D3DPERF_EndEvent()
+{
+	return 0;
+}
+
+void WINAPI D3DPERF_SetMarker()
+{
+
+}
+
+void WINAPI D3DPERF_SetRegion()
+{
+
+}
+
+void WINAPI D3DPERF_QueryRepeatFrame()
+{
+
+}
+
+void WINAPI D3DPERF_SetOptions(DWORD options)
+{
+
+}
+
+void WINAPI D3DPERF_GetStatus()
+{
+
+}
+
+/* 
+Other things to possibly implement.
+
 DXVA2CreateDirect3DDeviceManager9
 DXVA2CreateVideoService
 */
