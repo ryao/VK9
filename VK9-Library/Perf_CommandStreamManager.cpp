@@ -621,6 +621,622 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				(*pStride) = value.Stride;
 			}
 			break;
+			case Device_GetTexture:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				DWORD Stage = boost::any_cast<DWORD>(workItem.Argument1);
+				IDirect3DBaseTexture9** ppTexture = boost::any_cast<IDirect3DBaseTexture9**>(workItem.Argument2);
+
+				DeviceState* state = NULL;
+
+				if (realWindow.mCurrentStateRecording != nullptr)
+				{
+					state = &realWindow.mCurrentStateRecording->mDeviceState;
+				}
+				else
+				{
+					state = &realWindow.mDeviceState;
+				}
+
+				auto it = state->mTextures.find(Stage);
+				if (it != state->mTextures.end())
+				{
+					(*ppTexture) = it->second;
+				}
+				else
+				{
+					(*ppTexture) = nullptr;
+				}
+			}
+			break;
+			case Device_GetTextureStageState:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				DWORD Stage = boost::any_cast<DWORD>(workItem.Argument1);
+				D3DTEXTURESTAGESTATETYPE Type = boost::any_cast<D3DTEXTURESTAGESTATETYPE>(workItem.Argument2);
+				DWORD* pValue = boost::any_cast<DWORD*>(workItem.Argument3);
+
+				DeviceState* state = nullptr;
+
+				if (realWindow.mCurrentStateRecording != nullptr)
+				{
+					state = &realWindow.mCurrentStateRecording->mDeviceState;
+				}
+				else
+				{
+					state = &realWindow.mDeviceState;
+				}
+
+				switch (Type)
+				{
+				case D3DTSS_COLOROP:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.colorOperation_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.colorOperation_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.colorOperation_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.colorOperation_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.colorOperation_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.colorOperation_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.colorOperation_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.colorOperation_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_COLORARG1:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.colorArgument1_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_COLORARG2:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.colorArgument2_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_ALPHAOP:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.alphaOperation_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_ALPHAARG1:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.alphaArgument1_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_ALPHAARG2:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.alphaArgument2_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_BUMPENVMAT00:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_0);
+						break;
+					case 1:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_1);
+						break;
+					case 2:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_2);
+						break;
+					case 3:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_3);
+						break;
+					case 4:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_4);
+						break;
+					case 5:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_5);
+						break;
+					case 6:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_6);
+						break;
+					case 7:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_7);
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_BUMPENVMAT01:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_0);
+						break;
+					case 1:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_1);
+						break;
+					case 2:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_2);
+						break;
+					case 3:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_3);
+						break;
+					case 4:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_4);
+						break;
+					case 5:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_5);
+						break;
+					case 6:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_6);
+						break;
+					case 7:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_7);
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_BUMPENVMAT10:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_0);
+						break;
+					case 1:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_1);
+						break;
+					case 2:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_2);
+						break;
+					case 3:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_3);
+						break;
+					case 4:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_4);
+						break;
+					case 5:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_5);
+						break;
+					case 6:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_6);
+						break;
+					case 7:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_7);
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_BUMPENVMAT11:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_0);
+						break;
+					case 1:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_1);
+						break;
+					case 2:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_2);
+						break;
+					case 3:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_3);
+						break;
+					case 4:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_4);
+						break;
+					case 5:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_5);
+						break;
+					case 6:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_6);
+						break;
+					case 7:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_7);
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_TEXCOORDINDEX:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_BUMPENVLSCALE:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_0);
+						break;
+					case 1:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_1);
+						break;
+					case 2:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_2);
+						break;
+					case 3:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_3);
+						break;
+					case 4:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_4);
+						break;
+					case 5:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_5);
+						break;
+					case 6:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_6);
+						break;
+					case 7:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_7);
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_BUMPENVLOFFSET:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_0);
+						break;
+					case 1:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_1);
+						break;
+					case 2:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_2);
+						break;
+					case 3:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_3);
+						break;
+					case 4:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_4);
+						break;
+					case 5:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_5);
+						break;
+					case 6:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_6);
+						break;
+					case 7:
+						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_7);
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_TEXTURETRANSFORMFLAGS:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_COLORARG0:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.colorArgument0_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_ALPHAARG0:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.alphaArgument0_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_RESULTARG:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.Result_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.Result_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.Result_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.Result_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.Result_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.Result_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.Result_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.Result_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				case D3DTSS_CONSTANT:
+					switch (Stage)
+					{
+					case 0:
+						(*pValue) = state->mSpecializationConstants.Constant_0;
+						break;
+					case 1:
+						(*pValue) = state->mSpecializationConstants.Constant_1;
+						break;
+					case 2:
+						(*pValue) = state->mSpecializationConstants.Constant_2;
+						break;
+					case 3:
+						(*pValue) = state->mSpecializationConstants.Constant_3;
+						break;
+					case 4:
+						(*pValue) = state->mSpecializationConstants.Constant_4;
+						break;
+					case 5:
+						(*pValue) = state->mSpecializationConstants.Constant_5;
+						break;
+					case 6:
+						(*pValue) = state->mSpecializationConstants.Constant_6;
+						break;
+					case 7:
+						(*pValue) = state->mSpecializationConstants.Constant_7;
+						break;
+					default:
+						break;
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			break;
+			case Device_GetTransform:
+			{
+
+			}
+			break;
 			case Instance_GetAdapterIdentifier:
 			{
 				UINT Adapter = boost::any_cast<UINT>(workItem.Argument1);

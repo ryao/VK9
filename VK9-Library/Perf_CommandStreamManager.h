@@ -57,6 +57,9 @@ enum WorkItemType
 	,Device_GetSamplerState
 	,Device_GetScissorRect
 	,Device_GetStreamSource
+	,Device_GetTexture
+	,Device_GetTextureStageState
+	,Device_GetTransform
 	,Device_Destroy
 };
 
