@@ -186,9 +186,10 @@ ULONG STDMETHODCALLTYPE CDevice9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
-	this->mCurrentStateRecording = new CStateBlock9(this);
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::BeginStateBlock " << this->mCurrentStateRecording;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_BeginStateBlock;
+	workItem.Id = mId;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -461,13 +462,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle, const float *pNumS
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9 **ppSB)
+HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9** ppSB)
 {
-	(*ppSB) = this->mCurrentStateRecording;
-
-	//BOOST_LOG_TRIVIAL(info) << "CDevice9::EndStateBlock " << this->mCurrentStateRecording;
-
-	this->mCurrentStateRecording = nullptr;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_EndStateBlock;
+	workItem.Id = mId;
+	workItem.Argument1 = ppSB;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
@@ -861,102 +862,96 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State, D3DMATRIX* pMatrix)
 {
-	(*pMatrix) = mDeviceState.mTransforms[State];
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetTransform;
+	workItem.Id = mId;
+	workItem.Argument1 = State;
+	workItem.Argument2 = pMatrix;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclaration9** ppDecl)
 {
-	(*ppDecl) = (IDirect3DVertexDeclaration9*)this->mDeviceState.mVertexDeclaration;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetVertexDeclaration;
+	workItem.Id = mId;
+	workItem.Argument1 = ppDecl;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9 **ppShader)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9** ppShader)
 {
-	(*ppShader) = (IDirect3DVertexShader9*)mDeviceState.mVertexShader;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetVertexShader;
+	workItem.Id = mId;
+	workItem.Argument1 = ppShader;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister, BOOL* pConstantData, UINT BoolCount)
 {
-	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	for (size_t i = 0; i < BoolCount; i++)
-	{
-		pConstantData[i] = slots.BooleanConstants[StartRegister + i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetVertexShaderConstantB;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = BoolCount;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float* pConstantData, UINT Vector4fCount)
 {
-	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4fCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		if ((startIndex + i) < 128)
-		{
-			pConstantData[i] = mDeviceState.mPushConstants[startIndex + i];
-		}
-		else
-		{
-			pConstantData[i] = slots.FloatConstants[startIndex + i];
-		}
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetVertexShaderConstantF;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4fCount;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int* pConstantData, UINT Vector4iCount)
 {
-	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4iCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		pConstantData[i] = slots.IntegerConstants[startIndex + i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetVertexShaderConstantI;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4iCount;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9 *pViewport)
+HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9* pViewport)
 {
-	(*pViewport) = mDeviceState.m9Viewport;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_GetViewport;
+	workItem.Id = mId;
+	workItem.Argument1 = pViewport;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::LightEnable(DWORD LightIndex, BOOL bEnable)
 {
-	DeviceState* state = nullptr;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		state = &this->mCurrentStateRecording->mDeviceState;
-	}
-	else
-	{
-		state = &mDeviceState;
-	}
-
-	Light light = {};
-
-	if (state->mLights.size() == LightIndex)
-	{
-		light.IsEnabled = bEnable;
-		state->mLights.push_back(light);
-		state->mAreLightsDirty = true;
-	}
-	else
-	{
-		state->mLights[LightIndex].IsEnabled = bEnable;
-		state->mAreLightsDirty = true;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_LightEnable;
+	workItem.Id = mId;
+	workItem.Argument1 = LightIndex;
+	workItem.Argument2 = bEnable;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -1053,18 +1048,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.mFVF = FVF;
-		this->mCurrentStateRecording->mDeviceState.mHasFVF = true;
-		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = false;
-	}
-	else
-	{
-		mDeviceState.mFVF = FVF;
-		mDeviceState.mHasFVF = true;
-		mDeviceState.mHasVertexDeclaration = false;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetFVF;
+	workItem.Id = mId;
+	workItem.Argument1 = FVF;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -1076,122 +1064,47 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain, DWORD Flags, con
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetGammaRamp is not implemented!";
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9 *pIndexData)
+HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9* pIndexData)
 {
-	DeviceState* state = nullptr;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		state = &this->mCurrentStateRecording->mDeviceState;
-	}
-	else
-	{
-		state = &mDeviceState;
-	}
-
-	state->mIndexBuffer = (CIndexBuffer9*)pIndexData;
-	state->mHasIndexBuffer = true;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetIndices;
+	workItem.Id = mId;
+	workItem.Argument1 = pIndexData;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9 *pLight)
+HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9* pLight)
 {
-	DeviceState* state = nullptr;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		state = &this->mCurrentStateRecording->mDeviceState;
-	}
-	else
-	{
-		state = &mDeviceState;
-	}
-
-	Light light = {};
-
-	light.Type = pLight->Type;
-	light.Diffuse[0] = pLight->Diffuse.r;
-	light.Diffuse[1] = pLight->Diffuse.g;
-	light.Diffuse[2] = pLight->Diffuse.b;
-	light.Diffuse[3] = pLight->Diffuse.a;
-
-	light.Specular[0] = pLight->Specular.r;
-	light.Specular[1] = pLight->Specular.g;
-	light.Specular[2] = pLight->Specular.b;
-	light.Specular[3] = pLight->Specular.a;
-
-	light.Ambient[0] = pLight->Ambient.r;
-	light.Ambient[1] = pLight->Ambient.g;
-	light.Ambient[2] = pLight->Ambient.b;
-	light.Ambient[3] = pLight->Ambient.a;
-
-	light.Position[0] = pLight->Position.x;
-	light.Position[1] = pLight->Position.y;
-	light.Position[2] = pLight->Position.z;
-	//No need to set [3] because structure is init with {} so it's already 0.
-
-	light.Direction[0] = pLight->Direction.x;
-	light.Direction[1] = pLight->Direction.y;
-	light.Direction[2] = pLight->Direction.z;
-	//No need to set [3] because structure is init with {} so it's already 0.
-
-	light.Range = pLight->Range;
-	light.Falloff = pLight->Falloff;
-	light.Attenuation0 = pLight->Attenuation0;
-	light.Attenuation1 = pLight->Attenuation1;
-	light.Attenuation2 = pLight->Attenuation2;
-	light.Theta = pLight->Theta;
-	light.Phi = pLight->Phi;
-
-	if (state->mLights.size() == Index)
-	{
-		state->mLights.push_back(light);
-		state->mAreLightsDirty = true;
-	}
-	else
-	{
-		light.IsEnabled = state->mLights[Index].IsEnabled;
-
-		state->mLights[Index] = light;
-		state->mAreLightsDirty = true;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetLight;
+	workItem.Id = mId;
+	workItem.Argument1 = Index;
+	workItem.Argument2 = pLight;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9 *pMaterial)
+HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9* pMaterial)
 {
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.mMaterial = (*pMaterial);
-		this->mCurrentStateRecording->mDeviceState.mIsMaterialDirty = true;
-	}
-	else
-	{
-		mDeviceState.mMaterial = (*pMaterial);
-		mDeviceState.mIsMaterialDirty = true;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetMaterial;
+	workItem.Id = mId;
+	workItem.Argument1 = pMaterial;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 {
-	if (nSegments > 0.0f)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetNPatchMode nPatch greater than zero not supported.";
-	}
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded NSegments";
-		this->mCurrentStateRecording->mDeviceState.mNSegments = nSegments;
-	}
-	else
-	{
-		mDeviceState.mNSegments = nSegments;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetNPatchMode;
+	workItem.Id = mId;
+	workItem.Argument1 = nSegments;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -1205,503 +1118,64 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber, const 
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9 *pShader)
+HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9* pShader)
 {
-	if (pShader != nullptr)
-	{
-		pShader->AddRef();
-	}
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.mPixelShader = (CPixelShader9*)pShader;
-		this->mCurrentStateRecording->mDeviceState.mHasPixelShader = true;
-	}
-	else
-	{
-		if (mDeviceState.mPixelShader != nullptr)
-		{
-			mDeviceState.mPixelShader->Release();
-		}
-
-		mDeviceState.mPixelShader = (CPixelShader9*)pShader;
-		mDeviceState.mHasPixelShader = true;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetPixelShader;
+	workItem.Id = mId;
+	workItem.Argument1 = pShader;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister, const BOOL* pConstantData, UINT BoolCount)
 {
-	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	for (size_t i = 0; i < BoolCount; i++)
-	{
-		slots.BooleanConstants[StartRegister + i] = pConstantData[i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetPixelShaderConstantB;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = BoolCount;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
-	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4fCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		slots.FloatConstants[startIndex + i] = pConstantData[i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetPixelShaderConstantF;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4fCount;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
-	auto& slots = mDeviceState.mPixelShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4iCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		slots.IntegerConstants[startIndex + i] = pConstantData[i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetPixelShaderConstantI;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4iCount;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 {
-	SpecializationConstants* constants = nullptr;
-	DeviceState* state = NULL;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		constants = &this->mCurrentStateRecording->mDeviceState.mSpecializationConstants;
-		state = &this->mCurrentStateRecording->mDeviceState;
-	}
-	else
-	{
-		constants = &mDeviceState.mSpecializationConstants;
-		state = &mDeviceState;
-	}
-
-	switch (State)
-	{
-	case D3DRS_ZENABLE:
-		constants->zEnable = Value;
-		state->hasZEnable = true;
-		break;
-	case D3DRS_FILLMODE:
-		constants->fillMode = Value;
-		state->hasFillMode = true;
-		break;
-	case D3DRS_SHADEMODE:
-		constants->shadeMode = Value;
-		state->hasShadeMode = true;
-		break;
-	case D3DRS_ZWRITEENABLE:
-		constants->zWriteEnable = Value;
-		state->hasZWriteEnable = true;
-		break;
-	case D3DRS_ALPHATESTENABLE:
-		constants->alphaTestEnable = Value;
-		state->hasAlphaTestEnable = true;
-		break;
-	case D3DRS_LASTPIXEL:
-		constants->lastPixel = Value;
-		state->hasLastPixel = true;
-		break;
-	case D3DRS_SRCBLEND:
-		constants->sourceBlend = Value;
-		state->hasSourceBlend = true;
-		break;
-	case D3DRS_DESTBLEND:
-		constants->destinationBlend = Value;
-		state->hasDestinationBlend = true;
-		break;
-	case D3DRS_CULLMODE:
-		constants->cullMode = Value;
-		state->hasCullMode = true;
-		break;
-	case D3DRS_ZFUNC:
-		constants->zFunction = Value;
-		state->hasZFunction = true;
-		break;
-	case D3DRS_ALPHAREF:
-		constants->alphaReference = Value;
-		state->hasAlphaReference = true;
-		break;
-	case D3DRS_ALPHAFUNC:
-		constants->alphaFunction = Value;
-		state->hasAlphaFunction = true;
-		break;
-	case D3DRS_DITHERENABLE:
-		constants->ditherEnable = Value;
-		state->hasDitherEnable = true;
-		break;
-	case D3DRS_ALPHABLENDENABLE:
-		constants->alphaBlendEnable = Value;
-		state->hasAlphaBlendEnable = true;
-		break;
-	case D3DRS_FOGENABLE:
-		constants->fogEnable = Value;
-		state->hasFogEnable = true;
-		break;
-	case D3DRS_SPECULARENABLE:
-		constants->specularEnable = Value;
-		state->hasSpecularEnable = true;
-		break;
-	case D3DRS_FOGCOLOR:
-		constants->fogColor = Value;
-		state->hasFogColor = true;
-		break;
-	case D3DRS_FOGTABLEMODE:
-		constants->fogTableMode = Value;
-		state->hasFogTableMode = true;
-		break;
-	case D3DRS_FOGSTART:
-		constants->fogStart = bit_cast(Value);
-		state->hasFogStart = true;
-		break;
-	case D3DRS_FOGEND:
-		constants->fogEnd = bit_cast(Value);
-		state->hasFogEnd = true;
-		break;
-	case D3DRS_FOGDENSITY:
-		constants->fogDensity = bit_cast(Value);
-		state->hasFogDensity = true;
-		break;
-	case D3DRS_RANGEFOGENABLE:
-		constants->rangeFogEnable = Value;
-		state->hasRangeFogEnable = true;
-		break;
-	case D3DRS_STENCILENABLE:
-		constants->stencilEnable = Value;
-		state->hasStencilEnable = true;
-		break;
-	case D3DRS_STENCILFAIL:
-		constants->stencilFail = Value;
-		state->hasStencilFail = true;
-		break;
-	case D3DRS_STENCILZFAIL:
-		constants->stencilZFail = Value;
-		state->hasStencilZFail = true;
-		break;
-	case D3DRS_STENCILPASS:
-		constants->stencilPass = Value;
-		state->hasStencilPass = true;
-		break;
-	case D3DRS_STENCILFUNC:
-		constants->stencilFunction = Value;
-		state->hasStencilFunction = true;
-		break;
-	case D3DRS_STENCILREF:
-		constants->stencilReference = Value;
-		state->hasStencilReference = true;
-		break;
-	case D3DRS_STENCILMASK:
-		constants->stencilMask = Value;
-		state->hasStencilMask = true;
-		break;
-	case D3DRS_STENCILWRITEMASK:
-		constants->stencilWriteMask = Value;
-		state->hasStencilWriteMask = true;
-		break;
-	case D3DRS_TEXTUREFACTOR:
-		constants->textureFactor = Value;
-		state->hasTextureFactor = true;
-		break;
-	case D3DRS_WRAP0:
-		constants->wrap0 = Value;
-		state->hasWrap0 = true;
-		break;
-	case D3DRS_WRAP1:
-		constants->wrap1 = Value;
-		state->hasWrap1 = true;
-		break;
-	case D3DRS_WRAP2:
-		constants->wrap2 = Value;
-		state->hasWrap2 = true;
-		break;
-	case D3DRS_WRAP3:
-		constants->wrap3 = Value;
-		state->hasWrap3 = true;
-		break;
-	case D3DRS_WRAP4:
-		constants->wrap4 = Value;
-		state->hasWrap4 = true;
-		break;
-	case D3DRS_WRAP5:
-		constants->wrap5 = Value;
-		state->hasWrap5 = true;
-		break;
-	case D3DRS_WRAP6:
-		constants->wrap6 = Value;
-		state->hasWrap6 = true;
-		break;
-	case D3DRS_WRAP7:
-		constants->wrap7 = Value;
-		state->hasWrap7 = true;
-		break;
-	case D3DRS_CLIPPING:
-		constants->clipping = Value;
-		state->hasClipping = true;
-		break;
-	case D3DRS_LIGHTING:
-		constants->lighting = Value;
-		state->hasLighting = true;
-		break;
-	case D3DRS_AMBIENT:
-		constants->ambient = Value;
-		state->hasAmbient = true;
-		break;
-	case D3DRS_FOGVERTEXMODE:
-		constants->fogVertexMode = Value;
-		state->hasFogVertexMode = true;
-		break;
-	case D3DRS_COLORVERTEX:
-		constants->colorVertex = Value;
-		state->hasColorVertex = true;
-		break;
-	case D3DRS_LOCALVIEWER:
-		constants->localViewer = Value;
-		state->hasLocalViewer = true;
-		break;
-	case D3DRS_NORMALIZENORMALS:
-		constants->normalizeNormals = Value;
-		state->hasNormalizeNormals = true;
-		break;
-	case D3DRS_DIFFUSEMATERIALSOURCE:
-		constants->diffuseMaterialSource = Value;
-		state->hasDiffuseMaterialSource = true;
-		break;
-	case D3DRS_SPECULARMATERIALSOURCE:
-		constants->specularMaterialSource = Value;
-		state->hasSpecularMaterialSource = true;
-		break;
-	case D3DRS_AMBIENTMATERIALSOURCE:
-		constants->ambientMaterialSource = Value;
-		state->hasAmbientMaterialSource = true;
-		break;
-	case D3DRS_EMISSIVEMATERIALSOURCE:
-		constants->emissiveMaterialSource = Value;
-		state->hasEmissiveMaterialSource = true;
-		break;
-	case D3DRS_VERTEXBLEND:
-		constants->vertexBlend = Value;
-		state->hasVertexBlend = true;
-		break;
-	case D3DRS_CLIPPLANEENABLE:
-		constants->clipPlaneEnable = Value;
-		state->hasClipPlaneEnable = true;
-		break;
-	case D3DRS_POINTSIZE:
-		constants->pointSize = Value;
-		state->hasPointSize = true;
-		break;
-	case D3DRS_POINTSIZE_MIN:
-		constants->pointSizeMinimum = bit_cast(Value);
-		state->hasPointSizeMinimum = true;
-		break;
-	case D3DRS_POINTSPRITEENABLE:
-		constants->pointSpriteEnable = Value;
-		state->hasPointSpriteEnable = true;
-		break;
-	case D3DRS_POINTSCALEENABLE:
-		constants->pointScaleEnable = Value;
-		state->hasPointScaleEnable = true;
-		break;
-	case D3DRS_POINTSCALE_A:
-		constants->pointScaleA = bit_cast(Value);
-		state->hasPointScaleA = true;
-		break;
-	case D3DRS_POINTSCALE_B:
-		constants->pointScaleB = bit_cast(Value);
-		state->hasPointScaleB = true;
-		break;
-	case D3DRS_POINTSCALE_C:
-		constants->pointScaleC = bit_cast(Value);
-		state->hasPointScaleC = true;
-		break;
-	case D3DRS_MULTISAMPLEANTIALIAS:
-		constants->multisampleAntiAlias = Value;
-		state->hasMultisampleAntiAlias = true;
-		break;
-	case D3DRS_MULTISAMPLEMASK:
-		constants->multisampleMask = Value;
-		state->hasMultisampleMask = true;
-		break;
-	case D3DRS_PATCHEDGESTYLE:
-		constants->patchEdgeStyle = Value;
-		state->hasPatchEdgeStyle = true;
-		break;
-	case D3DRS_DEBUGMONITORTOKEN:
-		constants->debugMonitorToken = Value;
-		state->hasDebugMonitorToken = true;
-		break;
-	case D3DRS_POINTSIZE_MAX:
-		constants->pointSizeMaximum = bit_cast(Value);
-		state->hasPointSizeMaximum = true;
-		break;
-	case D3DRS_INDEXEDVERTEXBLENDENABLE:
-		constants->indexedVertexBlendEnable = Value;
-		state->hasIndexedVertexBlendEnable = true;
-		break;
-	case D3DRS_COLORWRITEENABLE:
-		constants->colorWriteEnable = Value;
-		state->hasColorWriteEnable = true;
-		break;
-	case D3DRS_TWEENFACTOR:
-		constants->tweenFactor = bit_cast(Value);
-		state->hasTweenFactor = true;
-		break;
-	case D3DRS_BLENDOP:
-		constants->blendOperation = Value;
-		state->hasBlendOperation = true;
-		break;
-	case D3DRS_POSITIONDEGREE:
-		constants->positionDegree = Value;
-		state->hasPositionDegree = true;
-		break;
-	case D3DRS_NORMALDEGREE:
-		constants->normalDegree = Value;
-		state->hasNormalDegree = true;
-		break;
-	case D3DRS_SCISSORTESTENABLE:
-		constants->scissorTestEnable = Value;
-		state->hasScissorTestEnable = true;
-		break;
-	case D3DRS_SLOPESCALEDEPTHBIAS:
-		constants->slopeScaleDepthBias = bit_cast(Value);
-		state->hasSlopeScaleDepthBias = true;
-		break;
-	case D3DRS_ANTIALIASEDLINEENABLE:
-		constants->antiAliasedLineEnable = Value;
-		state->hasAntiAliasedLineEnable = true;
-		break;
-	case D3DRS_MINTESSELLATIONLEVEL:
-		constants->minimumTessellationLevel = bit_cast(Value);
-		state->hasMinimumTessellationLevel = true;
-		break;
-	case D3DRS_MAXTESSELLATIONLEVEL:
-		constants->maximumTessellationLevel = bit_cast(Value);
-		state->hasMaximumTessellationLevel = true;
-		break;
-	case D3DRS_ADAPTIVETESS_X:
-		constants->adaptivetessX = bit_cast(Value);
-		state->hasAdaptivetessX = true;
-		break;
-	case D3DRS_ADAPTIVETESS_Y:
-		constants->adaptivetessY = bit_cast(Value);
-		state->hasAdaptivetessY = true;
-		break;
-	case D3DRS_ADAPTIVETESS_Z:
-		constants->adaptivetessZ = bit_cast(Value);
-		state->hasAdaptivetessZ = true;
-		break;
-	case D3DRS_ADAPTIVETESS_W:
-		constants->adaptivetessW = bit_cast(Value);
-		state->hasAdaptivetessW = true;
-		break;
-	case D3DRS_ENABLEADAPTIVETESSELLATION:
-		constants->enableAdaptiveTessellation = Value;
-		state->hasEnableAdaptiveTessellation = true;
-		break;
-	case D3DRS_TWOSIDEDSTENCILMODE:
-		constants->twoSidedStencilMode = Value;
-		state->hasTwoSidedStencilMode = true;
-		break;
-	case D3DRS_CCW_STENCILFAIL:
-		constants->ccwStencilFail = Value;
-		state->hasCcwStencilFail = true;
-		break;
-	case D3DRS_CCW_STENCILZFAIL:
-		constants->ccwStencilZFail = Value;
-		state->hasCcwStencilZFail = true;
-		break;
-	case D3DRS_CCW_STENCILPASS:
-		constants->ccwStencilPass = Value;
-		state->hasCcwStencilPass = true;
-		break;
-	case D3DRS_CCW_STENCILFUNC:
-		constants->ccwStencilFunction = Value;
-		state->hasCcwStencilFunction = true;
-		break;
-	case D3DRS_COLORWRITEENABLE1:
-		constants->colorWriteEnable1 = Value;
-		state->hasColorWriteEnable1 = true;
-		break;
-	case D3DRS_COLORWRITEENABLE2:
-		constants->colorWriteEnable2 = Value;
-		state->hasColorWriteEnable2 = true;
-		break;
-	case D3DRS_COLORWRITEENABLE3:
-		constants->colorWriteEnable3 = Value;
-		state->hasColorWriteEnable3 = true;
-		break;
-	case D3DRS_BLENDFACTOR:
-		constants->blendFactor = Value;
-		state->hasBlendFactor = true;
-		break;
-	case D3DRS_SRGBWRITEENABLE:
-		constants->srgbWriteEnable = Value;
-		state->hasSrgbWriteEnable = true;
-		break;
-	case D3DRS_DEPTHBIAS:
-		constants->depthBias = bit_cast(Value);
-		state->hasDepthBias = true;
-		break;
-	case D3DRS_WRAP8:
-		constants->wrap8 = Value;
-		state->hasWrap8 = true;
-		break;
-	case D3DRS_WRAP9:
-		constants->wrap9 = Value;
-		state->hasWrap9 = true;
-		break;
-	case D3DRS_WRAP10:
-		constants->wrap10 = Value;
-		state->hasWrap10 = true;
-		break;
-	case D3DRS_WRAP11:
-		constants->wrap11 = Value;
-		state->hasWrap11 = true;
-		break;
-	case D3DRS_WRAP12:
-		constants->wrap12 = Value;
-		state->hasWrap12 = true;
-		break;
-	case D3DRS_WRAP13:
-		constants->wrap13 = Value;
-		state->hasWrap13 = true;
-		break;
-	case D3DRS_WRAP14:
-		constants->wrap14 = Value;
-		state->hasWrap14 = true;
-		break;
-	case D3DRS_WRAP15:
-		constants->wrap15 = Value;
-		state->hasWrap15 = true;
-		break;
-	case D3DRS_SEPARATEALPHABLENDENABLE:
-		constants->separateAlphaBlendEnable = Value;
-		state->hasSeparateAlphaBlendEnable = true;
-		break;
-	case D3DRS_SRCBLENDALPHA:
-		constants->sourceBlendAlpha = Value;
-		state->hasSourceBlendAlpha = true;
-		break;
-	case D3DRS_DESTBLENDALPHA:
-		constants->destinationBlendAlpha = Value;
-		state->hasDestinationBlendAlpha = true;
-		break;
-	case D3DRS_BLENDOPALPHA:
-		constants->blendOperationAlpha = Value;
-		state->hasBlendOperationAlpha = true;
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetRenderState unknown state! " << State;
-		break;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetRenderState;
+	workItem.Id = mId;
+	workItem.Argument1 = State;
+	workItem.Argument2 = Value;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -1715,42 +1189,24 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDi
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value)
 {
-	DeviceState* state = NULL;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		state = &this->mCurrentStateRecording->mDeviceState;
-	}
-	else
-	{
-		state = &mDeviceState;
-	}
-
-	state->mSamplerStates[Sampler][Type] = Value;
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetSamplerState;
+	workItem.Id = mId;
+	workItem.Argument1 = Sampler;
+	workItem.Argument2 = Type;
+	workItem.Argument3 = Value;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT *pRect)
+HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT* pRect)
 {
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.m9Scissor = (*pRect);
-
-		this->mCurrentStateRecording->mDeviceState.mScissor.extent.width = this->mCurrentStateRecording->mDeviceState.m9Scissor.right;
-		this->mCurrentStateRecording->mDeviceState.mScissor.extent.height = this->mCurrentStateRecording->mDeviceState.m9Scissor.bottom;
-		this->mCurrentStateRecording->mDeviceState.mScissor.offset.x = this->mCurrentStateRecording->mDeviceState.m9Scissor.left;
-		this->mCurrentStateRecording->mDeviceState.mScissor.offset.y = this->mCurrentStateRecording->mDeviceState.m9Scissor.top;
-	}
-	else
-	{
-		mDeviceState.m9Scissor = (*pRect);
-
-		mDeviceState.mScissor.extent.width = mDeviceState.m9Scissor.right;
-		mDeviceState.mScissor.extent.height = mDeviceState.m9Scissor.bottom;
-		mDeviceState.mScissor.offset.x = mDeviceState.m9Scissor.left;
-		mDeviceState.mScissor.offset.y = mDeviceState.m9Scissor.top;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetScissorRect;
+	workItem.Id = mId;
+	workItem.Argument1 = pRect;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -1764,18 +1220,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9 *pStreamData, UINT OffsetInBytes, UINT Stride)
+HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride)
 {
-	CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
-	}
-	else
-	{
-		mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetStreamSource;
+	workItem.Id = mId;
+	workItem.Argument1 = StreamNumber;
+	workItem.Argument2 = pStreamData;
+	workItem.Argument3 = OffsetInBytes;
+	workItem.Argument4 = Stride;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -1789,612 +1243,27 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber, UINT 
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTexture9 *pTexture)
+HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTexture9* pTexture)
 {
-	DeviceState* state = NULL;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		state = &this->mCurrentStateRecording->mDeviceState;
-	}
-	else
-	{
-		state = &mDeviceState;
-	}
-
-	if (pTexture == nullptr)
-	{
-		auto it = state->mTextures.find(Sampler);
-		if (it != state->mTextures.end())
-		{
-			state->mTextures.erase(it);
-		}
-	}
-	else
-	{
-		state->mTextures[Sampler] = pTexture;
-		//texture->AddRef();
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetTexture;
+	workItem.Id = mId;
+	workItem.Argument1 = Sampler;
+	workItem.Argument2 = pTexture;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value)
 {
-	DeviceState* state = nullptr;
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		state = &this->mCurrentStateRecording->mDeviceState;
-	}
-	else
-	{
-		state = &mDeviceState;
-	}
-
-	switch (Type)
-	{
-	case D3DTSS_COLOROP:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.colorOperation_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.colorOperation_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.colorOperation_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.colorOperation_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.colorOperation_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.colorOperation_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.colorOperation_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.colorOperation_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_COLORARG1:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.colorArgument1_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.colorArgument1_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.colorArgument1_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.colorArgument1_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.colorArgument1_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.colorArgument1_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.colorArgument1_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.colorArgument1_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_COLORARG2:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.colorArgument2_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.colorArgument2_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.colorArgument2_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.colorArgument2_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.colorArgument2_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.colorArgument2_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.colorArgument2_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.colorArgument2_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_ALPHAOP:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.alphaOperation_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.alphaOperation_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.alphaOperation_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.alphaOperation_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.alphaOperation_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.alphaOperation_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.alphaOperation_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.alphaOperation_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_ALPHAARG1:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.alphaArgument1_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.alphaArgument1_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.alphaArgument1_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.alphaArgument1_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.alphaArgument1_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.alphaArgument1_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.alphaArgument1_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.alphaArgument1_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_ALPHAARG2:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.alphaArgument2_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.alphaArgument2_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.alphaArgument2_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.alphaArgument2_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.alphaArgument2_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.alphaArgument2_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.alphaArgument2_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.alphaArgument2_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_BUMPENVMAT00:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.bumpMapMatrix00_0 = bit_cast(Value);
-			break;
-		case 1:
-			state->mSpecializationConstants.bumpMapMatrix00_1 = bit_cast(Value);
-			break;
-		case 2:
-			state->mSpecializationConstants.bumpMapMatrix00_2 = bit_cast(Value);
-			break;
-		case 3:
-			state->mSpecializationConstants.bumpMapMatrix00_3 = bit_cast(Value);
-			break;
-		case 4:
-			state->mSpecializationConstants.bumpMapMatrix00_4 = bit_cast(Value);
-			break;
-		case 5:
-			state->mSpecializationConstants.bumpMapMatrix00_5 = bit_cast(Value);
-			break;
-		case 6:
-			state->mSpecializationConstants.bumpMapMatrix00_6 = bit_cast(Value);
-			break;
-		case 7:
-			state->mSpecializationConstants.bumpMapMatrix00_7 = bit_cast(Value);
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_BUMPENVMAT01:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.bumpMapMatrix01_0 = bit_cast(Value);
-			break;
-		case 1:
-			state->mSpecializationConstants.bumpMapMatrix01_1 = bit_cast(Value);
-			break;
-		case 2:
-			state->mSpecializationConstants.bumpMapMatrix01_2 = bit_cast(Value);
-			break;
-		case 3:
-			state->mSpecializationConstants.bumpMapMatrix01_3 = bit_cast(Value);
-			break;
-		case 4:
-			state->mSpecializationConstants.bumpMapMatrix01_4 = bit_cast(Value);
-			break;
-		case 5:
-			state->mSpecializationConstants.bumpMapMatrix01_5 = bit_cast(Value);
-			break;
-		case 6:
-			state->mSpecializationConstants.bumpMapMatrix01_6 = bit_cast(Value);
-			break;
-		case 7:
-			state->mSpecializationConstants.bumpMapMatrix01_7 = bit_cast(Value);
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_BUMPENVMAT10:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.bumpMapMatrix10_0 = bit_cast(Value);
-			break;
-		case 1:
-			state->mSpecializationConstants.bumpMapMatrix10_1 = bit_cast(Value);
-			break;
-		case 2:
-			state->mSpecializationConstants.bumpMapMatrix10_2 = bit_cast(Value);
-			break;
-		case 3:
-			state->mSpecializationConstants.bumpMapMatrix10_3 = bit_cast(Value);
-			break;
-		case 4:
-			state->mSpecializationConstants.bumpMapMatrix10_4 = bit_cast(Value);
-			break;
-		case 5:
-			state->mSpecializationConstants.bumpMapMatrix10_5 = bit_cast(Value);
-			break;
-		case 6:
-			state->mSpecializationConstants.bumpMapMatrix10_6 = bit_cast(Value);
-			break;
-		case 7:
-			state->mSpecializationConstants.bumpMapMatrix10_7 = bit_cast(Value);
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_BUMPENVMAT11:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.bumpMapMatrix11_0 = bit_cast(Value);
-			break;
-		case 1:
-			state->mSpecializationConstants.bumpMapMatrix11_1 = bit_cast(Value);
-			break;
-		case 2:
-			state->mSpecializationConstants.bumpMapMatrix11_2 = bit_cast(Value);
-			break;
-		case 3:
-			state->mSpecializationConstants.bumpMapMatrix11_3 = bit_cast(Value);
-			break;
-		case 4:
-			state->mSpecializationConstants.bumpMapMatrix11_4 = bit_cast(Value);
-			break;
-		case 5:
-			state->mSpecializationConstants.bumpMapMatrix11_5 = bit_cast(Value);
-			break;
-		case 6:
-			state->mSpecializationConstants.bumpMapMatrix11_6 = bit_cast(Value);
-			break;
-		case 7:
-			state->mSpecializationConstants.bumpMapMatrix11_7 = bit_cast(Value);
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_TEXCOORDINDEX:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.texureCoordinateIndex_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.texureCoordinateIndex_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.texureCoordinateIndex_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.texureCoordinateIndex_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.texureCoordinateIndex_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.texureCoordinateIndex_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.texureCoordinateIndex_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.texureCoordinateIndex_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_BUMPENVLSCALE:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.bumpMapScale_0 = bit_cast(Value);
-			break;
-		case 1:
-			state->mSpecializationConstants.bumpMapScale_1 = bit_cast(Value);
-			break;
-		case 2:
-			state->mSpecializationConstants.bumpMapScale_2 = bit_cast(Value);
-			break;
-		case 3:
-			state->mSpecializationConstants.bumpMapScale_3 = bit_cast(Value);
-			break;
-		case 4:
-			state->mSpecializationConstants.bumpMapScale_4 = bit_cast(Value);
-			break;
-		case 5:
-			state->mSpecializationConstants.bumpMapScale_5 = bit_cast(Value);
-			break;
-		case 6:
-			state->mSpecializationConstants.bumpMapScale_6 = bit_cast(Value);
-			break;
-		case 7:
-			state->mSpecializationConstants.bumpMapScale_7 = bit_cast(Value);
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_BUMPENVLOFFSET:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.bumpMapOffset_0 = bit_cast(Value);
-			break;
-		case 1:
-			state->mSpecializationConstants.bumpMapOffset_1 = bit_cast(Value);
-			break;
-		case 2:
-			state->mSpecializationConstants.bumpMapOffset_2 = bit_cast(Value);
-			break;
-		case 3:
-			state->mSpecializationConstants.bumpMapOffset_3 = bit_cast(Value);
-			break;
-		case 4:
-			state->mSpecializationConstants.bumpMapOffset_4 = bit_cast(Value);
-			break;
-		case 5:
-			state->mSpecializationConstants.bumpMapOffset_5 = bit_cast(Value);
-			break;
-		case 6:
-			state->mSpecializationConstants.bumpMapOffset_6 = bit_cast(Value);
-			break;
-		case 7:
-			state->mSpecializationConstants.bumpMapOffset_7 = bit_cast(Value);
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_TEXTURETRANSFORMFLAGS:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.textureTransformationFlags_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.textureTransformationFlags_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.textureTransformationFlags_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.textureTransformationFlags_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.textureTransformationFlags_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.textureTransformationFlags_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.textureTransformationFlags_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.textureTransformationFlags_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_COLORARG0:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.colorArgument0_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.colorArgument0_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.colorArgument0_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.colorArgument0_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.colorArgument0_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.colorArgument0_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.colorArgument0_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.colorArgument0_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_ALPHAARG0:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.alphaArgument0_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.alphaArgument0_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.alphaArgument0_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.alphaArgument0_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.alphaArgument0_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.alphaArgument0_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.alphaArgument0_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.alphaArgument0_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_RESULTARG:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.Result_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.Result_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.Result_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.Result_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.Result_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.Result_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.Result_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.Result_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	case D3DTSS_CONSTANT:
-		switch (Stage)
-		{
-		case 0:
-			state->mSpecializationConstants.Constant_0 = Value;
-			break;
-		case 1:
-			state->mSpecializationConstants.Constant_1 = Value;
-			break;
-		case 2:
-			state->mSpecializationConstants.Constant_2 = Value;
-			break;
-		case 3:
-			state->mSpecializationConstants.Constant_3 = Value;
-			break;
-		case 4:
-			state->mSpecializationConstants.Constant_4 = Value;
-			break;
-		case 5:
-			state->mSpecializationConstants.Constant_5 = Value;
-			break;
-		case 6:
-			state->mSpecializationConstants.Constant_6 = Value;
-			break;
-		case 7:
-			state->mSpecializationConstants.Constant_7 = Value;
-			break;
-		default:
-			break;
-		}
-		break;
-	default:
-		break;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetTextureStageState;
+	workItem.Id = mId;
+	workItem.Argument1 = Stage;
+	workItem.Argument2 = Type;
+	workItem.Argument3 = Value;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }

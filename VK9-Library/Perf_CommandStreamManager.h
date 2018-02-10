@@ -41,8 +41,10 @@ enum WorkItemType
 	,Device_BeginScene
 	,Device_Clear
 	,Device_Present
+	,Device_BeginStateBlock
 	,Device_DrawIndexedPrimitive
 	,Device_DrawPrimitive
+	,Device_EndStateBlock
 	,Device_GetDisplayMode
 	,Device_GetFVF
 	,Device_GetLight
@@ -60,6 +62,28 @@ enum WorkItemType
 	,Device_GetTexture
 	,Device_GetTextureStageState
 	,Device_GetTransform
+	,Device_GetVertexDeclaration
+	,Device_GetVertexShader
+	,Device_GetVertexShaderConstantB
+	,Device_GetVertexShaderConstantF
+	,Device_GetVertexShaderConstantI
+	,Device_GetViewport
+	,Device_LightEnable
+	,Device_SetFVF
+	,Device_SetIndices
+	,Device_SetLight
+	,Device_SetMaterial
+	,Device_SetNPatchMode
+	,Device_SetPixelShader
+	,Device_SetPixelShaderConstantB
+	,Device_SetPixelShaderConstantF
+	,Device_SetPixelShaderConstantI
+	,Device_SetRenderState
+	,Device_SetSamplerState
+	,Device_SetScissorRect
+	,Device_SetStreamSource
+	,Device_SetTexture
+	,Device_SetTextureStageState
 	,Device_Destroy
 };
 
