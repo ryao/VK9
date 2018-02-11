@@ -56,7 +56,7 @@ Khronos at https://www.khronos.org/registry/spir-v/api/spir-v.xml.
 */
 #define SPIR_V_GENERATORS_NUMBER 0x00000000
 
-ShaderConverter::ShaderConverter(CDevice9* device, ShaderConstantSlots& shaderConstantSlots)
+ShaderConverter::ShaderConverter(vk::Device& device, ShaderConstantSlots& shaderConstantSlots)
 	: mDevice(device), mShaderConstantSlots(shaderConstantSlots)
 {
 
@@ -66,7 +66,7 @@ ShaderConverter::~ShaderConverter()
 {
 	if (mConvertedShader.ShaderModule != VK_NULL_HANDLE)
 	{
-		vkDestroyShaderModule(mDevice->mDevice, mConvertedShader.ShaderModule, NULL);
+		mDevice.destroyShaderModule(mConvertedShader.ShaderModule, NULL);
 		mConvertedShader.ShaderModule = VK_NULL_HANDLE;
 	}
 }
@@ -669,9 +669,9 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		if (!this->mIsVertexShader)
 		{
 			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = registerNumber; //mConvertedShader.mDescriptorSetLayoutBindingCount;
-			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = vk::DescriptorType::eCombinedImageSampler;
 			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorCount = 1;
-			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = vk::ShaderStageFlagBits::eFragment;
 			mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].pImmutableSamplers = NULL;
 
 			mConvertedShader.mDescriptorSetLayoutBindingCount++;
@@ -2254,18 +2254,16 @@ void ShaderConverter::CreateSpirVModule()
 	//End Debug Code
 #endif
 
-	VkResult result = VK_SUCCESS;
-	VkShaderModuleCreateInfo moduleCreateInfo = {};
-	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	moduleCreateInfo.pNext = NULL;
+	vk::Result result;
+	vk::ShaderModuleCreateInfo moduleCreateInfo;
 	moduleCreateInfo.codeSize = mInstructions.size() * sizeof(uint32_t);
 	moduleCreateInfo.pCode = mInstructions.data(); //Why is this uint32_t* if the size is in bytes?
-	moduleCreateInfo.flags = 0;
-	result = vkCreateShaderModule(mDevice->mDevice, &moduleCreateInfo, NULL, &mConvertedShader.ShaderModule);
+	//moduleCreateInfo.flags = 0;
+	result = mDevice.createShaderModule(&moduleCreateInfo, nullptr, &mConvertedShader.ShaderModule);
 
-	if (result != VK_SUCCESS)
+	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << GetResultString(result);
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 }
@@ -2390,10 +2388,10 @@ void ShaderConverter::Process_DCL_Pixel()
 		//Optional initializer
 
 		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].binding = registerNumber; //mConvertedShader.mDescriptorSetLayoutBindingCount;
-		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorType = vk::DescriptorType::eCombinedImageSampler;
 		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].descriptorCount = 1;
-		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].pImmutableSamplers = NULL;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].stageFlags = vk::ShaderStageFlagBits::eFragment;
+		mConvertedShader.mDescriptorSetLayoutBinding[mConvertedShader.mDescriptorSetLayoutBindingCount].pImmutableSamplers = nullptr;
 
 		mConvertedShader.mDescriptorSetLayoutBindingCount++;
 
@@ -2502,16 +2500,16 @@ void ShaderConverter::Process_DCL_Vertex()
 		switch (typeDescription.ComponentCount)
 		{
 		case 1: // 1D float expanded to (value, 0., 0., 1.)
-			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32_SFLOAT;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = vk::Format::eR32Sfloat;
 			break;
 		case 2:  // 2D float expanded to (value, value, 0., 1.)
-			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32_SFLOAT;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = vk::Format::eR32G32Sfloat;
 			break;
 		case 3: // 3D float expanded to (value, value, value, 1.)
-			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32B32_SFLOAT;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = vk::Format::eR32G32B32Sfloat;
 			break;
 		case 4:  // 4D float
-			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+			mConvertedShader.mVertexInputAttributeDescription[mConvertedShader.mVertexInputAttributeDescriptionCount].format = vk::Format::eR32G32B32A32Sfloat;
 		default:
 			break;
 		}

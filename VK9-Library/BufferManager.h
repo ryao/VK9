@@ -21,56 +21,19 @@ misrepresented as being the original software.
 #ifndef BUFFERMANAGER_H
 #define BUFFERMANAGER_H
 
-#define UBO_SIZE 64
-
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
-#include <boost/container/flat_map.hpp>
-#include <boost/container/small_vector.hpp>
-#include <Eigen/Dense>
-#include <memory>
-
-#include "CTypes.h"
-#include "CIndexBuffer9.h"
-
-class CDevice9;
 
 class BufferManager
 {
-public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-		BufferManager();
-	explicit BufferManager(CDevice9* device);
-	~BufferManager();
+	//VkResult mResult = VK_SUCCESS;
 
-	VkResult mResult = VK_SUCCESS;
+	//CDevice9* mDevice = nullptr;
+	//int32_t mTextureWidth = 0;
+	//int32_t mTextureHeight = 0;
 
-	CDevice9* mDevice = nullptr;
-	bool mIsDirty = true;
-
-	
-	int32_t mTextureWidth = 0;
-	int32_t mTextureHeight = 0;
-
-	
-
-	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
-	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;
-
-	VkDescriptorSet mLastDescriptorSet = VK_NULL_HANDLE;
-	VkPipeline mLastVkPipeline = VK_NULL_HANDLE;
-
-	Transformations mTransformations;
-
-	void BeginDraw(std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type);
-	void CreatePipe(std::shared_ptr<DrawContext> context);
-	void CreateSampler(std::shared_ptr<SamplerRequest> request);
-
-	void UpdatePushConstants(std::shared_ptr<DrawContext> context);
-	void FlushDrawBufffer();
-
-private:
-
+	//VkDescriptorSet mLastDescriptorSet = VK_NULL_HANDLE;
+	//VkPipeline mLastVkPipeline = VK_NULL_HANDLE;
 };
 
 #endif // BUFFERMANAGER_H

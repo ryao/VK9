@@ -73,7 +73,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mSwapChains.push_back(ptr);
 
 	//Add implicit render target
-	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mPresentationParameters.BackBufferWidth, mPresentationParameters.BackBufferHeight, VK_FORMAT_UNDEFINED);
+	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mPresentationParameters.BackBufferWidth, mPresentationParameters.BackBufferHeight, D3DFMT_UNKNOWN);
 	mRenderTargets.push_back(ptr2);
 
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
@@ -1268,136 +1268,86 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State, const D3DMATRIX *pMatrix)
+HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State, const D3DMATRIX* pMatrix)
 {
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
-		this->mCurrentStateRecording->mDeviceState.mHasTransformsChanged = true;
-	}
-	else
-	{
-		mDeviceState.mTransforms[State] = (*pMatrix);
-		mDeviceState.mHasTransformsChanged = true;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetTransform;
+	workItem.Id = mId;
+	workItem.Argument1 = State;
+	workItem.Argument2 = pMatrix;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9* pDecl)
 {
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
-
-		this->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
-		this->mCurrentStateRecording->mDeviceState.mHasFVF = false;
-	}
-	else
-	{
-		mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
-
-		mDeviceState.mHasVertexDeclaration = true;
-		mDeviceState.mHasFVF = false;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetVertexDeclaration;
+	workItem.Id = mId;
+	workItem.Argument1 = pDecl;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9 *pShader)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9* pShader)
 {
-	if (pShader != nullptr)
-	{
-		pShader->AddRef();
-	}
-
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		//BOOST_LOG_TRIVIAL(info) << "Recorded VertexShader";
-		this->mCurrentStateRecording->mDeviceState.mVertexShader = (CVertexShader9*)pShader;
-		this->mCurrentStateRecording->mDeviceState.mHasVertexShader = true;
-	}
-	else
-	{
-		if (mDeviceState.mVertexShader != nullptr)
-		{
-			mDeviceState.mVertexShader->Release();
-		}
-
-		mDeviceState.mVertexShader = (CVertexShader9*)pShader;
-		mDeviceState.mHasVertexShader = true;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetVertexShader;
+	workItem.Id = mId;
+	workItem.Argument1 = pShader;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister, const BOOL *pConstantData, UINT BoolCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister, const BOOL* pConstantData, UINT BoolCount)
 {
-	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	for (size_t i = 0; i < BoolCount; i++)
-	{
-		slots.BooleanConstants[StartRegister + i] = pConstantData[i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetVertexShaderConstantB;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = BoolCount;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float* pConstantData, UINT Vector4fCount)
 {
-	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4fCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		if ((startIndex + i) < 128)
-		{
-			mDeviceState.mPushConstants[startIndex + i] = pConstantData[i];
-		}
-		else
-		{
-			slots.FloatConstants[startIndex + i] = pConstantData[i];
-		}
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetVertexShaderConstantF;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4fCount;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
+HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int* pConstantData, UINT Vector4iCount)
 {
-	auto& slots = mDeviceState.mVertexShaderConstantSlots;
-	uint32_t startIndex = (StartRegister * 4);
-	uint32_t length = (Vector4iCount * 4);
-	for (size_t i = 0; i < length; i++)
-	{
-		slots.IntegerConstants[startIndex + i] = pConstantData[i];
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetVertexShaderConstantI;
+	workItem.Id = mId;
+	workItem.Argument1 = StartRegister;
+	workItem.Argument2 = pConstantData;
+	workItem.Argument3 = Vector4iCount;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9 *pViewport)
+HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9* pViewport)
 {
-	if (this->mCurrentStateRecording != nullptr)
-	{
-		this->mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
-
-		//this->mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
-		this->mCurrentStateRecording->mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
-		//this->mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
-		this->mCurrentStateRecording->mDeviceState.mViewport.height = (float)mDeviceState.m9Viewport.Height;
-		this->mCurrentStateRecording->mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
-		this->mCurrentStateRecording->mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
-	}
-	else
-	{
-		mDeviceState.m9Viewport = (*pViewport);
-
-		mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
-		mDeviceState.mViewport.width = (float)mDeviceState.m9Viewport.Width;
-		mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
-		mDeviceState.mViewport.minDepth = mDeviceState.m9Viewport.MinZ;
-		mDeviceState.mViewport.maxDepth = mDeviceState.m9Viewport.MaxZ;
-	}
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_SetViewport;
+	workItem.Id = mId;
+	workItem.Argument1 = pViewport;
+	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
 }
@@ -1440,108 +1390,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurf
 
 HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture)
 {
-	if (pSourceTexture == nullptr || pDestinationTexture == nullptr)
-	{
-		return D3DERR_INVALIDCALL;
-	}
-
-	VkCommandBuffer commandBuffer;
-
-	VkCommandBufferAllocateInfo commandBufferInfo = {};
-	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandBufferInfo.pNext = nullptr;
-	commandBufferInfo.commandPool = mCommandPool;
-	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	commandBufferInfo.commandBufferCount = 1;
-
-	mResult = vkAllocateCommandBuffers(mDevice, &commandBufferInfo, &commandBuffer);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkAllocateCommandBuffers failed with return code of " << GetResultString(mResult);
-		return D3DERR_INVALIDCALL;
-	}
-
-	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
-	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-	commandBufferInheritanceInfo.pNext = nullptr;
-	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.subpass = 0;
-	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
-	commandBufferInheritanceInfo.queryFlags = 0;
-	commandBufferInheritanceInfo.pipelineStatistics = 0;
-
-	VkCommandBufferBeginInfo commandBufferBeginInfo;
-	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	commandBufferBeginInfo.pNext = nullptr;
-	commandBufferBeginInfo.flags = 0;
-	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
-
-	mResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkBeginCommandBuffer failed with return code of " << GetResultString(mResult);
-		return D3DERR_INVALIDCALL;
-	}
-
-	//TODO: Handle dirty regions and multiple mip levels.
-
-	if (pSourceTexture->GetType() != D3DRTYPE_CUBETEXTURE)
-	{
-		CTexture9& source = (*(CTexture9*)pSourceTexture);
-		CTexture9& target = (*(CTexture9*)pDestinationTexture);
-
-		ReallySetImageLayout(commandBuffer, source.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0, 1);
-		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 0, 1);
-		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mWidth, source.mHeight, 0, 0, 0, 0);
-		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 0, 1);
-	}
-	else
-	{
-		CCubeTexture9& source = (*(CCubeTexture9*)pSourceTexture);
-		CCubeTexture9& target = (*(CCubeTexture9*)pDestinationTexture);
-
-		ReallySetImageLayout(commandBuffer, source.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 0, 6);
-		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 0, 6);
-		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source.mEdgeLength, source.mEdgeLength, 0, 0, 0, 0);
-		ReallySetImageLayout(commandBuffer, target.mImage, 0, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 0, 6);
-	}
-
-	mResult = vkEndCommandBuffer(commandBuffer);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkEndCommandBuffer failed with return code of " << GetResultString(mResult);
-		return D3DERR_INVALIDCALL;
-	}
-
-	VkCommandBuffer commandBuffers[] = { commandBuffer };
-	VkFence nullFence = VK_NULL_HANDLE;
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = NULL;
-	submitInfo.waitSemaphoreCount = 0;
-	submitInfo.pWaitSemaphores = NULL;
-	submitInfo.pWaitDstStageMask = NULL;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = commandBuffers;
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = NULL;
-
-	mResult = vkQueueSubmit(mQueue, 1, &submitInfo, nullFence);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkQueueSubmit failed with return code of " << GetResultString(mResult);
-		return D3DERR_INVALIDCALL;
-	}
-
-	mResult = vkQueueWaitIdle(mQueue);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CDevice9::UpdateTexture vkQueueWaitIdle failed with return code of " << GetResultString(mResult);
-		return D3DERR_INVALIDCALL;
-	}
-
-	vkFreeCommandBuffers(mDevice, mCommandPool, 1, commandBuffers);
+	WorkItem workItem;
+	workItem.WorkItemType = WorkItemType::Device_UpdateTexture;
+	workItem.Id = mId;
+	workItem.Argument1 = pSourceTexture;
+	workItem.Argument1 = pDestinationTexture;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }

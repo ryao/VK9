@@ -25,6 +25,8 @@ misrepresented as being the original software.
 #ifndef RENDERMANAGER_H
 #define RENDERMANAGER_H
 
+#define UBO_SIZE 64
+
 struct SamplerRequest
 {
 	//Vulkan State
@@ -51,7 +53,7 @@ struct SamplerRequest
 
 struct ResourceContext
 {
-	VkDescriptorImageInfo DescriptorImageInfo[16] = {};
+	vk::DescriptorImageInfo DescriptorImageInfo[16] = {};
 
 	//Vulkan State
 	vk::DescriptorSetLayout DescriptorSetLayout;
@@ -116,6 +118,13 @@ struct RenderManager
 	void Present(RealWindow& realWindow, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion);
 	void DrawIndexedPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount);
 	void DrawPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
+	void UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture);
+
+	void BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type);
+	void CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawContext> context);
+	void CreateSampler(RealWindow& realWindow, std::shared_ptr<SamplerRequest> request);
+	void UpdatePushConstants(RealWindow& realWindow, std::shared_ptr<DrawContext> context);
+	void FlushDrawBufffer(RealWindow& realWindow);
 };
 
 #endif // RENDERMANAGER_H

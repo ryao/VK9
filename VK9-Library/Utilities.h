@@ -128,34 +128,34 @@ inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memory
 
 //D3DDECLTYPE
 
-inline VkFormat ConvertDeclType(D3DDECLTYPE input)
+inline vk::Format ConvertDeclType(D3DDECLTYPE input)
 {
-	VkFormat output = VK_FORMAT_UNDEFINED;
+	vk::Format output = (vk::Format)VK_FORMAT_UNDEFINED;
 	//TODO: finish mapping.
 	switch (input)
 	{
 	case D3DDECLTYPE_FLOAT1: // 1D float expanded to (value, 0., 0., 1.)
-		output = VK_FORMAT_R32_SFLOAT;
+		output = (vk::Format)VK_FORMAT_R32_SFLOAT;
 		break;
 	case D3DDECLTYPE_FLOAT2:  // 2D float expanded to (value, value, 0., 1.)
-		output = VK_FORMAT_R32G32_SFLOAT;
+		output = (vk::Format)VK_FORMAT_R32G32_SFLOAT;
 		break;
 	case D3DDECLTYPE_FLOAT3: // 3D float expanded to (value, value, value, 1.)
-		output = VK_FORMAT_R32G32B32_SFLOAT;
+		output = (vk::Format)VK_FORMAT_R32G32B32_SFLOAT;
 		break;
 	case D3DDECLTYPE_FLOAT4:  // 4D float
-		output = VK_FORMAT_R32G32B32A32_SFLOAT;
+		output = (vk::Format)VK_FORMAT_R32G32B32A32_SFLOAT;
 		break;
 	case D3DDECLTYPE_D3DCOLOR:  // 4D packed unsigned bytes mapped to 0. to 1. range
-		output = VK_FORMAT_B8G8R8A8_UINT;
+		output = (vk::Format)VK_FORMAT_B8G8R8A8_UINT;
 		break; // Input is in D3DCOLOR format (ARGB) expanded to (R, G, B, A)
 	case D3DDECLTYPE_UBYTE4: // 4D unsigned byte
 		break;
 	case D3DDECLTYPE_SHORT2:  // 2D signed short expanded to (value, value, 0., 1.)
-		output = VK_FORMAT_R16G16_SINT;
+		output = (vk::Format)VK_FORMAT_R16G16_SINT;
 		break;
 	case D3DDECLTYPE_SHORT4:  // 4D signed short
-		output = VK_FORMAT_R16G16B16_SINT;
+		output = (vk::Format)VK_FORMAT_R16G16B16_SINT;
 		break;
 	case D3DDECLTYPE_UBYTE4N:  // Each of 4 bytes is normalized by dividing to 255.0
 		break;
@@ -172,13 +172,13 @@ inline VkFormat ConvertDeclType(D3DDECLTYPE input)
 	case D3DDECLTYPE_DEC3N:  // 3D signed 10 10 10 format normalized and expanded to (v[0]/511.0, v[1]/511.0, v[2]/511.0, 1)
 		break;
 	case D3DDECLTYPE_FLOAT16_2:  // Two 16-bit floating point values, expanded to (value, value, 0, 1)
-		output = VK_FORMAT_R16G16_SFLOAT;
+		output = (vk::Format)VK_FORMAT_R16G16_SFLOAT;
 		break;
 	case D3DDECLTYPE_FLOAT16_4:  // Four 16-bit floating point values
-		output = VK_FORMAT_R16G16B16A16_SFLOAT;
+		output = (vk::Format)VK_FORMAT_R16G16B16A16_SFLOAT;
 		break;
 	case D3DDECLTYPE_UNUSED:  // When the type field in a decl is unused.
-		output = VK_FORMAT_UNDEFINED;
+		output = (vk::Format)VK_FORMAT_UNDEFINED;
 		break;
 	default:
 		break;
@@ -269,153 +269,153 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 	}
 }
 
-inline VkSamplerAddressMode ConvertTextureAddress(D3DTEXTUREADDRESS input)
+inline vk::SamplerAddressMode ConvertTextureAddress(D3DTEXTUREADDRESS input)
 {
-	VkSamplerAddressMode output;
+	vk::SamplerAddressMode output;
 
 	switch (input)
 	{
 	case D3DTADDRESS_WRAP:
-		output = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		output = (vk::SamplerAddressMode)VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		break;
 	case D3DTADDRESS_MIRROR:
-		output = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+		output = (vk::SamplerAddressMode)VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 		break;
 	case D3DTADDRESS_CLAMP:
-		output = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		output = (vk::SamplerAddressMode)VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		break;
 	case D3DTADDRESS_BORDER:
-		output = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+		output = (vk::SamplerAddressMode)VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 		break;
 	case D3DTADDRESS_MIRRORONCE:
-		output = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+		output = (vk::SamplerAddressMode)VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
 		break;
 	default:
-		output = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		output = (vk::SamplerAddressMode)VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		break;
 	}
 
 	return output;
 }
 
-inline VkSamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input)
+inline vk::SamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input)
 {
-	VkSamplerMipmapMode output;
+	vk::SamplerMipmapMode output;
 
 	switch (input)
 	{
 	case D3DTEXF_NONE:	// filtering disabled (valid for mip filter only)
-		output = VK_SAMPLER_MIPMAP_MODE_NEAREST; //revisit
+		output = (vk::SamplerMipmapMode)VK_SAMPLER_MIPMAP_MODE_NEAREST; //revisit
 		break;
 	case D3DTEXF_POINT:	// nearest
-		output = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		output = (vk::SamplerMipmapMode)VK_SAMPLER_MIPMAP_MODE_NEAREST;
 		break;
 	case D3DTEXF_LINEAR:	// linear interpolation
-		output = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		output = (vk::SamplerMipmapMode)VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		break;
 	case D3DTEXF_ANISOTROPIC:	// anisotropic
-		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		output = (vk::SamplerMipmapMode)VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
 		break;
 	case D3DTEXF_PYRAMIDALQUAD:	// 4-sample tent
-		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		output = (vk::SamplerMipmapMode)VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
 		break;
 	case D3DTEXF_GAUSSIANQUAD:	// 4-sample Gaussian
-		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		output = (vk::SamplerMipmapMode)VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
 		break;
 	default:
-		output = VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
+		output = (vk::SamplerMipmapMode)VK_SAMPLER_MIPMAP_MODE_LINEAR; //revisit
 		break;
 	}
 
 	return output;
 }
 
-inline VkFilter ConvertFilter(D3DTEXTUREFILTERTYPE input)
+inline vk::Filter ConvertFilter(D3DTEXTUREFILTERTYPE input)
 {
-	VkFilter output;
+	vk::Filter output;
 
 	switch (input)
 	{
 	case D3DTEXF_NONE:	// filtering disabled (valid for mip filter only)
-		output = VK_FILTER_NEAREST; //revisit
+		output = (vk::Filter)VK_FILTER_NEAREST; //revisit
 		break;
 	case D3DTEXF_POINT:	// nearest
-		output = VK_FILTER_NEAREST;
+		output = (vk::Filter)VK_FILTER_NEAREST;
 		break;
 	case D3DTEXF_LINEAR:	// linear interpolation
-		output = VK_FILTER_LINEAR;
+		output = (vk::Filter)VK_FILTER_LINEAR;
 		break;
 	case D3DTEXF_ANISOTROPIC:	// anisotropic
 		/*
 		https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html
 		If either magFilter or minFilter is VK_FILTER_CUBIC_IMG, anisotropyEnable must be VK_FALSE
 		*/
-		output = VK_FILTER_LINEAR;
+		output = (vk::Filter)VK_FILTER_LINEAR;
 		//output = VK_FILTER_CUBIC_IMG; //revisit
 		break;
 	case D3DTEXF_PYRAMIDALQUAD:	// 4-sample tent
-		output = VK_FILTER_CUBIC_IMG; //revisit
+		output = (vk::Filter)VK_FILTER_CUBIC_IMG; //revisit
 		break;
 	case D3DTEXF_GAUSSIANQUAD:	// 4-sample Gaussian
-		output = VK_FILTER_CUBIC_IMG; //revisit
+		output = (vk::Filter)VK_FILTER_CUBIC_IMG; //revisit
 		break;
 	default:
-		output = VK_FILTER_NEAREST; //revisit
+		output = (vk::Filter)VK_FILTER_NEAREST; //revisit
 		break;
 	}
 
 	return output;
 }
 
-inline VkPolygonMode ConvertFillMode(D3DFILLMODE input)
+inline vk::PolygonMode ConvertFillMode(D3DFILLMODE input)
 {
-	VkPolygonMode output;
+	vk::PolygonMode output;
 
 	switch (input)
 	{
 	case D3DFILL_SOLID:
-		output = VK_POLYGON_MODE_FILL;
+		output = (vk::PolygonMode)VK_POLYGON_MODE_FILL;
 		break;
 	case D3DFILL_POINT:
-		output = VK_POLYGON_MODE_POINT;
+		output = (vk::PolygonMode)VK_POLYGON_MODE_POINT;
 		break;
 	case D3DFILL_WIREFRAME:
-		output = VK_POLYGON_MODE_LINE;
+		output = (vk::PolygonMode)VK_POLYGON_MODE_LINE;
 		break;
 	default:
-		output = VK_POLYGON_MODE_FILL;
+		output = (vk::PolygonMode)VK_POLYGON_MODE_FILL;
 		break;
 	}
 
 	return output;
 }
 
-inline VkPrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input)
+inline vk::PrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input)
 {
-	VkPrimitiveTopology output;
+	vk::PrimitiveTopology output;
 
 	switch (input)
 	{
 	case D3DPT_POINTLIST:
-		output = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		output = (vk::PrimitiveTopology)VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 		break;
 	case D3DPT_LINELIST:
-		output = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		output = (vk::PrimitiveTopology)VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 		break;
 	case D3DPT_LINESTRIP:
-		output = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+		output = (vk::PrimitiveTopology)VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
 		break;
 	case D3DPT_TRIANGLELIST:
-		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		output = (vk::PrimitiveTopology)VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		break;
 	case D3DPT_TRIANGLESTRIP:
-		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		output = (vk::PrimitiveTopology)VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		break;
 	case D3DPT_TRIANGLEFAN:
-		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+		output = (vk::PrimitiveTopology)VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
 		break;
 	default:
-		output = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		output = (vk::PrimitiveTopology)VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		break;
 	}
 
@@ -740,198 +740,198 @@ inline D3DFORMAT ConvertFormat(VkFormat format)
 	}
 }
 
-inline VkBlendFactor ConvertColorFactor(D3DBLEND input)
+inline vk::BlendFactor ConvertColorFactor(D3DBLEND input)
 {
-	VkBlendFactor output;
+	vk::BlendFactor output;
 
 	switch (input)
 	{
 	case D3DBLEND_ZERO:
-		output = VK_BLEND_FACTOR_ZERO;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ZERO;
 		break;
 	case D3DBLEND_ONE:
-		output = VK_BLEND_FACTOR_ONE;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE;
 		break;
 	case D3DBLEND_SRCCOLOR:
-		output = VK_BLEND_FACTOR_SRC_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_SRC_COLOR;
 		break;
 	case D3DBLEND_INVSRCCOLOR:
-		output = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 		break;
 	case D3DBLEND_SRCALPHA:
-		output = VK_BLEND_FACTOR_SRC_ALPHA;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_SRC_ALPHA;
 		break;
 	case D3DBLEND_INVSRCALPHA:
-		output = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		break;
 	case D3DBLEND_DESTALPHA:
-		output = VK_BLEND_FACTOR_DST_ALPHA;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_DST_ALPHA;
 		break;
 	case D3DBLEND_INVDESTALPHA:
-		output = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
 		break;
 	case D3DBLEND_DESTCOLOR:
-		output = VK_BLEND_FACTOR_DST_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_DST_COLOR;
 		break;
 	case D3DBLEND_INVDESTCOLOR:
-		output = VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
 		break;
 	case D3DBLEND_SRCALPHASAT:
-		output = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
 		break;
 	case D3DBLEND_BOTHSRCALPHA:
-		output = VK_BLEND_FACTOR_CONSTANT_ALPHA;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_CONSTANT_ALPHA;
 		break;
 	case D3DBLEND_BOTHINVSRCALPHA:
-		output = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
 		break;
 	case D3DBLEND_BLENDFACTOR:
-		output = VK_BLEND_FACTOR_CONSTANT_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_CONSTANT_COLOR;
 		break;
 	case D3DBLEND_INVBLENDFACTOR:
-		output = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
 		break;
 		//Revisit
 #if !defined(D3D_DISABLE_9EX)
 	case D3DBLEND_SRCCOLOR2:
-		output = VK_BLEND_FACTOR_SRC1_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_SRC1_COLOR;
 		break;
 	case D3DBLEND_INVSRCCOLOR2:
-		output = VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
 		break;
 #endif // !D3D_DISABLE_9EX
 	default:
-		output = VK_BLEND_FACTOR_ONE;
+		output = (vk::BlendFactor)VK_BLEND_FACTOR_ONE;
 		break;
 	}
 
 	return output;
 }
 
-inline VkBlendOp ConvertColorOperation(D3DBLENDOP  input)
+inline vk::BlendOp ConvertColorOperation(D3DBLENDOP  input)
 {
-	VkBlendOp output;
+	vk::BlendOp output;
 
 	switch (input)
 	{
 	case D3DBLENDOP_ADD:
-		output = VK_BLEND_OP_ADD;
+		output = (vk::BlendOp)VK_BLEND_OP_ADD;
 		break;
 	case D3DBLENDOP_SUBTRACT:
-		output = VK_BLEND_OP_SUBTRACT;
+		output = (vk::BlendOp)VK_BLEND_OP_SUBTRACT;
 		break;
 	case D3DBLENDOP_REVSUBTRACT:
-		output = VK_BLEND_OP_REVERSE_SUBTRACT;
+		output = (vk::BlendOp)VK_BLEND_OP_REVERSE_SUBTRACT;
 		break;
 	case D3DBLENDOP_MIN:
-		output = VK_BLEND_OP_MIN;
+		output = (vk::BlendOp)VK_BLEND_OP_MIN;
 		break;
 	case D3DBLENDOP_MAX:
-		output = VK_BLEND_OP_MAX;
+		output = (vk::BlendOp)VK_BLEND_OP_MAX;
 		break;
 	case D3DBLENDOP_FORCE_DWORD:
-		output = VK_BLEND_OP_MAX_ENUM;
+		output = (vk::BlendOp)VK_BLEND_OP_MAX_ENUM;
 		break;
 	default:
-		output = VK_BLEND_OP_ADD;
+		output = (vk::BlendOp)VK_BLEND_OP_ADD;
 		break;
 	}
 
 	return output;
 }
 
-inline VkStencilOp ConvertStencilOperation(D3DSTENCILOP input)
+inline vk::StencilOp ConvertStencilOperation(D3DSTENCILOP input)
 {
-	VkStencilOp output;
+	vk::StencilOp output;
 
 	switch (input)
 	{
 	case D3DSTENCILOP_KEEP:
-		output = VK_STENCIL_OP_KEEP;
+		output = (vk::StencilOp)VK_STENCIL_OP_KEEP;
 		break;
 	case D3DSTENCILOP_ZERO:
-		output = VK_STENCIL_OP_ZERO;
+		output = (vk::StencilOp)VK_STENCIL_OP_ZERO;
 		break;
 	case D3DSTENCILOP_REPLACE:
-		output = VK_STENCIL_OP_REPLACE;
+		output = (vk::StencilOp)VK_STENCIL_OP_REPLACE;
 		break;
 	case D3DSTENCILOP_INCRSAT:
-		output = VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+		output = (vk::StencilOp)VK_STENCIL_OP_INCREMENT_AND_CLAMP;
 		break;
 	case D3DSTENCILOP_DECRSAT:
-		output = VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+		output = (vk::StencilOp)VK_STENCIL_OP_DECREMENT_AND_CLAMP;
 		break;
 	case D3DSTENCILOP_INVERT:
-		output = VK_STENCIL_OP_INVERT;
+		output = (vk::StencilOp)VK_STENCIL_OP_INVERT;
 		break;
 	case D3DSTENCILOP_INCR:
-		output = VK_STENCIL_OP_INCREMENT_AND_WRAP;
+		output = (vk::StencilOp)VK_STENCIL_OP_INCREMENT_AND_WRAP;
 		break;
 	case D3DSTENCILOP_DECR:
-		output = VK_STENCIL_OP_DECREMENT_AND_WRAP;
+		output = (vk::StencilOp)VK_STENCIL_OP_DECREMENT_AND_WRAP;
 		break;
 	default:
-		output = VK_STENCIL_OP_MAX_ENUM;
+		output = (vk::StencilOp)VK_STENCIL_OP_MAX_ENUM;
 		break;
 	}
 
 	return output;
 }
 
-inline VkCompareOp ConvertCompareOperation(D3DCMPFUNC input)
+inline vk::CompareOp ConvertCompareOperation(D3DCMPFUNC input)
 {
-	VkCompareOp output;
+	vk::CompareOp output;
 
 	switch (input)
 	{
 	case D3DCMP_NEVER:
-		output = VK_COMPARE_OP_NEVER;
+		output = (vk::CompareOp)VK_COMPARE_OP_NEVER;
 		break;
 	case D3DCMP_LESS:
-		output = VK_COMPARE_OP_LESS;
+		output = (vk::CompareOp)VK_COMPARE_OP_LESS;
 		break;
 	case D3DCMP_EQUAL:
-		output = VK_COMPARE_OP_EQUAL;
+		output = (vk::CompareOp)VK_COMPARE_OP_EQUAL;
 		break;
 	case D3DCMP_LESSEQUAL:
-		output = VK_COMPARE_OP_LESS_OR_EQUAL;
+		output = (vk::CompareOp)VK_COMPARE_OP_LESS_OR_EQUAL;
 		break;
 	case D3DCMP_GREATER:
-		output = VK_COMPARE_OP_GREATER;
+		output = (vk::CompareOp)VK_COMPARE_OP_GREATER;
 		break;
 	case D3DCMP_NOTEQUAL:
-		output = VK_COMPARE_OP_NOT_EQUAL;
+		output = (vk::CompareOp)VK_COMPARE_OP_NOT_EQUAL;
 		break;
 	case D3DCMP_GREATEREQUAL:
-		output = VK_COMPARE_OP_GREATER_OR_EQUAL;
+		output = (vk::CompareOp)VK_COMPARE_OP_GREATER_OR_EQUAL;
 		break;
 	case D3DCMP_ALWAYS:
-		output = VK_COMPARE_OP_ALWAYS;
+		output = (vk::CompareOp)VK_COMPARE_OP_ALWAYS;
 		break;
 	default:
-		output = VK_COMPARE_OP_MAX_ENUM;
+		output = (vk::CompareOp)VK_COMPARE_OP_MAX_ENUM;
 		break;
 	}
 
 	return output;
 }
 
-inline VkBlendFactor ConvertColorFactor(DWORD input)
+inline vk::BlendFactor ConvertColorFactor(DWORD input)
 {
 	return ConvertColorFactor((D3DBLEND)input);
 }
 
-inline VkBlendOp ConvertColorOperation(DWORD  input)
+inline vk::BlendOp ConvertColorOperation(DWORD  input)
 {
 	return ConvertColorOperation((D3DBLENDOP)input);
 }
 
-inline VkStencilOp ConvertStencilOperation(DWORD input)
+inline vk::StencilOp ConvertStencilOperation(DWORD input)
 {
 	return ConvertStencilOperation((D3DSTENCILOP)input);
 }
 
-inline VkCompareOp ConvertCompareOperation(DWORD input)
+inline vk::CompareOp ConvertCompareOperation(DWORD input)
 {
 	return ConvertCompareOperation((D3DCMPFUNC)input);
 }

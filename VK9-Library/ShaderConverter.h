@@ -48,13 +48,13 @@ struct ConvertedShader
 	//Information about layout
 	//VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
 	uint32_t mVertexInputAttributeDescriptionCount = 0;
-	VkVertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
+	vk::VertexInputAttributeDescription mVertexInputAttributeDescription[32];
 	uint32_t mDescriptorSetLayoutBindingCount = 0;
-	VkDescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
+	vk::DescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16];
 
 	//Actual Payload
 	UINT Size = 0;
-	VkShaderModule ShaderModule = VK_NULL_HANDLE;
+	vk::ShaderModule ShaderModule;
 };
 
 //https://msdn.microsoft.com/en-us/library/windows/hardware/ff552738(v=vs.85).aspx
@@ -386,10 +386,10 @@ class CDevice9;
 class ShaderConverter
 {
 protected:
-	CDevice9* mDevice;
+	vk::Device& mDevice;
 	ShaderConstantSlots& mShaderConstantSlots;
 public:
-	ShaderConverter(CDevice9* device, ShaderConstantSlots& shaderConstantSlots);
+	ShaderConverter(vk::Device& device, ShaderConstantSlots& shaderConstantSlots);
 	~ShaderConverter();
 
 	ConvertedShader Convert(uint32_t* shader);

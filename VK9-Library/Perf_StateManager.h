@@ -21,11 +21,13 @@ misrepresented as being the original software.
 #include <atomic>
 #include <memory>
 #include <vector>
+#include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 #include <vulkan/vulkan.hpp>
 #include <Eigen/Dense>
 
 #include "Utilities.h"
+#include "CTypes.h"
 
 #ifdef _DEBUG
 #include "renderdoc_app.h"
@@ -133,6 +135,10 @@ struct RealWindow
 
 	//Misc State
 	DeviceState mDeviceState = {};
+	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
+	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;
+	Transformations mTransformations;
+	bool mIsDirty = true;
 
 	//Fixed Function Shaders
 	vk::ShaderModule mVertShaderModule_XYZ_DIFFUSE;

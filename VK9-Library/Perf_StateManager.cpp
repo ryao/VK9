@@ -75,6 +75,11 @@ RealWindow::RealWindow(RealInstance& realInstance,RealDevice& realDevice)
 
 RealWindow::~RealWindow()
 {
+	//Empty cached objects. (a destructor should take care of their resources.)
+	mDrawBuffer.clear();
+	mSamplerRequests.clear();
+
+	//Clean up the rest of the window state handles.
 	auto& device = mRealDevice.mDevice;
 	auto& instance = mRealInstance.mInstance;
 

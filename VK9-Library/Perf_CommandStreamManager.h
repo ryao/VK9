@@ -84,6 +84,14 @@ enum WorkItemType
 	,Device_SetStreamSource
 	,Device_SetTexture
 	,Device_SetTextureStageState
+	,Device_SetTransform
+	,Device_SetVertexDeclaration
+	,Device_SetVertexShader
+	,Device_SetVertexShaderConstantB
+	,Device_SetVertexShaderConstantF
+	,Device_SetVertexShaderConstantI
+	,Device_SetViewport
+	,Device_UpdateTexture
 	,Device_Destroy
 };
 

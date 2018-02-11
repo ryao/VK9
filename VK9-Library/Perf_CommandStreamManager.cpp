@@ -32,6 +32,7 @@ misrepresented as being the original software.
 
 #include "CStateBlock9.h"
 #include "CPixelShader9.h"
+#include "CVertexShader9.h"
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
@@ -2702,6 +2703,163 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				default:
 					break;
 				}
+			}
+			break;
+			case Device_SetTransform:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				D3DTRANSFORMSTATETYPE State = boost::any_cast<D3DTRANSFORMSTATETYPE>(workItem.Argument1);
+				D3DMATRIX* pMatrix = boost::any_cast<D3DMATRIX*>(workItem.Argument2);
+
+				if (realWindow.mCurrentStateRecording != nullptr)
+				{
+					realWindow.mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
+					realWindow.mCurrentStateRecording->mDeviceState.mHasTransformsChanged = true;
+				}
+				else
+				{
+					realWindow.mDeviceState.mTransforms[State] = (*pMatrix);
+					realWindow.mDeviceState.mHasTransformsChanged = true;
+				}
+			}
+			break;
+			case Device_SetVertexDeclaration:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				IDirect3DVertexDeclaration9* pDecl = boost::any_cast<IDirect3DVertexDeclaration9*>(workItem.Argument1);
+
+				if (realWindow.mCurrentStateRecording != nullptr)
+				{
+					realWindow.mCurrentStateRecording->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+
+					realWindow.mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
+					realWindow.mCurrentStateRecording->mDeviceState.mHasFVF = false;
+				}
+				else
+				{
+					realWindow.mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+
+					realWindow.mDeviceState.mHasVertexDeclaration = true;
+					realWindow.mDeviceState.mHasFVF = false;
+				}
+			}
+			break;
+			case Device_SetVertexShader:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				IDirect3DVertexShader9* pShader = boost::any_cast<IDirect3DVertexShader9*>(workItem.Argument1);
+
+				if (pShader != nullptr)
+				{
+					pShader->AddRef();
+				}
+
+				if (realWindow.mCurrentStateRecording != nullptr)
+				{
+					//BOOST_LOG_TRIVIAL(info) << "Recorded VertexShader";
+					realWindow.mCurrentStateRecording->mDeviceState.mVertexShader = (CVertexShader9*)pShader;
+					realWindow.mCurrentStateRecording->mDeviceState.mHasVertexShader = true;
+				}
+				else
+				{
+					if (realWindow.mDeviceState.mVertexShader != nullptr)
+					{
+						realWindow.mDeviceState.mVertexShader->Release();
+					}
+
+					realWindow.mDeviceState.mVertexShader = (CVertexShader9*)pShader;
+					realWindow.mDeviceState.mHasVertexShader = true;
+				}
+			}
+			break;
+			case Device_SetVertexShaderConstantB:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				UINT StartRegister = boost::any_cast<UINT>(workItem.Argument1);
+				BOOL* pConstantData = boost::any_cast<BOOL*>(workItem.Argument2);
+				UINT BoolCount = boost::any_cast<UINT>(workItem.Argument3);
+
+				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				for (size_t i = 0; i < BoolCount; i++)
+				{
+					slots.BooleanConstants[StartRegister + i] = pConstantData[i];
+				}
+			}
+			break;
+			case Device_SetVertexShaderConstantF:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				UINT StartRegister = boost::any_cast<UINT>(workItem.Argument1);
+				float* pConstantData = boost::any_cast<float*>(workItem.Argument2);
+				UINT Vector4fCount = boost::any_cast<UINT>(workItem.Argument3);
+
+				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				uint32_t startIndex = (StartRegister * 4);
+				uint32_t length = (Vector4fCount * 4);
+				for (size_t i = 0; i < length; i++)
+				{
+					if ((startIndex + i) < 128)
+					{
+						realWindow.mDeviceState.mPushConstants[startIndex + i] = pConstantData[i];
+					}
+					else
+					{
+						slots.FloatConstants[startIndex + i] = pConstantData[i];
+					}
+				}
+			}
+			break;
+			case Device_SetVertexShaderConstantI:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				UINT StartRegister = boost::any_cast<UINT>(workItem.Argument1);
+				int* pConstantData = boost::any_cast<int*>(workItem.Argument2);
+				UINT Vector4iCount = boost::any_cast<UINT>(workItem.Argument3);
+
+				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				uint32_t startIndex = (StartRegister * 4);
+				uint32_t length = (Vector4iCount * 4);
+				for (size_t i = 0; i < length; i++)
+				{
+					slots.IntegerConstants[startIndex + i] = pConstantData[i];
+				}
+			}
+			break;
+			case Device_SetViewport:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				D3DVIEWPORT9* pViewport = boost::any_cast<D3DVIEWPORT9*>(workItem.Argument1);
+
+				if (realWindow.mCurrentStateRecording != nullptr)
+				{
+					realWindow.mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
+
+					//realWindow.mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
+					realWindow.mCurrentStateRecording->mDeviceState.mViewport.width = (float)realWindow.mDeviceState.m9Viewport.Width;
+					//realWindow.mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
+					realWindow.mCurrentStateRecording->mDeviceState.mViewport.height = (float)realWindow.mDeviceState.m9Viewport.Height;
+					realWindow.mCurrentStateRecording->mDeviceState.mViewport.minDepth = realWindow.mDeviceState.m9Viewport.MinZ;
+					realWindow.mCurrentStateRecording->mDeviceState.mViewport.maxDepth = realWindow.mDeviceState.m9Viewport.MaxZ;
+				}
+				else
+				{
+					realWindow.mDeviceState.m9Viewport = (*pViewport);
+
+					realWindow.mDeviceState.mViewport.y = (float)realWindow.mDeviceState.m9Viewport.Height;
+					realWindow.mDeviceState.mViewport.width = (float)realWindow.mDeviceState.m9Viewport.Width;
+					realWindow.mDeviceState.mViewport.height = -(float)realWindow.mDeviceState.m9Viewport.Height;
+					realWindow.mDeviceState.mViewport.minDepth = realWindow.mDeviceState.m9Viewport.MinZ;
+					realWindow.mDeviceState.mViewport.maxDepth = realWindow.mDeviceState.m9Viewport.MaxZ;
+				}
+			}
+			break;
+			case Device_UpdateTexture:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem.Id]);
+				IDirect3DBaseTexture9* pSourceTexture = boost::any_cast<IDirect3DBaseTexture9*>(workItem.Argument1);
+				IDirect3DBaseTexture9* pDestinationTexture = boost::any_cast<IDirect3DBaseTexture9*>(workItem.Argument2);
+
+				commandStreamManager->mRenderManager.UpdateTexture(realWindow, pSourceTexture, pDestinationTexture);
 			}
 			break;
 			case Instance_GetAdapterIdentifier:
