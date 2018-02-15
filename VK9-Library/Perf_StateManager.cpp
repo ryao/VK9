@@ -306,6 +306,45 @@ RealInstance::~RealInstance()
 	mInstance.destroy();
 }
 
+RealVertexBuffer::~RealVertexBuffer()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroyBuffer(mBuffer, nullptr);
+		device.mDevice.freeMemory(mMemory, nullptr);
+	}
+}
+
+SamplerRequest::~SamplerRequest()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroySampler(Sampler, nullptr);
+	}
+}
+
+ResourceContext::~ResourceContext()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.freeDescriptorSets(device.mDescriptorPool, 1, &DescriptorSet);
+	}
+}
+
+DrawContext::~DrawContext()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroyPipeline(Pipeline, nullptr);
+		device.mDevice.destroyPipelineLayout(PipelineLayout, nullptr);
+		device.mDevice.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);
+	}
+}
+
 StateManager::StateManager()
 {
 
@@ -1290,4 +1329,50 @@ void StateManager::CreateInstance()
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance failed to create vulkan instance.";
 	}
+}
+
+void StateManager::DestroyVertexBuffer(size_t id)
+{
+	mVertexBuffers[id].reset();
+}
+
+void StateManager::CreateVertexBuffer(size_t id, boost::any argument1)
+{
+	vk::Result result;
+	auto window = mWindows[id];
+	CVertexBuffer9* vertexBuffer9 = boost::any_cast<CVertexBuffer9*>(argument1);
+	auto ptr = std::make_shared<RealVertexBuffer>();
+
+	vk::BufferCreateInfo bufferCreateInfo;
+	bufferCreateInfo.size = vertexBuffer9->mLength;
+	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
+	//bufferCreateInfo.flags = 0;
+
+	vk::MemoryAllocateInfo memoryAllocateInfo;
+	memoryAllocateInfo.allocationSize = 0;
+	memoryAllocateInfo.memoryTypeIndex = 0;
+
+	result = window->mRealDevice.mDevice.createBuffer(&bufferCreateInfo, nullptr, &ptr->mBuffer);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVertexBuffer vkCreateBuffer failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ptr->mMemoryRequirements = window->mRealDevice.mDevice.getBufferMemoryRequirements(ptr->mBuffer);
+
+	memoryAllocateInfo.allocationSize = ptr->mMemoryRequirements.size;
+
+	GetMemoryTypeFromProperties(window->mRealDevice.mPhysicalDeviceMemoryProperties, ptr->mMemoryRequirements.memoryTypeBits, (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent), &memoryAllocateInfo.memoryTypeIndex);
+
+	result = window->mRealDevice.mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVertexBuffer vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	window->mRealDevice.mDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
+
+	mVertexBuffers.push_back(ptr);
 }

@@ -21,6 +21,7 @@ misrepresented as being the original software.
 #include <atomic>
 #include <memory>
 #include <vector>
+#include <chrono>
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 #include <vulkan/vulkan.hpp>
@@ -75,6 +76,9 @@ struct RealInstance
 	RealInstance();
 	~RealInstance();
 };
+
+struct SamplerRequest;
+struct DrawContext;
 
 struct RealWindow
 {
@@ -1262,6 +1266,92 @@ struct RealWindow
 	void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 };
 
+struct RealVertexBuffer
+{
+	vk::MemoryRequirements mMemoryRequirements;
+	vk::Buffer mBuffer;
+	vk::DeviceMemory mMemory;
+	void* mData = nullptr;
+
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	RealVertexBuffer(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	~RealVertexBuffer();
+};
+
+struct SamplerRequest
+{
+	//Vulkan State
+	vk::Sampler Sampler;
+
+	//D3D9 State
+	DWORD SamplerIndex = 0;
+	D3DTEXTUREFILTERTYPE MagFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE MinFilter = D3DTEXF_NONE;
+	D3DTEXTUREADDRESS AddressModeU = D3DTADDRESS_FORCE_DWORD;
+	D3DTEXTUREADDRESS AddressModeV = D3DTADDRESS_FORCE_DWORD;
+	D3DTEXTUREADDRESS AddressModeW = D3DTADDRESS_FORCE_DWORD;
+	DWORD MaxAnisotropy = 0;
+	D3DTEXTUREFILTERTYPE MipmapMode = D3DTEXF_NONE;
+	float MipLodBias = 0.0f;
+	float MaxLod = 1.0f;
+
+	//Resource Handling.
+	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	SamplerRequest(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	~SamplerRequest();
+};
+
+struct ResourceContext
+{
+	vk::DescriptorImageInfo DescriptorImageInfo[16] = {};
+
+	//Vulkan State
+	vk::DescriptorSetLayout DescriptorSetLayout;
+	vk::PipelineLayout PipelineLayout;
+	vk::DescriptorSet DescriptorSet;
+	BOOL WasShader = false; // descriptor set logic is different for shaders so mixing them makes Vulkan angry because the number of attachment is different and stuff.
+
+							//Resource Handling.
+	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	ResourceContext(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	~ResourceContext();
+};
+
+struct DrawContext
+{
+	//Vulkan State
+	vk::DescriptorSetLayout DescriptorSetLayout;
+	vk::Pipeline Pipeline;
+	vk::PipelineLayout PipelineLayout;
+
+	//Misc
+	//boost::container::flat_map<UINT, UINT> Bindings;
+	UINT Bindings[64] = {};
+
+	//D3D9 State - Pipe
+	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
+	DWORD FVF = 0;
+	CVertexDeclaration9* VertexDeclaration = nullptr;
+	CVertexShader9* VertexShader = nullptr;
+	CPixelShader9* PixelShader = nullptr;
+	int32_t StreamCount = 0;
+
+	//D3d9 State - Lights
+	ShaderConstantSlots mVertexShaderConstantSlots = {};
+	ShaderConstantSlots mPixelShaderConstantSlots = {};
+
+	//Constant Registers
+	SpecializationConstants mSpecializationConstants = {};
+
+	//Resource Handling.
+	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	DrawContext(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	~DrawContext();
+};
+
 struct StateManager
 {
 	boost::container::small_vector< std::shared_ptr<RealInstance>, 1> mInstances;
@@ -1269,6 +1359,9 @@ struct StateManager
 
 	boost::container::small_vector< std::shared_ptr<RealWindow>, 1> mWindows;
 	std::atomic_size_t mWindowsKey = 0;
+
+	boost::container::small_vector< std::shared_ptr<RealVertexBuffer>, 1> mVertexBuffers;
+	std::atomic_size_t mVertexBufferKey = 0;
 
 	StateManager();
 	~StateManager();
@@ -1278,6 +1371,9 @@ struct StateManager
 
 	void DestroyInstance(size_t id);
 	void CreateInstance();
+
+	void DestroyVertexBuffer(size_t id);
+	void CreateVertexBuffer(size_t id, boost::any argument1);
 };
 
 #endif // STATEMANAGER_H

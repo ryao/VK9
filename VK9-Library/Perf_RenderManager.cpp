@@ -18,6 +18,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+/*
+"Whoever pursues righteousness and kindness will find life, righteousness, and honor." (Proverbs 21:21, ESV)
+*/
+
 #include "Perf_RenderManager.h"
 
 #include <boost/log/core.hpp>
@@ -39,35 +43,6 @@ misrepresented as being the original software.
 #include "CVertexDeclaration9.h"
 #include "CPixelShader9.h"
 #include "CVertexShader9.h"
-
-SamplerRequest::~SamplerRequest()
-{
-	if (mRealWindow != nullptr)
-	{
-		auto& device = mRealWindow->mRealDevice;
-		device.mDevice.destroySampler(Sampler, nullptr);
-	}
-}
-
-ResourceContext::~ResourceContext()
-{
-	if (mRealWindow != nullptr)
-	{
-		auto& device = mRealWindow->mRealDevice;
-		device.mDevice.freeDescriptorSets(device.mDescriptorPool, 1, &DescriptorSet);
-	}
-}
-
-DrawContext::~DrawContext()
-{
-	if (mRealWindow != nullptr)
-	{
-		auto& device = mRealWindow->mRealDevice;
-		device.mDevice.destroyPipeline(Pipeline, nullptr);
-		device.mDevice.destroyPipelineLayout(PipelineLayout, nullptr);
-		device.mDevice.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);
-	}
-}
 
 RenderManager::RenderManager()
 {

@@ -21,36 +21,34 @@ misrepresented as being the original software.
 #ifndef CVERTEXBUFFER9_H
 #define CVERTEXBUFFER9_H
 
+#include <memory>
 #include "d3d9.h" // Base class: IDirect3DVertexBuffer9
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
+#include "Perf_CommandStreamManager.h"
 
 class CVertexBuffer9 : public IDirect3DVertexBuffer9
 {
-private:
+public:
+	CVertexBuffer9(CDevice9* device,UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, HANDLE* pSharedHandle);
+	~CVertexBuffer9();
+
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+
 	CDevice9* mDevice;
 	UINT mLength;
 	DWORD mUsage;
 	DWORD mFVF;
 	D3DPOOL mPool;
 	HANDLE* mSharedHandle;
-private:
-	
-public:
-	CVertexBuffer9(CDevice9* device,UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, HANDLE* pSharedHandle);
-	~CVertexBuffer9();
 
 	ULONG mReferenceCount = 1;
 	VkResult mResult;
-	void* mData = nullptr;
 	int32_t mSize;
 	int32_t mCapacity;
 	bool mIsDirty;
 	uint32_t mLockCount;
-
-	VkMemoryRequirements mMemoryRequirements;
-	VkBuffer mBuffer;
-	VkDeviceMemory mMemory;
 
 public:
 	//IUnknown

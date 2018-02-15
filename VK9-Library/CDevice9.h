@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <boost/container/small_vector.hpp>
-#include <boost/container/flat_map.hpp>
+//#include <boost/container/flat_map.hpp>
 
 #include "CVertexDeclaration9.h"
 #include "CSurface9.h"
@@ -40,8 +40,8 @@ misrepresented as being the original software.
 #include "CSwapChain9.h"
 #include "CRenderTargetSurface9.h"
 
-#include "BufferManager.h"
-#include "GarbageManager.h"
+//#include "BufferManager.h"
+//#include "GarbageManager.h"
 
 #include "Perf_CommandStreamManager.h"
 

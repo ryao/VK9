@@ -90,6 +90,24 @@ inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryPropertie
 	return 0;
 }
 
+inline bool GetMemoryTypeFromProperties(vk::PhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits, vk::MemoryPropertyFlags requirements_mask, uint32_t *typeIndex)
+{
+	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)
+	{
+		if ((typeBits & 1) == 1)
+		{
+			if ((memoryProperties.memoryTypes[i].propertyFlags & requirements_mask) == requirements_mask)
+			{
+				*typeIndex = i;
+				return true;
+			}
+		}
+		typeBits >>= 1;
+	}
+
+	return false;
+}
+
 inline bool GetMemoryTypeFromProperties(vk::PhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits, vk::MemoryPropertyFlagBits requirements_mask, uint32_t *typeIndex)
 {
 	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)

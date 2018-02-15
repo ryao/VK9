@@ -18,10 +18,6 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
-/*
-"Whoever pursues righteousness and kindness will find life, righteousness, and honor." (Proverbs 21:21, ESV)
-*/
-
 
 
 

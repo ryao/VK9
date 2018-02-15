@@ -20,86 +20,11 @@ misrepresented as being the original software.
 
 #include "Perf_StateManager.h"
 #include <vulkan/vulkan.hpp>
-#include <chrono>
 
 #ifndef RENDERMANAGER_H
 #define RENDERMANAGER_H
 
 #define UBO_SIZE 64
-
-struct SamplerRequest
-{
-	//Vulkan State
-	vk::Sampler Sampler;
-
-	//D3D9 State
-	DWORD SamplerIndex = 0;
-	D3DTEXTUREFILTERTYPE MagFilter = D3DTEXF_NONE;
-	D3DTEXTUREFILTERTYPE MinFilter = D3DTEXF_NONE;
-	D3DTEXTUREADDRESS AddressModeU = D3DTADDRESS_FORCE_DWORD;
-	D3DTEXTUREADDRESS AddressModeV = D3DTADDRESS_FORCE_DWORD;
-	D3DTEXTUREADDRESS AddressModeW = D3DTADDRESS_FORCE_DWORD;
-	DWORD MaxAnisotropy = 0;
-	D3DTEXTUREFILTERTYPE MipmapMode = D3DTEXF_NONE;
-	float MipLodBias = 0.0f;
-	float MaxLod = 1.0f;
-
-	//Resource Handling.
-	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	SamplerRequest(RealWindow* realWindow) : mRealWindow(realWindow) {}
-	~SamplerRequest();
-};
-
-struct ResourceContext
-{
-	vk::DescriptorImageInfo DescriptorImageInfo[16] = {};
-
-	//Vulkan State
-	vk::DescriptorSetLayout DescriptorSetLayout;
-	vk::PipelineLayout PipelineLayout;
-	vk::DescriptorSet DescriptorSet;
-	BOOL WasShader = false; // descriptor set logic is different for shaders so mixing them makes Vulkan angry because the number of attachment is different and stuff.
-
-	//Resource Handling.
-	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	ResourceContext(RealWindow* realWindow) : mRealWindow(realWindow) {}
-	~ResourceContext();
-};
-
-struct DrawContext
-{
-	//Vulkan State
-	vk::DescriptorSetLayout DescriptorSetLayout;
-	vk::Pipeline Pipeline;
-	vk::PipelineLayout PipelineLayout;
-
-	//Misc
-	//boost::container::flat_map<UINT, UINT> Bindings;
-	UINT Bindings[64] = {};
-
-	//D3D9 State - Pipe
-	D3DPRIMITIVETYPE PrimitiveType = D3DPT_FORCE_DWORD;
-	DWORD FVF = 0;
-	CVertexDeclaration9* VertexDeclaration = nullptr;
-	CVertexShader9* VertexShader = nullptr;
-	CPixelShader9* PixelShader = nullptr;
-	int32_t StreamCount = 0;
-
-	//D3d9 State - Lights
-	ShaderConstantSlots mVertexShaderConstantSlots = {};
-	ShaderConstantSlots mPixelShaderConstantSlots = {};
-
-	//Constant Registers
-	SpecializationConstants mSpecializationConstants = {};
-
-	//Resource Handling.
-	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	DrawContext(RealWindow* realWindow) : mRealWindow(realWindow) {}
-	~DrawContext();
-};
 
 struct RenderManager
 {

@@ -43,8 +43,8 @@ C9::C9()
 
 	BOOST_LOG_TRIVIAL(info) << "C9::C9";
 
-	WorkItem workItem;
-	workItem.WorkItemType = WorkItemType::Instance_Create;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::Instance_Create;
 	mId = mCommandStreamManager->RequestWork(workItem);
 
 	//WINAPI to get monitor info
@@ -53,9 +53,9 @@ C9::C9()
 
 C9::~C9()
 {
-	WorkItem workItem;
-	workItem.WorkItemType = WorkItemType::Instance_Destroy;
-	workItem.Id = mId;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::Instance_Destroy;
+	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
 
 	BOOST_LOG_TRIVIAL(info) << "C9::~C9";	
@@ -269,12 +269,12 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
 {		
-	WorkItem workItem;
-	workItem.WorkItemType = WorkItemType::Instance_GetAdapterIdentifier;
-	workItem.Id = mId;
-	workItem.Argument1 = Adapter;
-	workItem.Argument2 = Flags;
-	workItem.Argument3 = pIdentifier;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::Instance_GetAdapterIdentifier;
+	workItem->Id = mId;
+	workItem->Argument1 = Adapter;
+	workItem->Argument2 = Flags;
+	workItem->Argument3 = pIdentifier;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;	
@@ -305,12 +305,12 @@ HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 
 HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
 {
-	WorkItem workItem;
-	workItem.WorkItemType = WorkItemType::Instance_GetDeviceCaps;
-	workItem.Id = mId;
-	workItem.Argument1 = Adapter;
-	workItem.Argument2 = DeviceType;
-	workItem.Argument3 = pCaps;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::Instance_GetDeviceCaps;
+	workItem->Id = mId;
+	workItem->Argument1 = Adapter;
+	workItem->Argument2 = DeviceType;
+	workItem->Argument3 = pCaps;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;	

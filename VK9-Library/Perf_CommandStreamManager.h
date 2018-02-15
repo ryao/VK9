@@ -93,6 +93,10 @@ enum WorkItemType
 	,Device_SetViewport
 	,Device_UpdateTexture
 	,Device_Destroy
+	,VertexBuffer_Create
+	,VertexBuffer_Lock
+	,VertexBuffer_Unlock
+	,VertexBuffer_Destroy
 };
 
 struct WorkItem
@@ -117,15 +121,17 @@ struct CommandStreamManager
 	boost::program_options::options_description mOptionDescriptions;
 	std::thread mWorkerThread;
 	RenderManager mRenderManager;
-	boost::lockfree::queue<WorkItem> mWorkItems;
+	boost::lockfree::queue<WorkItem*> mWorkItems;
+	boost::lockfree::queue<WorkItem*> mUnusedWorkItems;
 	std::atomic_bool IsRunning = 1;
 	std::atomic_bool IsBusy = 0;
 
 	CommandStreamManager();
 	~CommandStreamManager();
 
-	size_t RequestWork(const WorkItem& workItem);
-	size_t RequestWorkAndWait(const WorkItem& workItem);
+	size_t RequestWork(WorkItem* workItem);
+	size_t RequestWorkAndWait(WorkItem* workItem);
+	WorkItem* GetWorkItem();
 };
 
 #endif // COMMANDSTREAMMANAGER_H
