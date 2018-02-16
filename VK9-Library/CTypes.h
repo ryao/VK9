@@ -384,6 +384,8 @@ struct SpecializationConstants
 	int blendOperationAlpha = D3DBLENDOP_ADD;
 };
 
+struct RealIndexBuffer;
+
 struct DeviceState
 {
 	//IDirect3DDevice9::LightEnable
@@ -394,7 +396,8 @@ struct DeviceState
 	BOOL mHasFVF = 0;
 
 	//IDirect3DDevice9::SetIndices
-	CIndexBuffer9* mIndexBuffer = nullptr;
+	//CIndexBuffer9* mIndexBuffer = nullptr;
+	RealIndexBuffer* mIndexBuffer = nullptr;
 	BOOL mHasIndexBuffer = 0;
 
 	//IDirect3DDevice9::SetLight

@@ -44,7 +44,6 @@ public:
 	HANDLE* mSharedHandle;
 
 	ULONG mReferenceCount = 1;
-	VkResult mResult;
 	int32_t mSize;
 	int32_t mCapacity;
 	bool mIsDirty;

@@ -1272,10 +1272,25 @@ struct RealVertexBuffer
 	vk::Buffer mBuffer;
 	vk::DeviceMemory mMemory;
 	void* mData = nullptr;
+	int32_t mSize;
 
 	RealWindow* mRealWindow = nullptr; //null if not owner.
 	RealVertexBuffer(RealWindow* realWindow) : mRealWindow(realWindow) {}
 	~RealVertexBuffer();
+};
+
+struct RealIndexBuffer
+{
+	vk::MemoryRequirements mMemoryRequirements;
+	vk::Buffer mBuffer;
+	vk::DeviceMemory mMemory;
+	vk::IndexType mIndexType;
+	void* mData = nullptr;
+	int32_t mSize;
+
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	RealIndexBuffer(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	~RealIndexBuffer();
 };
 
 struct SamplerRequest
@@ -1363,6 +1378,9 @@ struct StateManager
 	boost::container::small_vector< std::shared_ptr<RealVertexBuffer>, 1> mVertexBuffers;
 	std::atomic_size_t mVertexBufferKey = 0;
 
+	boost::container::small_vector< std::shared_ptr<RealIndexBuffer>, 1> mIndexBuffers;
+	std::atomic_size_t mIndexBufferKey = 0;
+
 	StateManager();
 	~StateManager();
 
@@ -1374,6 +1392,9 @@ struct StateManager
 
 	void DestroyVertexBuffer(size_t id);
 	void CreateVertexBuffer(size_t id, boost::any argument1);
+
+	void DestroyIndexBuffer(size_t id);
+	void CreateIndexBuffer(size_t id, boost::any argument1);
 };
 
 #endif // STATEMANAGER_H

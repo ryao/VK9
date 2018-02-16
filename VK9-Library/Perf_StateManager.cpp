@@ -316,6 +316,16 @@ RealVertexBuffer::~RealVertexBuffer()
 	}
 }
 
+RealIndexBuffer::~RealIndexBuffer()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroyBuffer(mBuffer, nullptr);
+		device.mDevice.freeMemory(mMemory, nullptr);
+	}
+}
+
 SamplerRequest::~SamplerRequest()
 {
 	if (mRealWindow != nullptr)
@@ -1341,7 +1351,7 @@ void StateManager::CreateVertexBuffer(size_t id, boost::any argument1)
 	vk::Result result;
 	auto window = mWindows[id];
 	CVertexBuffer9* vertexBuffer9 = boost::any_cast<CVertexBuffer9*>(argument1);
-	auto ptr = std::make_shared<RealVertexBuffer>();
+	auto ptr = std::make_shared<RealVertexBuffer>(window.get());
 
 	vk::BufferCreateInfo bufferCreateInfo;
 	bufferCreateInfo.size = vertexBuffer9->mLength;
@@ -1374,5 +1384,132 @@ void StateManager::CreateVertexBuffer(size_t id, boost::any argument1)
 
 	window->mRealDevice.mDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
 
+	uint32_t attributeStride = 0;
+
+	if (vertexBuffer9->mFVF)
+	{
+		if ((vertexBuffer9->mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+		{
+			attributeStride += (sizeof(float) * 3);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+		{
+			attributeStride += sizeof(uint32_t);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		if ((vertexBuffer9->mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
+		{
+			attributeStride += (sizeof(float) * 2);
+		}
+
+		//mSize = mLength / (sizeof(float)*3 + sizeof(DWORD));
+		ptr->mSize = vertexBuffer9->mLength / attributeStride;
+	}
+	else
+	{
+		ptr->mSize = vertexBuffer9->mLength / sizeof(float); //For now assume one float. There should be at least 4 bytes.
+	}
+
+	vertexBuffer9->mSize = ptr->mSize;
+
 	mVertexBuffers.push_back(ptr);
+}
+
+void StateManager::DestroyIndexBuffer(size_t id)
+{
+	mIndexBuffers[id].reset();
+}
+
+void StateManager::CreateIndexBuffer(size_t id, boost::any argument1)
+{
+	vk::Result result;
+	auto window = mWindows[id];
+	CIndexBuffer9* indexBuffer9 = boost::any_cast<CIndexBuffer9*>(argument1);
+	auto ptr = std::make_shared<RealIndexBuffer>(window.get());
+
+	vk::BufferCreateInfo bufferCreateInfo;
+	bufferCreateInfo.size = indexBuffer9->mLength;
+	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
+	//bufferCreateInfo.flags = 0;
+
+	vk::MemoryAllocateInfo memoryAllocateInfo;
+	memoryAllocateInfo.allocationSize = 0;
+	memoryAllocateInfo.memoryTypeIndex = 0;
+
+	result = window->mRealDevice.mDevice.createBuffer(&bufferCreateInfo, nullptr, &ptr->mBuffer);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateIndexBuffer vkCreateBuffer failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ptr->mMemoryRequirements = window->mRealDevice.mDevice.getBufferMemoryRequirements(ptr->mBuffer);
+
+	memoryAllocateInfo.allocationSize = ptr->mMemoryRequirements.size;
+
+	GetMemoryTypeFromProperties(window->mRealDevice.mPhysicalDeviceMemoryProperties, ptr->mMemoryRequirements.memoryTypeBits, (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent), &memoryAllocateInfo.memoryTypeIndex);
+
+	result = window->mRealDevice.mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateIndexBuffer vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	window->mRealDevice.mDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
+
+	switch (indexBuffer9->mFormat)
+	{
+	case D3DFMT_INDEX16:
+		ptr->mIndexType = vk::IndexType::eUint16;
+		indexBuffer9->mSize = indexBuffer9->mLength / sizeof(uint16_t); //WORD
+		break;
+	case D3DFMT_INDEX32:
+		ptr->mIndexType = vk::IndexType::eUint32;
+		indexBuffer9->mSize = indexBuffer9->mLength / sizeof(uint32_t);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 invalid D3DFORMAT of " << indexBuffer9->mFormat;
+		break;
+	}
+
+	ptr->mSize = indexBuffer9->mSize;
+
+	mIndexBuffers.push_back(ptr);
 }

@@ -31,85 +31,24 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS),
-	mData(nullptr),
-	mSize(0),
 	mCapacity(0),
 	mIsDirty(true),
-	mLockCount(0),
-	mBuffer(VK_NULL_HANDLE),
-	mMemory(VK_NULL_HANDLE),
-	mIndexType(VK_INDEX_TYPE_UINT32)
+	mLockCount(0)
 {
-	VkBufferCreateInfo bufferCreateInfo = {};
-	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.pNext = NULL;
-	bufferCreateInfo.size = mLength;
-	bufferCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-	bufferCreateInfo.flags = 0;
-
-	VkMemoryAllocateInfo memoryAllocateInfo = {};
-	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memoryAllocateInfo.pNext = NULL;
-	memoryAllocateInfo.allocationSize = 0;
-	memoryAllocateInfo.memoryTypeIndex = 0;
-
-	mMemoryRequirements = {};
-
-	mResult = vkCreateBuffer(mDevice->mDevice, &bufferCreateInfo, NULL, &mBuffer);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 vkCreateBuffer failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	vkGetBufferMemoryRequirements(mDevice->mDevice, mBuffer, &mMemoryRequirements);
-
-	memoryAllocateInfo.allocationSize = mMemoryRequirements.size;
-
-	GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, mMemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &memoryAllocateInfo.memoryTypeIndex);
-
-	mResult = vkAllocateMemory(mDevice->mDevice, &memoryAllocateInfo, NULL, &mMemory);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 vkAllocateMemory failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	mResult = vkBindBufferMemory(mDevice->mDevice, mBuffer, mMemory, 0);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 vkBindBufferMemory failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	switch (Format)
-	{
-	case D3DFMT_INDEX16:
-		mIndexType = VK_INDEX_TYPE_UINT16;
-		mSize = mLength / sizeof(uint16_t); //WORD
-		break;
-	case D3DFMT_INDEX32:
-		mIndexType = VK_INDEX_TYPE_UINT32;
-		mSize = mLength / sizeof(uint32_t);
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::CIndexBuffer9 invalid D3DFORMAT of " << Format;
-		break;
-	}
+	mCommandStreamManager = device->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->Id = device->mId;
+	workItem->WorkItemType = WorkItemType::IndexBuffer_Create;
+	workItem->Argument1 = this;
+	mId = mCommandStreamManager->RequestWork(workItem);
 }
 
 CIndexBuffer9::~CIndexBuffer9()
 {
-	if (mBuffer != VK_NULL_HANDLE)
-	{
-		vkDestroyBuffer(mDevice->mDevice, mBuffer, NULL);
-	}
-
-	if (mMemory != VK_NULL_HANDLE)
-	{
-		vkFreeMemory(mDevice->mDevice, mMemory, NULL);
-	}
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::IndexBuffer_Destroy;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWork(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CIndexBuffer9::AddRef(void)
@@ -243,8 +182,6 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::GetDesc(D3DINDEXBUFFER_DESC* pDesc)
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock, VOID** ppbData, DWORD Flags)
 {
-	VkResult result = VK_SUCCESS;
-
 	if (mPool == D3DPOOL_MANAGED)
 	{
 		if (!(Flags & D3DLOCK_READONLY))
@@ -253,34 +190,26 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock
 		}
 	}
 
-	if (mData == nullptr)
-	{
-		result = vkMapMemory(mDevice->mDevice, mMemory, 0, mMemoryRequirements.size, 0, &mData);
-	}
-
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CIndexBuffer9::Lock vkMapMemory failed with return code of " << GetResultString(result);
-		*ppbData = nullptr;
-
-		return D3DERR_INVALIDCALL;
-	}
-
-	*ppbData = (char *)mData + OffsetToLock;
 	InterlockedIncrement(&mLockCount);
+
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::IndexBuffer_Lock;
+	workItem->Id = mId;
+	workItem->Argument1 = OffsetToLock;
+	workItem->Argument2 = SizeToLock;
+	workItem->Argument3 = ppbData;
+	workItem->Argument4 = Flags;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::Unlock()
 {
-	VkResult result = VK_SUCCESS;
-
-	if (mData != nullptr)
-	{
-		vkUnmapMemory(mDevice->mDevice, mMemory);
-		mData = nullptr;
-	}
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::IndexBuffer_Unlock;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWork(workItem);
 
 	InterlockedDecrement(&mLockCount);
 

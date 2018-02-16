@@ -35,11 +35,13 @@ misrepresented as being the original software.
 #include <boost/format.hpp>
 
 #include "Utilities.h"
+#include "CTypes.h"
 
 #include "CCubeTexture9.h"
 #include "CBaseTexture9.h"
 #include "CTexture9.h"
 #include "CIndexBuffer9.h"
+#include "CVertexBuffer9.h"
 #include "CVertexDeclaration9.h"
 #include "CPixelShader9.h"
 #include "CVertexShader9.h"

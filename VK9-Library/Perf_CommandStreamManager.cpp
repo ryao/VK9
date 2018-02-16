@@ -33,6 +33,8 @@ misrepresented as being the original software.
 #include "CStateBlock9.h"
 #include "CPixelShader9.h"
 #include "CVertexShader9.h"
+#include "CIndexBuffer9.h"
+#include "CVertexBuffer9.h"
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
@@ -74,6 +76,17 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.mStateManager.DestroyVertexBuffer(workItem->Id);
 			}
 			break;
+			case IndexBuffer_Create:
+			{
+				commandStreamManager->mRenderManager.mStateManager.CreateIndexBuffer(workItem->Id, workItem->Argument1);
+			}
+			break;
+			case IndexBuffer_Destroy:
+			{
+				commandStreamManager->mRenderManager.mStateManager.DestroyIndexBuffer(workItem->Id);
+			}
+			break;
+
 			case Device_Clear:
 			{
 				DWORD Count = boost::any_cast<DWORD>(workItem->Argument1);
@@ -1401,6 +1414,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 				IDirect3DIndexBuffer9* pIndexData = boost::any_cast<IDirect3DIndexBuffer9*>(workItem->Argument1);
+				auto realIndex = commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[((CIndexBuffer9*)pIndexData)->mId];
 
 				DeviceState* state = nullptr;
 
@@ -1413,7 +1427,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realWindow.mDeviceState;
 				}
 
-				state->mIndexBuffer = (CIndexBuffer9*)pIndexData;
+				//state->mIndexBuffer = (CIndexBuffer9*)pIndexData;
+				state->mIndexBuffer = realIndex.get();
 				state->mHasIndexBuffer = true;
 			}
 			break;
@@ -3029,6 +3044,43 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					realVertexBuffer.mRealWindow->mRealDevice.mDevice.unmapMemory(realVertexBuffer.mMemory);
 					realVertexBuffer.mData = nullptr;
+				}
+			}
+			break;
+			case IndexBuffer_Lock:
+			{
+				auto& realIndexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[workItem->Id]);
+				UINT OffsetToLock = boost::any_cast<UINT>(workItem->Argument1);
+				UINT SizeToLock = boost::any_cast<UINT>(workItem->Argument2);
+				VOID** ppbData = boost::any_cast<VOID**>(workItem->Argument3);
+				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument4);
+
+				if (realIndexBuffer.mData == nullptr)
+				{
+					realIndexBuffer.mData = realIndexBuffer.mRealWindow->mRealDevice.mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags());
+					if (realIndexBuffer.mData == nullptr)
+					{
+						*ppbData = nullptr;
+					}
+					else
+					{
+						*ppbData = (char *)realIndexBuffer.mData + OffsetToLock;
+					}
+				}
+				else
+				{
+					*ppbData = (char *)realIndexBuffer.mData + OffsetToLock;
+				}
+			}
+			break;
+			case IndexBuffer_Unlock:
+			{
+				auto& realIndexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[workItem->Id]);
+
+				if (realIndexBuffer.mData != nullptr)
+				{
+					realIndexBuffer.mRealWindow->mRealDevice.mDevice.unmapMemory(realIndexBuffer.mMemory);
+					realIndexBuffer.mData = nullptr;
 				}
 			}
 			break;

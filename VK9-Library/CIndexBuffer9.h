@@ -21,35 +21,33 @@ misrepresented as being the original software.
 #ifndef CINDEXBUFFER9_H
 #define CINDEXBUFFER9_H
 
+#include <memory>
 #include "d3d9.h" // Base class: IDirect3DIndexBuffer9
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
+#include "Perf_CommandStreamManager.h"
 
 class CIndexBuffer9 : public IDirect3DIndexBuffer9,CResource9
 {
-private:
-	CDevice9* mDevice = nullptr;
-	UINT mLength;
-	DWORD mUsage;
-	D3DFORMAT mFormat; 
-	D3DPOOL mPool;
-	HANDLE* mSharedHandle;
 public:
 	CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CIndexBuffer9();
 
-	ULONG mReferenceCount = 1;
-	VkResult mResult;
-	void* mData = nullptr;
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+
+	CDevice9* mDevice = nullptr;
+	UINT mLength;
+	DWORD mUsage;
+	D3DFORMAT mFormat;
+	D3DPOOL mPool;
+	HANDLE* mSharedHandle;
+
 	int32_t mSize;
+	ULONG mReferenceCount = 1;
 	int32_t mCapacity;
 	bool mIsDirty;
 	uint32_t mLockCount;
-
-	VkMemoryRequirements mMemoryRequirements = {};
-	VkBuffer mBuffer;
-	VkDeviceMemory mMemory;
-	VkIndexType mIndexType;
 
 public:
 	//IUnknown

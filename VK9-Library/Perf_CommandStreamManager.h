@@ -97,6 +97,10 @@ enum WorkItemType
 	,VertexBuffer_Lock
 	,VertexBuffer_Unlock
 	,VertexBuffer_Destroy
+	,IndexBuffer_Create
+	,IndexBuffer_Lock
+	,IndexBuffer_Unlock
+	,IndexBuffer_Destroy
 };
 
 struct WorkItem

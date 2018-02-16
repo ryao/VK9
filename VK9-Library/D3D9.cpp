@@ -70,9 +70,9 @@ void WINAPI D3DPERF_SetRegion()
 
 }
 
-void WINAPI D3DPERF_QueryRepeatFrame()
+BOOL WINAPI D3DPERF_QueryRepeatFrame()
 {
-
+	return false;
 }
 
 void WINAPI D3DPERF_SetOptions(DWORD options)
@@ -80,9 +80,9 @@ void WINAPI D3DPERF_SetOptions(DWORD options)
 
 }
 
-void WINAPI D3DPERF_GetStatus()
+DWORD WINAPI D3DPERF_GetStatus()
 {
-
+	return 0;
 }
 
 /* 

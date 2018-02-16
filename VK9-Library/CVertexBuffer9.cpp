@@ -31,8 +31,6 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mFVF(FVF),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS),
-	mData(nullptr),
 	mSize(0),
 	mCapacity(0),
 	mIsDirty(true),
@@ -44,68 +42,6 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Create;
 	workItem->Argument1 = this;
 	mId = mCommandStreamManager->RequestWork(workItem);
-
-	uint32_t attributeStride = 0;
-
-	if (mFVF)
-	{
-		if ((mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
-		{
-			attributeStride += (sizeof(float) * 3);
-		}
-
-		if ((mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
-		{
-			attributeStride += sizeof(uint32_t);
-		}
-
-		if ((mFVF & D3DFVF_TEX1) == D3DFVF_TEX1)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		if ((mFVF & D3DFVF_TEX2) == D3DFVF_TEX2)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		if ((mFVF & D3DFVF_TEX3) == D3DFVF_TEX3)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		if ((mFVF & D3DFVF_TEX4) == D3DFVF_TEX4)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		if ((mFVF & D3DFVF_TEX5) == D3DFVF_TEX5)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		if ((mFVF & D3DFVF_TEX6) == D3DFVF_TEX6)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		if ((mFVF & D3DFVF_TEX7) == D3DFVF_TEX7)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		if ((mFVF & D3DFVF_TEX8) == D3DFVF_TEX8)
-		{
-			attributeStride += (sizeof(float) * 2);
-		}
-
-		//mSize = mLength / (sizeof(float)*3 + sizeof(DWORD));
-		mSize = mLength / attributeStride;
-	}
-	else
-	{
-		mSize = mLength / sizeof(float); //For now assume one float. There should be at least 4 bytes.
-	}
 }
 
 CVertexBuffer9::~CVertexBuffer9()
@@ -264,7 +200,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 	workItem->Argument2 = SizeToLock;
 	workItem->Argument3 = ppbData;
 	workItem->Argument4 = Flags;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;	
 }
