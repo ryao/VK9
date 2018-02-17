@@ -124,8 +124,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_BeginStateBlock:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				CDevice9* device = boost::any_cast<CDevice9*>(workItem->Argument1);
 
-				realWindow.mCurrentStateRecording = new CStateBlock9(this);
+				realWindow.mCurrentStateRecording = new CStateBlock9(device);
 			}
 			break;
 			case Device_DrawIndexedPrimitive:
@@ -3081,6 +3082,39 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					realIndexBuffer.mRealWindow->mRealDevice.mDevice.unmapMemory(realIndexBuffer.mMemory);
 					realIndexBuffer.mData = nullptr;
+				}
+			}
+			break;
+			case StateBlock_Create:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				CStateBlock9* stateBlock = boost::any_cast<CStateBlock9*>(workItem->Argument1);
+
+				MergeState(realWindow.mDeviceState, stateBlock->mDeviceState, stateBlock->mType, false);
+			}
+			break;
+			case StateBlock_Capture:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				CStateBlock9* stateBlock = boost::any_cast<CStateBlock9*>(workItem->Argument1);
+
+				/*
+				Capture only captures the current state of state that has already been recorded (eg update not insert)
+				https://msdn.microsoft.com/en-us/library/windows/desktop/bb205890(v=vs.85).aspx
+				*/
+				MergeState(realWindow.mDeviceState, stateBlock->mDeviceState, stateBlock->mType, true);
+			}
+			break;
+			case StateBlock_Apply:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				CStateBlock9* stateBlock = boost::any_cast<CStateBlock9*>(workItem->Argument1);
+
+				MergeState(stateBlock->mDeviceState, realWindow.mDeviceState, stateBlock->mType);
+
+				if (stateBlock->mType == D3DSBT_ALL)
+				{
+					realWindow.mDeviceState.mHasTransformsChanged = true;
 				}
 			}
 			break;

@@ -23,29 +23,27 @@ misrepresented as being the original software.
 
 #include "d3d9.h"
 #include <vulkan/vulkan.h>
-
+#include "Perf_CommandStreamManager.h"
 #include "CTypes.h"
 
 class CDevice9;
-
-void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTATEBLOCKTYPE type = D3DSBT_ALL, BOOL onlyIfExists = false);
 
 class CStateBlock9 : public IDirect3DStateBlock9
 
 {
 private:
-	CDevice9* mDevice = nullptr;
-	D3DSTATEBLOCKTYPE mType = D3DSBT_ALL;
-
+	CDevice9* mDevice = nullptr;	
 public:
 	CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type);
 	CStateBlock9(CDevice9* device);
 	~CStateBlock9();
 
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 	ULONG mReferenceCount = 1;
-	VkResult mResult = VK_SUCCESS;
 
 	//Device State
+	D3DSTATEBLOCKTYPE mType = D3DSBT_ALL;
 	DeviceState mDeviceState = {};
 
 public:

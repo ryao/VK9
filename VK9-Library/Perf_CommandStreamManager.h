@@ -101,6 +101,9 @@ enum WorkItemType
 	,IndexBuffer_Lock
 	,IndexBuffer_Unlock
 	,IndexBuffer_Destroy
+	,StateBlock_Create
+	,StateBlock_Capture
+	,StateBlock_Apply
 };
 
 struct WorkItem

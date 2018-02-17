@@ -189,6 +189,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::Device_BeginStateBlock;
 	workItem->Id = mId;
+	workItem->Argument1 = this;
 	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;

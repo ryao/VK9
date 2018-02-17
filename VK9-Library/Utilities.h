@@ -44,6 +44,7 @@ misrepresented as being the original software.
 
 #include <Eigen/Dense>
 
+#include <memory>
 #include <cstring>
 #include <fstream>
 
@@ -52,6 +53,7 @@ misrepresented as being the original software.
 #define D3DCOLOR_G(dw) (((float)(((dw) >> 8) & 0xFF)) / 255.0f)
 #define D3DCOLOR_B(dw) (((float)(((dw) >> 0) & 0xFF)) / 255.0f)
 
+void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTATEBLOCKTYPE type = D3DSBT_ALL, BOOL onlyIfExists = false);
 
 HMODULE GetModule(HMODULE module = 0);
 
