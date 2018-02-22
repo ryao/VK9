@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "CVertexShader9.h"
 #include "CIndexBuffer9.h"
 #include "CVertexBuffer9.h"
+#include "CTexture9.h"
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
@@ -86,7 +87,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.mStateManager.DestroyIndexBuffer(workItem->Id);
 			}
 			break;
-
+			case Texture_Create:
+			{
+				commandStreamManager->mRenderManager.mStateManager.CreateTexture(workItem->Id, workItem->Argument1);
+			}
+			break;
+			case Texture_Destroy:
+			{
+				commandStreamManager->mRenderManager.mStateManager.DestroyTexture(workItem->Id);
+			}
+			break;
 			case Device_Clear:
 			{
 				DWORD Count = boost::any_cast<DWORD>(workItem->Argument1);
@@ -2045,7 +2055,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state->hasBlendOperationAlpha = true;
 					break;
 				default:
-					BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetRenderState unknown state! " << State;
+					BOOST_LOG_TRIVIAL(warning) << "ProcessQueue unknown state! " << State;
 					break;
 				}
 			}
@@ -3118,6 +3128,131 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 			}
 			break;
+			case Texture_GenerateMipSubLevels:
+			{
+				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
+				auto& realWindow = (*texture.mRealWindow);
+				CTexture9* texture9 = boost::any_cast<CTexture9*>(workItem->Argument1);
+				auto& device = realWindow.mRealDevice.mDevice;
+
+				vk::Result result;
+				vk::PipelineStageFlags sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
+				vk::PipelineStageFlags destinationStages = vk::PipelineStageFlagBits::eTopOfPipe;
+				vk::CommandBuffer commandBuffer;
+				vk::Filter realFilter = ConvertFilter(texture9->mMipFilter);
+
+				vk::CommandBufferAllocateInfo commandBufferInfo;
+				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
+				commandBufferInfo.commandBufferCount = 1;
+
+				result = device.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
+					return;
+				}
+
+				vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
+				commandBufferInheritanceInfo.renderPass = nullptr;
+				commandBufferInheritanceInfo.subpass = 0;
+				commandBufferInheritanceInfo.framebuffer = nullptr;
+				commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+				//commandBufferInheritanceInfo.queryFlags = 0;
+				//commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+				vk::CommandBufferBeginInfo commandBufferBeginInfo;
+				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+				result = commandBuffer.begin(&commandBufferBeginInfo);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+					return;
+				}
+
+				vk::ImageMemoryBarrier imageMemoryBarrier;
+				//imageMemoryBarrier.srcAccessMask = 0;
+				//imageMemoryBarrier.dstAccessMask = 0;
+
+				vk::ImageSubresourceRange mipSubRange;
+				mipSubRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+				mipSubRange.levelCount = 1;
+				mipSubRange.layerCount = 1;
+
+				/*
+				I'm debating whether or not to have the population of the image here. If I don't I'll end up creating another command for that. On the other hand this method should purely populate the other levels as per the spec.
+				*/
+
+				// Transition zero mip level to transfer source
+				//mipSubRange.baseMipLevel = 0;
+
+				//imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				//imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				//imageMemoryBarrier.image = mImage;
+				//imageMemoryBarrier.subresourceRange = mipSubRange;
+				//vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+				for (UINT i = 1; i < texture9->mLevels; i++) //Changed to match mLevels datatype
+				{
+					vk::ImageBlit imageBlit;
+
+					// Source
+					imageBlit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+					imageBlit.srcSubresource.layerCount = 1;
+					imageBlit.srcSubresource.mipLevel = 0;
+					imageBlit.srcOffsets[1].x = int32_t(texture9->mWidth);
+					imageBlit.srcOffsets[1].y = int32_t(texture9->mHeight);
+					imageBlit.srcOffsets[1].z = 1;
+
+					// Destination
+					imageBlit.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+					imageBlit.dstSubresource.layerCount = 1;
+					imageBlit.dstSubresource.mipLevel = i;
+					imageBlit.dstOffsets[1].x = int32_t(texture9->mWidth >> i);
+					imageBlit.dstOffsets[1].y = int32_t(texture9->mHeight >> i);
+					imageBlit.dstOffsets[1].z = 1;
+
+					mipSubRange.baseMipLevel = i;
+
+					// Transition current mip level to transfer dest
+					imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+					imageMemoryBarrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
+					imageMemoryBarrier.image = texture.mImage;
+					imageMemoryBarrier.subresourceRange = mipSubRange;
+					commandBuffer.pipelineBarrier(sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+					// Blit from zero level
+					commandBuffer.blitImage(texture.mImage, vk::ImageLayout::eTransferSrcOptimal, texture.mImage, vk::ImageLayout::eTransferDstOptimal, 1, &imageBlit, vk::Filter::eLinear);
+				}
+
+				commandBuffer.end();
+
+				vk::CommandBuffer commandBuffers[] = { commandBuffer };
+				vk::Fence nullFence;
+				vk::SubmitInfo submitInfo;
+				submitInfo.waitSemaphoreCount = 0;
+				submitInfo.pWaitSemaphores = nullptr;
+				submitInfo.pWaitDstStageMask = nullptr;
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers = commandBuffers;
+				submitInfo.signalSemaphoreCount = 0;
+				submitInfo.pSignalSemaphores = nullptr;
+
+				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
+					return;
+				}
+
+				realWindow.mQueue.waitIdle();
+
+				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+				commandBuffer = VK_NULL_HANDLE;
+			}
+			break;
 			default:
 			{
 				BOOST_LOG_TRIVIAL(error) << "ProcessQueue unknown work item " << workItem->WorkItemType;
@@ -3187,6 +3322,12 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 		break;
 	case WorkItemType::VertexBuffer_Create:
 		key = mRenderManager.mStateManager.mVertexBufferKey++;
+		break;
+	case WorkItemType::IndexBuffer_Create:
+		key = mRenderManager.mStateManager.mIndexBufferKey++;
+		break;
+	case WorkItemType::Texture_Create:
+		key = mRenderManager.mStateManager.mTextureKey++;
 		break;
 	default:
 		break;

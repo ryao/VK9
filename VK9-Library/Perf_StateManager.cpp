@@ -25,6 +25,7 @@ misrepresented as being the original software.
 #include "C9.h"
 #include "CDevice9.h"
 #include "CStateBlock9.h"
+#include "CTexture9.h"
 #include "Utilities.h"
 
 #include <boost/log/core.hpp>
@@ -304,6 +305,18 @@ RealInstance::~RealInstance()
 	mInstance.destroyDebugReportCallbackEXT(mCallback);
 #endif
 	mInstance.destroy();
+}
+
+RealTexture::~RealTexture()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroyImageView(mImageView, nullptr);
+		device.mDevice.destroySampler(mSampler, nullptr);
+		device.mDevice.destroyImage(mImage, nullptr);
+		device.mDevice.freeMemory(mDeviceMemory, nullptr);
+	}
 }
 
 RealVertexBuffer::~RealVertexBuffer()
@@ -1512,4 +1525,79 @@ void StateManager::CreateIndexBuffer(size_t id, boost::any argument1)
 	ptr->mSize = indexBuffer9->mSize;
 
 	mIndexBuffers.push_back(ptr);
+}
+
+void StateManager::DestroyTexture(size_t id)
+{
+	mTextures[id].reset();
+}
+
+void StateManager::CreateTexture(size_t id, boost::any argument1)
+{
+	vk::Result result;
+	auto window = mWindows[id];
+	CTexture9* texture9 = boost::any_cast<CTexture9*>(argument1);
+	auto ptr = std::make_shared<RealTexture>(window.get());
+
+	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e2D;
+	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
+	imageCreateInfo.extent = { texture9->mWidth, texture9->mHeight, 1 };
+	imageCreateInfo.mipLevels = texture9->mLevels;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+	//imageCreateInfo.flags = 0;
+	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
+
+	result = window->mRealDevice.mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	window->mRealDevice.mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
+	
+	//mMemoryAllocateInfo.allocationSize = 0;
+	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
+	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(window->mRealDevice.mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture Could not find memory type from properties.";
+		return;
+	}
+
+	result = window->mRealDevice.mDevice.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	window->mRealDevice.mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+	imageViewCreateInfo.image = ptr->mImage;
+	imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
+	imageViewCreateInfo.format = ptr->mRealFormat;
+	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	imageViewCreateInfo.subresourceRange.levelCount = texture9->mLevels;
+
+	result = window->mRealDevice.mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
 }

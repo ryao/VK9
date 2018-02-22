@@ -1266,6 +1266,23 @@ struct RealWindow
 	void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 };
 
+struct RealTexture
+{
+	void* mData = nullptr;
+	int32_t mSize;
+
+	vk::Format mRealFormat;
+	vk::MemoryAllocateInfo mMemoryAllocateInfo;
+	vk::Image mImage;
+	vk::DeviceMemory mDeviceMemory;
+	vk::Sampler mSampler;
+	vk::ImageView mImageView;
+
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	RealTexture(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	~RealTexture();
+};
+
 struct RealVertexBuffer
 {
 	vk::MemoryRequirements mMemoryRequirements;
@@ -1381,6 +1398,9 @@ struct StateManager
 	boost::container::small_vector< std::shared_ptr<RealIndexBuffer>, 1> mIndexBuffers;
 	std::atomic_size_t mIndexBufferKey = 0;
 
+	boost::container::small_vector< std::shared_ptr<RealTexture>, 1> mTextures;
+	std::atomic_size_t mTextureKey = 0;
+
 	StateManager();
 	~StateManager();
 
@@ -1395,6 +1415,9 @@ struct StateManager
 
 	void DestroyIndexBuffer(size_t id);
 	void CreateIndexBuffer(size_t id, boost::any argument1);
+
+	void DestroyTexture(size_t id);
+	void CreateTexture(size_t id, boost::any argument1);
 };
 
 #endif // STATEMANAGER_H

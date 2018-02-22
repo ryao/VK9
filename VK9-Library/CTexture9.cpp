@@ -38,84 +38,19 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 {
 	//mDevice->AddRef();
 
-	mRealFormat = ConvertFormat(mFormat);
-
 	if (!mLevels)
 	{
 		mLevels = std::log2( max(mWidth, mHeight) ) + 1;
 	}
 
+	mCommandStreamManager = device->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->Id = device->mId;
+	workItem->WorkItemType = WorkItemType::Texture_Create;
+	workItem->Argument1 = this;
+	mId = mCommandStreamManager->RequestWork(workItem);
+
 	//mLevels = 1; //workaround
-
-	VkImageCreateInfo imageCreateInfo = {};
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = NULL;
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { mWidth, mHeight, 1 };
-	imageCreateInfo.mipLevels = mLevels;
-	imageCreateInfo.arrayLayers = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	imageCreateInfo.flags = 0;
-	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //VK_IMAGE_LAYOUT_PREINITIALIZED;
-
-	mResult = vkCreateImage(mDevice->mDevice, &imageCreateInfo, NULL, &mImage);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImage failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	VkMemoryRequirements memoryRequirements = {};
-	vkGetImageMemoryRequirements(mDevice->mDevice, mImage, &memoryRequirements);
-
-	mMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	mMemoryAllocateInfo.pNext = NULL;
-	//mMemoryAllocateInfo.allocationSize = 0;
-	mMemoryAllocateInfo.memoryTypeIndex = 0;
-	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(mDevice->mDeviceMemoryProperties, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mMemoryAllocateInfo.memoryTypeIndex))
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 Could not find memory type from properties.";
-		return;
-	}
-
-	mResult = vkAllocateMemory(mDevice->mDevice, &mMemoryAllocateInfo, NULL, &mDeviceMemory);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkAllocateMemory failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	mResult = vkBindImageMemory(mDevice->mDevice, mImage, mDeviceMemory, 0);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkBindImageMemory failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	VkImageViewCreateInfo imageViewCreateInfo = {};
-	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	imageViewCreateInfo.image = mImage;
-	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewCreateInfo.format = mRealFormat;
-	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-	imageViewCreateInfo.subresourceRange.levelCount = 1;
-	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-	imageViewCreateInfo.subresourceRange.layerCount = 1;
-
-	imageViewCreateInfo.subresourceRange.levelCount = mLevels;
-
-	mResult = vkCreateImageView(mDevice->mDevice, &imageViewCreateInfo, NULL, &mImageView);
-	if (mResult != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::CTexture9 vkCreateImageView failed with return code of " << GetResultString(mResult);
-		return;
-	}
 
 	mSurfaces.reserve(mLevels);
 	UINT width = mWidth, height = mHeight;
@@ -136,33 +71,15 @@ CTexture9::~CTexture9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CTexture9::~CTexture9";
 
-	if (mImageView != VK_NULL_HANDLE)
-	{
-		vkDestroyImageView(mDevice->mDevice, mImageView, NULL);
-	}
-
-	if (mSampler != VK_NULL_HANDLE)
-	{
-		vkDestroySampler(mDevice->mDevice, mSampler, NULL);
-		mSampler = VK_NULL_HANDLE;
-	}
-
-	if (mImage != VK_NULL_HANDLE)
-	{
-		vkDestroyImage(mDevice->mDevice, mImage, NULL);
-	}
-
-	if (mDeviceMemory != VK_NULL_HANDLE)
-	{
-		vkFreeMemory(mDevice->mDevice, mDeviceMemory, NULL);
-	}
-
 	for (size_t i = 0; i < mSurfaces.size(); i++)
 	{
 		mSurfaces[i]->Release();
 	}
 
-	//mDevice->Release();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::Texture_Destroy;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWork(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)
@@ -283,144 +200,11 @@ HRESULT STDMETHODCALLTYPE CTexture9::SetPrivateData(REFGUID refguid, const void*
 
 VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 {
-	VkResult result = VK_SUCCESS;
-	VkPipelineStageFlags sourceStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	VkPipelineStageFlags destinationStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	VkCommandBuffer commandBuffer;
-	VkFilter realFilter = ConvertFilter(mMipFilter);
-
-	VkCommandBufferAllocateInfo commandBufferInfo = {};
-	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandBufferInfo.pNext = nullptr;
-	commandBufferInfo.commandPool = mDevice->mCommandPool;
-	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	commandBufferInfo.commandBufferCount = 1;
-
-	result = vkAllocateCommandBuffers(mDevice->mDevice, &commandBufferInfo, &commandBuffer);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkAllocateCommandBuffers failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	VkCommandBufferInheritanceInfo commandBufferInheritanceInfo = {};
-	commandBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-	commandBufferInheritanceInfo.pNext = nullptr;
-	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.subpass = 0;
-	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
-	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
-	commandBufferInheritanceInfo.queryFlags = 0;
-	commandBufferInheritanceInfo.pipelineStatistics = 0;
-
-	VkCommandBufferBeginInfo commandBufferBeginInfo;
-	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	commandBufferBeginInfo.pNext = nullptr;
-	commandBufferBeginInfo.flags = 0;
-	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
-
-	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkBeginCommandBuffer failed with return code of " << GetResultString(mResult);
-		return;
-	}
-
-	VkImageMemoryBarrier imageMemoryBarrier = {};
-	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageMemoryBarrier.pNext = nullptr;
-	imageMemoryBarrier.srcAccessMask = 0;
-	imageMemoryBarrier.dstAccessMask = 0;
-
-	VkImageSubresourceRange mipSubRange = {};
-	mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	mipSubRange.levelCount = 1;
-	mipSubRange.layerCount = 1;
-
-	/*
-	I'm debating whether or not to have the population of the image here. If I don't I'll end up creating another command for that. On the other hand this method should purely populate the other levels as per the spec.
-	*/
-
-	// Transition zero mip level to transfer source
-	//mipSubRange.baseMipLevel = 0;
-
-	//imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	//imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-	//imageMemoryBarrier.image = mImage;
-	//imageMemoryBarrier.subresourceRange = mipSubRange;
-	//vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-
-	for (UINT i = 1; i < mLevels; i++) //Changed to match mLevels datatype
-	{
-		VkImageBlit imageBlit{};
-
-		// Source
-		imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		imageBlit.srcSubresource.layerCount = 1;
-		imageBlit.srcSubresource.mipLevel = 0;
-		imageBlit.srcOffsets[1].x = int32_t(mWidth);
-		imageBlit.srcOffsets[1].y = int32_t(mHeight);
-		imageBlit.srcOffsets[1].z = 1;
-
-		// Destination
-		imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		imageBlit.dstSubresource.layerCount = 1;
-		imageBlit.dstSubresource.mipLevel = i;
-		imageBlit.dstOffsets[1].x = int32_t(mWidth >> i);
-		imageBlit.dstOffsets[1].y = int32_t(mHeight >> i);
-		imageBlit.dstOffsets[1].z = 1;
-
-		mipSubRange.baseMipLevel = i;
-
-		// Transition current mip level to transfer dest
-		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imageMemoryBarrier.image = mImage;
-		imageMemoryBarrier.subresourceRange = mipSubRange;
-		vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-
-		// Blit from zero level
-		vkCmdBlitImage(commandBuffer, mImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
-	}
-
-	result = vkEndCommandBuffer(commandBuffer);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkEndCommandBuffer failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	VkCommandBuffer commandBuffers[] = { commandBuffer };
-	VkFence nullFence = VK_NULL_HANDLE;
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = NULL;
-	submitInfo.waitSemaphoreCount = 0;
-	submitInfo.pWaitSemaphores = NULL;
-	submitInfo.pWaitDstStageMask = NULL;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = commandBuffers;
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = NULL;
-
-	result = vkQueueSubmit(mDevice->mQueue, 1, &submitInfo, nullFence);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueSubmit failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	result = vkQueueWaitIdle(mDevice->mQueue);
-	if (result != VK_SUCCESS)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "CTexture9::GenerateMipSubLevels vkQueueWaitIdle failed with return code of " << GetResultString(result);
-		return;
-	}
-
-	vkFreeCommandBuffers(mDevice->mDevice, mDevice->mCommandPool, 1, commandBuffers);
-	commandBuffer = VK_NULL_HANDLE;
-
-	return;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::Texture_GenerateMipSubLevels;
+	workItem->Id = mId;
+	workItem->Argument1 = this;
+	mCommandStreamManager->RequestWork(workItem);
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()

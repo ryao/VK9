@@ -104,6 +104,9 @@ enum WorkItemType
 	,StateBlock_Create
 	,StateBlock_Capture
 	,StateBlock_Apply
+	,Texture_Create
+	,Texture_GenerateMipSubLevels
+	,Texture_Destroy
 };
 
 struct WorkItem

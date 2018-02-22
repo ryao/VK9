@@ -21,17 +21,22 @@ misrepresented as being the original software.
 #ifndef CTEXTURE9_H
 #define CTEXTURE9_H
 
+#include <memory>
 #include <boost/container/small_vector.hpp>
 #include "d3d9.h" // Base class: IDirect3DTexture9
 #include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
 #include "CSurface9.h"
+#include "Perf_CommandStreamManager.h"
 
 class CTexture9 : public IDirect3DTexture9
 {
 public:
 	CTexture9(CDevice9* device,UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CTexture9();
+
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 
 	CDevice9* mDevice = nullptr;
 	UINT mWidth = 0;
@@ -44,20 +49,9 @@ public:
 	HANDLE* mSharedHandle = nullptr;
 
 	ULONG mReferenceCount = 1;
-	VkResult mResult = VK_SUCCESS;
 	D3DTEXTUREFILTERTYPE mMipFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
-
-	VkFormat mRealFormat = VK_FORMAT_UNDEFINED;
-
-	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
-	
-	VkImage mImage = VK_NULL_HANDLE;
-	VkDeviceMemory mDeviceMemory = VK_NULL_HANDLE;
-
-	VkSampler mSampler = VK_NULL_HANDLE;
-	VkImageView mImageView = VK_NULL_HANDLE;
 
 	boost::container::small_vector<CSurface9*,5> mSurfaces;
 
