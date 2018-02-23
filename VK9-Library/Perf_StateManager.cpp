@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 #include "CStateBlock9.h"
 #include "CTexture9.h"
+#include "CCubeTexture9.h"
 #include "Utilities.h"
 
 #include <boost/log/core.hpp>
@@ -1598,6 +1599,81 @@ void StateManager::CreateTexture(size_t id, boost::any argument1)
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+}
+
+void StateManager::DestroyCubeTexture(size_t id)
+{
+	mTextures[id].reset();
+}
+
+void StateManager::CreateCubeTexture(size_t id, boost::any argument1)
+{
+	vk::Result result;
+	auto window = mWindows[id];
+	CCubeTexture9* texture9 = boost::any_cast<CCubeTexture9*>(argument1);
+	auto ptr = std::make_shared<RealTexture>(window.get());
+
+	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e2D;
+	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
+	imageCreateInfo.extent = { texture9->mEdgeLength, texture9->mEdgeLength, 1 };
+	imageCreateInfo.mipLevels = texture9->mLevels;
+	imageCreateInfo.arrayLayers = 6;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
+	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
+	imageCreateInfo.sharingMode = vk::SharingMode::eExclusive;
+
+	result = window->mRealDevice.mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	window->mRealDevice.mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
+
+	//mMemoryAllocateInfo.allocationSize = 0;
+	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
+	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(window->mRealDevice.mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture Could not find memory type from properties.";
+		return;
+	}
+
+	result = window->mRealDevice.mDevice.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	window->mRealDevice.mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+	imageViewCreateInfo.image = ptr->mImage;
+	imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
+	imageViewCreateInfo.format = ptr->mRealFormat;
+	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	//imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.levelCount = texture9->mLevels;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 6;
+
+	result = window->mRealDevice.mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 }

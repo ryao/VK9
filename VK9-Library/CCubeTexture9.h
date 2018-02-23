@@ -21,17 +21,22 @@ misrepresented as being the original software.
 #ifndef CCUBETEXTURE9_H
 #define CCUBETEXTURE9_H
 
+#include <memory>
 #include <boost/container/small_vector.hpp>
 #include "d3d9.h" // Base class: IDirect3DCubeTexture9
 #include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
 #include "CSurface9.h"
+#include "Perf_CommandStreamManager.h"
 
 class CCubeTexture9 : public IDirect3DCubeTexture9
 {		
 public:
-	CCubeTexture9(CDevice9* Device,UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
+	CCubeTexture9(CDevice9* device,UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CCubeTexture9();
+
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 
 	CDevice9* mDevice;
 	UINT mEdgeLength = 0;
@@ -46,16 +51,6 @@ public:
 	D3DTEXTUREFILTERTYPE mMipFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
-
-	VkFormat mRealFormat = VK_FORMAT_UNDEFINED;
-
-	VkMemoryAllocateInfo mMemoryAllocateInfo = {};
-
-	VkImage mImage = VK_NULL_HANDLE;
-	VkDeviceMemory mDeviceMemory = VK_NULL_HANDLE;
-
-	VkSampler mSampler = VK_NULL_HANDLE;
-	VkImageView mImageView = VK_NULL_HANDLE;
 
 	boost::container::small_vector<boost::container::small_vector<CSurface9*, 5>, 6> mSurfaces;
 

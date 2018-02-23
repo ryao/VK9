@@ -107,6 +107,9 @@ enum WorkItemType
 	,Texture_Create
 	,Texture_GenerateMipSubLevels
 	,Texture_Destroy
+	,CubeTexture_Create
+	,CubeTexture_GenerateMipSubLevels
+	,CubeTexture_Destroy
 };
 
 struct WorkItem

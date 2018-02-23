@@ -1418,6 +1418,9 @@ struct StateManager
 
 	void DestroyTexture(size_t id);
 	void CreateTexture(size_t id, boost::any argument1);
+
+	void DestroyCubeTexture(size_t id);
+	void CreateCubeTexture(size_t id, boost::any argument1);
 };
 
 #endif // STATEMANAGER_H
