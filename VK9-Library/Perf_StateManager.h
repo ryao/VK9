@@ -1283,6 +1283,24 @@ struct RealTexture
 	~RealTexture();
 };
 
+struct RealSurface
+{
+	BOOL mIsFlushed = false;
+	void* mData = nullptr;
+	vk::Image mStagingImage;
+	vk::DeviceMemory mStagingDeviceMemory;
+
+	vk::Format mRealFormat = vk::Format::eR8G8B8A8Unorm;
+	vk::MemoryAllocateInfo mMemoryAllocateInfo;
+	vk::ImageLayout mImageLayout = vk::ImageLayout::eGeneral;
+	vk::SubresourceLayout mLayouts[1] = {};
+	vk::ImageSubresource mSubresource;
+
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	RealSurface(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	~RealSurface();
+};
+
 struct RealVertexBuffer
 {
 	vk::MemoryRequirements mMemoryRequirements;
@@ -1401,6 +1419,9 @@ struct StateManager
 	boost::container::small_vector< std::shared_ptr<RealTexture>, 1> mTextures;
 	std::atomic_size_t mTextureKey = 0;
 
+	boost::container::small_vector< std::shared_ptr<RealSurface>, 1> mSurfaces;
+	std::atomic_size_t mSurfaceKey = 0;
+
 	StateManager();
 	~StateManager();
 
@@ -1421,6 +1442,9 @@ struct StateManager
 
 	void DestroyCubeTexture(size_t id);
 	void CreateCubeTexture(size_t id, boost::any argument1);
+
+	void DestroySurface(size_t id);
+	void CreateSurface(size_t id, boost::any argument1);
 };
 
 #endif // STATEMANAGER_H

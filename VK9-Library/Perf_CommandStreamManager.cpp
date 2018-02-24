@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "CVertexBuffer9.h"
 #include "CTexture9.h"
 #include "CCubeTexture9.h"
+#include "CSurface9.h"
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
@@ -106,6 +107,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case CubeTexture_Destroy:
 			{
 				commandStreamManager->mRenderManager.mStateManager.DestroyCubeTexture(workItem->Id);
+			}
+			break;
+			case Surface_Create:
+			{
+				commandStreamManager->mRenderManager.mStateManager.CreateSurface(workItem->Id, workItem->Argument1);
+			}
+			break;
+			case Surface_Destroy:
+			{
+				commandStreamManager->mRenderManager.mStateManager.DestroySurface(workItem->Id);
 			}
 			break;
 			case Device_Clear:
@@ -3232,7 +3243,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					imageMemoryBarrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
 					imageMemoryBarrier.image = texture.mImage;
 					imageMemoryBarrier.subresourceRange = mipSubRange;
-					commandBuffer.pipelineBarrier(sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+					commandBuffer.pipelineBarrier(sourceStages, destinationStages, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
 					// Blit from zero level
 					commandBuffer.blitImage(texture.mImage, vk::ImageLayout::eTransferSrcOptimal, texture.mImage, vk::ImageLayout::eTransferDstOptimal, 1, &imageBlit, vk::Filter::eLinear);
@@ -3357,7 +3368,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					imageMemoryBarrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
 					imageMemoryBarrier.image = texture.mImage;
 					imageMemoryBarrier.subresourceRange = mipSubRange;
-					commandBuffer.pipelineBarrier(sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+					commandBuffer.pipelineBarrier(sourceStages, destinationStages, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
 					// Blit from zero level
 					commandBuffer.blitImage(texture.mImage, vk::ImageLayout::eTransferSrcOptimal, texture.mImage, vk::ImageLayout::eTransferDstOptimal, 1, &imageBlit, vk::Filter::eLinear);
@@ -3387,6 +3398,151 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
 				commandBuffer = VK_NULL_HANDLE;
+			}
+			break;
+			case Surface_LockRect:
+			{
+				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
+				auto& realWindow = (*surface.mRealWindow);
+				//CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
+				auto& device = realWindow.mRealDevice.mDevice;
+
+				D3DLOCKED_RECT* pLockedRect = boost::any_cast<D3DLOCKED_RECT*>(workItem->Argument1);
+				RECT* pRect = boost::any_cast<RECT*>(workItem->Argument2);
+				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument3);
+
+				vk::Result result;
+				char* bytes = nullptr;
+
+				if (surface.mData == nullptr)
+				{
+					if (surface.mIsFlushed)
+					{
+						realWindow.SetImageLayout(surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+					}
+
+					result = device.mapMemory(surface.mStagingDeviceMemory, 0, surface.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &surface.mData);
+					if (result != vk::Result::eSuccess)
+					{
+						BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkMapMemory failed with return code of " << GetResultString((VkResult)result);
+						return;
+					}
+
+					bytes = (char*)surface.mData;
+
+					if (surface.mLayouts[0].offset)
+					{
+						bytes += surface.mLayouts[0].offset;
+					}
+
+					if (pRect != nullptr)
+					{
+						bytes += (surface.mLayouts[0].rowPitch * pRect->top);
+						bytes += (4 * pRect->left);
+					}
+				}
+
+				pLockedRect->pBits = (void*)bytes;
+				pLockedRect->Pitch = surface.mLayouts[0].rowPitch;
+
+				surface.mIsFlushed = false;
+			}
+			break;
+			case Surface_UnlockRect:
+			{
+				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
+				auto& realWindow = (*surface.mRealWindow);
+				CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
+				auto& device = realWindow.mRealDevice.mDevice;
+
+				if (surface.mData != nullptr)
+				{
+					if (surface9->mFormat == D3DFMT_X8R8G8B8)
+					{
+						SetAlpha((char*)surface.mData, surface9->mHeight, surface9->mWidth, surface.mLayouts[0].rowPitch);
+					}
+
+					device.unmapMemory(surface.mStagingDeviceMemory);
+					surface.mData = nullptr;
+				}
+
+			} //break left out because unlock will always flush.
+			case Surface_Flush:
+			{
+				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
+				auto& realWindow = (*surface.mRealWindow);
+				CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
+				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[surface9->mTextureId]);
+				auto& device = realWindow.mRealDevice.mDevice;
+
+				if (surface.mIsFlushed)
+				{
+					return;
+				}
+				surface.mIsFlushed = true;
+
+				vk::CommandBuffer commandBuffer;
+				vk::Result result;
+
+				vk::CommandBufferAllocateInfo commandBufferInfo;
+				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
+				commandBufferInfo.commandBufferCount = 1;
+
+				result = device.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
+					return;
+				}
+
+				vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
+				commandBufferInheritanceInfo.renderPass = nullptr;
+				commandBufferInheritanceInfo.subpass = 0;
+				commandBufferInheritanceInfo.framebuffer = nullptr;
+				commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+				//commandBufferInheritanceInfo.queryFlags = 0;
+				//commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+				vk::CommandBufferBeginInfo commandBufferBeginInfo;
+				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+				result = commandBuffer.begin(&commandBufferBeginInfo);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+					return;
+				}
+
+				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
+				ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
+
+				commandBuffer.end();
+
+				vk::CommandBuffer commandBuffers[] = { commandBuffer };
+				vk::Fence nullFence;
+				vk::SubmitInfo submitInfo;
+				submitInfo.waitSemaphoreCount = 0;
+				submitInfo.pWaitSemaphores = nullptr;
+				submitInfo.pWaitDstStageMask = nullptr;
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers = commandBuffers;
+				submitInfo.signalSemaphoreCount = 0;
+				submitInfo.pSignalSemaphores = nullptr;
+
+				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
+					return;
+				}
+
+				realWindow.mQueue.waitIdle();
+
+				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
 			}
 			break;
 			default:

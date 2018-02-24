@@ -320,6 +320,16 @@ RealTexture::~RealTexture()
 	}
 }
 
+RealSurface::~RealSurface()
+{
+	if (mRealWindow != nullptr)
+	{
+		auto& device = mRealWindow->mRealDevice;
+		device.mDevice.destroyImage(mStagingImage, nullptr);
+		device.mDevice.freeMemory(mStagingDeviceMemory, nullptr);
+	}
+}
+
 RealVertexBuffer::~RealVertexBuffer()
 {
 	if (mRealWindow != nullptr)
@@ -1676,4 +1686,70 @@ void StateManager::CreateCubeTexture(size_t id, boost::any argument1)
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+}
+
+void StateManager::DestroySurface(size_t id)
+{
+	mSurfaces[id].reset();
+}
+
+void StateManager::CreateSurface(size_t id, boost::any argument1)
+{
+	vk::Result result;
+	auto window = mWindows[id];
+	CSurface9* surface9 = boost::any_cast<CSurface9*>(argument1);
+	auto ptr = std::make_shared<RealSurface>(window.get());
+
+	ptr->mRealFormat = ConvertFormat(surface9->mFormat);
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e2D;
+	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
+	imageCreateInfo.extent = { surface9->mWidth, surface9->mHeight, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+
+	if (surface9->mCubeTexture != nullptr)
+	{
+		imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
+	}
+
+	result = window->mRealDevice.mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mStagingImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	window->mRealDevice.mDevice.getImageMemoryRequirements(ptr->mStagingImage, &memoryRequirements);
+
+	//mMemoryAllocateInfo.allocationSize = 0;
+	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
+	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(window->mRealDevice.mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface Could not find memory type from properties.";
+		return;
+	}
+
+	result = window->mRealDevice.mDevice.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mStagingDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	window->mRealDevice.mDevice.bindImageMemory(ptr->mStagingImage, ptr->mStagingDeviceMemory, 0);
+
+	ptr->mSubresource.mipLevel = 0;
+	ptr->mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	ptr->mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
+
+	window->mRealDevice.mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
 }

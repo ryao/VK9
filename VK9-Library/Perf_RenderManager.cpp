@@ -483,16 +483,18 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 
 			if (pair1.second->GetType() == D3DRTYPE_CUBETEXTURE)
 			{
-				CCubeTexture9* texture = (CCubeTexture9*)pair1.second;
+				CCubeTexture9* texture9 = (CCubeTexture9*)pair1.second;
+				auto& texture = mStateManager.mTextures[texture9->mId];
 
-				request->MaxLod = texture->mLevels;
+				request->MaxLod = texture9->mLevels;
 				targetSampler.imageView = texture->mImageView;
 			}
 			else
 			{
-				CTexture9* texture = (CTexture9*)pair1.second;
+				CTexture9* texture9 = (CTexture9*)pair1.second;
+				auto& texture = mStateManager.mTextures[texture9->mId];
 
-				request->MaxLod = texture->mLevels;
+				request->MaxLod = texture9->mLevels;
 				targetSampler.imageView = texture->mImageView;
 			}
 
@@ -739,7 +741,8 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 
 	BOOST_FOREACH(auto& source, deviceState.mStreamSources)
 	{
-		currentSwapChainBuffer.bindVertexBuffers(source.first, 1, &source.second.StreamData->mBuffer, &source.second.OffsetInBytes);
+		auto& buffer = mStateManager.mVertexBuffers[source.second.StreamData->mId];
+		currentSwapChainBuffer.bindVertexBuffers(source.first, 1, &buffer->mBuffer, &source.second.OffsetInBytes);
 		realWindow.mVertexCount += source.second.StreamData->mSize;
 	}
 
