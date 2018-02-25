@@ -327,8 +327,8 @@ void RenderManager::DrawIndexedPrimitive(RealWindow& realWindow, D3DPRIMITIVETYP
 		this->StartScene(realWindow);
 	}
 
-	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(this);
-	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(this);
+	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(&realWindow);
+	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(&realWindow);
 
 	BeginDraw(realWindow,context, resourceContext, Type);
 
@@ -346,8 +346,8 @@ void RenderManager::DrawPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE Primi
 		this->StartScene(realWindow);
 	}
 
-	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(this);
-	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(this);
+	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(&realWindow);
+	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(&realWindow);
 
 	BeginDraw(realWindow,context, resourceContext, PrimitiveType);
 
@@ -873,8 +873,8 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 	**********************************************/
 	if (context->VertexShader != nullptr)
 	{
-		realWindow.mPipelineShaderStageCreateInfo[0].module = context->VertexShader->mShaderConverter.mConvertedShader.ShaderModule;
-		realWindow.mPipelineShaderStageCreateInfo[1].module = context->PixelShader->mShaderConverter.mConvertedShader.ShaderModule;
+		realWindow.mPipelineShaderStageCreateInfo[0].module = mStateManager.mShaderConverters[context->VertexShader->mId]->mConvertedShader.ShaderModule;
+		realWindow.mPipelineShaderStageCreateInfo[1].module = mStateManager.mShaderConverters[context->PixelShader->mId]->mConvertedShader.ShaderModule;
 	}
 	else
 	{
@@ -1103,8 +1103,8 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 
 	if (context->VertexShader != nullptr)
 	{
-		auto& convertedVertexShader = context->VertexShader->mShaderConverter.mConvertedShader;
-		auto& convertedPixelShader = context->PixelShader->mShaderConverter.mConvertedShader;
+		auto& convertedVertexShader = mStateManager.mShaderConverters[context->VertexShader->mId]->mConvertedShader;
+		auto& convertedPixelShader = mStateManager.mShaderConverters[context->PixelShader->mId]->mConvertedShader;
 
 		realWindow.mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 		realWindow.mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
@@ -1272,7 +1272,7 @@ void RenderManager::CreateSampler(RealWindow& realWindow, std::shared_ptr<Sample
 
 void RenderManager::UpdatePushConstants(RealWindow& realWindow, std::shared_ptr<DrawContext> context)
 {
-	vk::Result result;
+	//vk::Result result;
 	auto& deviceState = realWindow.mDeviceState;
 	//auto& device = realWindow.mRealDevice.mDevice;
 	auto& currentSwapChainBuffer = realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer];

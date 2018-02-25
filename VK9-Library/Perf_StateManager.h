@@ -25,10 +25,13 @@ misrepresented as being the original software.
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vk_sdk_platform.h>
 #include <Eigen/Dense>
 
 #include "Utilities.h"
 #include "CTypes.h"
+
+#include "ShaderConverter.h"
 
 #ifdef _DEBUG
 #include "renderdoc_app.h"
@@ -40,6 +43,39 @@ misrepresented as being the original software.
 #define CACHE_SECONDS 1
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
+
+static PFN_vkCmdPushDescriptorSetKHR pfn_vkCmdPushDescriptorSetKHR;
+VKAPI_ATTR void VKAPI_CALL vkCmdPushDescriptorSetKHR(
+	VkCommandBuffer                             commandBuffer,
+	VkPipelineBindPoint                         pipelineBindPoint,
+	VkPipelineLayout                            layout,
+	uint32_t                                    set,
+	uint32_t                                    descriptorWriteCount,
+	const VkWriteDescriptorSet*                 pDescriptorWrites);
+
+static PFN_vkCreateDebugReportCallbackEXT pfn_vkCreateDebugReportCallbackEXT;
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
+	VkInstance                                  instance,
+	const VkDebugReportCallbackCreateInfoEXT*   pCreateInfo,
+	const VkAllocationCallbacks*                pAllocator,
+	VkDebugReportCallbackEXT*                   pCallback);
+
+static PFN_vkDestroyDebugReportCallbackEXT pfn_vkDestroyDebugReportCallbackEXT;
+VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
+	VkInstance                                  instance,
+	VkDebugReportCallbackEXT                    callback,
+	const VkAllocationCallbacks*                pAllocator);
+
+static PFN_vkDebugReportMessageEXT pfn_vkDebugReportMessageEXT;
+VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
+	VkInstance                                  instance,
+	VkDebugReportFlagsEXT                       flags,
+	VkDebugReportObjectTypeEXT                  objectType,
+	uint64_t                                    object,
+	size_t                                      location,
+	int32_t                                     messageCode,
+	const char*                                 pLayerPrefix,
+	const char*                                 pMessage);
 
 class CStateBlock9;
 
@@ -1422,6 +1458,9 @@ struct StateManager
 	boost::container::small_vector< std::shared_ptr<RealSurface>, 1> mSurfaces;
 	std::atomic_size_t mSurfaceKey = 0;
 
+	boost::container::small_vector< std::shared_ptr<ShaderConverter>, 1> mShaderConverters;
+	std::atomic_size_t mShaderConverterKey = 0;
+
 	StateManager();
 	~StateManager();
 
@@ -1445,6 +1484,10 @@ struct StateManager
 
 	void DestroySurface(size_t id);
 	void CreateSurface(size_t id, boost::any argument1);
+
+	void DestroyShader(size_t id);
+	void CreateShader(size_t id, boost::any argument1, boost::any argument2, boost::any argument3);
+
 };
 
 #endif // STATEMANAGER_H

@@ -21,10 +21,12 @@ misrepresented as being the original software.
 #ifndef CPIXELSHADER9_H
 #define CPIXELSHADER9_H
 
+#include <memory>
 #include "d3d9.h" // Base class: IDirect3DPixelShader9
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
 #include "ShaderConverter.h"
+#include "Perf_CommandStreamManager.h"
 
 class CPixelShader9 : public IDirect3DPixelShader9
 {
@@ -32,13 +34,14 @@ public:
 	CPixelShader9(CDevice9* device,const DWORD* pFunction);
 	~CPixelShader9();
 
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+
 	CDevice9* mDevice = nullptr;
 	DWORD* mFunction = nullptr;
-
-	ShaderConverter mShaderConverter;
+	size_t mSize = 0;
 
 	ULONG mReferenceCount = 1;
-	VkResult mResult = VK_SUCCESS;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

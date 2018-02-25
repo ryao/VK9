@@ -119,6 +119,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.mStateManager.DestroySurface(workItem->Id);
 			}
 			break;
+			case Shader_Create:
+			{
+				commandStreamManager->mRenderManager.mStateManager.CreateShader(workItem->Id, workItem->Argument1, workItem->Argument2, workItem->Argument3);
+			}
+			break;
+			case Shader_Destroy:
+			{
+				commandStreamManager->mRenderManager.mStateManager.DestroyShader(workItem->Id);
+			}
+			break;
 			case Device_Clear:
 			{
 				DWORD Count = boost::any_cast<DWORD>(workItem->Argument1);
@@ -3053,7 +3063,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData == nullptr)
 				{
-					realVertexBuffer.mData = realVertexBuffer.mRealWindow->mRealDevice.mDevice.mapMemory(realVertexBuffer.mMemory, 0, realVertexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags());
+					realVertexBuffer.mData = realVertexBuffer.mRealWindow->mRealDevice.mDevice.mapMemory(realVertexBuffer.mMemory, 0, realVertexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
 					if (realVertexBuffer.mData == nullptr)
 					{
 						*ppbData = nullptr;
@@ -3090,7 +3100,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData == nullptr)
 				{
-					realIndexBuffer.mData = realIndexBuffer.mRealWindow->mRealDevice.mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags());
+					realIndexBuffer.mData = realIndexBuffer.mRealWindow->mRealDevice.mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
 					if (realIndexBuffer.mData == nullptr)
 					{
 						*ppbData = nullptr;
@@ -3620,6 +3630,12 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 		break;
 	case WorkItemType::Texture_Create:
 		key = mRenderManager.mStateManager.mTextureKey++;
+		break;
+	case WorkItemType::Surface_Create:
+		key = mRenderManager.mStateManager.mSurfaceKey++;
+		break;
+	case WorkItemType::Shader_Create:
+		key = mRenderManager.mStateManager.mShaderConverterKey++;
 		break;
 	default:
 		break;

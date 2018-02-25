@@ -25,16 +25,28 @@ misrepresented as being the original software.
 
 CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
 	: mDevice(device),
-	mFunction((DWORD*)pFunction),
-	mShaderConverter(device, device->mDeviceState.mVertexShaderConstantSlots)
+	mFunction((DWORD*)pFunction)
 {
 	BOOST_LOG_TRIVIAL(info) << "CVertexShader9::CVertexShader9";
-	mShaderConverter.Convert((uint32_t*)mFunction);
+
+	mCommandStreamManager = device->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->Id = device->mId;
+	workItem->WorkItemType = WorkItemType::Shader_Create;
+	workItem->Argument1 = pFunction;
+	workItem->Argument2 = true;
+	workItem->Argument3 = &mSize;
+	mId = mCommandStreamManager->RequestWork(workItem);
 }
 
 CVertexShader9::~CVertexShader9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CVertexShader9::~CVertexShader9";
+
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->WorkItemType = WorkItemType::Shader_Destroy;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWork(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CVertexShader9::AddRef(void)
@@ -162,14 +174,14 @@ HRESULT STDMETHODCALLTYPE CVertexShader9::SetPrivateData(REFGUID refguid, const 
 
 HRESULT STDMETHODCALLTYPE CVertexShader9::GetFunction(void* pData, UINT* pSizeOfData)
 {
-	(*pSizeOfData) = mShaderConverter.mConvertedShader.Size;
+	(*pSizeOfData) = mSize;
 
 	if (pData==nullptr)
 	{
 		return S_OK;
 	}
 
-	memcpy(pData, mFunction, mShaderConverter.mConvertedShader.Size);
+	memcpy(pData, mFunction, mSize);
 
 	return S_OK;
 }

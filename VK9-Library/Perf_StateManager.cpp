@@ -68,6 +68,72 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, 
 	return VK_FALSE;
 }
 
+VKAPI_ATTR void VKAPI_CALL vkCmdPushDescriptorSetKHR(
+	VkCommandBuffer                             commandBuffer,
+	VkPipelineBindPoint                         pipelineBindPoint,
+	VkPipelineLayout                            layout,
+	uint32_t                                    set,
+	uint32_t                                    descriptorWriteCount,
+	const VkWriteDescriptorSet*                 pDescriptorWrites)
+{
+	pfn_vkCmdPushDescriptorSetKHR(
+		commandBuffer,
+		pipelineBindPoint,
+		layout,
+		set,
+		descriptorWriteCount,
+		pDescriptorWrites
+	);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
+	VkInstance                                  instance,
+	const VkDebugReportCallbackCreateInfoEXT*   pCreateInfo,
+	const VkAllocationCallbacks*                pAllocator,
+	VkDebugReportCallbackEXT*                   pCallback)
+{
+	return pfn_vkCreateDebugReportCallbackEXT(
+		instance,
+		pCreateInfo,
+		pAllocator,
+		pCallback
+	);
+}
+
+VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
+	VkInstance                                  instance,
+	VkDebugReportCallbackEXT                    callback,
+	const VkAllocationCallbacks*                pAllocator)
+{
+	pfn_vkDestroyDebugReportCallbackEXT(
+		instance,
+		callback,
+		pAllocator
+	);
+}
+
+VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
+	VkInstance                                  instance,
+	VkDebugReportFlagsEXT                       flags,
+	VkDebugReportObjectTypeEXT                  objectType,
+	uint64_t                                    object,
+	size_t                                      location,
+	int32_t                                     messageCode,
+	const char*                                 pLayerPrefix,
+	const char*                                 pMessage)
+{
+	pfn_vkDebugReportMessageEXT(
+		instance,
+		flags,
+		objectType,
+		object,
+		location,
+		messageCode,
+		pLayerPrefix,
+		pMessage
+	);
+}
+
 RealWindow::RealWindow(RealInstance& realInstance,RealDevice& realDevice)
 	: mRealInstance(realInstance)
 	,mRealDevice(realDevice)
@@ -972,7 +1038,7 @@ void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any arg
 
 																				device.mDevice.getImageSubresourceLayout(ptr->mImage, &imageSubresource, &subresourceLayout);
 
-																				data = device.mDevice.mapMemory(ptr->mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags());
+																				data = device.mDevice.mapMemory(ptr->mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags()).value;
 																				if (data!= nullptr)
 																				{
 																					for (y = 0; y < textureHeight; y++) 
@@ -1234,11 +1300,16 @@ void StateManager::CreateInstance()
 	result = vk::createInstance(&createInfo, nullptr, &ptr->mInstance);
 	if (result == vk::Result::eSuccess)
 	{
+		pfn_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(ptr->mInstance.getProcAddr("vkCreateDebugReportCallbackEXT"));
+		pfn_vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(ptr->mInstance.getProcAddr("vkDebugReportMessageEXT"));
+		pfn_vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(ptr->mInstance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
+
 #ifdef _DEBUG
 		vk::DebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
 		callbackCreateInfo.flags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::ePerformanceWarning;
 		callbackCreateInfo.pfnCallback = &DebugReportCallback;
 		callbackCreateInfo.pUserData = this;
+
 		result = ptr->mInstance.createDebugReportCallbackEXT(&callbackCreateInfo, nullptr, &ptr->mCallback);
 		if (result == vk::Result::eSuccess)
 		{
@@ -1306,6 +1377,11 @@ void StateManager::CreateInstance()
 				result = physicalDevice.createDevice(&device_info, nullptr, &device.mDevice);
 				if (result == vk::Result::eSuccess)
 				{
+					if (!i)
+					{
+						pfn_vkCmdPushDescriptorSetKHR = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(device.mDevice.getProcAddr("vkCmdPushDescriptorSetKHR"));
+					}
+
 					vk::DescriptorPoolSize descriptorPoolSizes[11] = {};
 					descriptorPoolSizes[0].type = vk::DescriptorType::eSampler; //VK_DESCRIPTOR_TYPE_SAMPLER;
 					descriptorPoolSizes[0].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device.mPhysicalDeviceProperties.limits.maxDescriptorSetSamplers);
@@ -1752,4 +1828,31 @@ void StateManager::CreateSurface(size_t id, boost::any argument1)
 	ptr->mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 
 	window->mRealDevice.mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
+}
+
+void StateManager::DestroyShader(size_t id)
+{
+	mShaderConverters[id].reset();
+}
+
+void StateManager::CreateShader(size_t id, boost::any argument1, boost::any argument2, boost::any argument3)
+{
+	//vk::Result result;
+	auto window = mWindows[id];
+	DWORD* pFunction = boost::any_cast<DWORD*>(argument1);
+	bool isVertex = boost::any_cast<bool>(argument2);
+	size_t* size = boost::any_cast<size_t*>(argument3);
+
+	if (isVertex)
+	{
+		auto ptr = std::make_shared<ShaderConverter>(window->mRealDevice.mDevice, window->mDeviceState.mVertexShaderConstantSlots);
+		ptr->Convert((uint32_t*)pFunction);
+		(*size) = ptr->mConvertedShader.Size;
+	}
+	else
+	{
+		auto ptr = std::make_shared<ShaderConverter>(window->mRealDevice.mDevice, window->mDeviceState.mPixelShaderConstantSlots);
+		ptr->Convert((uint32_t*)pFunction);
+		(*size) = ptr->mConvertedShader.Size;
+	}
 }

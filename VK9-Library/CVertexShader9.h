@@ -21,11 +21,13 @@ misrepresented as being the original software.
 #ifndef CVERTEXSHADER9_H
 #define CVERTEXSHADER9_H
 
+#include <memory>
 #include "d3d9.h" // Base class: IDirect3DVertexShader9
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
 #include "ShaderConverter.h"
 #include "CTypes.h"
+#include "Perf_CommandStreamManager.h"
 
 class CVertexShader9 : public IDirect3DVertexShader9
 {
@@ -33,13 +35,14 @@ public:
 	CVertexShader9(CDevice9* device, const DWORD* pFunction);
 	~CVertexShader9();
 
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+
 	CDevice9* mDevice = nullptr;
 	DWORD* mFunction = nullptr;
-	
-	ShaderConverter mShaderConverter;
+	size_t mSize = 0;
 
 	ULONG mReferenceCount = 1;
-	VkResult mResult = VK_SUCCESS;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

@@ -115,6 +115,8 @@ enum WorkItemType
 	,Surface_UnlockRect
 	,Surface_Flush
 	,Surface_Destroy
+	,Shader_Create
+	,Shader_Destroy
 };
 
 struct WorkItem
