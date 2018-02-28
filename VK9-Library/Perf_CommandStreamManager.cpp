@@ -41,11 +41,14 @@ misrepresented as being the original software.
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
+	Sleep(100);
 	while (commandStreamManager->IsRunning)
 	{
 		WorkItem* workItem = nullptr;
-		if (commandStreamManager->mWorkItems.pop(workItem))
+		
+		if (commandStreamManager->mWorkItems.try_dequeue(workItem))
 		{
+			std::lock_guard<std::mutex> lock(workItem->Mutex);
 			commandStreamManager->IsBusy = 1;
 			switch (workItem->WorkItemType)
 			{
@@ -3562,7 +3565,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			}
 			commandStreamManager->IsBusy = 0;
-			while (!commandStreamManager->mUnusedWorkItems.push(workItem)) {}
+
+			while (!commandStreamManager->mUnusedWorkItems.try_enqueue(workItem)) {}
 		}
 	}
 }
@@ -3609,7 +3613,7 @@ CommandStreamManager::~CommandStreamManager()
 
 size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 {
-	while (!mWorkItems.push(workItem)) {}
+	while (!mWorkItems.try_enqueue(workItem)) {}
 
 	size_t key = 0;
 
@@ -3647,7 +3651,9 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 size_t CommandStreamManager::RequestWorkAndWait(WorkItem* workItem)
 {
 	size_t result = this->RequestWork(workItem);
-	while (!mWorkItems.empty() && IsBusy) {} //This is basically a spin lock.
+
+	while (mWorkItems.size_approx()>0 || IsBusy) {} //This is basically a spin lock.
+
 	return result;
 }
 
@@ -3655,10 +3661,10 @@ WorkItem* CommandStreamManager::GetWorkItem()
 {
 	WorkItem* returnValue = nullptr;
 
-	if (mUnusedWorkItems.pop(returnValue))
+	if (!mUnusedWorkItems.try_dequeue(returnValue))
 	{
-		return returnValue;
+		returnValue = new WorkItem();
 	}
 
-	return new WorkItem();
+	return returnValue;
 }

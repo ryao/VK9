@@ -44,6 +44,7 @@ C9::C9()
 	BOOST_LOG_TRIVIAL(info) << "C9::C9";
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	std::lock_guard<std::mutex> lock(workItem->Mutex);
 	workItem->WorkItemType = WorkItemType::Instance_Create;
 	mId = mCommandStreamManager->RequestWork(workItem);
 

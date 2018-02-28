@@ -22,11 +22,15 @@ misrepresented as being the original software.
 #include <boost/any.hpp>
 #include <atomic>
 #include <thread>
+#include <mutex>
+#include <queue>
 #include <boost/lockfree/queue.hpp>
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
 
 #include "Perf_RenderManager.h"
+
+#include "readerwriterqueue.h"
 
 #ifndef COMMANDSTREAMMANAGER_H
 #define COMMANDSTREAMMANAGER_H
@@ -129,6 +133,7 @@ struct WorkItem
 	boost::any Argument4;
 	boost::any Argument5;
 	boost::any Argument6;
+	std::mutex Mutex;
 };
 
 struct CommandStreamManager;
@@ -141,8 +146,14 @@ struct CommandStreamManager
 	boost::program_options::options_description mOptionDescriptions;
 	std::thread mWorkerThread;
 	RenderManager mRenderManager;
-	boost::lockfree::queue<WorkItem*> mWorkItems;
-	boost::lockfree::queue<WorkItem*> mUnusedWorkItems;
+	//boost::lockfree::queue<WorkItem*> mWorkItems;
+	//boost::lockfree::queue<WorkItem*> mUnusedWorkItems;
+
+	//std::mutex mWorkItemMutex;
+	//std::mutex mUnusedWorkItemMutex;
+	moodycamel::ReaderWriterQueue<WorkItem*> mWorkItems;
+	moodycamel::ReaderWriterQueue<WorkItem*> mUnusedWorkItems;
+
 	std::atomic_bool IsRunning = 1;
 	std::atomic_bool IsBusy = 0;
 

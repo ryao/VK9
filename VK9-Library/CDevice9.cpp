@@ -42,7 +42,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mFocusWindow(hFocusWindow),
 	mBehaviorFlags(BehaviorFlags)
 {
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Started.";
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9";
 
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 	mCommandStreamManager = mInstance->mCommandStreamManager;
@@ -61,13 +61,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		InvalidateRect(hFocusWindow, 0, true);
 	}
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = mInstanceId;
-	workItem->WorkItemType = WorkItemType::Device_Create;
-	workItem->Argument1 = this;
-	workItem->Argument2 = GetModuleHandle(nullptr);
-	mId = mCommandStreamManager->RequestWork(workItem);
-
 	//Add implicit swap chain.
 	CSwapChain9* ptr = new CSwapChain9(pPresentationParameters);
 	mSwapChains.push_back(ptr);
@@ -76,7 +69,13 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mPresentationParameters.BackBufferWidth, mPresentationParameters.BackBufferHeight, D3DFMT_UNKNOWN);
 	mRenderTargets.push_back(ptr2);
 
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::CDevice9 Finished.";
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	std::lock_guard<std::mutex> lock(workItem->Mutex);
+	workItem->Id = mInstanceId;
+	workItem->WorkItemType = WorkItemType::Device_Create;
+	workItem->Argument1 = this;
+	workItem->Argument2 = GetModuleHandle(nullptr);
+	mId = mCommandStreamManager->RequestWork(workItem);
 }
 
 CDevice9::~CDevice9()
@@ -131,13 +130,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	//std::lock_guard<std::mutex> lock(workItem->Mutex);
 	workItem->WorkItemType = WorkItemType::Device_Present;
 	workItem->Id = mId;
 	workItem->Argument1 = pSourceRect;
 	workItem->Argument2 = pDestRect;
 	workItem->Argument3 = hDestWindowOverride;
 	workItem->Argument4 = pDirtyRegion;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return D3D_OK;
 }

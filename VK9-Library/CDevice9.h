@@ -55,8 +55,8 @@ public:
 
 	//CSMT
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
-	size_t mInstanceId;
-	size_t mId;
+	size_t mInstanceId = 0;
+	size_t mId = 0;
 
 	//Creation Parameters
 	C9* mInstance = nullptr;

@@ -357,6 +357,10 @@ RealDevice::RealDevice()
 RealDevice::~RealDevice()
 {
 	delete[] mQueueFamilyProperties;
+	if (mDevice==nullptr)
+	{
+		return;
+	}
 	mDevice.destroyDescriptorPool(mDescriptorPool, nullptr);
 	mDevice.destroy();
 }
@@ -1357,7 +1361,8 @@ void StateManager::CreateInstance()
 				extensionNames.push_back("VK_KHR_push_descriptor");
 				extensionNames.push_back("VK_KHR_sampler_mirror_clamp_to_edge");
 #ifdef _DEBUG
-				extensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+				//extensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
+				layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif // _DEBUG
 
 				float queue_priorities[1] = { 0.0 };

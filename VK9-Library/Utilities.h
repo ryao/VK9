@@ -148,7 +148,7 @@ inline bool GetMemoryTypeFromProperties(VkPhysicalDeviceMemoryProperties& memory
 
 //D3DDECLTYPE
 
-inline vk::Format ConvertDeclType(D3DDECLTYPE input)
+inline vk::Format ConvertDeclType(D3DDECLTYPE input) noexcept
 {
 	vk::Format output = (vk::Format)VK_FORMAT_UNDEFINED;
 	//TODO: finish mapping.
@@ -207,7 +207,7 @@ inline vk::Format ConvertDeclType(D3DDECLTYPE input)
 	return output;
 }
 
-inline int32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType, int32_t primtiveCount)
+inline int32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType, int32_t primtiveCount) noexcept
 {
 	int32_t output;
 
@@ -239,7 +239,7 @@ inline int32_t ConvertPrimitiveCountToVertexCount(D3DPRIMITIVETYPE primtiveType,
 	return output;
 }
 
-inline void SetCulling(vk::PipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
+inline void SetCulling(vk::PipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input) noexcept
 {
 	switch (input)
 	{
@@ -264,7 +264,7 @@ inline void SetCulling(vk::PipelineRasterizationStateCreateInfo& pipelineRasteri
 	}
 }
 
-inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input)
+inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasterizationStateCreateInfo, D3DCULL input) noexcept
 {
 	switch (input)
 	{
@@ -289,7 +289,7 @@ inline void SetCulling(VkPipelineRasterizationStateCreateInfo& pipelineRasteriza
 	}
 }
 
-inline vk::SamplerAddressMode ConvertTextureAddress(D3DTEXTUREADDRESS input)
+inline vk::SamplerAddressMode ConvertTextureAddress(D3DTEXTUREADDRESS input) noexcept
 {
 	vk::SamplerAddressMode output;
 
@@ -318,7 +318,7 @@ inline vk::SamplerAddressMode ConvertTextureAddress(D3DTEXTUREADDRESS input)
 	return output;
 }
 
-inline vk::SamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input)
+inline vk::SamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input) noexcept
 {
 	vk::SamplerMipmapMode output;
 
@@ -350,7 +350,7 @@ inline vk::SamplerMipmapMode ConvertMipmapMode(D3DTEXTUREFILTERTYPE input)
 	return output;
 }
 
-inline vk::Filter ConvertFilter(D3DTEXTUREFILTERTYPE input)
+inline vk::Filter ConvertFilter(D3DTEXTUREFILTERTYPE input) noexcept
 {
 	vk::Filter output;
 
@@ -387,7 +387,7 @@ inline vk::Filter ConvertFilter(D3DTEXTUREFILTERTYPE input)
 	return output;
 }
 
-inline vk::PolygonMode ConvertFillMode(D3DFILLMODE input)
+inline vk::PolygonMode ConvertFillMode(D3DFILLMODE input) noexcept
 {
 	vk::PolygonMode output;
 
@@ -410,7 +410,7 @@ inline vk::PolygonMode ConvertFillMode(D3DFILLMODE input)
 	return output;
 }
 
-inline vk::PrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input)
+inline vk::PrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE input) noexcept
 {
 	vk::PrimitiveTopology output;
 
@@ -486,7 +486,7 @@ inline bool GetMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& 
 	return false;
 }
 
-inline vk::Format ConvertFormat(D3DFORMAT format)
+inline vk::Format ConvertFormat(D3DFORMAT format) noexcept
 {
 	/*
 	https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/xhtml/vkspec.html#VkFormat
@@ -638,7 +638,7 @@ inline vk::Format ConvertFormat(D3DFORMAT format)
 	}
 }
 
-inline D3DFORMAT ConvertFormat(vk::Format format)
+inline D3DFORMAT ConvertFormat(vk::Format format) noexcept
 {
 	/*
 	https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/xhtml/vkspec.html#VkFormat
@@ -699,7 +699,7 @@ inline D3DFORMAT ConvertFormat(vk::Format format)
 	}
 }
 
-inline D3DFORMAT ConvertFormat(VkFormat format)
+inline D3DFORMAT ConvertFormat(VkFormat format) noexcept
 {
 	/*
 	https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/xhtml/vkspec.html#VkFormat
@@ -760,7 +760,7 @@ inline D3DFORMAT ConvertFormat(VkFormat format)
 	}
 }
 
-inline vk::BlendFactor ConvertColorFactor(D3DBLEND input)
+inline vk::BlendFactor ConvertColorFactor(D3DBLEND input) noexcept
 {
 	vk::BlendFactor output;
 
@@ -828,7 +828,7 @@ inline vk::BlendFactor ConvertColorFactor(D3DBLEND input)
 	return output;
 }
 
-inline vk::BlendOp ConvertColorOperation(D3DBLENDOP  input)
+inline vk::BlendOp ConvertColorOperation(D3DBLENDOP  input) noexcept
 {
 	vk::BlendOp output;
 
@@ -860,7 +860,7 @@ inline vk::BlendOp ConvertColorOperation(D3DBLENDOP  input)
 	return output;
 }
 
-inline vk::StencilOp ConvertStencilOperation(D3DSTENCILOP input)
+inline vk::StencilOp ConvertStencilOperation(D3DSTENCILOP input) noexcept
 {
 	vk::StencilOp output;
 
@@ -898,7 +898,7 @@ inline vk::StencilOp ConvertStencilOperation(D3DSTENCILOP input)
 	return output;
 }
 
-inline vk::CompareOp ConvertCompareOperation(D3DCMPFUNC input)
+inline vk::CompareOp ConvertCompareOperation(D3DCMPFUNC input) noexcept
 {
 	vk::CompareOp output;
 
@@ -936,27 +936,27 @@ inline vk::CompareOp ConvertCompareOperation(D3DCMPFUNC input)
 	return output;
 }
 
-inline vk::BlendFactor ConvertColorFactor(DWORD input)
+inline vk::BlendFactor ConvertColorFactor(DWORD input) noexcept
 {
 	return ConvertColorFactor((D3DBLEND)input);
 }
 
-inline vk::BlendOp ConvertColorOperation(DWORD  input)
+inline vk::BlendOp ConvertColorOperation(DWORD  input) noexcept
 {
 	return ConvertColorOperation((D3DBLENDOP)input);
 }
 
-inline vk::StencilOp ConvertStencilOperation(DWORD input)
+inline vk::StencilOp ConvertStencilOperation(DWORD input) noexcept
 {
 	return ConvertStencilOperation((D3DSTENCILOP)input);
 }
 
-inline vk::CompareOp ConvertCompareOperation(DWORD input)
+inline vk::CompareOp ConvertCompareOperation(DWORD input) noexcept
 {
 	return ConvertCompareOperation((D3DCMPFUNC)input);
 }
 
-inline uint32_t ConvertFormat(DWORD fvf)
+inline uint32_t ConvertFormat(DWORD fvf) noexcept
 {
 	//TODO: This should be able to be simplified by bitwise operators.
 
@@ -1072,7 +1072,7 @@ Optimizing compilers are magic. The memcpy should go away. If not performance wi
 */
 
 template <class TargetType, class SourceType>
-inline void assign(TargetType& target, const SourceType& source)
+inline void assign(TargetType& target, const SourceType& source) noexcept
 {
 	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise assign both types must be the same size.");
 	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
@@ -1080,7 +1080,7 @@ inline void assign(TargetType& target, const SourceType& source)
 }
 
 template <class TargetType, class SourceType>
-inline TargetType bit_cast(const SourceType& source)
+inline TargetType bit_cast(const SourceType& source) noexcept
 {
 	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise cast both types must be the same size.");
 	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
@@ -1089,14 +1089,14 @@ inline TargetType bit_cast(const SourceType& source)
 	return returnValue;
 }
 
-inline DWORD bit_cast(const float& source)
+inline DWORD bit_cast(const float& source) noexcept
 {
 	DWORD returnValue;
 	memcpy(&returnValue, &source, sizeof(DWORD));
 	return returnValue;
 }
 
-inline float bit_cast(const DWORD& source)
+inline float bit_cast(const DWORD& source) noexcept
 {
 	float returnValue;
 	memcpy(&returnValue, &source, sizeof(float));
@@ -1136,7 +1136,7 @@ const std::string mResultStrings[] =
 	"VK_ERROR_NOT_PERMITTED_EXT"
 };
 
-inline const std::string& GetResultString(VkResult result)
+inline const std::string& GetResultString(VkResult result) noexcept
 {
 	switch (result)
 	{

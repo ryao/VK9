@@ -586,10 +586,10 @@ struct color_A8R8G8B8
 struct Transformations
 {
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-		Eigen::Matrix4f mTotalTransformation;
-	Eigen::Matrix4f mModel;
-	Eigen::Matrix4f mView;
-	Eigen::Matrix4f mProjection;
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mTotalTransformation;
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mModel;
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mView;
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mProjection;
 };
 
 union PushConstants
