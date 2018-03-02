@@ -43,11 +43,6 @@ C9::C9()
 
 	BOOST_LOG_TRIVIAL(info) << "C9::C9";
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	std::lock_guard<std::mutex> lock(workItem->Mutex);
-	workItem->WorkItemType = WorkItemType::Instance_Create;
-	mId = mCommandStreamManager->RequestWork(workItem);
-
 	//WINAPI to get monitor info
 	EnumDisplayMonitors(GetDC(NULL), NULL, MonitorEnumProc, (LPARAM)&mMonitors);
 }
@@ -187,6 +182,14 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	CDevice9* obj = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
 
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
+
+	WorkItem* workItem = obj->mCommandStreamManager->GetWorkItem();
+	std::lock_guard<std::mutex> lock(workItem->Mutex);
+	workItem->Id = obj->mInstanceId;
+	workItem->WorkItemType = WorkItemType::Device_Create;
+	workItem->Argument1 = obj;
+	workItem->Argument2 = GetModuleHandle(nullptr);
+	obj->mId = obj->mCommandStreamManager->RequestWork(workItem);
 
 	return result;	
 }

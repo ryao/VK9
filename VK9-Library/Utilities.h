@@ -1066,7 +1066,6 @@ inline void SaveImage(const char *filename, char* imageData, uint32_t height, ui
 	file.close();
 }
 
-
 /*
 Optimizing compilers are magic. The memcpy should go away. If not performance will take a hit here.
 */

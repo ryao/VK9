@@ -2939,7 +2939,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument2);
 				D3DADAPTER_IDENTIFIER9* pIdentifier = boost::any_cast<D3DADAPTER_IDENTIFIER9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter].mPhysicalDeviceProperties; //mPhysicalDeviceProperties
+				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter]->mPhysicalDeviceProperties; //mPhysicalDeviceProperties
 
 				(*pIdentifier) = {}; //zero it out.
 
@@ -2962,8 +2962,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DDEVTYPE DeviceType = boost::any_cast<D3DDEVTYPE>(workItem->Argument2);
 				D3DCAPS9* pCaps = boost::any_cast<D3DCAPS9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter].mPhysicalDeviceProperties;
-				vk::PhysicalDeviceFeatures& features = instance->mDevices[Adapter].mPhysicalDeviceFeatures;
+				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter]->mPhysicalDeviceProperties;
+				vk::PhysicalDeviceFeatures& features = instance->mDevices[Adapter]->mPhysicalDeviceFeatures;
 
 				/*
 				https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#VkPhysicalDeviceProperties
@@ -3066,7 +3066,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData == nullptr)
 				{
-					realVertexBuffer.mData = realVertexBuffer.mRealWindow->mRealDevice.mDevice.mapMemory(realVertexBuffer.mMemory, 0, realVertexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
+					realVertexBuffer.mData = realVertexBuffer.mRealWindow->mRealDevice->mDevice.mapMemory(realVertexBuffer.mMemory, 0, realVertexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
 					if (realVertexBuffer.mData == nullptr)
 					{
 						*ppbData = nullptr;
@@ -3088,7 +3088,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData != nullptr)
 				{
-					realVertexBuffer.mRealWindow->mRealDevice.mDevice.unmapMemory(realVertexBuffer.mMemory);
+					realVertexBuffer.mRealWindow->mRealDevice->mDevice.unmapMemory(realVertexBuffer.mMemory);
 					realVertexBuffer.mData = nullptr;
 				}
 			}
@@ -3103,7 +3103,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData == nullptr)
 				{
-					realIndexBuffer.mData = realIndexBuffer.mRealWindow->mRealDevice.mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
+					realIndexBuffer.mData = realIndexBuffer.mRealWindow->mRealDevice->mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
 					if (realIndexBuffer.mData == nullptr)
 					{
 						*ppbData = nullptr;
@@ -3125,7 +3125,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData != nullptr)
 				{
-					realIndexBuffer.mRealWindow->mRealDevice.mDevice.unmapMemory(realIndexBuffer.mMemory);
+					realIndexBuffer.mRealWindow->mRealDevice->mDevice.unmapMemory(realIndexBuffer.mMemory);
 					realIndexBuffer.mData = nullptr;
 				}
 			}
@@ -3168,7 +3168,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
 				auto& realWindow = (*texture.mRealWindow);
 				CTexture9* texture9 = boost::any_cast<CTexture9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice.mDevice;
+				auto& device = realWindow.mRealDevice->mDevice;
 
 				vk::Result result;
 				vk::PipelineStageFlags sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
@@ -3293,7 +3293,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
 				auto& realWindow = (*texture.mRealWindow);
 				CCubeTexture9* texture9 = boost::any_cast<CCubeTexture9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice.mDevice;
+				auto& device = realWindow.mRealDevice->mDevice;
 
 				vk::Result result;
 				vk::PipelineStageFlags sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
@@ -3418,7 +3418,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
 				auto& realWindow = (*surface.mRealWindow);
 				//CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice.mDevice;
+				auto& device = realWindow.mRealDevice->mDevice;
 
 				D3DLOCKED_RECT* pLockedRect = boost::any_cast<D3DLOCKED_RECT*>(workItem->Argument1);
 				RECT* pRect = boost::any_cast<RECT*>(workItem->Argument2);
@@ -3466,7 +3466,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
 				auto& realWindow = (*surface.mRealWindow);
 				CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice.mDevice;
+				auto& device = realWindow.mRealDevice->mDevice;
 
 				if (surface.mData != nullptr)
 				{
@@ -3486,7 +3486,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realWindow = (*surface.mRealWindow);
 				CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[surface9->mTextureId]);
-				auto& device = realWindow.mRealDevice.mDevice;
+				auto& device = realWindow.mRealDevice->mDevice;
 
 				if (surface.mIsFlushed)
 				{

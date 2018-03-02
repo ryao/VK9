@@ -102,7 +102,7 @@ struct RealInstance
 	vk::PhysicalDevice* mPhysicalDevices = nullptr;
 	uint32_t mPhysicalDeviceCount = 0;
 
-	boost::container::small_vector<RealDevice, 1> mDevices;
+	boost::container::small_vector<std::shared_ptr<RealDevice>, 1> mDevices;
 
 #ifdef _DEBUG
 	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
@@ -118,8 +118,8 @@ struct DrawContext;
 
 struct RealWindow
 {
-	RealInstance& mRealInstance;
-	RealDevice& mRealDevice;
+	std::shared_ptr<RealInstance> mRealInstance;
+	std::shared_ptr<RealDevice> mRealDevice;
 
 	//Command, queue, and render pass stuff
 	vk::CommandPool mCommandPool;
@@ -1293,8 +1293,7 @@ struct RealWindow
 	vk::DeviceMemory mMaterialBufferMemory;
 	int32_t mVertexCount = 0;
 
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	RealWindow(RealInstance& realInstance, RealDevice& realDevice);
+	RealWindow(std::shared_ptr<RealInstance>& realInstance, std::shared_ptr<RealDevice>& realDevice);
 	~RealWindow();
 
 	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);

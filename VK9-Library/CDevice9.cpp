@@ -68,14 +68,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	//Add implicit render target
 	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mPresentationParameters.BackBufferWidth, mPresentationParameters.BackBufferHeight, D3DFMT_UNKNOWN);
 	mRenderTargets.push_back(ptr2);
-
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	std::lock_guard<std::mutex> lock(workItem->Mutex);
-	workItem->Id = mInstanceId;
-	workItem->WorkItemType = WorkItemType::Device_Create;
-	workItem->Argument1 = this;
-	workItem->Argument2 = GetModuleHandle(nullptr);
-	mId = mCommandStreamManager->RequestWork(workItem);
 }
 
 CDevice9::~CDevice9()

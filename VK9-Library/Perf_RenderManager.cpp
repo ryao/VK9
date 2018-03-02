@@ -58,7 +58,7 @@ RenderManager::~RenderManager()
 void RenderManager::UpdateBuffer(RealWindow& realWindow)
 { //Vulkan doesn't allow vkCmdUpdateBuffer inside of a render pass.
 
-	auto& device = realWindow.mRealDevice.mDevice;
+	auto& device = realWindow.mRealDevice->mDevice;
 
 	//The dirty flag for lights can be set by enable light or set light.
 	if (realWindow.mDeviceState.mAreLightsDirty)
@@ -79,7 +79,7 @@ void RenderManager::StartScene(RealWindow& realWindow, bool clear)
 	realWindow.mIsSceneStarted = true;
 
 	vk::Result result;
-	auto& device = realWindow.mRealDevice.mDevice;
+	auto& device = realWindow.mRealDevice->mDevice;
 
 	result = device.acquireNextImageKHR(realWindow.mSwapchain, UINT64_MAX, realWindow.mPresentCompleteSemaphore, nullptr, &realWindow.mCurrentSwapchainBuffer);
 	if (result != vk::Result::eSuccess)
@@ -187,7 +187,7 @@ void RenderManager::CopyImage(RealWindow& realWindow, vk::Image srcImage, vk::Im
 {
 	vk::Result result;
 	vk::CommandBuffer commandBuffer;
-	auto& device = realWindow.mRealDevice.mDevice;
+	auto& device = realWindow.mRealDevice->mDevice;
 
 	vk::CommandBufferAllocateInfo commandBufferInfo;
 	commandBufferInfo.commandPool = realWindow.mCommandPool;
@@ -369,7 +369,7 @@ void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9*
 	commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
 	commandBufferInfo.commandBufferCount = 1;
 
-	result = realWindow.mRealDevice.mDevice.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
+	result = realWindow.mRealDevice->mDevice.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::UpdateTexture vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
@@ -446,7 +446,7 @@ void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9*
 	}
 
 	realWindow.mQueue.waitIdle();
-	realWindow.mRealDevice.mDevice.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+	realWindow.mRealDevice->mDevice.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
 }
 
 void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
@@ -753,7 +753,7 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 {
 	vk::Result result;
 	auto& deviceState = realWindow.mDeviceState;
-	auto& device = realWindow.mRealDevice.mDevice;
+	auto& device = realWindow.mRealDevice->mDevice;
 
 	/**********************************************
 	* Figure out flags
@@ -1212,7 +1212,7 @@ void RenderManager::CreateSampler(RealWindow& realWindow, std::shared_ptr<Sample
 
 	vk::Result result;
 	//auto& deviceState = realWindow.mDeviceState;
-	auto& device = realWindow.mRealDevice.mDevice;
+	auto& device = realWindow.mRealDevice->mDevice;
 
 	vk::SamplerCreateInfo samplerCreateInfo;
 	samplerCreateInfo.magFilter = ConvertFilter(request->MagFilter);
@@ -1227,10 +1227,10 @@ void RenderManager::CreateSampler(RealWindow& realWindow, std::shared_ptr<Sample
 	https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html
 	If either magFilter or minFilter is VK_FILTER_CUBIC_IMG, anisotropyEnable must be VK_FALSE
 	*/
-	if (realWindow.mRealDevice.mPhysicalDeviceFeatures.samplerAnisotropy && samplerCreateInfo.minFilter != vk::Filter::eCubicIMG && samplerCreateInfo.magFilter != vk::Filter::eCubicIMG)
+	if (realWindow.mRealDevice->mPhysicalDeviceFeatures.samplerAnisotropy && samplerCreateInfo.minFilter != vk::Filter::eCubicIMG && samplerCreateInfo.magFilter != vk::Filter::eCubicIMG)
 	{
 		// Use max. level of anisotropy for this example
-		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy, realWindow.mRealDevice.mPhysicalDeviceProperties.limits.maxSamplerAnisotropy);
+		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy, realWindow.mRealDevice->mPhysicalDeviceProperties.limits.maxSamplerAnisotropy);
 
 		if (request->MinFilter == D3DTEXF_ANISOTROPIC ||
 			request->MagFilter == D3DTEXF_ANISOTROPIC ||
