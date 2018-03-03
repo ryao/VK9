@@ -33,9 +33,9 @@ CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->Id = device->mId;
 	workItem->WorkItemType = WorkItemType::Shader_Create;
-	workItem->Argument1 = pFunction;
-	workItem->Argument2 = true;
-	workItem->Argument3 = &mSize;
+	workItem->Argument1 = (void*)pFunction;
+	workItem->Argument2 = (void*)true;
+	workItem->Argument3 = (void*)&mSize;
 	mId = mCommandStreamManager->RequestWork(workItem);
 }
 

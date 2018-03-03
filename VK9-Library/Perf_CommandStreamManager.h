@@ -127,12 +127,12 @@ struct WorkItem
 {
 	WorkItemType WorkItemType;
 	size_t Id;
-	boost::any Argument1;
-	boost::any Argument2;
-	boost::any Argument3;
-	boost::any Argument4;
-	boost::any Argument5;
-	boost::any Argument6;
+	void* Argument1;
+	void* Argument2;
+	void* Argument3;
+	void* Argument4;
+	void* Argument5;
+	void* Argument6;
 	std::mutex Mutex;
 };
 

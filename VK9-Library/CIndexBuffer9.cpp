@@ -195,10 +195,10 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::IndexBuffer_Lock;
 	workItem->Id = mId;
-	workItem->Argument1 = OffsetToLock;
-	workItem->Argument2 = SizeToLock;
-	workItem->Argument3 = ppbData;
-	workItem->Argument4 = Flags;
+	workItem->Argument1 = (void*)OffsetToLock;
+	workItem->Argument2 = (void*)SizeToLock;
+	workItem->Argument3 = (void*)ppbData;
+	workItem->Argument4 = (void*)Flags;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;

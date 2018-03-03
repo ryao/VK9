@@ -1464,28 +1464,28 @@ struct StateManager
 	~StateManager();
 
 	void DestroyWindow(size_t id);
-	void CreateWindow1(size_t id, boost::any argument1, boost::any argument2);
+	void CreateWindow1(size_t id, void* argument1, void* argument2);
 
 	void DestroyInstance(size_t id);
 	void CreateInstance();
 
 	void DestroyVertexBuffer(size_t id);
-	void CreateVertexBuffer(size_t id, boost::any argument1);
+	void CreateVertexBuffer(size_t id, void* argument1);
 
 	void DestroyIndexBuffer(size_t id);
-	void CreateIndexBuffer(size_t id, boost::any argument1);
+	void CreateIndexBuffer(size_t id, void* argument1);
 
 	void DestroyTexture(size_t id);
-	void CreateTexture(size_t id, boost::any argument1);
+	void CreateTexture(size_t id, void* argument1);
 
 	void DestroyCubeTexture(size_t id);
-	void CreateCubeTexture(size_t id, boost::any argument1);
+	void CreateCubeTexture(size_t id, void* argument1);
 
 	void DestroySurface(size_t id);
-	void CreateSurface(size_t id, boost::any argument1);
+	void CreateSurface(size_t id, void* argument1);
 
 	void DestroyShader(size_t id);
-	void CreateShader(size_t id, boost::any argument1, boost::any argument2, boost::any argument3);
+	void CreateShader(size_t id, void* argument1, void* argument2, void* argument3);
 
 };
 

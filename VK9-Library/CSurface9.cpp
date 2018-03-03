@@ -307,9 +307,9 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::Surface_Destroy;
 	workItem->Id = mId;
-	workItem->Argument1 = pLockedRect;
-	workItem->Argument2 = pRect;
-	workItem->Argument3 = Flags;
+	workItem->Argument1 = (void*)pLockedRect;
+	workItem->Argument2 = (void*)pRect;
+	workItem->Argument3 = (void*)Flags;
 	mCommandStreamManager->RequestWork(workItem);
 
 	return S_OK;
@@ -329,7 +329,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::Surface_UnlockRect;
 	workItem->Id = mId;
-	workItem->Argument1 = this;
+	workItem->Argument1 = (void*)this;
 	mCommandStreamManager->RequestWork(workItem);
 
 	this->Flush();

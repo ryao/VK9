@@ -136,7 +136,7 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 
 RealWindow::RealWindow(std::shared_ptr<RealInstance>& realInstance, std::shared_ptr<RealDevice>& realDevice)
 	: mRealInstance(realInstance)
-	,mRealDevice(realDevice)
+	, mRealDevice(realDevice)
 {
 
 }
@@ -357,7 +357,7 @@ RealDevice::RealDevice()
 RealDevice::~RealDevice()
 {
 	delete[] mQueueFamilyProperties;
-	if (mDevice==nullptr)
+	if (mDevice == nullptr)
 	{
 		return;
 	}
@@ -373,6 +373,7 @@ RealInstance::RealInstance()
 
 RealInstance::~RealInstance()
 {
+	mDevices.clear();
 #ifdef _DEBUG
 	mInstance.destroyDebugReportCallbackEXT(mCallback);
 #endif
@@ -459,7 +460,7 @@ StateManager::StateManager()
 
 StateManager::~StateManager()
 {
-	
+
 }
 
 void StateManager::DestroyWindow(size_t id)
@@ -467,14 +468,14 @@ void StateManager::DestroyWindow(size_t id)
 	mWindows[id].reset();
 }
 
-void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any argument2)
+void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 {
 	vk::Result result;
 	auto instance = mInstances[id];
-	CDevice9* device9 = boost::any_cast<CDevice9*>(argument1);
+	CDevice9* device9 = bit_cast<CDevice9*>(argument1);
 	auto& physicaldevice = instance->mPhysicalDevices[device9->mAdapter];
 	auto& device = instance->mDevices[device9->mAdapter];
-	auto ptr = std::make_shared<RealWindow>(instance,device);
+	std::shared_ptr<RealWindow> ptr = std::make_shared<RealWindow>(instance, device);
 	vk::Bool32 doesSupportPresentation = false;
 	vk::Bool32 doesSupportGraphics = false;
 	uint32_t graphicsQueueIndex = 0;
@@ -483,773 +484,756 @@ void StateManager::CreateWindow1(size_t id, boost::any argument1, boost::any arg
 	vk::SurfaceTransformFlagBitsKHR transformFlags;
 
 	vk::Win32SurfaceCreateInfoKHR surfaceCreateInfo;
-	surfaceCreateInfo.hinstance = boost::any_cast<HINSTANCE>(argument2);
+	surfaceCreateInfo.hinstance = bit_cast<HINSTANCE>(argument2);
 	surfaceCreateInfo.hwnd = device9->mFocusWindow; //hFocusWindow;
 
+	mWindows.push_back(ptr);
+
 	result = instance->mInstance.createWin32SurfaceKHR(&surfaceCreateInfo, nullptr, &ptr->mSurface);
-	if (result == vk::Result::eSuccess)
+	if (result != vk::Result::eSuccess)
 	{
-		result = physicaldevice.getSurfaceCapabilitiesKHR(ptr->mSurface, &ptr->mSurfaceCapabilities);
-		if (result == vk::Result::eSuccess)
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateWin32SurfaceKHR failed with a return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	result = physicaldevice.getSurfaceCapabilitiesKHR(ptr->mSurface, &ptr->mSurfaceCapabilities);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	/*
+	Search for queues to use for graphics and presentation.
+	It's easier if one queue does both so if we find one that supports both than just exit.
+	Otherwise look for one for presentation and one for graphics.
+	The index of the queue us stored for later use.
+	*/
+	for (uint32_t i = 0; i < device->mQueueFamilyPropertyCount; i++)
+	{
+		result = physicaldevice.getSurfaceSupportKHR(i, ptr->mSurface, &doesSupportPresentation);
+		doesSupportGraphics = (device->mQueueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlagBits(0);
+
+		if (doesSupportPresentation && doesSupportGraphics)
 		{
-			/*
-			Search for queues to use for graphics and presentation.
-			It's easier if one queue does both so if we find one that supports both than just exit.
-			Otherwise look for one for presentation and one for graphics.
-			The index of the queue us stored for later use.
-			*/
-			for (uint32_t i = 0; i < device->mQueueFamilyPropertyCount; i++)
-			{
-				result = physicaldevice.getSurfaceSupportKHR(i, ptr->mSurface, &doesSupportPresentation);
-				doesSupportGraphics = (device->mQueueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlagBits(0);
-
-				if (doesSupportPresentation && doesSupportGraphics)
-				{
-					graphicsQueueIndex = i;
-					presentationQueueIndex = i;
-					break;
-				}
-				else if (doesSupportPresentation && presentationQueueIndex == UINT32_MAX)
-				{
-					presentationQueueIndex = i;
-				}
-				else if (doesSupportGraphics && graphicsQueueIndex == UINT32_MAX)
-				{
-					graphicsQueueIndex = i;
-				}
-			}
-
-			/*
-			Now we need to setup our queues and buffers.
-			We'll start with a command pool because that is where we get command buffers from.
-			*/
-			vk::CommandPoolCreateInfo commandPoolInfo;
-			commandPoolInfo.queueFamilyIndex = graphicsQueueIndex; //Found earlier.
-			commandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-
-			result = device->mDevice.createCommandPool(&commandPoolInfo, nullptr, &ptr->mCommandPool);
-			if (result == vk::Result::eSuccess)
-			{
-				//Create queue so we can submit command buffers.
-				device->mDevice.getQueue(graphicsQueueIndex, 0, &ptr->mQueue); //no result?
-
-				/*
-				Now pull some information about the surface so we can create the swapchain correctly.
-				*/
-				if (ptr->mSurfaceCapabilities.currentExtent.width < (uint32_t)1 || ptr->mSurfaceCapabilities.currentExtent.height < (uint32_t)1)
-				{
-					//If the height/width are -1 then just set it to the requested size and hope for the best.
-					ptr->mSwapchainExtent.width = device9->mPresentationParameters.BackBufferWidth;
-					ptr->mSwapchainExtent.height = device9->mPresentationParameters.BackBufferHeight;
-				}
-				else
-				{
-					//Apparently the swap chain size must match the surface size if it is defined.
-					ptr->mSwapchainExtent = ptr->mSurfaceCapabilities.currentExtent;
-					device9->mPresentationParameters.BackBufferWidth = ptr->mSurfaceCapabilities.currentExtent.width;
-					device9->mPresentationParameters.BackBufferHeight = ptr->mSurfaceCapabilities.currentExtent.height;
-				}
-
-				//initialize vulkan/d3d9 viewport and scissor structures.
-				//mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
-				ptr->mDeviceState.mViewport.width = (float)device9->mPresentationParameters.BackBufferWidth;
-				//mDeviceState.mViewport.height = -(float)mPresentationParameters.BackBufferHeight;
-				ptr->mDeviceState.mViewport.height = (float)device9->mPresentationParameters.BackBufferHeight;
-				ptr->mDeviceState.mViewport.minDepth = 0.0f;
-				ptr->mDeviceState.mViewport.maxDepth = 1.0f;
-
-				ptr->mDeviceState.m9Viewport.Width = (DWORD)ptr->mDeviceState.mViewport.width;
-				ptr->mDeviceState.m9Viewport.Height = (DWORD)ptr->mDeviceState.mViewport.height;
-				ptr->mDeviceState.m9Viewport.MinZ = ptr->mDeviceState.mViewport.minDepth;
-				ptr->mDeviceState.m9Viewport.MaxZ = ptr->mDeviceState.mViewport.maxDepth;
-
-				ptr->mDeviceState.mScissor.offset.x = 0;
-				ptr->mDeviceState.mScissor.offset.y = 0;
-				ptr->mDeviceState.mScissor.extent.width = device9->mPresentationParameters.BackBufferWidth;
-				ptr->mDeviceState.mScissor.extent.height = device9->mPresentationParameters.BackBufferHeight;
-
-				ptr->mDeviceState.m9Scissor.right = device9->mPresentationParameters.BackBufferWidth;
-				ptr->mDeviceState.m9Scissor.bottom = device9->mPresentationParameters.BackBufferHeight;
-				ptr->mDeviceState.m9Scissor.left = 0;
-				ptr->mDeviceState.m9Scissor.top = 0;
-
-				result = physicaldevice.getSurfaceFormatsKHR(ptr->mSurface, &ptr->mSurfaceFormatCount, nullptr);
-				if (result == vk::Result::eSuccess)
-				{
-					ptr->mSurfaceFormats = new vk::SurfaceFormatKHR[ptr->mSurfaceFormatCount];
-					result = physicaldevice.getSurfaceFormatsKHR(ptr->mSurface, &ptr->mSurfaceFormatCount, ptr->mSurfaceFormats);
-					if (result == vk::Result::eSuccess)
-					{
-						if (ptr->mSurfaceFormatCount == 1 && ptr->mSurfaceFormats[0].format == vk::Format::eUndefined)
-						{
-							ptr->mFormat = vk::Format::eB8G8R8A8Unorm; //No preferred format so set a default.
-						}
-						else
-						{
-							ptr->mFormat = ptr->mSurfaceFormats[0].format; //Pull the preferred format.
-						}
-
-						if (ptr->mSurfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)
-						{
-							transformFlags = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-						}
-						else
-						{
-							transformFlags = ptr->mSurfaceCapabilities.currentTransform;
-						}
-
-						result = physicaldevice.getSurfacePresentModesKHR(ptr->mSurface, &ptr->mPresentationModeCount, nullptr);
-						if (result == vk::Result::eSuccess)
-						{
-							ptr->mPresentationModes = new vk::PresentModeKHR[ptr->mPresentationModeCount];
-							result = physicaldevice.getSurfacePresentModesKHR(ptr->mSurface, &ptr->mPresentationModeCount, ptr->mPresentationModes);
-							if (result == vk::Result::eSuccess)
-							{
-								/*
-								Trying modes in order of preference (Mailbox,immediate,FIFO)
-								VK_PRESENT_MODE_MAILBOX_KHR - Wait for the next vertical blanking interval to update the image. New images replace the one waiting to be displayed.
-								VK_PRESENT_MODE_IMMEDIATE_KHR - Do not wait for vertical blanking to update the image.
-								VK_PRESENT_MODE_FIFO_KHR - Wait for the next vertical blanking interval to update the image. If the interval is missed wait for the next one. New images will be queued for display.
-								*/
-								ptr->mSwapchainPresentMode = vk::PresentModeKHR::eFifo;
-								for (size_t i = 0; i < ptr->mPresentationModeCount; i++)
-								{
-									if (ptr->mPresentationModes[i] == vk::PresentModeKHR::eMailbox)
-									{
-										ptr->mSwapchainPresentMode = vk::PresentModeKHR::eMailbox;
-										break;
-									}
-									else if (ptr->mPresentationModes[i] == vk::PresentModeKHR::eImmediate)
-									{
-										ptr->mSwapchainPresentMode = vk::PresentModeKHR::eImmediate;
-									} //Already defaulted to FIFO so do nothing for else.
-								}
-
-								/*
-								Finally create the swap chain based on the information collected.
-								This swap chain will handle the work done by the implicit swap chain in D3D9.
-								*/
-								vk::SwapchainCreateInfoKHR swapchainCreateInfo;
-								swapchainCreateInfo.surface = ptr->mSurface;
-								swapchainCreateInfo.minImageCount = ptr->mSurfaceCapabilities.minImageCount + 1;
-								swapchainCreateInfo.imageFormat = ptr->mFormat;
-								swapchainCreateInfo.imageColorSpace = ptr->mSurfaceFormats[0].colorSpace;
-								swapchainCreateInfo.imageExtent = ptr->mSwapchainExtent;
-								swapchainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
-								swapchainCreateInfo.preTransform = transformFlags;
-								swapchainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-								swapchainCreateInfo.imageArrayLayers = 1;
-								swapchainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
-								swapchainCreateInfo.queueFamilyIndexCount = 0;
-								swapchainCreateInfo.pQueueFamilyIndices = nullptr;
-								swapchainCreateInfo.presentMode = ptr->mSwapchainPresentMode;
-								swapchainCreateInfo.oldSwapchain = ptr->mSwapchain; //There is no old swapchain yet.
-								swapchainCreateInfo.clipped = true;
-
-								result = device->mDevice.createSwapchainKHR(&swapchainCreateInfo, nullptr, &ptr->mSwapchain);
-								if (result == vk::Result::eSuccess)
-								{
-									//Create the images (buffers) that will be used by the swap chain.
-									result = device->mDevice.getSwapchainImagesKHR(ptr->mSwapchain, &ptr->mSwapchainImageCount, nullptr);
-									if (result == vk::Result::eSuccess)
-									{
-										ptr->mSwapchainImages = new vk::Image[ptr->mSwapchainImageCount];
-										ptr->mSwapchainViews = new vk::ImageView[ptr->mSwapchainImageCount];
-										ptr->mSwapchainBuffers = new vk::CommandBuffer[ptr->mSwapchainImageCount];
-
-										result = device->mDevice.getSwapchainImagesKHR(ptr->mSwapchain, &ptr->mSwapchainImageCount, ptr->mSwapchainImages);
-										if (result == vk::Result::eSuccess)
-										{
-											for (size_t i = 0; i < ptr->mSwapchainImageCount; i++)
-											{
-												vk::ImageViewCreateInfo color_image_view;
-												color_image_view.format = ptr->mFormat;
-												color_image_view.components.r = vk::ComponentSwizzle::eIdentity;
-												color_image_view.components.g = vk::ComponentSwizzle::eIdentity;
-												color_image_view.components.b = vk::ComponentSwizzle::eIdentity;
-												color_image_view.components.a = vk::ComponentSwizzle::eIdentity;
-												color_image_view.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-												color_image_view.subresourceRange.baseMipLevel = 0;
-												color_image_view.subresourceRange.levelCount = 1;
-												color_image_view.subresourceRange.baseArrayLayer = 0;
-												color_image_view.subresourceRange.layerCount = 1;
-												color_image_view.viewType = vk::ImageViewType::e2D;
-												color_image_view.image = ptr->mSwapchainImages[i];
-
-												result = device->mDevice.createImageView(&color_image_view, nullptr, &ptr->mSwapchainViews[i]);
-												if (result != vk::Result::eSuccess)
-												{
-													BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
-												}
-
-												vk::CommandBufferAllocateInfo commandBufferInfo;
-												commandBufferInfo.commandPool = ptr->mCommandPool;
-												commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
-												commandBufferInfo.commandBufferCount = 1;
-
-												result = device->mDevice.allocateCommandBuffers(&commandBufferInfo, &ptr->mSwapchainBuffers[i]);
-												if (result != vk::Result::eSuccess)
-												{
-													BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
-												}
-											} //for
-
-											/*
-											Setup Depth stuff.
-											*/
-
-											vk::ImageCreateInfo imageCreateInfo;
-											imageCreateInfo.imageType = vk::ImageType::e2D;
-											imageCreateInfo.format = depthFormat;
-											imageCreateInfo.extent = { device9->mPresentationParameters.BackBufferWidth,device9->mPresentationParameters.BackBufferHeight, 1 };
-											imageCreateInfo.mipLevels = 1;
-											imageCreateInfo.arrayLayers = 1;
-											imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
-											imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
-											imageCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-
-											result = device->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mDepthImage);
-											if (result == vk::Result::eSuccess)
-											{
-												vk::MemoryRequirements memoryRequirements;
-												device->mDevice.getImageMemoryRequirements(ptr->mDepthImage, &memoryRequirements);
-
-												vk::MemoryAllocateInfo depthMemoryAllocateInfo;
-												depthMemoryAllocateInfo.memoryTypeIndex = 0;
-												depthMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-												GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &depthMemoryAllocateInfo.memoryTypeIndex);
-
-												result = device->mDevice.allocateMemory(&depthMemoryAllocateInfo, nullptr, &ptr->mDepthDeviceMemory);
-												if (result == vk::Result::eSuccess)
-												{
-													//c++ version doesn't return a result code.... I don't think I like that.
-													device->mDevice.bindImageMemory(ptr->mDepthImage, ptr->mDepthDeviceMemory, 0);
-
-													ptr->SetImageLayout(ptr->mDepthImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-													vk::ImageViewCreateInfo imageViewCreateInfo;
-													imageViewCreateInfo.format = depthFormat;
-													imageViewCreateInfo.subresourceRange = {};
-													imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
-													imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-													imageViewCreateInfo.subresourceRange.levelCount = 1;
-													imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-													imageViewCreateInfo.subresourceRange.layerCount = 1;
-													imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
-													imageViewCreateInfo.image = ptr->mDepthImage;
-
-													result = device->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mDepthView);
-													if (result == vk::Result::eSuccess)
-													{
-														vk::AttachmentReference colorReference;
-														colorReference.attachment = 0;
-														colorReference.layout = vk::ImageLayout::eColorAttachmentOptimal;
-
-														vk::AttachmentReference depthReference;
-														depthReference.attachment = 1;
-														depthReference.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-														vk::SubpassDescription subpass;
-														subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-														subpass.inputAttachmentCount = 0;
-														subpass.pInputAttachments = nullptr;
-														subpass.colorAttachmentCount = 1;
-														subpass.pColorAttachments = &colorReference;
-														subpass.pResolveAttachments = nullptr;
-														subpass.pDepthStencilAttachment = &depthReference;
-														subpass.preserveAttachmentCount = 0;
-														subpass.pPreserveAttachments = nullptr;
-
-														/*
-														Now setup the render pass.
-														*/
-														ptr->mRenderAttachments[0].format = ptr->mFormat;
-														ptr->mRenderAttachments[0].samples = vk::SampleCountFlagBits::e1;
-														ptr->mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
-														ptr->mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
-														ptr->mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-														ptr->mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-														ptr->mRenderAttachments[0].initialLayout = vk::ImageLayout::ePresentSrcKHR;
-														ptr->mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
-
-														ptr->mRenderAttachments[1].format = depthFormat;
-														ptr->mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
-														ptr->mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
-														ptr->mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
-														ptr->mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-														ptr->mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-														ptr->mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-														ptr->mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-														vk::RenderPassCreateInfo renderPassCreateInfo;
-														renderPassCreateInfo.attachmentCount = 2; //revisit
-														renderPassCreateInfo.pAttachments = ptr->mRenderAttachments;
-														renderPassCreateInfo.subpassCount = 1;
-														renderPassCreateInfo.pSubpasses = &subpass;
-														renderPassCreateInfo.dependencyCount = 0;
-														renderPassCreateInfo.pDependencies = nullptr;
-
-														result = device->mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &ptr->mStoreRenderPass);
-														if (result == vk::Result::eSuccess)
-														{
-															ptr->mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
-															result = device->mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &ptr->mClearRenderPass);
-															if (result == vk::Result::eSuccess)
-															{
-																/*
-																Setup framebuffers to tie everything together.
-																*/
-
-																vk::ImageView attachments[2];
-																attachments[1] = ptr->mDepthView;
-
-																vk::FramebufferCreateInfo framebufferCreateInfo;
-																framebufferCreateInfo.renderPass = ptr->mStoreRenderPass;
-																framebufferCreateInfo.attachmentCount = 2; //revisit
-																framebufferCreateInfo.pAttachments = attachments;
-																framebufferCreateInfo.width = ptr->mSwapchainExtent.width; //revisit
-																framebufferCreateInfo.height = ptr->mSwapchainExtent.height; //revisit
-																framebufferCreateInfo.layers = 1;
-
-																ptr->mFramebuffers = new vk::Framebuffer[ptr->mSwapchainImageCount];
-
-																for (size_t i = 0; i < ptr->mSwapchainImageCount; i++)
-																{
-																	attachments[0] = ptr->mSwapchainViews[i];
-																	result = device->mDevice.createFramebuffer(&framebufferCreateInfo, nullptr, &ptr->mFramebuffers[i]);
-																	if (result != vk::Result::eSuccess)
-																	{
-																		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateFramebuffer failed with return code of " << GetResultString((VkResult)result);
-																	}
-																}
-
-																result = device->mDevice.createSemaphore(&ptr->mPresentCompleteSemaphoreCreateInfo, nullptr, &ptr->mPresentCompleteSemaphore);
-																if (result == vk::Result::eSuccess)
-																{
-																	ptr->mPresentInfo.swapchainCount = 1;
-																	ptr->mPresentInfo.pSwapchains = &ptr->mSwapchain;
-																	ptr->mCommandBufferInheritanceInfo.subpass = 0;
-																	ptr->mCommandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
-																	ptr->mCommandBufferBeginInfo.pInheritanceInfo = &ptr->mCommandBufferInheritanceInfo;
-
-																	for (int32_t i = 0; i < 16; i++)
-																	{
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
-																		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
-																	}
-
-																	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
-																	ptr->mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-
-																	Light light = {};
-																	ptr->mDeviceState.mLights.push_back(light);
-																	//mDeviceState.mLights.push_back(light);
-																	//mDeviceState.mLights.push_back(light);
-																	//mDeviceState.mLights.push_back(light);
-
-																	//Load fixed function shaders.
-																	ptr->mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
-																	ptr->mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
-																	ptr->mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX2.vert.spv");
-																	ptr->mFragShaderModule_XYZ_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX2.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
-																	ptr->mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv");
-																	ptr->mFragShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
-																	ptr->mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
-																	ptr->mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.spv");
-																	ptr->mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.spv");
-
-																	ptr->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
-																	ptr->mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
-
-																	//pipeline stuff.
-																	ptr->mPushConstantRanges[0].offset = 0;
-																	ptr->mPushConstantRanges[0].size = UBO_SIZE * 2; //There are 2 matrices one for world transform and one for all transforms.
-																	ptr->mPushConstantRanges[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics; //VK_SHADER_STAGE_ALL_GRAPHICS
-
-																	ptr->mVertexSpecializationInfo.pData = &ptr->mDeviceState.mSpecializationConstants;
-																	ptr->mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-
-																	ptr->mPixelSpecializationInfo.pData = &ptr->mDeviceState.mSpecializationConstants;
-																	ptr->mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-
-																	ptr->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
-																	ptr->mPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = ptr->mVertexInputBindingDescription;
-																	ptr->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2; //reset later.
-																	ptr->mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = ptr->mVertexInputAttributeDescription;
-
-																	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eViewport;
-																	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eScissor;
-																	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eDepthBias;
-																	ptr->mPipelineDynamicStateCreateInfo.pDynamicStates = ptr->mDynamicStateEnables;
-																	
-																	ptr->mPipelineRasterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
-																	ptr->mPipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eBack;
-																	ptr->mPipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
-																	ptr->mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
-																	ptr->mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
-																	ptr->mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
-																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
-																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
-																	ptr->mPipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
-
-																	ptr->mPipelineInputAssemblyStateCreateInfo.topology = vk::PrimitiveTopology::eTriangleList;
-
-																	//ptr->mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
-																	ptr->mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
-																	ptr->mPipelineColorBlendAttachmentState[0].colorBlendOp = vk::BlendOp::eAdd;
-																	ptr->mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
-																	ptr->mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
-																	ptr->mPipelineColorBlendAttachmentState[0].alphaBlendOp = vk::BlendOp::eAdd;
-																	ptr->mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = vk::BlendFactor::eOne;
-																	ptr->mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = vk::BlendFactor::eZero;
-
-																	ptr->mPipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
-																	ptr->mPipelineColorBlendStateCreateInfo.logicOp = vk::LogicOp::eNoOp;
-																	ptr->mPipelineColorBlendStateCreateInfo.attachmentCount = 1;
-																	ptr->mPipelineColorBlendStateCreateInfo.pAttachments = ptr->mPipelineColorBlendAttachmentState;
-																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[0] = 1.0f;
-																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[1] = 1.0f;
-																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[2] = 1.0f;
-																	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[3] = 1.0f;
-
-																	ptr->mPipelineViewportStateCreateInfo.viewportCount = 1;
-																	ptr->mPipelineViewportStateCreateInfo.scissorCount = 1;
-
-																	ptr->mPipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
-																	ptr->mPipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
-																	ptr->mPipelineDepthStencilStateCreateInfo.depthCompareOp = vk::CompareOp::eLessOrEqual;
-																	ptr->mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
-																	ptr->mPipelineDepthStencilStateCreateInfo.back.failOp = vk::StencilOp::eKeep;
-																	ptr->mPipelineDepthStencilStateCreateInfo.back.passOp = vk::StencilOp::eKeep;
-																	ptr->mPipelineDepthStencilStateCreateInfo.back.compareOp = vk::CompareOp::eAlways;
-																	ptr->mPipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
-																	ptr->mPipelineDepthStencilStateCreateInfo.front = ptr->mPipelineDepthStencilStateCreateInfo.back;
-																	ptr->mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
-																	ptr->mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
-
-																	ptr->mPipelineMultisampleStateCreateInfo.pSampleMask = nullptr;
-																	ptr->mPipelineMultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
-
-																	ptr->mDescriptorSetLayoutCreateInfo.bindingCount = 1;
-																	ptr->mDescriptorSetLayoutCreateInfo.pBindings = ptr->mDescriptorSetLayoutBinding;
-																	ptr->mDescriptorSetLayoutCreateInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptorKHR;
-
-																	ptr->mDescriptorSetAllocateInfo.descriptorPool = device->mDescriptorPool;
-																	ptr->mDescriptorSetAllocateInfo.descriptorSetCount = 1;
-																	//mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
-
-																	ptr->mPipelineLayoutCreateInfo.setLayoutCount = 1;
-
-																	ptr->mPipelineShaderStageCreateInfo[0].stage = vk::ShaderStageFlagBits::eVertex;
-																	ptr->mPipelineShaderStageCreateInfo[0].module = ptr->mVertShaderModule_XYZ_DIFFUSE;
-																	ptr->mPipelineShaderStageCreateInfo[0].pName = "main";
-																	ptr->mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &ptr->mVertexSpecializationInfo;
-
-																	ptr->mPipelineShaderStageCreateInfo[1].stage = vk::ShaderStageFlagBits::eFragment;
-																	ptr->mPipelineShaderStageCreateInfo[1].module = ptr->mFragShaderModule_XYZ_DIFFUSE;
-																	ptr->mPipelineShaderStageCreateInfo[1].pName = "main";
-																	ptr->mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &ptr->mPixelSpecializationInfo;
-
-																	ptr->mGraphicsPipelineCreateInfo.pVertexInputState = &ptr->mPipelineVertexInputStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.pInputAssemblyState = &ptr->mPipelineInputAssemblyStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.pRasterizationState = &ptr->mPipelineRasterizationStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.pColorBlendState = &ptr->mPipelineColorBlendStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.pDepthStencilState = &ptr->mPipelineDepthStencilStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.pViewportState = &ptr->mPipelineViewportStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.pMultisampleState = &ptr->mPipelineMultisampleStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.pStages = ptr->mPipelineShaderStageCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.renderPass = ptr->mStoreRenderPass;
-																	ptr->mGraphicsPipelineCreateInfo.pDynamicState = &ptr->mPipelineDynamicStateCreateInfo;
-																	ptr->mGraphicsPipelineCreateInfo.stageCount = 2;
-
-																	result = device->mDevice.createPipelineCache(&ptr->mPipelineCacheCreateInfo, nullptr, &ptr->mPipelineCache);
-																	if (result == vk::Result::eSuccess)
-																	{
-																		/*
-																		Setup the texture to be written into the descriptor set.
-																		*/
-																		const vk::Format textureFormat = vk::Format::eB8G8R8A8Unorm;
-																		vk::FormatProperties formatProperties;
-																		const uint32_t textureColors[2] = { 0xffff0000, 0xff00ff00 };
-																		const int32_t textureWidth = 1;
-																		const int32_t textureHeight = 1;
-
-																		physicaldevice.getFormatProperties(textureFormat, &formatProperties);
-
-																		vk::ImageCreateInfo imageCreateInfo;
-																		imageCreateInfo.imageType = vk::ImageType::e2D;
-																		imageCreateInfo.format = textureFormat;
-																		imageCreateInfo.extent = { (uint32_t)textureWidth, (uint32_t)textureHeight, 1 };
-																		imageCreateInfo.mipLevels = 1;
-																		imageCreateInfo.arrayLayers = 1;
-																		imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
-																		imageCreateInfo.tiling = vk::ImageTiling::eLinear;
-																		imageCreateInfo.usage = vk::ImageUsageFlagBits::eSampled;
-																		//imageCreateInfo.flags = 0;
-																		imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
-
-																		vk::MemoryAllocateInfo memoryAllocateInfo;
-																		memoryAllocateInfo.allocationSize = 0;
-																		memoryAllocateInfo.memoryTypeIndex = 0;
-
-																		vk::MemoryRequirements memoryRequirements;
-
-																		result = device->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
-																		if (result == vk::Result::eSuccess)
-																		{
-																			device->mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
-																			memoryAllocateInfo.allocationSize = memoryRequirements.size;
-																			GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible, &memoryAllocateInfo.memoryTypeIndex);
-
-																			result = device->mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
-																			if (result == vk::Result::eSuccess)
-																			{
-																				device->mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
-
-																				vk::ImageSubresource imageSubresource;
-																				imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-																				imageSubresource.mipLevel = 0;
-																				imageSubresource.arrayLayer = 0;
-
-																				vk::SubresourceLayout subresourceLayout;
-																				void* data = nullptr;
-																				int32_t x = 0;
-																				int32_t y = 0;
-
-																				device->mDevice.getImageSubresourceLayout(ptr->mImage, &imageSubresource, &subresourceLayout);
-
-																				data = device->mDevice.mapMemory(ptr->mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags()).value;
-																				if (data!= nullptr)
-																				{
-																					for (y = 0; y < textureHeight; y++) 
-																					{
-																						uint32_t *row = (uint32_t *)((char *)data + subresourceLayout.rowPitch * y);
-																						for (x = 0; x < textureWidth; x++)
-																						{
-																							row[x] = textureColors[(x & 1) ^ (y & 1)];
-																						}
-																					}
-
-																					device->mDevice.unmapMemory(ptr->mDeviceMemory);
-																					ptr->mImageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-																					ptr->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::ePreinitialized, ptr->mImageLayout);
-
-																					vk::SamplerCreateInfo samplerCreateInfo;
-																					samplerCreateInfo.magFilter = vk::Filter::eNearest;
-																					samplerCreateInfo.minFilter = vk::Filter::eNearest;
-																					samplerCreateInfo.mipmapMode = vk::SamplerMipmapMode::eNearest;
-																					samplerCreateInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
-																					samplerCreateInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
-																					samplerCreateInfo.addressModeW = vk::SamplerAddressMode::eRepeat;
-																					samplerCreateInfo.mipLodBias = 0.0f;
-																					samplerCreateInfo.anisotropyEnable = VK_FALSE;
-																					samplerCreateInfo.maxAnisotropy = 1;
-																					samplerCreateInfo.compareOp = vk::CompareOp::eNever;
-																					samplerCreateInfo.minLod = 0.0f;
-																					samplerCreateInfo.maxLod = 0.0f;
-																					samplerCreateInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;
-																					samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
-
-																					result = device->mDevice.createSampler(&samplerCreateInfo, NULL, &ptr->mSampler);
-																					if (result == vk::Result::eSuccess)
-																					{
-																						vk::ImageViewCreateInfo imageViewCreateInfo;
-																						imageViewCreateInfo.image = ptr->mImage;
-																						imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
-																						imageViewCreateInfo.format = textureFormat;
-																						imageViewCreateInfo.components =
-																						{
-																							VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
-																							VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
-																						};
-																						imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-																						//imageViewCreateInfo.flags = 0;
-
-																						result = device->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
-																						if (result == vk::Result::eSuccess)
-																						{
-																							for (size_t i = 0; i < 26; i++)
-																							{
-																								ptr->mDeviceState.mDescriptorImageInfo[i].sampler = ptr->mSampler;
-																								ptr->mDeviceState.mDescriptorImageInfo[i].imageView = ptr->mImageView;
-																								ptr->mDeviceState.mDescriptorImageInfo[i].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-																							}
-
-																							//mWriteDescriptorSet[0].dstSet = descriptorSet;
-																							ptr->mWriteDescriptorSet[0].dstBinding = 0;
-																							ptr->mWriteDescriptorSet[0].dstArrayElement = 0;
-																							ptr->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
-																							ptr->mWriteDescriptorSet[0].descriptorCount = 1;
-																							ptr->mWriteDescriptorSet[0].pBufferInfo = &ptr->mDescriptorBufferInfo[0];
-																							
-																							//mWriteDescriptorSet[1].dstSet = descriptorSet;
-																							ptr->mWriteDescriptorSet[1].dstBinding = 1;
-																							ptr->mWriteDescriptorSet[1].dstArrayElement = 0;
-																							ptr->mWriteDescriptorSet[1].descriptorType = vk::DescriptorType::eUniformBuffer;
-																							ptr->mWriteDescriptorSet[1].descriptorCount = 1;
-																							ptr->mWriteDescriptorSet[1].pBufferInfo = &ptr->mDescriptorBufferInfo[1];
-																							
-																							//mWriteDescriptorSet[2].dstSet = descriptorSet;
-																							ptr->mWriteDescriptorSet[2].dstBinding = 2;
-																							ptr->mWriteDescriptorSet[2].dstArrayElement = 0;
-																							ptr->mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eCombinedImageSampler;
-																							ptr->mWriteDescriptorSet[2].descriptorCount = 1;
-																							ptr->mWriteDescriptorSet[2].pImageInfo = ptr->mDeviceState.mDescriptorImageInfo;
-
-																							ptr->mCommandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
-																							ptr->mCommandBufferAllocateInfo.commandPool = ptr->mCommandPool;
-																							ptr->mCommandBufferAllocateInfo.commandBufferCount = 1;
-
-																							device->mDevice.allocateCommandBuffers(&ptr->mCommandBufferAllocateInfo, &ptr->mCommandBuffer);
-
-																							ptr->mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-
-																							ptr->mSubmitInfo.commandBufferCount = 1;
-																							ptr->mSubmitInfo.pCommandBuffers = &ptr->mCommandBuffer;
-
-																							//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
-																							ptr->CreateBuffer(sizeof(Light) * 4, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, ptr->mLightBuffer, ptr->mLightBufferMemory);
-																							ptr->CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, ptr->mMaterialBuffer, ptr->mMaterialBufferMemory);
-																						}
-																						else
-																						{
-																							BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
-																						}
-																					}
-																					else
-																					{
-																						BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSampler failed with return code of " << GetResultString((VkResult)result);
-																					}
-																				}
-																				else
-																				{
-																					BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkMapMemory failed.";
-																				}
-																			}
-																			else
-																			{
-																				BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-																			}
-																		}
-																		else
-																		{
-																			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImage failed with return code of " << GetResultString((VkResult)result);
-																		}
-																	}
-																	else
-																	{
-																		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreatePipelineCache failed with return code of " << GetResultString((VkResult)result);
-																	}
-																}
-																else
-																{
-																	BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSemaphore failed with return code of " << GetResultString((VkResult)result);
-																}
-															}
-															else
-															{
-																BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
-															}
-														}
-														else
-														{
-															BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
-														}
-													}
-													else
-													{
-														BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
-													}
-												}
-												else
-												{
-													BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-												}
-
-											}
-											else
-											{
-												BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImage failed with return code of " << GetResultString((VkResult)result);
-											}
-										}
-										else
-										{
-											BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetSwapchainImagesKHR failed with return code of " << GetResultString((VkResult)result);
-										}
-									}
-									else
-									{
-										BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetSwapchainImagesKHR failed with return code of " << GetResultString((VkResult)result);
-									}
-								}
-								else
-								{
-									BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSwapchainKHR failed with return code of " << GetResultString((VkResult)result);
-								}
-							}
-							else
-							{
-								BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString((VkResult)result);
-							}
-						}
-						else
-						{
-							BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString((VkResult)result);
-						}
-					}
-					else
-					{
-						BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString((VkResult)result);
-					}
-				}
-				else
-				{
-					BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString((VkResult)result);
-				}
-
-				mWindows.push_back(ptr);
-			}
-			else
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateCommandPool failed with return code of " << GetResultString((VkResult)result);
-			}		
+			graphicsQueueIndex = i;
+			presentationQueueIndex = i;
+			break;
 		}
-		else
+		else if (doesSupportPresentation && presentationQueueIndex == UINT32_MAX)
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed with return code of " << GetResultString((VkResult)result);
+			presentationQueueIndex = i;
 		}
+		else if (doesSupportGraphics && graphicsQueueIndex == UINT32_MAX)
+		{
+			graphicsQueueIndex = i;
+		}
+	}
+
+	/*
+	Now we need to setup our queues and buffers.
+	We'll start with a command pool because that is where we get command buffers from.
+	*/
+	vk::CommandPoolCreateInfo commandPoolInfo;
+	commandPoolInfo.queueFamilyIndex = graphicsQueueIndex; //Found earlier.
+	commandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+
+	result = device->mDevice.createCommandPool(&commandPoolInfo, nullptr, &ptr->mCommandPool);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateCommandPool failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//Create queue so we can submit command buffers.
+	device->mDevice.getQueue(graphicsQueueIndex, 0, &ptr->mQueue); //no result?
+
+	/*
+	Now pull some information about the surface so we can create the swapchain correctly.
+	*/
+	auto& presentationParameters = device9->mPresentationParameters;
+	auto& deviceState = ptr->mDeviceState;
+	auto& surfaceCapabilities = ptr->mSurfaceCapabilities;
+	if (surfaceCapabilities.currentExtent.width < (uint32_t)1 || surfaceCapabilities.currentExtent.height < (uint32_t)1)
+	{
+		//If the height/width are -1 then just set it to the requested size and hope for the best.
+		ptr->mSwapchainExtent.width = presentationParameters.BackBufferWidth;
+		ptr->mSwapchainExtent.height = presentationParameters.BackBufferHeight;
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateWin32SurfaceKHR failed with a return code of " << GetResultString((VkResult)result);
+		//Apparently the swap chain size must match the surface size if it is defined.
+		ptr->mSwapchainExtent = surfaceCapabilities.currentExtent;
+		presentationParameters.BackBufferWidth = surfaceCapabilities.currentExtent.width;
+		presentationParameters.BackBufferHeight = surfaceCapabilities.currentExtent.height;
 	}
+
+	//initialize vulkan/d3d9 viewport and scissor structures.
+	//mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
+	deviceState.mViewport.width = (float)presentationParameters.BackBufferWidth;
+	//mDeviceState.mViewport.height = -(float)mPresentationParameters.BackBufferHeight;
+	deviceState.mViewport.height = (float)presentationParameters.BackBufferHeight;
+	deviceState.mViewport.minDepth = 0.0f;
+	deviceState.mViewport.maxDepth = 1.0f;
+
+	deviceState.m9Viewport.Width = (DWORD)deviceState.mViewport.width;
+	deviceState.m9Viewport.Height = (DWORD)deviceState.mViewport.height;
+	deviceState.m9Viewport.MinZ = deviceState.mViewport.minDepth;
+	deviceState.m9Viewport.MaxZ = deviceState.mViewport.maxDepth;
+
+	deviceState.mScissor.offset.x = 0;
+	deviceState.mScissor.offset.y = 0;
+	deviceState.mScissor.extent.width = presentationParameters.BackBufferWidth;
+	deviceState.mScissor.extent.height = presentationParameters.BackBufferHeight;
+
+	deviceState.m9Scissor.right = presentationParameters.BackBufferWidth;
+	deviceState.m9Scissor.bottom = presentationParameters.BackBufferHeight;
+	deviceState.m9Scissor.left = 0;
+	deviceState.m9Scissor.top = 0;
+
+	result = physicaldevice.getSurfaceFormatsKHR(ptr->mSurface, &ptr->mSurfaceFormatCount, nullptr);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ptr->mSurfaceFormats = new vk::SurfaceFormatKHR[ptr->mSurfaceFormatCount];
+	result = physicaldevice.getSurfaceFormatsKHR(ptr->mSurface, &ptr->mSurfaceFormatCount, ptr->mSurfaceFormats);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	if (ptr->mSurfaceFormatCount == 1 && ptr->mSurfaceFormats[0].format == vk::Format::eUndefined)
+	{
+		ptr->mFormat = vk::Format::eB8G8R8A8Unorm; //No preferred format so set a default.
+	}
+	else
+	{
+		ptr->mFormat = ptr->mSurfaceFormats[0].format; //Pull the preferred format.
+	}
+
+	if (ptr->mSurfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)
+	{
+		transformFlags = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+	}
+	else
+	{
+		transformFlags = ptr->mSurfaceCapabilities.currentTransform;
+	}
+
+	result = physicaldevice.getSurfacePresentModesKHR(ptr->mSurface, &ptr->mPresentationModeCount, nullptr);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ptr->mPresentationModes = new vk::PresentModeKHR[ptr->mPresentationModeCount];
+	result = physicaldevice.getSurfacePresentModesKHR(ptr->mSurface, &ptr->mPresentationModeCount, ptr->mPresentationModes);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	/*
+	Trying modes in order of preference (Mailbox,immediate,FIFO)
+	VK_PRESENT_MODE_MAILBOX_KHR - Wait for the next vertical blanking interval to update the image. New images replace the one waiting to be displayed.
+	VK_PRESENT_MODE_IMMEDIATE_KHR - Do not wait for vertical blanking to update the image.
+	VK_PRESENT_MODE_FIFO_KHR - Wait for the next vertical blanking interval to update the image. If the interval is missed wait for the next one. New images will be queued for display.
+	*/
+	ptr->mSwapchainPresentMode = vk::PresentModeKHR::eFifo;
+	for (size_t i = 0; i < ptr->mPresentationModeCount; i++)
+	{
+		if (ptr->mPresentationModes[i] == vk::PresentModeKHR::eMailbox)
+		{
+			ptr->mSwapchainPresentMode = vk::PresentModeKHR::eMailbox;
+			break;
+		}
+		else if (ptr->mPresentationModes[i] == vk::PresentModeKHR::eImmediate)
+		{
+			ptr->mSwapchainPresentMode = vk::PresentModeKHR::eImmediate;
+		} //Already defaulted to FIFO so do nothing for else.
+	}
+
+	/*
+	Finally create the swap chain based on the information collected.
+	This swap chain will handle the work done by the implicit swap chain in D3D9.
+	*/
+	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
+	swapchainCreateInfo.surface = ptr->mSurface;
+	swapchainCreateInfo.minImageCount = ptr->mSurfaceCapabilities.minImageCount + 1;
+	swapchainCreateInfo.imageFormat = ptr->mFormat;
+	swapchainCreateInfo.imageColorSpace = ptr->mSurfaceFormats[0].colorSpace;
+	swapchainCreateInfo.imageExtent = ptr->mSwapchainExtent;
+	swapchainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
+	swapchainCreateInfo.preTransform = transformFlags;
+	swapchainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+	swapchainCreateInfo.imageArrayLayers = 1;
+	swapchainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
+	swapchainCreateInfo.queueFamilyIndexCount = 0;
+	swapchainCreateInfo.pQueueFamilyIndices = nullptr;
+	swapchainCreateInfo.presentMode = ptr->mSwapchainPresentMode;
+	swapchainCreateInfo.oldSwapchain = ptr->mSwapchain; //There is no old swapchain yet.
+	swapchainCreateInfo.clipped = true;
+
+	result = device->mDevice.createSwapchainKHR(&swapchainCreateInfo, nullptr, &ptr->mSwapchain);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSwapchainKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//Create the images (buffers) that will be used by the swap chain.
+	result = device->mDevice.getSwapchainImagesKHR(ptr->mSwapchain, &ptr->mSwapchainImageCount, nullptr);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetSwapchainImagesKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ptr->mSwapchainImages = new vk::Image[ptr->mSwapchainImageCount];
+	ptr->mSwapchainViews = new vk::ImageView[ptr->mSwapchainImageCount];
+	ptr->mSwapchainBuffers = new vk::CommandBuffer[ptr->mSwapchainImageCount];
+
+	result = device->mDevice.getSwapchainImagesKHR(ptr->mSwapchain, &ptr->mSwapchainImageCount, ptr->mSwapchainImages);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetSwapchainImagesKHR failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	for (size_t i = 0; i < ptr->mSwapchainImageCount; i++)
+	{
+		vk::ImageViewCreateInfo color_image_view;
+		color_image_view.format = ptr->mFormat;
+		color_image_view.components.r = vk::ComponentSwizzle::eIdentity;
+		color_image_view.components.g = vk::ComponentSwizzle::eIdentity;
+		color_image_view.components.b = vk::ComponentSwizzle::eIdentity;
+		color_image_view.components.a = vk::ComponentSwizzle::eIdentity;
+		color_image_view.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		color_image_view.subresourceRange.baseMipLevel = 0;
+		color_image_view.subresourceRange.levelCount = 1;
+		color_image_view.subresourceRange.baseArrayLayer = 0;
+		color_image_view.subresourceRange.layerCount = 1;
+		color_image_view.viewType = vk::ImageViewType::e2D;
+		color_image_view.image = ptr->mSwapchainImages[i];
+
+		result = device->mDevice.createImageView(&color_image_view, nullptr, &ptr->mSwapchainViews[i]);
+		if (result != vk::Result::eSuccess)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+			return;
+		}
+
+		vk::CommandBufferAllocateInfo commandBufferInfo;
+		commandBufferInfo.commandPool = ptr->mCommandPool;
+		commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
+		commandBufferInfo.commandBufferCount = 1;
+
+		result = device->mDevice.allocateCommandBuffers(&commandBufferInfo, &ptr->mSwapchainBuffers[i]);
+		if (result != vk::Result::eSuccess)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "CDevice9::CDevice9 vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
+			return;
+		}
+	} //for
+
+	/*
+	Setup Depth stuff.
+	*/
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e2D;
+	imageCreateInfo.format = depthFormat;
+	imageCreateInfo.extent = { device9->mPresentationParameters.BackBufferWidth,device9->mPresentationParameters.BackBufferHeight, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+
+	result = device->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mDepthImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	device->mDevice.getImageMemoryRequirements(ptr->mDepthImage, &memoryRequirements);
+
+	vk::MemoryAllocateInfo depthMemoryAllocateInfo;
+	depthMemoryAllocateInfo.memoryTypeIndex = 0;
+	depthMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &depthMemoryAllocateInfo.memoryTypeIndex);
+
+	result = device->mDevice.allocateMemory(&depthMemoryAllocateInfo, nullptr, &ptr->mDepthDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//c++ version doesn't return a result code.... I don't think I like that.
+	device->mDevice.bindImageMemory(ptr->mDepthImage, ptr->mDepthDeviceMemory, 0);
+
+	ptr->SetImageLayout(ptr->mDepthImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+	imageViewCreateInfo.format = depthFormat;
+	imageViewCreateInfo.subresourceRange = {};
+	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+	imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
+	imageViewCreateInfo.image = ptr->mDepthImage;
+
+	result = device->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mDepthView);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::AttachmentReference colorReference;
+	colorReference.attachment = 0;
+	colorReference.layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+	vk::AttachmentReference depthReference;
+	depthReference.attachment = 1;
+	depthReference.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+	vk::SubpassDescription subpass;
+	subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+	subpass.inputAttachmentCount = 0;
+	subpass.pInputAttachments = nullptr;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorReference;
+	subpass.pResolveAttachments = nullptr;
+	subpass.pDepthStencilAttachment = &depthReference;
+	subpass.preserveAttachmentCount = 0;
+	subpass.pPreserveAttachments = nullptr;
+
+	/*
+	Now setup the render pass.
+	*/
+	ptr->mRenderAttachments[0].format = ptr->mFormat;
+	ptr->mRenderAttachments[0].samples = vk::SampleCountFlagBits::e1;
+	ptr->mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
+	ptr->mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
+	ptr->mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+	ptr->mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+	ptr->mRenderAttachments[0].initialLayout = vk::ImageLayout::ePresentSrcKHR;
+	ptr->mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
+
+	ptr->mRenderAttachments[1].format = depthFormat;
+	ptr->mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
+	ptr->mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
+	ptr->mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
+	ptr->mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+	ptr->mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+	ptr->mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+	ptr->mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+	vk::RenderPassCreateInfo renderPassCreateInfo;
+	renderPassCreateInfo.attachmentCount = 2; //revisit
+	renderPassCreateInfo.pAttachments = ptr->mRenderAttachments;
+	renderPassCreateInfo.subpassCount = 1;
+	renderPassCreateInfo.pSubpasses = &subpass;
+	renderPassCreateInfo.dependencyCount = 0;
+	renderPassCreateInfo.pDependencies = nullptr;
+
+	result = device->mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &ptr->mStoreRenderPass);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ptr->mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
+	result = device->mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &ptr->mClearRenderPass);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	/*
+	Setup framebuffers to tie everything together.
+	*/
+
+	vk::ImageView attachments[2];
+	attachments[1] = ptr->mDepthView;
+
+	vk::FramebufferCreateInfo framebufferCreateInfo;
+	framebufferCreateInfo.renderPass = ptr->mStoreRenderPass;
+	framebufferCreateInfo.attachmentCount = 2; //revisit
+	framebufferCreateInfo.pAttachments = attachments;
+	framebufferCreateInfo.width = ptr->mSwapchainExtent.width; //revisit
+	framebufferCreateInfo.height = ptr->mSwapchainExtent.height; //revisit
+	framebufferCreateInfo.layers = 1;
+
+	ptr->mFramebuffers = new vk::Framebuffer[ptr->mSwapchainImageCount];
+
+	for (size_t i = 0; i < ptr->mSwapchainImageCount; i++)
+	{
+		attachments[0] = ptr->mSwapchainViews[i];
+		result = device->mDevice.createFramebuffer(&framebufferCreateInfo, nullptr, &ptr->mFramebuffers[i]);
+		if (result != vk::Result::eSuccess)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateFramebuffer failed with return code of " << GetResultString((VkResult)result);
+			return;
+		}
+	}
+
+	result = device->mDevice.createSemaphore(&ptr->mPresentCompleteSemaphoreCreateInfo, nullptr, &ptr->mPresentCompleteSemaphore);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSemaphore failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ptr->mPresentInfo.swapchainCount = 1;
+	ptr->mPresentInfo.pSwapchains = &ptr->mSwapchain;
+	ptr->mCommandBufferInheritanceInfo.subpass = 0;
+	ptr->mCommandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+	ptr->mCommandBufferBeginInfo.pInheritanceInfo = &ptr->mCommandBufferInheritanceInfo;
+
+	for (int32_t i = 0; i < 16; i++)
+	{
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_BORDERCOLOR] = 0;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAGFILTER] = D3DTEXF_POINT;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MINFILTER] = D3DTEXF_POINT;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MIPFILTER] = D3DTEXF_NONE;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MIPMAPLODBIAS] = 0;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAXMIPLEVEL] = 0;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_MAXANISOTROPY] = 1;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_SRGBTEXTURE] = 0;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_ELEMENTINDEX] = 0;
+		ptr->mDeviceState.mSamplerStates[i][D3DSAMP_DMAPOFFSET] = 0;
+	}
+
+	//Changed default state because -1 is used to indicate that it has not been set but actual state should be defaulted.
+	ptr->mDeviceState.mFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
+
+	Light light = {};
+	ptr->mDeviceState.mLights.push_back(light);
+	//mDeviceState.mLights.push_back(light);
+	//mDeviceState.mLights.push_back(light);
+	//mDeviceState.mLights.push_back(light);
+
+	//Load fixed function shaders.
+	ptr->mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
+	ptr->mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
+	ptr->mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX2.vert.spv");
+	ptr->mFragShaderModule_XYZ_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX2.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
+	ptr->mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv");
+	ptr->mFragShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
+	ptr->mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
+	ptr->mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.spv");
+	ptr->mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.spv");
+
+	ptr->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
+	ptr->mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
+
+	//pipeline stuff.
+	ptr->mPushConstantRanges[0].offset = 0;
+	ptr->mPushConstantRanges[0].size = UBO_SIZE * 2; //There are 2 matrices one for world transform and one for all transforms.
+	ptr->mPushConstantRanges[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics; //VK_SHADER_STAGE_ALL_GRAPHICS
+
+	ptr->mVertexSpecializationInfo.pData = &ptr->mDeviceState.mSpecializationConstants;
+	ptr->mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+
+	ptr->mPixelSpecializationInfo.pData = &ptr->mDeviceState.mSpecializationConstants;
+	ptr->mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+
+	ptr->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
+	ptr->mPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = ptr->mVertexInputBindingDescription;
+	ptr->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2; //reset later.
+	ptr->mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = ptr->mVertexInputAttributeDescription;
+
+	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eViewport;
+	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eScissor;
+	ptr->mDynamicStateEnables[ptr->mPipelineDynamicStateCreateInfo.dynamicStateCount++] = vk::DynamicState::eDepthBias;
+	ptr->mPipelineDynamicStateCreateInfo.pDynamicStates = ptr->mDynamicStateEnables;
+
+	ptr->mPipelineRasterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
+	ptr->mPipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eBack;
+	ptr->mPipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
+	ptr->mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+	ptr->mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+	ptr->mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
+	ptr->mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
+	ptr->mPipelineRasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
+	ptr->mPipelineRasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+	ptr->mPipelineRasterizationStateCreateInfo.depthBiasClamp = 0.0f;
+
+	ptr->mPipelineInputAssemblyStateCreateInfo.topology = vk::PrimitiveTopology::eTriangleList;
+
+	//ptr->mPipelineColorBlendAttachmentState[0].colorWriteMask = 0xf;
+	ptr->mPipelineColorBlendAttachmentState[0].blendEnable = VK_TRUE;
+	ptr->mPipelineColorBlendAttachmentState[0].colorBlendOp = vk::BlendOp::eAdd;
+	ptr->mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+	ptr->mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+	ptr->mPipelineColorBlendAttachmentState[0].alphaBlendOp = vk::BlendOp::eAdd;
+	ptr->mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = vk::BlendFactor::eOne;
+	ptr->mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = vk::BlendFactor::eZero;
+
+	ptr->mPipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+	ptr->mPipelineColorBlendStateCreateInfo.logicOp = vk::LogicOp::eNoOp;
+	ptr->mPipelineColorBlendStateCreateInfo.attachmentCount = 1;
+	ptr->mPipelineColorBlendStateCreateInfo.pAttachments = ptr->mPipelineColorBlendAttachmentState;
+	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[0] = 1.0f;
+	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[1] = 1.0f;
+	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[2] = 1.0f;
+	ptr->mPipelineColorBlendStateCreateInfo.blendConstants[3] = 1.0f;
+
+	ptr->mPipelineViewportStateCreateInfo.viewportCount = 1;
+	ptr->mPipelineViewportStateCreateInfo.scissorCount = 1;
+
+	ptr->mPipelineDepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+	ptr->mPipelineDepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+	ptr->mPipelineDepthStencilStateCreateInfo.depthCompareOp = vk::CompareOp::eLessOrEqual;
+	ptr->mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+	ptr->mPipelineDepthStencilStateCreateInfo.back.failOp = vk::StencilOp::eKeep;
+	ptr->mPipelineDepthStencilStateCreateInfo.back.passOp = vk::StencilOp::eKeep;
+	ptr->mPipelineDepthStencilStateCreateInfo.back.compareOp = vk::CompareOp::eAlways;
+	ptr->mPipelineDepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+	ptr->mPipelineDepthStencilStateCreateInfo.front = ptr->mPipelineDepthStencilStateCreateInfo.back;
+	ptr->mPipelineDepthStencilStateCreateInfo.minDepthBounds = 0.0f;
+	ptr->mPipelineDepthStencilStateCreateInfo.maxDepthBounds = 1.0f;
+
+	ptr->mPipelineMultisampleStateCreateInfo.pSampleMask = nullptr;
+	ptr->mPipelineMultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
+
+	ptr->mDescriptorSetLayoutCreateInfo.bindingCount = 1;
+	ptr->mDescriptorSetLayoutCreateInfo.pBindings = ptr->mDescriptorSetLayoutBinding;
+	ptr->mDescriptorSetLayoutCreateInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptorKHR;
+
+	ptr->mDescriptorSetAllocateInfo.descriptorPool = device->mDescriptorPool;
+	ptr->mDescriptorSetAllocateInfo.descriptorSetCount = 1;
+	//mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	ptr->mPipelineLayoutCreateInfo.setLayoutCount = 1;
+
+	ptr->mPipelineShaderStageCreateInfo[0].stage = vk::ShaderStageFlagBits::eVertex;
+	ptr->mPipelineShaderStageCreateInfo[0].module = ptr->mVertShaderModule_XYZ_DIFFUSE;
+	ptr->mPipelineShaderStageCreateInfo[0].pName = "main";
+	ptr->mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &ptr->mVertexSpecializationInfo;
+
+	ptr->mPipelineShaderStageCreateInfo[1].stage = vk::ShaderStageFlagBits::eFragment;
+	ptr->mPipelineShaderStageCreateInfo[1].module = ptr->mFragShaderModule_XYZ_DIFFUSE;
+	ptr->mPipelineShaderStageCreateInfo[1].pName = "main";
+	ptr->mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &ptr->mPixelSpecializationInfo;
+
+	ptr->mGraphicsPipelineCreateInfo.pVertexInputState = &ptr->mPipelineVertexInputStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.pInputAssemblyState = &ptr->mPipelineInputAssemblyStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.pRasterizationState = &ptr->mPipelineRasterizationStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.pColorBlendState = &ptr->mPipelineColorBlendStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.pDepthStencilState = &ptr->mPipelineDepthStencilStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.pViewportState = &ptr->mPipelineViewportStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.pMultisampleState = &ptr->mPipelineMultisampleStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.pStages = ptr->mPipelineShaderStageCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.renderPass = ptr->mStoreRenderPass;
+	ptr->mGraphicsPipelineCreateInfo.pDynamicState = &ptr->mPipelineDynamicStateCreateInfo;
+	ptr->mGraphicsPipelineCreateInfo.stageCount = 2;
+
+	result = device->mDevice.createPipelineCache(&ptr->mPipelineCacheCreateInfo, nullptr, &ptr->mPipelineCache);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreatePipelineCache failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	/*
+	Setup the texture to be written into the descriptor set.
+	*/
+	const vk::Format textureFormat = vk::Format::eB8G8R8A8Unorm;
+	vk::FormatProperties formatProperties;
+	const uint32_t textureColors[2] = { 0xffff0000, 0xff00ff00 };
+	const int32_t textureWidth = 1;
+	const int32_t textureHeight = 1;
+
+	physicaldevice.getFormatProperties(textureFormat, &formatProperties);
+
+	vk::ImageCreateInfo imageCreateInfo2;
+	imageCreateInfo2.imageType = vk::ImageType::e2D;
+	imageCreateInfo2.format = textureFormat;
+	imageCreateInfo2.extent = { (uint32_t)textureWidth, (uint32_t)textureHeight, 1 };
+	imageCreateInfo2.mipLevels = 1;
+	imageCreateInfo2.arrayLayers = 1;
+	imageCreateInfo2.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo2.tiling = vk::ImageTiling::eLinear;
+	imageCreateInfo2.usage = vk::ImageUsageFlagBits::eSampled;
+	//imageCreateInfo2.flags = 0;
+	imageCreateInfo2.initialLayout = vk::ImageLayout::ePreinitialized;
+
+	vk::MemoryAllocateInfo memoryAllocateInfo;
+	memoryAllocateInfo.allocationSize = 0;
+	memoryAllocateInfo.memoryTypeIndex = 0;
+
+	vk::MemoryRequirements memoryRequirements2;
+
+	result = device->mDevice.createImage(&imageCreateInfo2, nullptr, &ptr->mImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	device->mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements2);
+	memoryAllocateInfo.allocationSize = memoryRequirements2.size;
+	GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements2.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible, &memoryAllocateInfo.memoryTypeIndex);
+
+	result = device->mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	device->mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+
+	vk::ImageSubresource imageSubresource;
+	imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	imageSubresource.mipLevel = 0;
+	imageSubresource.arrayLayer = 0;
+
+	vk::SubresourceLayout subresourceLayout;
+	void* data = nullptr;
+	int32_t x = 0;
+	int32_t y = 0;
+
+	device->mDevice.getImageSubresourceLayout(ptr->mImage, &imageSubresource, &subresourceLayout);
+
+	data = device->mDevice.mapMemory(ptr->mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags()).value;
+	if (data == nullptr)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkMapMemory failed.";
+		return;
+	}
+
+	for (y = 0; y < textureHeight; y++)
+	{
+		uint32_t *row = (uint32_t *)((char *)data + subresourceLayout.rowPitch * y);
+		for (x = 0; x < textureWidth; x++)
+		{
+			row[x] = textureColors[(x & 1) ^ (y & 1)];
+		}
+	}
+
+	device->mDevice.unmapMemory(ptr->mDeviceMemory);
+	ptr->mImageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+	ptr->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::ePreinitialized, ptr->mImageLayout);
+
+	vk::SamplerCreateInfo samplerCreateInfo;
+	samplerCreateInfo.magFilter = vk::Filter::eNearest;
+	samplerCreateInfo.minFilter = vk::Filter::eNearest;
+	samplerCreateInfo.mipmapMode = vk::SamplerMipmapMode::eNearest;
+	samplerCreateInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
+	samplerCreateInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
+	samplerCreateInfo.addressModeW = vk::SamplerAddressMode::eRepeat;
+	samplerCreateInfo.mipLodBias = 0.0f;
+	samplerCreateInfo.anisotropyEnable = VK_FALSE;
+	samplerCreateInfo.maxAnisotropy = 1;
+	samplerCreateInfo.compareOp = vk::CompareOp::eNever;
+	samplerCreateInfo.minLod = 0.0f;
+	samplerCreateInfo.maxLod = 0.0f;
+	samplerCreateInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;
+	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+
+	result = device->mDevice.createSampler(&samplerCreateInfo, NULL, &ptr->mSampler);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSampler failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	vk::ImageViewCreateInfo imageViewCreateInfo2;
+	imageViewCreateInfo2.image = ptr->mImage;
+	imageViewCreateInfo2.viewType = vk::ImageViewType::e2D;
+	imageViewCreateInfo2.format = textureFormat;
+	imageViewCreateInfo2.components =
+	{
+		VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+		VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A,
+	};
+	imageViewCreateInfo2.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	//imageViewCreateInfo.flags = 0;
+
+	result = device->mDevice.createImageView(&imageViewCreateInfo2, nullptr, &ptr->mImageView);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	for (size_t i = 0; i < 16; i++)
+	{
+		ptr->mDeviceState.mDescriptorImageInfo[i].sampler = ptr->mSampler;
+		ptr->mDeviceState.mDescriptorImageInfo[i].imageView = ptr->mImageView;
+		ptr->mDeviceState.mDescriptorImageInfo[i].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+	}
+
+	//mWriteDescriptorSet[0].dstSet = descriptorSet;
+	ptr->mWriteDescriptorSet[0].dstBinding = 0;
+	ptr->mWriteDescriptorSet[0].dstArrayElement = 0;
+	ptr->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
+	ptr->mWriteDescriptorSet[0].descriptorCount = 1;
+	ptr->mWriteDescriptorSet[0].pBufferInfo = &ptr->mDescriptorBufferInfo[0];
+
+	//mWriteDescriptorSet[1].dstSet = descriptorSet;
+	ptr->mWriteDescriptorSet[1].dstBinding = 1;
+	ptr->mWriteDescriptorSet[1].dstArrayElement = 0;
+	ptr->mWriteDescriptorSet[1].descriptorType = vk::DescriptorType::eUniformBuffer;
+	ptr->mWriteDescriptorSet[1].descriptorCount = 1;
+	ptr->mWriteDescriptorSet[1].pBufferInfo = &ptr->mDescriptorBufferInfo[1];
+
+	//mWriteDescriptorSet[2].dstSet = descriptorSet;
+	ptr->mWriteDescriptorSet[2].dstBinding = 2;
+	ptr->mWriteDescriptorSet[2].dstArrayElement = 0;
+	ptr->mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	ptr->mWriteDescriptorSet[2].descriptorCount = 1;
+	ptr->mWriteDescriptorSet[2].pImageInfo = ptr->mDeviceState.mDescriptorImageInfo;
+
+	ptr->mCommandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
+	ptr->mCommandBufferAllocateInfo.commandPool = ptr->mCommandPool;
+	ptr->mCommandBufferAllocateInfo.commandBufferCount = 1;
+
+	device->mDevice.allocateCommandBuffers(&ptr->mCommandBufferAllocateInfo, &ptr->mCommandBuffer);
+
+	ptr->mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
+	ptr->mSubmitInfo.commandBufferCount = 1;
+	ptr->mSubmitInfo.pCommandBuffers = &ptr->mCommandBuffer;
+
+	//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
+	ptr->CreateBuffer(sizeof(Light) * 4, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, ptr->mLightBuffer, ptr->mLightBufferMemory);
+	ptr->CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, ptr->mMaterialBuffer, ptr->mMaterialBufferMemory);
 }
 
 void StateManager::DestroyInstance(size_t id)
@@ -1454,11 +1438,11 @@ void StateManager::DestroyVertexBuffer(size_t id)
 	mVertexBuffers[id].reset();
 }
 
-void StateManager::CreateVertexBuffer(size_t id, boost::any argument1)
+void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 {
 	vk::Result result;
 	auto window = mWindows[id];
-	CVertexBuffer9* vertexBuffer9 = boost::any_cast<CVertexBuffer9*>(argument1);
+	CVertexBuffer9* vertexBuffer9 = bit_cast<CVertexBuffer9*>(argument1);
 	auto ptr = std::make_shared<RealVertexBuffer>(window.get());
 
 	vk::BufferCreateInfo bufferCreateInfo;
@@ -1564,11 +1548,11 @@ void StateManager::DestroyIndexBuffer(size_t id)
 	mIndexBuffers[id].reset();
 }
 
-void StateManager::CreateIndexBuffer(size_t id, boost::any argument1)
+void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 {
 	vk::Result result;
 	auto window = mWindows[id];
-	CIndexBuffer9* indexBuffer9 = boost::any_cast<CIndexBuffer9*>(argument1);
+	CIndexBuffer9* indexBuffer9 = bit_cast<CIndexBuffer9*>(argument1);
 	auto ptr = std::make_shared<RealIndexBuffer>(window.get());
 
 	vk::BufferCreateInfo bufferCreateInfo;
@@ -1627,11 +1611,11 @@ void StateManager::DestroyTexture(size_t id)
 	mTextures[id].reset();
 }
 
-void StateManager::CreateTexture(size_t id, boost::any argument1)
+void StateManager::CreateTexture(size_t id, void* argument1)
 {
 	vk::Result result;
 	auto window = mWindows[id];
-	CTexture9* texture9 = boost::any_cast<CTexture9*>(argument1);
+	CTexture9* texture9 = bit_cast<CTexture9*>(argument1);
 	auto ptr = std::make_shared<RealTexture>(window.get());
 
 	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
@@ -1657,7 +1641,7 @@ void StateManager::CreateTexture(size_t id, boost::any argument1)
 
 	vk::MemoryRequirements memoryRequirements;
 	window->mRealDevice->mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
-	
+
 	//mMemoryAllocateInfo.allocationSize = 0;
 	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
 	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
@@ -1702,11 +1686,11 @@ void StateManager::DestroyCubeTexture(size_t id)
 	mTextures[id].reset();
 }
 
-void StateManager::CreateCubeTexture(size_t id, boost::any argument1)
+void StateManager::CreateCubeTexture(size_t id, void* argument1)
 {
 	vk::Result result;
 	auto window = mWindows[id];
-	CCubeTexture9* texture9 = boost::any_cast<CCubeTexture9*>(argument1);
+	CCubeTexture9* texture9 = bit_cast<CCubeTexture9*>(argument1);
 	auto ptr = std::make_shared<RealTexture>(window.get());
 
 	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
@@ -1777,11 +1761,11 @@ void StateManager::DestroySurface(size_t id)
 	mSurfaces[id].reset();
 }
 
-void StateManager::CreateSurface(size_t id, boost::any argument1)
+void StateManager::CreateSurface(size_t id, void* argument1)
 {
 	vk::Result result;
 	auto window = mWindows[id];
-	CSurface9* surface9 = boost::any_cast<CSurface9*>(argument1);
+	CSurface9* surface9 = bit_cast<CSurface9*>(argument1);
 	auto ptr = std::make_shared<RealSurface>(window.get());
 
 	ptr->mRealFormat = ConvertFormat(surface9->mFormat);
@@ -1843,13 +1827,13 @@ void StateManager::DestroyShader(size_t id)
 	mShaderConverters[id].reset();
 }
 
-void StateManager::CreateShader(size_t id, boost::any argument1, boost::any argument2, boost::any argument3)
+void StateManager::CreateShader(size_t id, void* argument1, void* argument2, void* argument3)
 {
 	//vk::Result result;
 	auto window = mWindows[id];
-	DWORD* pFunction = boost::any_cast<DWORD*>(argument1);
-	bool isVertex = boost::any_cast<bool>(argument2);
-	size_t* size = boost::any_cast<size_t*>(argument3);
+	DWORD* pFunction = (DWORD*)(argument1);
+	bool isVertex = (bool)(argument2);
+	size_t* size = (size_t*)(argument3);
 
 	if (isVertex)
 	{

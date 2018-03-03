@@ -549,7 +549,7 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetViewport
 	D3DVIEWPORT9 m9Viewport = {};
-	vk::Viewport mViewport = {};
+	vk::Viewport mViewport;
 
 	//IDirect3DDevice9::SetVertexDeclaration
 	CVertexDeclaration9* mVertexDeclaration = nullptr;

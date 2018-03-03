@@ -1084,7 +1084,7 @@ inline TargetType bit_cast(const SourceType& source) noexcept
 	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise cast both types must be the same size.");
 	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
 	TargetType returnValue;
-	memcpy(&returnValue, &source, sizeof(target));
+	memcpy(&returnValue, &source, sizeof(TargetType));
 	return returnValue;
 }
 

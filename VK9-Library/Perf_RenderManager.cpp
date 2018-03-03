@@ -279,7 +279,7 @@ void RenderManager::Clear(RealWindow& realWindow, DWORD Count, const D3DRECT *pR
 	}
 	else
 	{
-		this->StartScene(realWindow);
+		this->StartScene(realWindow,true);
 	}
 }
 
@@ -287,7 +287,7 @@ void RenderManager::Present(RealWindow& realWindow, const RECT *pSourceRect, con
 {
 	if (!realWindow.mIsSceneStarted)
 	{
-		this->StartScene(realWindow);
+		this->StartScene(realWindow, true);
 	}
 	this->StopScene(realWindow);
 
@@ -324,7 +324,7 @@ void RenderManager::DrawIndexedPrimitive(RealWindow& realWindow, D3DPRIMITIVETYP
 
 	if (!realWindow.mIsSceneStarted)
 	{
-		this->StartScene(realWindow);
+		this->StartScene(realWindow, true);
 	}
 
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(&realWindow);
@@ -343,7 +343,7 @@ void RenderManager::DrawPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE Primi
 {
 	if (!realWindow.mIsSceneStarted)
 	{
-		this->StartScene(realWindow);
+		this->StartScene(realWindow, true);
 	}
 
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(&realWindow);

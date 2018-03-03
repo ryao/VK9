@@ -276,9 +276,9 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DA
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::Instance_GetAdapterIdentifier;
 	workItem->Id = mId;
-	workItem->Argument1 = Adapter;
-	workItem->Argument2 = Flags;
-	workItem->Argument3 = pIdentifier;
+	workItem->Argument1 = (void*)Adapter;
+	workItem->Argument2 = (void*)Flags;
+	workItem->Argument3 = (void*)pIdentifier;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;	
@@ -312,9 +312,9 @@ HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::Instance_GetDeviceCaps;
 	workItem->Id = mId;
-	workItem->Argument1 = Adapter;
-	workItem->Argument2 = DeviceType;
-	workItem->Argument3 = pCaps;
+	workItem->Argument1 = (void*)Adapter;
+	workItem->Argument2 = (void*)DeviceType;
+	workItem->Argument3 = (void*)pCaps;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;	

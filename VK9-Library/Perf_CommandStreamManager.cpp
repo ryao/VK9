@@ -134,12 +134,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_Clear:
 			{
-				DWORD Count = boost::any_cast<DWORD>(workItem->Argument1);
-				D3DRECT* pRects = boost::any_cast<D3DRECT*>(workItem->Argument2);
-				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument3);
-				D3DCOLOR Color = boost::any_cast<D3DCOLOR>(workItem->Argument4);
-				float Z = boost::any_cast<float>(workItem->Argument5);
-				DWORD Stencil = boost::any_cast<DWORD>(workItem->Argument6);
+				DWORD Count = bit_cast<DWORD>(workItem->Argument1);
+				D3DRECT* pRects = bit_cast<D3DRECT*>(workItem->Argument2);
+				DWORD Flags = bit_cast<DWORD>(workItem->Argument3);
+				D3DCOLOR Color = bit_cast<D3DCOLOR>(workItem->Argument4);
+				float Z = bit_cast<float>(workItem->Argument5);
+				DWORD Stencil = bit_cast<DWORD>(workItem->Argument6);
 
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 				commandStreamManager->mRenderManager.Clear(realWindow, Count, pRects, Flags, Color, Z, Stencil);
@@ -151,16 +151,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realWindow = (*renderManager.mStateManager.mWindows[workItem->Id]);
 				if (!realWindow.mIsSceneStarted)
 				{
-					renderManager.StartScene(realWindow);
+					renderManager.StartScene(realWindow,true);
 				}
 			}
 			break;
 			case Device_Present:
 			{
-				RECT* pSourceRect = boost::any_cast<RECT*>(workItem->Argument1);
-				RECT* pDestRect = boost::any_cast<RECT*>(workItem->Argument2);
-				HWND hDestWindowOverride = boost::any_cast<HWND>(workItem->Argument3);
-				RGNDATA* pDirtyRegion = boost::any_cast<RGNDATA*>(workItem->Argument4);
+				RECT* pSourceRect = bit_cast<RECT*>(workItem->Argument1);
+				RECT* pDestRect = bit_cast<RECT*>(workItem->Argument2);
+				HWND hDestWindowOverride = bit_cast<HWND>(workItem->Argument3);
+				RGNDATA* pDirtyRegion = bit_cast<RGNDATA*>(workItem->Argument4);
 
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 				commandStreamManager->mRenderManager.Present(realWindow, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
@@ -169,19 +169,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_BeginStateBlock:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				CDevice9* device = boost::any_cast<CDevice9*>(workItem->Argument1);
+				CDevice9* device = bit_cast<CDevice9*>(workItem->Argument1);
 
 				realWindow.mCurrentStateRecording = new CStateBlock9(device);
 			}
 			break;
 			case Device_DrawIndexedPrimitive:
 			{
-				D3DPRIMITIVETYPE Type = boost::any_cast<D3DPRIMITIVETYPE>(workItem->Argument1);
-				INT BaseVertexIndex = boost::any_cast<INT>(workItem->Argument2);
-				UINT MinIndex = boost::any_cast<UINT>(workItem->Argument3);
-				UINT NumVertices = boost::any_cast<UINT>(workItem->Argument4);
-				UINT StartIndex = boost::any_cast<UINT>(workItem->Argument5);
-				UINT PrimitiveCount = boost::any_cast<UINT>(workItem->Argument6);
+				D3DPRIMITIVETYPE Type = bit_cast<D3DPRIMITIVETYPE>(workItem->Argument1);
+				INT BaseVertexIndex = bit_cast<INT>(workItem->Argument2);
+				UINT MinIndex = bit_cast<UINT>(workItem->Argument3);
+				UINT NumVertices = bit_cast<UINT>(workItem->Argument4);
+				UINT StartIndex = bit_cast<UINT>(workItem->Argument5);
+				UINT PrimitiveCount = bit_cast<UINT>(workItem->Argument6);
 
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 				commandStreamManager->mRenderManager.DrawIndexedPrimitive(realWindow, Type, BaseVertexIndex, MinIndex, NumVertices, StartIndex, PrimitiveCount);
@@ -189,9 +189,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_DrawPrimitive:
 			{
-				D3DPRIMITIVETYPE PrimitiveType = boost::any_cast<D3DPRIMITIVETYPE>(workItem->Argument1);
-				UINT StartVertex = boost::any_cast<UINT>(workItem->Argument2);
-				UINT PrimitiveCount = boost::any_cast<UINT>(workItem->Argument3);
+				D3DPRIMITIVETYPE PrimitiveType = bit_cast<D3DPRIMITIVETYPE>(workItem->Argument1);
+				UINT StartVertex = bit_cast<UINT>(workItem->Argument2);
+				UINT PrimitiveCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 				commandStreamManager->mRenderManager.DrawPrimitive(realWindow, PrimitiveType, StartVertex, PrimitiveCount);
@@ -199,7 +199,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_EndStateBlock:
 			{
-				IDirect3DStateBlock9** ppSB = boost::any_cast<IDirect3DStateBlock9**>(workItem->Argument1);
+				IDirect3DStateBlock9** ppSB = bit_cast<IDirect3DStateBlock9**>(workItem->Argument1);
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 
 				(*ppSB) = realWindow.mCurrentStateRecording;
@@ -208,8 +208,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetDisplayMode:
 			{
-				UINT iSwapChain = boost::any_cast<UINT>(workItem->Argument1);
-				D3DDISPLAYMODE* pMode = boost::any_cast<D3DDISPLAYMODE*>(workItem->Argument2);
+				UINT iSwapChain = bit_cast<UINT>(workItem->Argument1);
+				D3DDISPLAYMODE* pMode = bit_cast<D3DDISPLAYMODE*>(workItem->Argument2);
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 
 				if (iSwapChain)
@@ -228,7 +228,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetFVF:
 			{
-				DWORD* pFVF = boost::any_cast<DWORD*>(workItem->Argument1);
+				DWORD* pFVF = bit_cast<DWORD*>(workItem->Argument1);
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 
 				(*pFVF) = realWindow.mDeviceState.mFVF;
@@ -237,8 +237,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetLight:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Index = boost::any_cast<DWORD>(workItem->Argument1);
-				D3DLIGHT9* pLight = boost::any_cast<D3DLIGHT9*>(workItem->Argument2);
+				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
+				D3DLIGHT9* pLight = bit_cast<D3DLIGHT9*>(workItem->Argument2);
 				auto& light = realWindow.mDeviceState.mLights[Index];
 
 				pLight->Type = (*(D3DLIGHTTYPE*)light.Type);
@@ -261,8 +261,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetLightEnable:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Index = boost::any_cast<DWORD>(workItem->Argument1);
-				BOOL* pEnable = boost::any_cast<BOOL*>(workItem->Argument2);
+				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
+				BOOL* pEnable = bit_cast<BOOL*>(workItem->Argument2);
 
 				(*pEnable) = realWindow.mDeviceState.mLights[Index].IsEnabled;
 			}
@@ -270,7 +270,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetMaterial:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DMATERIAL9* pMaterial = boost::any_cast<D3DMATERIAL9*>(workItem->Argument1);
+				D3DMATERIAL9* pMaterial = bit_cast<D3DMATERIAL9*>(workItem->Argument1);
 
 				(*pMaterial) = realWindow.mDeviceState.mMaterial;
 			}
@@ -278,7 +278,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetNPatchMode:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				FLOAT* output = boost::any_cast<FLOAT*>(workItem->Argument1);
+				FLOAT* output = bit_cast<FLOAT*>(workItem->Argument1);
 
 				(*output) = realWindow.mDeviceState.mNSegments;
 			}
@@ -286,7 +286,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetPixelShader:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DPixelShader9** ppShader = boost::any_cast<IDirect3DPixelShader9**>(workItem->Argument1);
+				IDirect3DPixelShader9** ppShader = bit_cast<IDirect3DPixelShader9**>(workItem->Argument1);
 
 				(*ppShader) = (IDirect3DPixelShader9*)realWindow.mDeviceState.mPixelShader;
 			}
@@ -294,9 +294,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetPixelShaderConstantB:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				BOOL* pConstantData = boost::any_cast<BOOL*>(workItem->Argument2);
-				UINT BoolCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
+				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
@@ -308,9 +308,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetPixelShaderConstantF:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				float* pConstantData = boost::any_cast<float*>(workItem->Argument2);
-				UINT Vector4fCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				float* pConstantData = bit_cast<float*>(workItem->Argument2);
+				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -324,9 +324,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetPixelShaderConstantI:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				int* pConstantData = boost::any_cast<int*>(workItem->Argument2);
-				UINT Vector4iCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				int* pConstantData = bit_cast<int*>(workItem->Argument2);
+				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -340,8 +340,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetRenderState:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DRENDERSTATETYPE State = boost::any_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
-				DWORD* pValue = boost::any_cast<DWORD*>(workItem->Argument2);
+				D3DRENDERSTATETYPE State = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
+				DWORD* pValue = bit_cast<DWORD*>(workItem->Argument2);
 
 				SpecializationConstants* constants = nullptr;
 
@@ -674,9 +674,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetSamplerState:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Sampler = boost::any_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
-				D3DSAMPLERSTATETYPE Type = boost::any_cast<D3DSAMPLERSTATETYPE>(workItem->Argument2);
-				DWORD* pValue = boost::any_cast<DWORD*>(workItem->Argument3);
+				DWORD Sampler = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
+				D3DSAMPLERSTATETYPE Type = bit_cast<D3DSAMPLERSTATETYPE>(workItem->Argument2);
+				DWORD* pValue = bit_cast<DWORD*>(workItem->Argument3);
 
 				(*pValue) = realWindow.mDeviceState.mSamplerStates[Sampler][Type];
 			}
@@ -684,7 +684,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetScissorRect:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				RECT* pRect = boost::any_cast<RECT*>(workItem->Argument1);
+				RECT* pRect = bit_cast<RECT*>(workItem->Argument1);
 
 				(*pRect) = realWindow.mDeviceState.m9Scissor;
 			}
@@ -692,10 +692,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetStreamSource:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StreamNumber = boost::any_cast<UINT>(workItem->Argument1);
-				IDirect3DVertexBuffer9** ppStreamData = boost::any_cast<IDirect3DVertexBuffer9**>(workItem->Argument2);
-				UINT* pOffsetInBytes = boost::any_cast<UINT*>(workItem->Argument3);
-				UINT* pStride = boost::any_cast<UINT*>(workItem->Argument4);
+				UINT StreamNumber = bit_cast<UINT>(workItem->Argument1);
+				IDirect3DVertexBuffer9** ppStreamData = bit_cast<IDirect3DVertexBuffer9**>(workItem->Argument2);
+				UINT* pOffsetInBytes = bit_cast<UINT*>(workItem->Argument3);
+				UINT* pStride = bit_cast<UINT*>(workItem->Argument4);
 
 				StreamSource& value = realWindow.mDeviceState.mStreamSources[StreamNumber];
 
@@ -711,8 +711,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetTexture:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Stage = boost::any_cast<DWORD>(workItem->Argument1);
-				IDirect3DBaseTexture9** ppTexture = boost::any_cast<IDirect3DBaseTexture9**>(workItem->Argument2);
+				DWORD Stage = bit_cast<DWORD>(workItem->Argument1);
+				IDirect3DBaseTexture9** ppTexture = bit_cast<IDirect3DBaseTexture9**>(workItem->Argument2);
 
 				DeviceState* state = NULL;
 
@@ -739,9 +739,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetTextureStageState:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Stage = boost::any_cast<DWORD>(workItem->Argument1);
-				D3DTEXTURESTAGESTATETYPE Type = boost::any_cast<D3DTEXTURESTAGESTATETYPE>(workItem->Argument2);
-				DWORD* pValue = boost::any_cast<DWORD*>(workItem->Argument3);
+				DWORD Stage = bit_cast<DWORD>(workItem->Argument1);
+				D3DTEXTURESTAGESTATETYPE Type = bit_cast<D3DTEXTURESTAGESTATETYPE>(workItem->Argument2);
+				DWORD* pValue = bit_cast<DWORD*>(workItem->Argument3);
 
 				DeviceState* state = nullptr;
 
@@ -1322,8 +1322,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetTransform:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DTRANSFORMSTATETYPE State = boost::any_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
-				D3DMATRIX* pMatrix = boost::any_cast<D3DMATRIX*>(workItem->Argument2);
+				D3DTRANSFORMSTATETYPE State = bit_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
+				D3DMATRIX* pMatrix = bit_cast<D3DMATRIX*>(workItem->Argument2);
 
 				(*pMatrix) = realWindow.mDeviceState.mTransforms[State];
 			}
@@ -1331,7 +1331,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetVertexDeclaration:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DVertexDeclaration9** ppDecl = boost::any_cast<IDirect3DVertexDeclaration9**>(workItem->Argument1);
+				IDirect3DVertexDeclaration9** ppDecl = bit_cast<IDirect3DVertexDeclaration9**>(workItem->Argument1);
 
 				(*ppDecl) = (IDirect3DVertexDeclaration9*)realWindow.mDeviceState.mVertexDeclaration;
 			}
@@ -1339,7 +1339,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetVertexShader:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DVertexShader9** ppShader = boost::any_cast<IDirect3DVertexShader9**>(workItem->Argument1);
+				IDirect3DVertexShader9** ppShader = bit_cast<IDirect3DVertexShader9**>(workItem->Argument1);
 
 				(*ppShader) = (IDirect3DVertexShader9*)realWindow.mDeviceState.mVertexShader;
 			}
@@ -1347,9 +1347,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetVertexShaderConstantB:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				BOOL* pConstantData = boost::any_cast<BOOL*>(workItem->Argument2);
-				UINT BoolCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
+				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
@@ -1361,9 +1361,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetVertexShaderConstantF:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				float* pConstantData = boost::any_cast<float*>(workItem->Argument2);
-				UINT Vector4fCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				float* pConstantData = bit_cast<float*>(workItem->Argument2);
+				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -1384,9 +1384,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetVertexShaderConstantI:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				int* pConstantData = boost::any_cast<int*>(workItem->Argument2);
-				UINT Vector4iCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				int* pConstantData = bit_cast<int*>(workItem->Argument2);
+				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -1400,7 +1400,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_GetViewport:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DVIEWPORT9* pViewport = boost::any_cast<D3DVIEWPORT9*>(workItem->Argument1);
+				D3DVIEWPORT9* pViewport = bit_cast<D3DVIEWPORT9*>(workItem->Argument1);
 
 				(*pViewport) = realWindow.mDeviceState.m9Viewport;
 			}
@@ -1408,8 +1408,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_LightEnable:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD LightIndex = boost::any_cast<DWORD>(workItem->Argument1);
-				BOOL bEnable = boost::any_cast<BOOL>(workItem->Argument2);
+				DWORD LightIndex = bit_cast<DWORD>(workItem->Argument1);
+				BOOL bEnable = bit_cast<BOOL>(workItem->Argument2);
 
 				DeviceState* state = nullptr;
 
@@ -1440,7 +1440,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetFVF:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD FVF = boost::any_cast<DWORD>(workItem->Argument1);
+				DWORD FVF = bit_cast<DWORD>(workItem->Argument1);
 
 				if (realWindow.mCurrentStateRecording != nullptr)
 				{
@@ -1459,7 +1459,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetIndices:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DIndexBuffer9* pIndexData = boost::any_cast<IDirect3DIndexBuffer9*>(workItem->Argument1);
+				IDirect3DIndexBuffer9* pIndexData = bit_cast<IDirect3DIndexBuffer9*>(workItem->Argument1);
 				auto realIndex = commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[((CIndexBuffer9*)pIndexData)->mId];
 
 				DeviceState* state = nullptr;
@@ -1481,8 +1481,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetLight:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Index = boost::any_cast<DWORD>(workItem->Argument1);
-				D3DLIGHT9* pLight = boost::any_cast<D3DLIGHT9*>(workItem->Argument2);
+				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
+				D3DLIGHT9* pLight = bit_cast<D3DLIGHT9*>(workItem->Argument2);
 
 				DeviceState* state = nullptr;
 
@@ -1548,7 +1548,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetMaterial:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DMATERIAL9* pMaterial = boost::any_cast<D3DMATERIAL9*>(workItem->Argument1);
+				D3DMATERIAL9* pMaterial = bit_cast<D3DMATERIAL9*>(workItem->Argument1);
 
 				if (realWindow.mCurrentStateRecording != nullptr)
 				{
@@ -1565,7 +1565,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetNPatchMode:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				float nSegments = boost::any_cast<float>(workItem->Argument1);
+				float nSegments = bit_cast<float>(workItem->Argument1);
 
 				if (nSegments > 0.0f)
 				{
@@ -1585,7 +1585,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetPixelShader:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DPixelShader9* pShader = boost::any_cast<IDirect3DPixelShader9*>(workItem->Argument1);
+				IDirect3DPixelShader9* pShader = bit_cast<IDirect3DPixelShader9*>(workItem->Argument1);
 
 				if (pShader != nullptr)
 				{
@@ -1612,9 +1612,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetPixelShaderConstantB:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				BOOL* pConstantData = boost::any_cast<BOOL*>(workItem->Argument2);
-				UINT BoolCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
+				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
@@ -1626,9 +1626,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetPixelShaderConstantF:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				float* pConstantData = boost::any_cast<float*>(workItem->Argument2);
-				UINT Vector4fCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				float* pConstantData = bit_cast<float*>(workItem->Argument2);
+				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -1642,9 +1642,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetPixelShaderConstantI:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				int* pConstantData = boost::any_cast<int*>(workItem->Argument2);
-				UINT Vector4iCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				int* pConstantData = bit_cast<int*>(workItem->Argument2);
+				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -1658,8 +1658,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetRenderState:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DRENDERSTATETYPE State = boost::any_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
-				DWORD Value = boost::any_cast<DWORD>(workItem->Argument2);
+				D3DRENDERSTATETYPE State = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
+				DWORD Value = bit_cast<DWORD>(workItem->Argument2);
 
 				SpecializationConstants* constants = nullptr;
 				DeviceState* state = NULL;
@@ -2098,9 +2098,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetSamplerState:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Sampler = boost::any_cast<DWORD>(workItem->Argument1);
-				D3DSAMPLERSTATETYPE Type = boost::any_cast<D3DSAMPLERSTATETYPE>(workItem->Argument2);
-				DWORD Value = boost::any_cast<DWORD>(workItem->Argument3);
+				DWORD Sampler = bit_cast<DWORD>(workItem->Argument1);
+				D3DSAMPLERSTATETYPE Type = bit_cast<D3DSAMPLERSTATETYPE>(workItem->Argument2);
+				DWORD Value = bit_cast<DWORD>(workItem->Argument3);
 
 				DeviceState* state = NULL;
 
@@ -2119,7 +2119,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetScissorRect:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				RECT* pRect = boost::any_cast<RECT*>(workItem->Argument1);
+				RECT* pRect = bit_cast<RECT*>(workItem->Argument1);
 
 				if (realWindow.mCurrentStateRecording != nullptr)
 				{
@@ -2144,10 +2144,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetStreamSource:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StreamNumber = boost::any_cast<UINT>(workItem->Argument1);
-				IDirect3DVertexBuffer9* pStreamData = boost::any_cast<IDirect3DVertexBuffer9*>(workItem->Argument2);
-				UINT OffsetInBytes = boost::any_cast<UINT>(workItem->Argument3);
-				UINT Stride = boost::any_cast<UINT>(workItem->Argument4);
+				UINT StreamNumber = bit_cast<UINT>(workItem->Argument1);
+				IDirect3DVertexBuffer9* pStreamData = bit_cast<IDirect3DVertexBuffer9*>(workItem->Argument2);
+				UINT OffsetInBytes = bit_cast<UINT>(workItem->Argument3);
+				UINT Stride = bit_cast<UINT>(workItem->Argument4);
 
 				CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
 
@@ -2164,8 +2164,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetTexture:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Sampler = boost::any_cast<DWORD>(workItem->Argument1);
-				IDirect3DBaseTexture9* pTexture = boost::any_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
+				DWORD Sampler = bit_cast<DWORD>(workItem->Argument1);
+				IDirect3DBaseTexture9* pTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
 
 				DeviceState* state = NULL;
 
@@ -2196,9 +2196,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetTextureStageState:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				DWORD Stage = boost::any_cast<DWORD>(workItem->Argument1);
-				D3DTEXTURESTAGESTATETYPE Type = boost::any_cast<D3DTEXTURESTAGESTATETYPE>(workItem->Argument2);
-				DWORD Value = boost::any_cast<DWORD>(workItem->Argument3);
+				DWORD Stage = bit_cast<DWORD>(workItem->Argument1);
+				D3DTEXTURESTAGESTATETYPE Type = bit_cast<D3DTEXTURESTAGESTATETYPE>(workItem->Argument2);
+				DWORD Value = bit_cast<DWORD>(workItem->Argument3);
 
 				DeviceState* state = nullptr;
 
@@ -2779,8 +2779,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetTransform:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DTRANSFORMSTATETYPE State = boost::any_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
-				D3DMATRIX* pMatrix = boost::any_cast<D3DMATRIX*>(workItem->Argument2);
+				D3DTRANSFORMSTATETYPE State = bit_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
+				D3DMATRIX* pMatrix = bit_cast<D3DMATRIX*>(workItem->Argument2);
 
 				if (realWindow.mCurrentStateRecording != nullptr)
 				{
@@ -2797,7 +2797,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetVertexDeclaration:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DVertexDeclaration9* pDecl = boost::any_cast<IDirect3DVertexDeclaration9*>(workItem->Argument1);
+				IDirect3DVertexDeclaration9* pDecl = bit_cast<IDirect3DVertexDeclaration9*>(workItem->Argument1);
 
 				if (realWindow.mCurrentStateRecording != nullptr)
 				{
@@ -2818,7 +2818,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetVertexShader:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DVertexShader9* pShader = boost::any_cast<IDirect3DVertexShader9*>(workItem->Argument1);
+				IDirect3DVertexShader9* pShader = bit_cast<IDirect3DVertexShader9*>(workItem->Argument1);
 
 				if (pShader != nullptr)
 				{
@@ -2846,9 +2846,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetVertexShaderConstantB:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				BOOL* pConstantData = boost::any_cast<BOOL*>(workItem->Argument2);
-				UINT BoolCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
+				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
@@ -2860,9 +2860,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetVertexShaderConstantF:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				float* pConstantData = boost::any_cast<float*>(workItem->Argument2);
-				UINT Vector4fCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				float* pConstantData = bit_cast<float*>(workItem->Argument2);
+				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -2883,9 +2883,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetVertexShaderConstantI:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				UINT StartRegister = boost::any_cast<UINT>(workItem->Argument1);
-				int* pConstantData = boost::any_cast<int*>(workItem->Argument2);
-				UINT Vector4iCount = boost::any_cast<UINT>(workItem->Argument3);
+				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
+				int* pConstantData = bit_cast<int*>(workItem->Argument2);
+				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
 				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -2899,7 +2899,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_SetViewport:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				D3DVIEWPORT9* pViewport = boost::any_cast<D3DVIEWPORT9*>(workItem->Argument1);
+				D3DVIEWPORT9* pViewport = bit_cast<D3DVIEWPORT9*>(workItem->Argument1);
 
 				if (realWindow.mCurrentStateRecording != nullptr)
 				{
@@ -2927,17 +2927,17 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_UpdateTexture:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				IDirect3DBaseTexture9* pSourceTexture = boost::any_cast<IDirect3DBaseTexture9*>(workItem->Argument1);
-				IDirect3DBaseTexture9* pDestinationTexture = boost::any_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
+				IDirect3DBaseTexture9* pSourceTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument1);
+				IDirect3DBaseTexture9* pDestinationTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
 
 				commandStreamManager->mRenderManager.UpdateTexture(realWindow, pSourceTexture, pDestinationTexture);
 			}
 			break;
 			case Instance_GetAdapterIdentifier:
 			{
-				UINT Adapter = boost::any_cast<UINT>(workItem->Argument1);
-				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument2);
-				D3DADAPTER_IDENTIFIER9* pIdentifier = boost::any_cast<D3DADAPTER_IDENTIFIER9*>(workItem->Argument3);
+				UINT Adapter = bit_cast<UINT>(workItem->Argument1);
+				DWORD Flags = bit_cast<DWORD>(workItem->Argument2);
+				D3DADAPTER_IDENTIFIER9* pIdentifier = bit_cast<D3DADAPTER_IDENTIFIER9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
 				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter]->mPhysicalDeviceProperties; //mPhysicalDeviceProperties
 
@@ -2958,9 +2958,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Instance_GetDeviceCaps:
 			{
-				UINT Adapter = boost::any_cast<UINT>(workItem->Argument1);
-				D3DDEVTYPE DeviceType = boost::any_cast<D3DDEVTYPE>(workItem->Argument2);
-				D3DCAPS9* pCaps = boost::any_cast<D3DCAPS9*>(workItem->Argument3);
+				UINT Adapter = bit_cast<UINT>(workItem->Argument1);
+				D3DDEVTYPE DeviceType = bit_cast<D3DDEVTYPE>(workItem->Argument2);
+				D3DCAPS9* pCaps = bit_cast<D3DCAPS9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
 				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter]->mPhysicalDeviceProperties;
 				vk::PhysicalDeviceFeatures& features = instance->mDevices[Adapter]->mPhysicalDeviceFeatures;
@@ -3059,10 +3059,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case VertexBuffer_Lock:
 			{
 				auto& realVertexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mVertexBuffers[workItem->Id]);
-				UINT OffsetToLock = boost::any_cast<UINT>(workItem->Argument1);
-				UINT SizeToLock = boost::any_cast<UINT>(workItem->Argument2);
-				VOID** ppbData = boost::any_cast<VOID**>(workItem->Argument3);
-				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument4);
+				UINT OffsetToLock = bit_cast<UINT>(workItem->Argument1);
+				UINT SizeToLock = bit_cast<UINT>(workItem->Argument2);
+				VOID** ppbData = bit_cast<VOID**>(workItem->Argument3);
+				DWORD Flags = bit_cast<DWORD>(workItem->Argument4);
 
 				if (realVertexBuffer.mData == nullptr)
 				{
@@ -3096,10 +3096,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case IndexBuffer_Lock:
 			{
 				auto& realIndexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[workItem->Id]);
-				UINT OffsetToLock = boost::any_cast<UINT>(workItem->Argument1);
-				UINT SizeToLock = boost::any_cast<UINT>(workItem->Argument2);
-				VOID** ppbData = boost::any_cast<VOID**>(workItem->Argument3);
-				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument4);
+				UINT OffsetToLock = bit_cast<UINT>(workItem->Argument1);
+				UINT SizeToLock = bit_cast<UINT>(workItem->Argument2);
+				VOID** ppbData = bit_cast<VOID**>(workItem->Argument3);
+				DWORD Flags = bit_cast<DWORD>(workItem->Argument4);
 
 				if (realIndexBuffer.mData == nullptr)
 				{
@@ -3133,7 +3133,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case StateBlock_Create:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				CStateBlock9* stateBlock = boost::any_cast<CStateBlock9*>(workItem->Argument1);
+				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
 				MergeState(realWindow.mDeviceState, stateBlock->mDeviceState, stateBlock->mType, false);
 			}
@@ -3141,7 +3141,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case StateBlock_Capture:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				CStateBlock9* stateBlock = boost::any_cast<CStateBlock9*>(workItem->Argument1);
+				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
 				/*
 				Capture only captures the current state of state that has already been recorded (eg update not insert)
@@ -3153,7 +3153,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case StateBlock_Apply:
 			{
 				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				CStateBlock9* stateBlock = boost::any_cast<CStateBlock9*>(workItem->Argument1);
+				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
 				MergeState(stateBlock->mDeviceState, realWindow.mDeviceState, stateBlock->mType);
 
@@ -3167,7 +3167,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			{
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
 				auto& realWindow = (*texture.mRealWindow);
-				CTexture9* texture9 = boost::any_cast<CTexture9*>(workItem->Argument1);
+				CTexture9* texture9 = bit_cast<CTexture9*>(workItem->Argument1);
 				auto& device = realWindow.mRealDevice->mDevice;
 
 				vk::Result result;
@@ -3292,7 +3292,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			{
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
 				auto& realWindow = (*texture.mRealWindow);
-				CCubeTexture9* texture9 = boost::any_cast<CCubeTexture9*>(workItem->Argument1);
+				CCubeTexture9* texture9 = bit_cast<CCubeTexture9*>(workItem->Argument1);
 				auto& device = realWindow.mRealDevice->mDevice;
 
 				vk::Result result;
@@ -3417,12 +3417,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			{
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
 				auto& realWindow = (*surface.mRealWindow);
-				//CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
+				//CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
 				auto& device = realWindow.mRealDevice->mDevice;
 
-				D3DLOCKED_RECT* pLockedRect = boost::any_cast<D3DLOCKED_RECT*>(workItem->Argument1);
-				RECT* pRect = boost::any_cast<RECT*>(workItem->Argument2);
-				DWORD Flags = boost::any_cast<DWORD>(workItem->Argument3);
+				D3DLOCKED_RECT* pLockedRect = bit_cast<D3DLOCKED_RECT*>(workItem->Argument1);
+				RECT* pRect = bit_cast<RECT*>(workItem->Argument2);
+				DWORD Flags = bit_cast<DWORD>(workItem->Argument3);
 
 				vk::Result result;
 				char* bytes = nullptr;
@@ -3465,7 +3465,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			{
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
 				auto& realWindow = (*surface.mRealWindow);
-				CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
+				CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
 				auto& device = realWindow.mRealDevice->mDevice;
 
 				if (surface.mData != nullptr)
@@ -3484,7 +3484,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			{
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
 				auto& realWindow = (*surface.mRealWindow);
-				CSurface9* surface9 = boost::any_cast<CSurface9*>(workItem->Argument1);
+				CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[surface9->mTextureId]);
 				auto& device = realWindow.mRealDevice->mDevice;
 
@@ -3608,6 +3608,7 @@ CommandStreamManager::CommandStreamManager()
 CommandStreamManager::~CommandStreamManager()
 {
 	IsRunning = 0;
+	mWorkerThread.join();	
 	BOOST_LOG_TRIVIAL(info) << "CommandStreamManager::~CommandStreamManager";
 }
 
