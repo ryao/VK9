@@ -138,11 +138,13 @@ RealWindow::RealWindow(std::shared_ptr<RealInstance>& realInstance, std::shared_
 	: mRealInstance(realInstance)
 	, mRealDevice(realDevice)
 {
-
+	BOOST_LOG_TRIVIAL(info) << "RealWindow::RealWindow";
 }
 
 RealWindow::~RealWindow()
 {
+	BOOST_LOG_TRIVIAL(info) << "RealWindow::~RealWindow";
+
 	//Empty cached objects. (a destructor should take care of their resources.)
 	mDrawBuffer.clear();
 	mSamplerRequests.clear();
@@ -351,76 +353,104 @@ void RealWindow::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::Devi
 
 RealDevice::RealDevice()
 {
-
+	BOOST_LOG_TRIVIAL(info) << "RealDevice::RealDevice";
 }
 
 RealDevice::~RealDevice()
 {
+	BOOST_LOG_TRIVIAL(info) << "RealDevice::~RealDevice";
 	delete[] mQueueFamilyProperties;
 	if (mDevice == nullptr)
 	{
 		return;
 	}
 	mDevice.destroyDescriptorPool(mDescriptorPool, nullptr);
-	mDevice.destroy();
-	BOOST_LOG_TRIVIAL(warning) << "~RealDevice";
+	mDevice.destroy();	
 }
 
 RealInstance::RealInstance()
 {
-
+	BOOST_LOG_TRIVIAL(warning) << "RealInstance::RealInstance";
 }
 
 RealInstance::~RealInstance()
 {
+	BOOST_LOG_TRIVIAL(warning) << "RealInstance::~RealInstance";
 	mDevices.clear();
 #ifdef _DEBUG
 	mInstance.destroyDebugReportCallbackEXT(mCallback);
 #endif
-	mInstance.destroy();
-	BOOST_LOG_TRIVIAL(warning) << "~RealInstance";
+	mInstance.destroy();	
+}
+
+RealTexture::RealTexture(RealWindow* realWindow)
+	: mRealWindow(realWindow) 
+{
+	BOOST_LOG_TRIVIAL(warning) << "RealTexture::RealTexture";
 }
 
 RealTexture::~RealTexture()
 {
+	BOOST_LOG_TRIVIAL(warning) << "RealTexture::~RealTexture";
 	if (mRealWindow != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice;
-		device->mDevice.destroyImageView(mImageView, nullptr);
-		device->mDevice.destroySampler(mSampler, nullptr);
-		device->mDevice.destroyImage(mImage, nullptr);
-		device->mDevice.freeMemory(mDeviceMemory, nullptr);
+		auto& device = mRealWindow->mRealDevice->mDevice;
+		device.destroyImageView(mImageView, nullptr);
+		device.destroySampler(mSampler, nullptr);
+		device.destroyImage(mImage, nullptr);
+		device.freeMemory(mDeviceMemory, nullptr);
 	}
+
+}
+
+RealSurface::RealSurface(RealWindow* realWindow)
+	: mRealWindow(realWindow) 
+{
+	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
 }
 
 RealSurface::~RealSurface()
 {
+	BOOST_LOG_TRIVIAL(warning) << "RealSurface::~RealSurface";
 	if (mRealWindow != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice;
-		device->mDevice.destroyImage(mStagingImage, nullptr);
-		device->mDevice.freeMemory(mStagingDeviceMemory, nullptr);
+		auto& device = mRealWindow->mRealDevice->mDevice;
+		device.destroyImage(mStagingImage, nullptr);
+		device.freeMemory(mStagingDeviceMemory, nullptr);
 	}
-	BOOST_LOG_TRIVIAL(warning) << "~RealSurface";
+}
+
+RealVertexBuffer::RealVertexBuffer(RealWindow* realWindow)
+	: mRealWindow(realWindow) 
+{
+	BOOST_LOG_TRIVIAL(warning) << "RealVertexBuffer::RealVertexBuffer";
 }
 
 RealVertexBuffer::~RealVertexBuffer()
 {
+	BOOST_LOG_TRIVIAL(warning) << "RealVertexBuffer::~RealVertexBuffer";
 	if (mRealWindow != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice;
-		device->mDevice.destroyBuffer(mBuffer, nullptr);
-		device->mDevice.freeMemory(mMemory, nullptr);
+		auto& device = mRealWindow->mRealDevice->mDevice;
+		device.destroyBuffer(mBuffer, nullptr);
+		device.freeMemory(mMemory, nullptr);
 	}
+}
+
+RealIndexBuffer::RealIndexBuffer(RealWindow* realWindow)
+	: mRealWindow(realWindow) 
+{
+	BOOST_LOG_TRIVIAL(warning) << "RealIndexBuffer::RealIndexBuffer";
 }
 
 RealIndexBuffer::~RealIndexBuffer()
 {
+	BOOST_LOG_TRIVIAL(warning) << "RealIndexBuffer::~RealIndexBuffer";
 	if (mRealWindow != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice;
-		device->mDevice.destroyBuffer(mBuffer, nullptr);
-		device->mDevice.freeMemory(mMemory, nullptr);
+		auto& device = mRealWindow->mRealDevice->mDevice;
+		device.destroyBuffer(mBuffer, nullptr);
+		device.freeMemory(mMemory, nullptr);
 	}
 }
 
@@ -428,8 +458,8 @@ SamplerRequest::~SamplerRequest()
 {
 	if (mRealWindow != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice;
-		device->mDevice.destroySampler(Sampler, nullptr);
+		auto& device = mRealWindow->mRealDevice->mDevice;
+		device.destroySampler(Sampler, nullptr);
 	}
 }
 
@@ -437,8 +467,8 @@ ResourceContext::~ResourceContext()
 {
 	if (mRealWindow != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice;
-		device->mDevice.freeDescriptorSets(device->mDescriptorPool, 1, &DescriptorSet);
+		auto& device = mRealWindow->mRealDevice->mDevice;
+		device.freeDescriptorSets(mRealWindow->mRealDevice->mDescriptorPool, 1, &DescriptorSet);
 	}
 }
 
@@ -446,10 +476,10 @@ DrawContext::~DrawContext()
 {
 	if (mRealWindow != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice;
-		device->mDevice.destroyPipeline(Pipeline, nullptr);
-		device->mDevice.destroyPipelineLayout(PipelineLayout, nullptr);
-		device->mDevice.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);
+		auto& device = mRealWindow->mRealDevice->mDevice;
+		device.destroyPipeline(Pipeline, nullptr);
+		device.destroyPipelineLayout(PipelineLayout, nullptr);
+		device.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);
 	}
 }
 
@@ -1616,7 +1646,8 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	vk::Result result;
 	auto window = mWindows[id];
 	CTexture9* texture9 = bit_cast<CTexture9*>(argument1);
-	auto ptr = std::make_shared<RealTexture>(window.get());
+	std::shared_ptr<RealTexture> ptr = std::make_shared<RealTexture>(window.get());
+	auto& device = window->mRealDevice->mDevice;
 
 	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
 
@@ -1632,7 +1663,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	//imageCreateInfo.flags = 0;
 	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
 
-	result = window->mRealDevice->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	result = device.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
@@ -1640,7 +1671,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	}
 
 	vk::MemoryRequirements memoryRequirements;
-	window->mRealDevice->mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
+	device.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
 
 	//mMemoryAllocateInfo.allocationSize = 0;
 	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
@@ -1652,14 +1683,14 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 		return;
 	}
 
-	result = window->mRealDevice->mDevice.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	result = device.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	window->mRealDevice->mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+	device.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;
@@ -1673,12 +1704,14 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 
 	imageViewCreateInfo.subresourceRange.levelCount = texture9->mLevels;
 
-	result = window->mRealDevice->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+	result = device.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
+	mTextures.push_back(ptr);
 }
 
 void StateManager::DestroyCubeTexture(size_t id)
@@ -1689,9 +1722,10 @@ void StateManager::DestroyCubeTexture(size_t id)
 void StateManager::CreateCubeTexture(size_t id, void* argument1)
 {
 	vk::Result result;
-	auto window = mWindows[id];
+	std::shared_ptr<RealWindow> window = mWindows[id];
 	CCubeTexture9* texture9 = bit_cast<CCubeTexture9*>(argument1);
-	auto ptr = std::make_shared<RealTexture>(window.get());
+	std::shared_ptr<RealTexture> ptr = std::make_shared<RealTexture>(window.get());
+	auto& device = window->mRealDevice->mDevice;
 
 	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
 
@@ -1708,7 +1742,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
 	imageCreateInfo.sharingMode = vk::SharingMode::eExclusive;
 
-	result = window->mRealDevice->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	result = device.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
@@ -1728,14 +1762,14 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 		return;
 	}
 
-	result = window->mRealDevice->mDevice.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	result = device.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	window->mRealDevice->mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+	device.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;
@@ -1748,12 +1782,14 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewCreateInfo.subresourceRange.layerCount = 6;
 
-	result = window->mRealDevice->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+	result = device.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
+	mTextures.push_back(ptr);
 }
 
 void StateManager::DestroySurface(size_t id)
@@ -1766,7 +1802,7 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	vk::Result result;
 	auto window = mWindows[id];
 	CSurface9* surface9 = bit_cast<CSurface9*>(argument1);
-	auto ptr = std::make_shared<RealSurface>(window.get());
+	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(window.get());
 
 	ptr->mRealFormat = ConvertFormat(surface9->mFormat);
 
@@ -1820,6 +1856,8 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	ptr->mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 
 	window->mRealDevice->mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
+
+	mSurfaces.push_back(ptr);
 }
 
 void StateManager::DestroyShader(size_t id)
@@ -1837,14 +1875,17 @@ void StateManager::CreateShader(size_t id, void* argument1, void* argument2, voi
 
 	if (isVertex)
 	{
-		auto ptr = std::make_shared<ShaderConverter>(window->mRealDevice->mDevice, window->mDeviceState.mVertexShaderConstantSlots);
+		std::shared_ptr<ShaderConverter> ptr = std::make_shared<ShaderConverter>(window->mRealDevice->mDevice, window->mDeviceState.mVertexShaderConstantSlots);
 		ptr->Convert((uint32_t*)pFunction);
 		(*size) = ptr->mConvertedShader.Size;
+		mShaderConverters.push_back(ptr);
 	}
 	else
 	{
-		auto ptr = std::make_shared<ShaderConverter>(window->mRealDevice->mDevice, window->mDeviceState.mPixelShaderConstantSlots);
+		std::shared_ptr<ShaderConverter> ptr = std::make_shared<ShaderConverter>(window->mRealDevice->mDevice, window->mDeviceState.mPixelShaderConstantSlots);
 		ptr->Convert((uint32_t*)pFunction);
 		(*size) = ptr->mConvertedShader.Size;
+		mShaderConverters.push_back(ptr);
 	}
+
 }

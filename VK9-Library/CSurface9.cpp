@@ -36,7 +36,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mDiscard(Discard),
 	mSharedHandle(pSharedHandle)
 {
-	Init();
+	//Init();
 }
 
 CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle)
@@ -50,7 +50,7 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 	mDiscard(Discard),
 	mSharedHandle(pSharedHandle)
 {
-	Init();
+	//Init();
 }
 
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle, int32_t filler)
@@ -64,7 +64,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mLockable(Lockable),
 	mSharedHandle(pSharedHandle)
 {
-	Init();
+	//Init();
 }
 
 CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle, int32_t filler)
@@ -78,7 +78,7 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 	mLockable(Lockable),
 	mSharedHandle(pSharedHandle)
 {
-	Init();
+	//Init();
 }
 
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
@@ -91,7 +91,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mPool(Pool),
 	mSharedHandle(pSharedHandle)
 {
-	Init();
+	//Init();
 }
 
 CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
@@ -104,11 +104,13 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 	mPool(Pool),
 	mSharedHandle(pSharedHandle)
 {
-	Init();
+	//Init();
 }
 
 void CSurface9::Init()
 {
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::CSurface9";
+
 	//mDevice->AddRef();
 
 	/*
@@ -140,12 +142,12 @@ void CSurface9::Init()
 	workItem->Id = mDevice->mId;
 	workItem->WorkItemType = WorkItemType::Surface_Create;
 	workItem->Argument1 = this;
-	mId = mCommandStreamManager->RequestWork(workItem);
+	mId = mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 CSurface9::~CSurface9()
 {
-	//BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
+	BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::Surface_Destroy;
@@ -310,7 +312,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	workItem->Argument1 = (void*)pLockedRect;
 	workItem->Argument2 = (void*)pRect;
 	workItem->Argument3 = (void*)Flags;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }

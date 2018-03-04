@@ -46,10 +46,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 	{
 		WorkItem* workItem = nullptr;
 		
-		if (commandStreamManager->mWorkItems.try_dequeue(workItem))
+		commandStreamManager->IsBusy = commandStreamManager->mWorkItems.try_dequeue(workItem);
+		if (commandStreamManager->IsBusy)
 		{
 			std::lock_guard<std::mutex> lock(workItem->Mutex);
-			commandStreamManager->IsBusy = 1;
+
+			#ifdef _DEBUG
+			BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType;
+			#endif
+
 			switch (workItem->WorkItemType)
 			{
 			case Instance_Create:

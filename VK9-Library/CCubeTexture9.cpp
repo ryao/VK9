@@ -35,6 +35,7 @@ CCubeTexture9::CCubeTexture9(CDevice9* device, UINT EdgeLength, UINT Levels, DWO
 	mReferenceCount(1),
 	mResult(VK_SUCCESS)
 {
+	BOOST_LOG_TRIVIAL(info) << "CCubeTexture9::CCubeTexture9";
 	//mDevice->AddRef();
 
 	if (!mLevels)
@@ -44,15 +45,7 @@ CCubeTexture9::CCubeTexture9(CDevice9* device, UINT EdgeLength, UINT Levels, DWO
 
 	//mLevels = 1; //workaround
 
-	mCommandStreamManager = device->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = device->mId;
-	workItem->WorkItemType = WorkItemType::CubeTexture_Create;
-	workItem->Argument1 = this;
-	mId = mCommandStreamManager->RequestWork(workItem);
-
 	mSurfaces.reserve(6);
-
 	for (size_t i = 0; i < 6; i++)
 	{
 		UINT width = mEdgeLength;

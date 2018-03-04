@@ -36,19 +36,13 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mPool(Pool),
 	mSharedHandle(pSharedHandle)
 {
+	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9";
 	//mDevice->AddRef();
 
 	if (!mLevels)
 	{
 		mLevels = std::log2( max(mWidth, mHeight) ) + 1;
 	}
-
-	mCommandStreamManager = device->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = device->mId;
-	workItem->WorkItemType = WorkItemType::Texture_Create;
-	workItem->Argument1 = this;
-	mId = mCommandStreamManager->RequestWork(workItem);
 
 	//mLevels = 1; //workaround
 

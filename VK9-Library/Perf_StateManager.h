@@ -1314,7 +1314,7 @@ struct RealTexture
 	vk::ImageView mImageView;
 
 	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealTexture(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	RealTexture(RealWindow* realWindow);
 	~RealTexture();
 };
 
@@ -1332,7 +1332,7 @@ struct RealSurface
 	vk::ImageSubresource mSubresource;
 
 	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealSurface(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	RealSurface(RealWindow* realWindow);
 	~RealSurface();
 };
 
@@ -1345,7 +1345,7 @@ struct RealVertexBuffer
 	int32_t mSize;
 
 	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealVertexBuffer(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	RealVertexBuffer(RealWindow* realWindow);
 	~RealVertexBuffer();
 };
 
@@ -1359,7 +1359,7 @@ struct RealIndexBuffer
 	int32_t mSize;
 
 	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealIndexBuffer(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	RealIndexBuffer(RealWindow* realWindow);
 	~RealIndexBuffer();
 };
 

@@ -213,6 +213,21 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateCubeTexture(UINT EdgeLength, UINT Leve
 
 	CCubeTexture9* obj = new CCubeTexture9(this, EdgeLength, Levels, Usage, Format, Pool, pSharedHandle);
 
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::CubeTexture_Create;
+	workItem->Argument1 = (void*)obj;
+	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	for (size_t i = 0; i < 6; i++)
+	{
+		for (size_t j = 0; j < obj->mLevels; j++)
+		{
+			obj->mSurfaces[i][j]->Init();
+		}
+	}
+
 	(*ppCubeTexture) = (IDirect3DCubeTexture9*)obj;
 
 	return result;
@@ -311,6 +326,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width, UINT Height, UINT 
 	HRESULT result = S_OK;
 
 	CTexture9* obj = new CTexture9(this, Width, Height, Levels, Usage, Format, Pool, pSharedHandle);
+
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::Texture_Create;
+	workItem->Argument1 = (void*)obj;
+	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	for (size_t i = 0; i < obj->mLevels; i++)
+	{
+		obj->mSurfaces[i]->Init();
+	}
 
 	(*ppTexture) = (IDirect3DTexture9*)obj;
 
