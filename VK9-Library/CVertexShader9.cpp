@@ -28,15 +28,6 @@ CVertexShader9::CVertexShader9(CDevice9* device, const DWORD* pFunction)
 	mFunction((DWORD*)pFunction)
 {
 	BOOST_LOG_TRIVIAL(info) << "CVertexShader9::CVertexShader9";
-
-	mCommandStreamManager = device->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = device->mId;
-	workItem->WorkItemType = WorkItemType::Shader_Create;
-	workItem->Argument1 = (void*)pFunction;
-	workItem->Argument2 = (void*)true;
-	workItem->Argument3 = (void*)&mSize;
-	mId = mCommandStreamManager->RequestWork(workItem);
 }
 
 CVertexShader9::~CVertexShader9()

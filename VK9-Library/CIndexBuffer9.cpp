@@ -35,12 +35,7 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 	mIsDirty(true),
 	mLockCount(0)
 {
-	mCommandStreamManager = device->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = device->mId;
-	workItem->WorkItemType = WorkItemType::IndexBuffer_Create;
-	workItem->Argument1 = this;
-	mId = mCommandStreamManager->RequestWork(workItem);
+
 }
 
 CIndexBuffer9::~CIndexBuffer9()

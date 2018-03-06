@@ -36,12 +36,7 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mIsDirty(true),
 	mLockCount(0)
 {
-	mCommandStreamManager = device->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = device->mId;
-	workItem->WorkItemType = WorkItemType::VertexBuffer_Create;
-	workItem->Argument1 = this;
-	mId = mCommandStreamManager->RequestWork(workItem);
+
 }
 
 CVertexBuffer9::~CVertexBuffer9()

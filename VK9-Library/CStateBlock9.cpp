@@ -28,14 +28,7 @@ CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 	: mDevice(device),
 	mType(Type)
 {
-	mCommandStreamManager = device->mCommandStreamManager;
-	this->mId = device->mId;
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = device->mId;
-	workItem->WorkItemType = WorkItemType::StateBlock_Create;
-	workItem->Argument1 = this;
-	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 CStateBlock9::CStateBlock9(CDevice9* device)

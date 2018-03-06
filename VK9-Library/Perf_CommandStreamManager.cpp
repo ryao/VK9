@@ -3111,16 +3111,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					realIndexBuffer.mData = realIndexBuffer.mRealWindow->mRealDevice->mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
 					if (realIndexBuffer.mData == nullptr)
 					{
-						*ppbData = nullptr;
+						(*ppbData) = nullptr;
 					}
 					else
 					{
-						*ppbData = (char *)realIndexBuffer.mData + OffsetToLock;
+						(*ppbData) = (char *)realIndexBuffer.mData + OffsetToLock;
 					}
 				}
 				else
 				{
-					*ppbData = (char *)realIndexBuffer.mData + OffsetToLock;
+					(*ppbData) = (char *)realIndexBuffer.mData + OffsetToLock;
 				}
 			}
 			break;
@@ -3445,19 +3445,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkMapMemory failed with return code of " << GetResultString((VkResult)result);
 						break;
 					}
+				}
 
-					bytes = (char*)surface.mData;
+				bytes = (char*)surface.mData;
 
-					if (surface.mLayouts[0].offset)
-					{
-						bytes += surface.mLayouts[0].offset;
-					}
+				if (surface.mLayouts[0].offset)
+				{
+					bytes += surface.mLayouts[0].offset;
+				}
 
-					if (pRect != nullptr)
-					{
-						bytes += (surface.mLayouts[0].rowPitch * pRect->top);
-						bytes += (4 * pRect->left);
-					}
+				if (pRect != nullptr)
+				{
+					bytes += (surface.mLayouts[0].rowPitch * pRect->top);
+					bytes += (4 * pRect->left);
 				}
 
 				pLockedRect->pBits = (void*)bytes;
@@ -3484,7 +3484,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					surface.mData = nullptr;
 				}
 
-			} //break left out because unlock will always flush.
+			}
+			break;
 			case Surface_Flush:
 			{
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
@@ -3497,7 +3498,6 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					break;
 				}
-				surface.mIsFlushed = true;
 
 				vk::CommandBuffer commandBuffer;
 				vk::Result result;
@@ -3561,6 +3561,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				realWindow.mQueue.waitIdle();
 
 				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+
+				surface.mIsFlushed = true;
 			}
 			break;
 			default:

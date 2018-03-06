@@ -239,6 +239,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateDepthStencilSurface(UINT Width, UINT H
 
 	CSurface9* obj = new CSurface9(this, (CTexture9*)nullptr, Width, Height, Format, MultiSample, MultisampleQuality, Discard, pSharedHandle);
 
+	obj->Init();
+
 	(*ppSurface) = (IDirect3DSurface9*)obj;
 
 	return result;
@@ -249,6 +251,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length, DWORD Usage, 
 	HRESULT result = S_OK;
 
 	CIndexBuffer9* obj = new CIndexBuffer9(this, Length, Usage, Format, Pool, pSharedHandle);
+
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem();
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::IndexBuffer_Create;
+	workItem->Argument1 = obj;
+	obj->mId = this->mCommandStreamManager->RequestWork(workItem);
 
 	(*ppIndexBuffer) = (IDirect3DIndexBuffer9*)obj;
 
@@ -261,6 +270,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateOffscreenPlainSurface(UINT Width, UINT
 
 	CSurface9* ptr = new CSurface9(this, (CTexture9*)nullptr, Width, Height, 1, 0, Format, Pool, pSharedHandle);
 
+	ptr->Init();
+
 	(*ppSurface) = (IDirect3DSurface9*)ptr;
 
 	return result;
@@ -271,6 +282,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction, ID
 	HRESULT result = S_OK;
 
 	CPixelShader9* obj = new CPixelShader9(this, pFunction);
+
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem();
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::Shader_Create;
+	workItem->Argument1 = (void*)obj->mFunction;
+	workItem->Argument2 = (void*)false;
+	workItem->Argument3 = (void*)&obj->mSize;
+	obj->mId = this->mCommandStreamManager->RequestWork(workItem);
 
 	(*ppShader) = (IDirect3DPixelShader9*)obj;
 
@@ -316,6 +336,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type, IDi
 
 	CStateBlock9* obj = new CStateBlock9(this, Type);
 
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem();
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::StateBlock_Create;
+	workItem->Argument1 = (void*)obj;
+	obj->mId = this->mCommandStreamManager->RequestWorkAndWait(workItem);
+
 	(*ppSB) = (IDirect3DStateBlock9*)obj;
 
 	return result;
@@ -350,6 +377,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length, DWORD Usage,
 
 	CVertexBuffer9* obj = new CVertexBuffer9(this, Length, Usage, FVF, Pool, pSharedHandle);
 
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::VertexBuffer_Create;
+	workItem->Argument1 = (void*)obj;
+	obj->mId = mCommandStreamManager->RequestWork(workItem);
+
 	(*ppVertexBuffer) = (IDirect3DVertexBuffer9*)obj;
 
 	return result;
@@ -371,6 +405,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction, I
 	HRESULT result = S_OK;
 
 	CVertexShader9* obj = new CVertexShader9(this, pFunction);
+
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::Shader_Create;
+	workItem->Argument1 = (void*)obj->mFunction;
+	workItem->Argument2 = (void*)true;
+	workItem->Argument3 = (void*)&obj->mSize;
+	obj->mId = mCommandStreamManager->RequestWork(workItem);
 
 	(*ppShader) = (IDirect3DVertexShader9*)obj;
 

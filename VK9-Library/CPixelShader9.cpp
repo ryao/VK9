@@ -28,15 +28,6 @@ CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
 	mFunction((DWORD*)pFunction)
 {
 	BOOST_LOG_TRIVIAL(info) << "CPixelShader9::CPixelShader9";
-
-	mCommandStreamManager = device->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
-	workItem->Id = device->mId;
-	workItem->WorkItemType = WorkItemType::Shader_Create;
-	workItem->Argument1 = (void*)pFunction;
-	workItem->Argument2 = (void*)false;
-	workItem->Argument3 = (void*)&mSize;
-	mId = mCommandStreamManager->RequestWork(workItem);
 }
 
 CPixelShader9::~CPixelShader9()

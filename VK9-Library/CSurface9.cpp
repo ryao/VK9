@@ -344,6 +344,6 @@ void CSurface9::Flush()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
 	workItem->WorkItemType = WorkItemType::Surface_Flush;
 	workItem->Id = mId;
-	workItem->Argument1 = this;
+	workItem->Argument1 = (void*)this;
 	mCommandStreamManager->RequestWork(workItem);
 }

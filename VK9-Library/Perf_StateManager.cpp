@@ -1587,7 +1587,7 @@ void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 
 	vk::BufferCreateInfo bufferCreateInfo;
 	bufferCreateInfo.size = indexBuffer9->mLength;
-	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
+	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eIndexBuffer;
 	//bufferCreateInfo.flags = 0;
 
 	vk::MemoryAllocateInfo memoryAllocateInfo;
