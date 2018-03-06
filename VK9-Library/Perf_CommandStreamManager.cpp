@@ -51,9 +51,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 		{
 			std::lock_guard<std::mutex> lock(workItem->Mutex);
 
-			#ifdef _DEBUG
-			BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType;
-			#endif
+			//#ifdef _DEBUG
+			//BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType;
+			//#endif
 
 			switch (workItem->WorkItemType)
 			{
@@ -3190,7 +3190,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
@@ -3209,7 +3209,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				vk::ImageMemoryBarrier imageMemoryBarrier;
@@ -3284,7 +3284,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				realWindow.mQueue.waitIdle();
@@ -3315,7 +3315,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
@@ -3334,7 +3334,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				vk::ImageMemoryBarrier imageMemoryBarrier;
@@ -3409,7 +3409,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				realWindow.mQueue.waitIdle();
@@ -3443,7 +3443,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					if (result != vk::Result::eSuccess)
 					{
 						BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkMapMemory failed with return code of " << GetResultString((VkResult)result);
-						return;
+						break;
 					}
 
 					bytes = (char*)surface.mData;
@@ -3495,7 +3495,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (surface.mIsFlushed)
 				{
-					return;
+					break;
 				}
 				surface.mIsFlushed = true;
 
@@ -3511,7 +3511,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
@@ -3530,7 +3530,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
@@ -3555,7 +3555,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
-					return;
+					break;
 				}
 
 				realWindow.mQueue.waitIdle();
