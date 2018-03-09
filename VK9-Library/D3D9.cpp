@@ -37,7 +37,7 @@ IDirect3D9* WINAPI Direct3DCreate9(UINT SDKVersion)
 	C9* instance = new C9();
 
 	WorkItem* workItem = instance->mCommandStreamManager->GetWorkItem();
-	std::lock_guard<std::mutex> lock(workItem->Mutex);
+	//std::lock_guard<std::mutex> lock(workItem->Mutex);
 	workItem->WorkItemType = WorkItemType::Instance_Create;
 	instance->mId = instance->mCommandStreamManager->RequestWork(workItem);
 

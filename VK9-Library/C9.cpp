@@ -184,7 +184,7 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
 
 	WorkItem* workItem = obj->mCommandStreamManager->GetWorkItem();
-	std::lock_guard<std::mutex> lock(workItem->Mutex);
+	//std::lock_guard<std::mutex> lock(workItem->Mutex);
 	workItem->Id = obj->mInstanceId;
 	workItem->WorkItemType = WorkItemType::Device_Create;
 	workItem->Argument1 = obj;

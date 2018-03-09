@@ -23,6 +23,7 @@ misrepresented as being the original software.
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 #include <queue>
 #include <boost/lockfree/queue.hpp>
 #include <boost/program_options.hpp>
@@ -133,7 +134,8 @@ struct WorkItem
 	void* Argument4;
 	void* Argument5;
 	void* Argument6;
-	std::mutex Mutex;
+
+	std::atomic_bool HasBeenProcessed = false;
 };
 
 struct CommandStreamManager;
