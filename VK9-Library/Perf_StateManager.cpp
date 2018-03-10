@@ -1281,6 +1281,7 @@ void StateManager::CreateInstance()
 	extensionNames.push_back("VK_KHR_surface");
 	extensionNames.push_back("VK_KHR_win32_surface");
 	extensionNames.push_back("VK_KHR_get_physical_device_properties2");
+
 #ifdef _DEBUG
 	extensionNames.push_back("VK_EXT_debug_report");
 	layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
@@ -1313,6 +1314,7 @@ void StateManager::CreateInstance()
 		BOOST_LOG_TRIVIAL(warning) << "StateManager::CreateInstance unable to find renderdoc.dll !";
 	}
 #endif
+
 	vk::Result result;
 	vk::ApplicationInfo applicationInfo("VK9", 1, "VK9", 1, 0);
 	vk::InstanceCreateInfo createInfo({}, &applicationInfo, layerNames.size(), layerNames.data(), extensionNames.size(), extensionNames.data());
@@ -1374,11 +1376,10 @@ void StateManager::CreateInstance()
 				layerNames.clear();
 
 				extensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-				extensionNames.push_back("VK_KHR_maintenance1");
+				//extensionNames.push_back("VK_KHR_maintenance1");
 				extensionNames.push_back("VK_KHR_push_descriptor");
-				extensionNames.push_back("VK_KHR_sampler_mirror_clamp_to_edge");
+				//extensionNames.push_back("VK_KHR_sampler_mirror_clamp_to_edge");
 #ifdef _DEBUG
-				//extensionNames.push_back("VK_LAYER_LUNARG_standard_validation");
 				layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
 #endif // _DEBUG
 

@@ -151,7 +151,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto& realWindow = (*renderManager.mStateManager.mWindows[workItem->Id]);
 					if (!realWindow.mIsSceneStarted)
 					{
-						renderManager.StartScene(realWindow, true);
+						renderManager.StartScene(realWindow);
 					}
 				}
 				break;
@@ -1460,10 +1460,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
 					IDirect3DIndexBuffer9* pIndexData = bit_cast<IDirect3DIndexBuffer9*>(workItem->Argument1);
-					auto realIndex = commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[((CIndexBuffer9*)pIndexData)->mId];
-
 					DeviceState* state = nullptr;
-
 					if (realWindow.mCurrentStateRecording != nullptr)
 					{
 						state = &realWindow.mCurrentStateRecording->mDeviceState;
@@ -1472,10 +1469,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					{
 						state = &realWindow.mDeviceState;
 					}
+					
+					if (pIndexData!=nullptr)
+					{
+						auto realIndex = commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[((CIndexBuffer9*)pIndexData)->mId];
 
-					//state->mIndexBuffer = (CIndexBuffer9*)pIndexData;
-					state->mIndexBuffer = realIndex.get();
-					state->mHasIndexBuffer = true;
+						state->mIndexBuffer = realIndex.get();
+						state->mHasIndexBuffer = true;
+					}
+					else
+					{
+						state->mIndexBuffer = nullptr;
+						state->mHasIndexBuffer = false;
+					}
 				}
 				break;
 				case Device_SetLight:
@@ -3479,20 +3485,22 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						surface.mData = nullptr;
 					}
 
+					surface.mIsFlushed = false;
 				}
 				break;
 				case Surface_Flush:
 				{
 					auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
-					auto& realWindow = (*surface.mRealWindow);
-					CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
-					auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[surface9->mTextureId]);
-					auto& device = realWindow.mRealDevice->mDevice;
 
 					if (surface.mIsFlushed)
 					{
 						break;
 					}
+
+					auto& realWindow = (*surface.mRealWindow);
+					CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
+					auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[surface9->mTextureId]);
+					auto& device = realWindow.mRealDevice->mDevice;
 
 					vk::CommandBuffer commandBuffer;
 					vk::Result result;
