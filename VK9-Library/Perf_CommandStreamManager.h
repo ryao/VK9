@@ -33,12 +33,15 @@ misrepresented as being the original software.
 
 #include "readerwriterqueue.h"
 
+#include "d3d9.h"
+
 #ifndef COMMANDSTREAMMANAGER_H
 #define COMMANDSTREAMMANAGER_H
 
 enum WorkItemType
 {
-	Instance_Create
+	None
+	,Instance_Create
 	,Instance_GetAdapterIdentifier
 	,Instance_GetDeviceCaps
 	,Instance_Destroy
@@ -126,14 +129,16 @@ enum WorkItemType
 
 struct WorkItem
 {
-	WorkItemType WorkItemType;
-	size_t Id;
-	void* Argument1;
-	void* Argument2;
-	void* Argument3;
-	void* Argument4;
-	void* Argument5;
-	void* Argument6;
+	WorkItemType WorkItemType = WorkItemType::None;
+	size_t Id = 0;
+	void* Argument1 = nullptr;
+	void* Argument2 = nullptr;
+	void* Argument3 = nullptr;
+	void* Argument4 = nullptr;
+	void* Argument5 = nullptr;
+	void* Argument6 = nullptr;
+
+	IUnknown* Caller = nullptr;
 
 	std::atomic_bool HasBeenProcessed = false;
 };
@@ -164,7 +169,7 @@ struct CommandStreamManager
 
 	size_t RequestWork(WorkItem* workItem);
 	size_t RequestWorkAndWait(WorkItem* workItem);
-	WorkItem* GetWorkItem();
+	WorkItem* GetWorkItem(IUnknown* caller);
 };
 
 #endif // COMMANDSTREAMMANAGER_H

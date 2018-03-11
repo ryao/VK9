@@ -138,7 +138,7 @@ void CSurface9::Init()
 	}
 
 	mCommandStreamManager = mDevice->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = mDevice->mId;
 	workItem->WorkItemType = WorkItemType::Surface_Create;
 	workItem->Argument1 = this;
@@ -149,7 +149,7 @@ CSurface9::~CSurface9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Surface_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
@@ -306,7 +306,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 {
 	mFlags = Flags;
 	
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Surface_LockRect;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)pLockedRect;
@@ -328,7 +328,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::ReleaseDC(HDC hdc)
 
 HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Surface_UnlockRect;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)this;
@@ -341,7 +341,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 
 void CSurface9::Flush()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Surface_Flush;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)this;

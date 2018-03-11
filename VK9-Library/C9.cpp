@@ -49,7 +49,7 @@ C9::C9()
 
 C9::~C9()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Instance_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
@@ -183,7 +183,7 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
 
-	WorkItem* workItem = obj->mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = obj->mCommandStreamManager->GetWorkItem(this);
 	//std::lock_guard<std::mutex> lock(workItem->Mutex);
 	workItem->Id = obj->mInstanceId;
 	workItem->WorkItemType = WorkItemType::Device_Create;
@@ -273,7 +273,7 @@ HRESULT STDMETHODCALLTYPE C9::GetAdapterDisplayMode(UINT Adapter,D3DDISPLAYMODE 
 
 HRESULT STDMETHODCALLTYPE C9::GetAdapterIdentifier(UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9 *pIdentifier)
 {		
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Instance_GetAdapterIdentifier;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)Adapter;
@@ -309,7 +309,7 @@ HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 
 HRESULT STDMETHODCALLTYPE C9::GetDeviceCaps(UINT Adapter,D3DDEVTYPE DeviceType,D3DCAPS9 *pCaps)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Instance_GetDeviceCaps;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)Adapter;

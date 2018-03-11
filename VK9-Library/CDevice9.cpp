@@ -72,7 +72,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 CDevice9::~CDevice9()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Device_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
@@ -87,7 +87,7 @@ CDevice9::~CDevice9()
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_Clear;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Count);
@@ -104,7 +104,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 {
 	//According to a tip from the Nine team games don't always use the begin/end scene functions correctly.
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_BeginScene;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
@@ -121,7 +121,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::EndScene()
 
 HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	//std::lock_guard<std::mutex> lock(workItem->Mutex);
 	workItem->WorkItemType = WorkItemType::Device_Present;
 	workItem->Id = mId;
@@ -178,7 +178,7 @@ ULONG STDMETHODCALLTYPE CDevice9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CDevice9::BeginStateBlock()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_BeginStateBlock;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(this);
@@ -214,7 +214,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateCubeTexture(UINT EdgeLength, UINT Leve
 	CCubeTexture9* obj = new CCubeTexture9(this, EdgeLength, Levels, Usage, Format, Pool, pSharedHandle);
 
 	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::CubeTexture_Create;
 	workItem->Argument1 = (void*)obj;
@@ -253,7 +253,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length, DWORD Usage, 
 	CIndexBuffer9* obj = new CIndexBuffer9(this, Length, Usage, Format, Pool, pSharedHandle);
 
 	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::IndexBuffer_Create;
 	workItem->Argument1 = obj;
@@ -284,7 +284,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction, ID
 	CPixelShader9* obj = new CPixelShader9(this, pFunction);
 
 	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::Shader_Create;
 	workItem->Argument1 = (void*)obj->mFunction;
@@ -337,7 +337,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type, IDi
 	CStateBlock9* obj = new CStateBlock9(this, Type);
 
 	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::StateBlock_Create;
 	workItem->Argument1 = (void*)obj;
@@ -355,7 +355,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width, UINT Height, UINT 
 	CTexture9* obj = new CTexture9(this, Width, Height, Levels, Usage, Format, Pool, pSharedHandle);
 
 	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::Texture_Create;
 	workItem->Argument1 = (void*)obj;
@@ -378,7 +378,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length, DWORD Usage,
 	CVertexBuffer9* obj = new CVertexBuffer9(this, Length, Usage, FVF, Pool, pSharedHandle);
 
 	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Create;
 	workItem->Argument1 = (void*)obj;
@@ -407,7 +407,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction, I
 	CVertexShader9* obj = new CVertexShader9(this, pFunction);
 
 	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::Shader_Create;
 	workItem->Argument1 = (void*)obj->mFunction;
@@ -442,7 +442,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DeletePatch(UINT Handle)
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_DrawIndexedPrimitive;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Type);
@@ -472,7 +472,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_DrawPrimitive;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(PrimitiveType);
@@ -527,7 +527,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawTriPatch(UINT Handle, const float *pNumS
 
 HRESULT STDMETHODCALLTYPE CDevice9::EndStateBlock(IDirect3DStateBlock9** ppSB)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_EndStateBlock;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(ppSB);
@@ -611,7 +611,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDepthStencilSurface(IDirect3DSurface9 **p
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDeviceCaps(D3DCAPS9 *pCaps)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Instance_GetDeviceCaps;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(0);
@@ -633,7 +633,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDirect3D(IDirect3D9 **ppD3D9)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain, D3DDISPLAYMODE *pMode)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetDisplayMode;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(iSwapChain);
@@ -654,7 +654,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetFrontBufferData(UINT  iSwapChain, IDirect
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetFVF(DWORD *pFVF)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetFVF;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pFVF);
@@ -684,7 +684,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexDa
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetLight;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Index);
@@ -696,7 +696,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLightEnable(DWORD Index, BOOL *pEnable)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetLightEnable;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Index);
@@ -708,7 +708,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetLightEnable(DWORD Index, BOOL *pEnable)
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetMaterial(D3DMATERIAL9 *pMaterial)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetMaterial;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pMaterial);
@@ -721,7 +721,7 @@ FLOAT STDMETHODCALLTYPE CDevice9::GetNPatchMode()
 {
 	FLOAT output;
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetMaterial;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(&output);
@@ -750,7 +750,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPaletteEntries(UINT PaletteNumber, PALETT
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppShader)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetPixelShader;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(ppShader);
@@ -761,7 +761,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppSha
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetPixelShaderConstantB;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -774,7 +774,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantB(UINT StartRegister, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetPixelShaderConstantF;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -787,7 +787,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantF(UINT StartRegister, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister, int *pConstantData, UINT Vector4iCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetPixelShaderConstantI;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -809,7 +809,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain, D3DRASTER_
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWORD* pValue)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetRenderState;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(State);
@@ -837,7 +837,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTargetData(IDirect3DSurface9 *pRend
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD* pValue)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetSamplerState;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Sampler);
@@ -850,7 +850,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetSamplerState(DWORD Sampler, D3DSAMPLERSTA
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetScissorRect(RECT* pRect)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetScissorRect;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pRect);
@@ -870,7 +870,7 @@ BOOL STDMETHODCALLTYPE CDevice9::GetSoftwareVertexProcessing()
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9** ppStreamData, UINT* pOffsetInBytes, UINT* pStride)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetStreamSource;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StreamNumber);
@@ -900,7 +900,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetSwapChain(UINT iSwapChain, IDirect3DSwapC
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTexture(DWORD Stage, IDirect3DBaseTexture9** ppTexture)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetStreamSource;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Stage);
@@ -912,7 +912,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTexture(DWORD Stage, IDirect3DBaseTexture
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD* pValue)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetTextureStageState;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Stage);
@@ -925,7 +925,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTextureStageState(DWORD Stage, D3DTEXTURE
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State, D3DMATRIX* pMatrix)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetTransform;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(State);
@@ -937,7 +937,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetTransform(D3DTRANSFORMSTATETYPE State, D3
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclaration9** ppDecl)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetVertexDeclaration;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(ppDecl);
@@ -948,7 +948,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclarat
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9** ppShader)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetVertexShader;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(ppShader);
@@ -959,7 +959,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9** ppS
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister, BOOL* pConstantData, UINT BoolCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetVertexShaderConstantB;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -972,7 +972,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantB(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister, float* pConstantData, UINT Vector4fCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetVertexShaderConstantF;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -985,7 +985,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantF(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister, int* pConstantData, UINT Vector4iCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetVertexShaderConstantI;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -998,7 +998,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShaderConstantI(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9* pViewport)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetViewport;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pViewport);
@@ -1009,7 +1009,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetViewport(D3DVIEWPORT9* pViewport)
 
 HRESULT STDMETHODCALLTYPE CDevice9::LightEnable(DWORD LightIndex, BOOL bEnable)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_LightEnable;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(LightIndex);
@@ -1111,7 +1111,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDialogBoxMode(BOOL bEnableDialogs)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetFVF;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(FVF);
@@ -1129,7 +1129,7 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain, DWORD Flags, con
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9* pIndexData)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetIndices;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pIndexData);
@@ -1140,7 +1140,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9* pIndexData
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9* pLight)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetLight;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Index);
@@ -1152,7 +1152,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetLight(DWORD Index, const D3DLIGHT9* pLigh
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9* pMaterial)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetMaterial;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pMaterial);
@@ -1163,7 +1163,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetMaterial(const D3DMATERIAL9* pMaterial)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetNPatchMode(float nSegments)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetNPatchMode;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(nSegments);
@@ -1183,7 +1183,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPaletteEntries(UINT PaletteNumber, const 
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9* pShader)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetPixelShader;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pShader);
@@ -1194,7 +1194,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShader(IDirect3DPixelShader9* pShade
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister, const BOOL* pConstantData, UINT BoolCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetPixelShaderConstantB;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -1207,7 +1207,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantB(UINT StartRegister, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetPixelShaderConstantF;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -1220,7 +1220,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantF(UINT StartRegister, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetPixelShaderConstantI;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -1233,7 +1233,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetPixelShaderConstantI(UINT StartRegister, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetRenderState;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(State);
@@ -1252,7 +1252,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDi
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetSamplerState;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Sampler);
@@ -1265,7 +1265,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTA
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetScissorRect(const RECT* pRect)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetScissorRect;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pRect);
@@ -1285,7 +1285,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetStreamSource;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StreamNumber);
@@ -1308,7 +1308,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSourceFreq(UINT StreamNumber, UINT 
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTexture9* pTexture)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetTexture;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Sampler);
@@ -1320,7 +1320,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTextu
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetTextureStageState;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(Stage);
@@ -1333,7 +1333,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURE
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State, const D3DMATRIX* pMatrix)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetTransform;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(State);
@@ -1345,7 +1345,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTransform(D3DTRANSFORMSTATETYPE State, co
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclaration9* pDecl)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetVertexDeclaration;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pDecl);
@@ -1356,7 +1356,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexDeclaration(IDirect3DVertexDeclarat
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9* pShader)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetVertexShader;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pShader);
@@ -1367,7 +1367,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShader(IDirect3DVertexShader9* pSha
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister, const BOOL* pConstantData, UINT BoolCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetVertexShaderConstantB;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -1380,7 +1380,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantB(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister, const float* pConstantData, UINT Vector4fCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetVertexShaderConstantF;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -1393,7 +1393,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantF(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister, const int* pConstantData, UINT Vector4iCount)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetVertexShaderConstantI;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(StartRegister);
@@ -1406,7 +1406,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetVertexShaderConstantI(UINT StartRegister,
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetViewport(const D3DVIEWPORT9* pViewport)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetViewport;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pViewport);
@@ -1453,7 +1453,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::UpdateSurface(IDirect3DSurface9 *pSourceSurf
 
 HRESULT STDMETHODCALLTYPE CDevice9::UpdateTexture(IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture)
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_UpdateTexture;
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(pSourceTexture);

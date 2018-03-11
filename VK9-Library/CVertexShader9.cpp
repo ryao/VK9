@@ -34,7 +34,7 @@ CVertexShader9::~CVertexShader9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CVertexShader9::~CVertexShader9";
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Shader_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);

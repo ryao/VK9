@@ -70,7 +70,7 @@ CTexture9::~CTexture9()
 		mSurfaces[i]->Release();
 	}
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Texture_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
@@ -194,7 +194,7 @@ HRESULT STDMETHODCALLTYPE CTexture9::SetPrivateData(REFGUID refguid, const void*
 
 VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Texture_GenerateMipSubLevels;
 	workItem->Id = mId;
 	workItem->Argument1 = this;

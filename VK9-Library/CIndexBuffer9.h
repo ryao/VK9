@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "CResource9.h"
 #include "Perf_CommandStreamManager.h"
 
-class CIndexBuffer9 : public IDirect3DIndexBuffer9,CResource9
+class CIndexBuffer9 : public IDirect3DIndexBuffer9
 {
 public:
 	CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle);

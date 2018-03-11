@@ -93,7 +93,7 @@ ULONG STDMETHODCALLTYPE CStateBlock9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::StateBlock_Capture;
 	workItem->Argument1 = this;
@@ -104,7 +104,7 @@ HRESULT STDMETHODCALLTYPE CStateBlock9::Capture()
 
 HRESULT STDMETHODCALLTYPE CStateBlock9::Apply()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::StateBlock_Apply;
 	workItem->Argument1 = this;

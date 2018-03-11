@@ -79,7 +79,7 @@ CCubeTexture9::~CCubeTexture9()
 		}		
 	}
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::CubeTexture_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
@@ -203,7 +203,7 @@ HRESULT STDMETHODCALLTYPE CCubeTexture9::SetPrivateData(REFGUID refguid, const v
 
 VOID STDMETHODCALLTYPE CCubeTexture9::GenerateMipSubLevels()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::CubeTexture_GenerateMipSubLevels;
 	workItem->Id = mId;
 	workItem->Argument1 = this;

@@ -41,7 +41,7 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 
 CVertexBuffer9::~CVertexBuffer9()
 {	
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);	
@@ -188,7 +188,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 
 	InterlockedIncrement(&mLockCount);
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Lock;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)OffsetToLock;
@@ -202,7 +202,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 
 HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Unlock;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);

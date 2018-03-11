@@ -48,8 +48,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 		if (commandStreamManager->mWorkItems.try_dequeue(workItem))
 		{
-			try
-			{
+			//try
+			//{
  				switch (workItem->WorkItemType)
 				{
 				case Instance_Create:
@@ -3574,17 +3574,23 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 				break;
 				}
-			}
-			catch (const std::exception& ex)
-			{
-				BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType << " " << ex.what();
-			}
-			catch (...)
-			{
-				BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType;
-			}
+			//}
+			//catch (const std::exception& ex)
+			//{
+			//	BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType << " " << ex.what();
+			//}
+			//catch (...)
+			//{
+			//	BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType;
+			//}
 
 			workItem->HasBeenProcessed = true;
+
+			if (workItem->Caller != nullptr)
+			{
+				workItem->Caller->Release();
+				workItem->Caller = nullptr;
+			}
 
 			//TODO: I'll need to revisit this later. I feel like if it's deleted too soon the application will crash. because of an access violation on the waiting thread. This might be a good spot for GC.
 
@@ -3640,6 +3646,11 @@ CommandStreamManager::~CommandStreamManager()
 
 size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 {
+	if (workItem->Caller != nullptr)
+	{
+		workItem->Caller->AddRef();
+	}
+
 	while (!mWorkItems.try_enqueue(workItem)) {}
 
 	size_t key = 0;
@@ -3686,7 +3697,7 @@ size_t CommandStreamManager::RequestWorkAndWait(WorkItem* workItem)
 	return result;
 }
 
-WorkItem* CommandStreamManager::GetWorkItem()
+WorkItem* CommandStreamManager::GetWorkItem(IUnknown* caller)
 {
 	WorkItem* returnValue = nullptr;
 
@@ -3698,6 +3709,8 @@ WorkItem* CommandStreamManager::GetWorkItem()
 	{
 		returnValue->HasBeenProcessed = false;
 	}
+
+	returnValue->Caller = caller;
 
 	return returnValue;
 }

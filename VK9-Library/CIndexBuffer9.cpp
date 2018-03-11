@@ -40,7 +40,7 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 
 CIndexBuffer9::~CIndexBuffer9()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::IndexBuffer_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
@@ -187,7 +187,7 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock
 
 	InterlockedIncrement(&mLockCount);
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::IndexBuffer_Lock;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)OffsetToLock;
@@ -201,7 +201,7 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLock
 
 HRESULT STDMETHODCALLTYPE CIndexBuffer9::Unlock()
 {
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem();
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::IndexBuffer_Unlock;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);
