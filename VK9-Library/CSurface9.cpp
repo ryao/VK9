@@ -332,7 +332,7 @@ HRESULT STDMETHODCALLTYPE CSurface9::UnlockRect()
 	workItem->WorkItemType = WorkItemType::Surface_UnlockRect;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)this;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	this->Flush();
 
@@ -345,5 +345,5 @@ void CSurface9::Flush()
 	workItem->WorkItemType = WorkItemType::Surface_Flush;
 	workItem->Id = mId;
 	workItem->Argument1 = (void*)this;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }

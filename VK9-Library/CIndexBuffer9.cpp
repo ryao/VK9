@@ -204,7 +204,7 @@ HRESULT STDMETHODCALLTYPE CIndexBuffer9::Unlock()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::IndexBuffer_Unlock;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	InterlockedDecrement(&mLockCount);
 

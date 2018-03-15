@@ -290,7 +290,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction, ID
 	workItem->Argument1 = (void*)obj->mFunction;
 	workItem->Argument2 = (void*)false;
 	workItem->Argument3 = (void*)&obj->mSize;
-	obj->mId = this->mCommandStreamManager->RequestWork(workItem);
+	obj->mId = this->mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	(*ppShader) = (IDirect3DPixelShader9*)obj;
 
@@ -413,7 +413,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction, I
 	workItem->Argument1 = (void*)obj->mFunction;
 	workItem->Argument2 = (void*)true;
 	workItem->Argument3 = (void*)&obj->mSize;
-	obj->mId = mCommandStreamManager->RequestWork(workItem);
+	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	(*ppShader) = (IDirect3DVertexShader9*)obj;
 

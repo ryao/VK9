@@ -205,7 +205,7 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Unlock()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Unlock;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	InterlockedDecrement(&mLockCount);
 
