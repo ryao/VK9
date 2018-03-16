@@ -306,7 +306,7 @@ void RenderManager::Present(RealWindow& realWindow, const RECT *pSourceRect, con
 	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
 	//Clean up pipes.
-	//mBufferManager->FlushDrawBufffer();
+	FlushDrawBufffer(realWindow);
 
 	//Clean up unreferenced resources.
 	//mGarbageManager.DestroyHandles();
