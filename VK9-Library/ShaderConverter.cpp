@@ -2757,6 +2757,79 @@ void ShaderConverter::Process_DEFB()
 	PrintTokenInformation("DEFB", token, token, token);
 }
 
+void ShaderConverter::Process_NRM()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Normalize); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Normalize); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Normalize); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_NRM - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("NRM", resultToken, argumentToken1);
+}
+
 void ShaderConverter::Process_MOV()
 {
 	TypeDescription typeDescription;
@@ -2782,7 +2855,6 @@ void ShaderConverter::Process_MOV()
 	}
 	else
 	{
-
 		argumentId1 = GetSwizzledId(argumentToken1);
 	}
 
@@ -2808,6 +2880,8 @@ void ShaderConverter::Process_MOV()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	}
+
+	PrintTokenInformation("MOV", resultToken, argumentToken1);
 }
 
 void ShaderConverter::Process_MOVA()
@@ -2859,7 +2933,324 @@ void ShaderConverter::Process_MOVA()
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
-	PrintTokenInformation("MOVA", resultToken, argumentToken1, argumentToken1);
+	PrintTokenInformation("MOVA", resultToken, argumentToken1);
+}
+
+void ShaderConverter::Process_RSQ()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450InverseSqrt); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450InverseSqrt); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450InverseSqrt); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_RSQ - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("RSQ", resultToken, argumentToken1);
+}
+
+
+void ShaderConverter::Process_DST()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Distance); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Distance); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Distance); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_DST - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("DST", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_CRS()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Cross); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Cross); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Cross); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_CRS - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("CRS", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_POW()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Pow); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Pow); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Pow); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_POW - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("POW", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_MUL()
@@ -2935,6 +3326,443 @@ void ShaderConverter::Process_MUL()
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("MUL", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_EXP()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_EXP - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("EXP", resultToken, argumentToken1);
+}
+
+void ShaderConverter::Process_EXPP()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_EXPP - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("EXPP", resultToken, argumentToken1);
+}
+
+void ShaderConverter::Process_LOG()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_LOG - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("LOG", resultToken, argumentToken1);
+}
+
+void ShaderConverter::Process_LOGP()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_LOGP - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("LOGP", resultToken, argumentToken1);
+}
+
+void ShaderConverter::Process_FRC()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2=0;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+
+	//TODO: create a integer pointer to store the whole part.
+	BOOST_LOG_TRIVIAL(warning) << "Process_FRC - Not currently handling integer pointer argument.";
+
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Modf); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id) For some reason I'm required to provide an integer pointer.
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_FRC - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("FRC", resultToken, argumentToken1);
+}
+
+
+void ShaderConverter::Process_ABS()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SAbs); //Instruction Set (There is no UAbs
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SAbs); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450FAbs); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_MAX - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("ABS", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_ADD()
@@ -3089,12 +3917,164 @@ void ShaderConverter::Process_SUB()
 
 void ShaderConverter::Process_MIN()
 {
-	BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_MIN.";
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450UMin); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SMin); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450FMin); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_MIN - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("MIN", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_MAX()
 {
-	BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_MAX.";
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450UMax); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SMax); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450FMax); //Instruction Set
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_MAX - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("MAX", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_DP3()
@@ -3485,6 +4465,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mCapabilityInstructions.push_back(spv::CapabilityShader); //Capability
 
 	//Import
+	mGlslExtensionId = GetNextId();
 	std::string importStatement = "GLSL.std.450";
 	//The spec says 3+variable but there are only 2 before string literal.
 	stringWordSize = 2 + (importStatement.length() / 4);
@@ -3493,7 +4474,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		stringWordSize++;
 	}
 	mExtensionInstructions.push_back(Pack(stringWordSize, spv::OpExtInstImport)); //size,Type
-	mExtensionInstructions.push_back(GetNextId()); //Result Id
+	mExtensionInstructions.push_back(mGlslExtensionId); //Result Id
 	PutStringInVector(importStatement, mExtensionInstructions);
 
 	//Memory Model
@@ -3678,7 +4659,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_ENDREP.";
 			break;
 		case D3DSIO_NRM:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_NRM.";
+			Process_NRM();
 			break;
 		case D3DSIO_MOVA:
 			Process_MOVA();
@@ -3690,28 +4671,28 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_RCP.";
 			break;
 		case D3DSIO_RSQ:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_RSQ.";
+			Process_RSQ();
 			break;
 		case D3DSIO_EXP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_EXP.";
+			Process_EXP();
 			break;
 		case D3DSIO_EXPP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_EXPP.";
+			Process_EXPP();
 			break;
 		case D3DSIO_LOG:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LOG.";
+			Process_LOG();
 			break;
 		case D3DSIO_LOGP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LOGP.";
+			Process_LOGP();
 			break;
 		case D3DSIO_FRC:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_FRC.";
+			Process_FRC();
 			break;
 		case D3DSIO_LIT:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LIT.";
 			break;
 		case D3DSIO_ABS:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_ABS.";
+			Process_ABS();
 			break;
 		case D3DSIO_TEXM3x3SPEC:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x3SPEC.";
@@ -3762,7 +4743,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			Process_MAX();
 			break;
 		case D3DSIO_DST:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DST.";
+			Process_DST();
 			break;
 		case D3DSIO_SLT:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SLT.";
@@ -3771,10 +4752,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SGE.";
 			break;
 		case D3DSIO_CRS:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_CRS.";
+			Process_CRS();
 			break;
 		case D3DSIO_POW:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_POW.";
+			Process_POW();
 			break;
 		case D3DSIO_DP2ADD:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DP2ADD.";

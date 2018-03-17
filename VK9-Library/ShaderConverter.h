@@ -22,11 +22,13 @@ misrepresented as being the original software.
 #define SHADERCONVERTER_H
 
 #include <stdint.h>
-#include <vulkan/vulkan.h>
+//#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <vector>
 #include <boost/log/trivial.hpp>
 #include <boost/container/flat_map.hpp>
 #include <spirv.hpp>
+#include <GLSL.std.450.h>
 #include "CTypes.h"
 
 /*
@@ -194,6 +196,12 @@ struct TypeDescriptionComparator
 		return a < b;
 	}
 };
+
+template<typename ...ArgumentType> inline void Pack(std::vector<uint32_t> instructions, ArgumentType... arguments)
+{
+	const size_t size = sizeof...(arguments);
+	instructions.insert(instructions.end(), &arguments[0], &arguments[size]);
+}
 
 inline uint32_t Pack(uint32_t wordCount, spv::Op opcode)
 {
@@ -373,6 +381,13 @@ inline uint32_t GetUsageIndex(uint32_t token)
 	return (token & D3DSP_DCL_USAGEINDEX_MASK) >> D3DSP_DCL_USAGEINDEX_SHIFT;
 }
 
+inline void PrintTokenInformation(const char* tokenName, Token result, Token argument1)
+{
+	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
+		<< result.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(result.i) << ") "
+		<< argument1.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument1.i) << ")";
+};
+
 inline void PrintTokenInformation(const char* tokenName, Token result, Token argument1, Token argument2)
 {
 	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
@@ -445,6 +460,7 @@ private:
 	bool mIsVertexShader = false;
 	uint32_t mPositionId = 0;
 	uint32_t mPositionYId = 0;
+	uint32_t mGlslExtensionId = 0;
 
 	uint32_t mColor1Id = 0;
 	uint32_t mColor1XId = 0;
@@ -503,11 +519,22 @@ private:
 	void Process_DEFB();
 
 	//Unary Operators
+	void Process_NRM();
 	void Process_MOV();
 	void Process_MOVA();
+	void Process_RSQ();
 
-	//Binary Operators
+	//Binary Operators (mixed unary in here by mistake will sort out some day ... maybe)
+	void Process_DST();
+	void Process_CRS();
+	void Process_POW();
 	void Process_MUL();
+	void Process_EXP();
+	void Process_EXPP();
+	void Process_LOG();
+	void Process_LOGP();
+	void Process_FRC();
+	void Process_ABS();
 	void Process_ADD();
 	void Process_SUB();
 	void Process_MIN();
