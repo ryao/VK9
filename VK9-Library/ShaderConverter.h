@@ -25,6 +25,7 @@ misrepresented as being the original software.
 //#include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 #include <vector>
+#include <stack>
 #include <boost/log/trivial.hpp>
 #include <boost/container/flat_map.hpp>
 #include <spirv.hpp>
@@ -381,6 +382,17 @@ inline uint32_t GetUsageIndex(uint32_t token)
 	return (token & D3DSP_DCL_USAGEINDEX_MASK) >> D3DSP_DCL_USAGEINDEX_SHIFT;
 }
 
+inline void PrintTokenInformation(const char* tokenName)
+{
+	BOOST_LOG_TRIVIAL(info) << tokenName;
+};
+
+inline void PrintTokenInformation(const char* tokenName, Token argument1)
+{
+	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
+		<< argument1.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument1.i) << ")";
+};
+
 inline void PrintTokenInformation(const char* tokenName, Token result, Token argument1)
 {
 	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
@@ -445,6 +457,9 @@ private:
 	std::vector<uint32_t> mTypeInstructions;
 	std::vector<uint32_t> mFunctionDeclarationInstructions;
 	std::vector<uint32_t> mFunctionDefinitionInstructions;
+
+	std::stack<uint32_t> mFalseLabels;
+	size_t mFalseLabelCount;
 
 	uint32_t* mBaseToken = nullptr;
 	uint32_t* mPreviousToken = nullptr;
@@ -517,6 +532,12 @@ private:
 	void Process_DEF();
 	void Process_DEFI();
 	void Process_DEFB();
+
+	//Flow Control Operators
+	void Process_IFC();
+	void Process_IF();
+	void Process_ELSE();
+	void Process_ENDIF();
 
 	//Unary Operators
 	void Process_NRM();

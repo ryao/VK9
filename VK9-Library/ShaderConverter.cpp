@@ -1549,7 +1549,7 @@ void ShaderConverter::GenerateYFlip()
 
 void ShaderConverter::GeneratePushConstant()
 {
-	TypeDescription registerPointerType;	
+	TypeDescription registerPointerType;
 	registerPointerType.PrimaryType = spv::OpTypePointer;
 	registerPointerType.SecondaryType = spv::OpTypeVector;
 	registerPointerType.TernaryType = spv::OpTypeFloat;
@@ -2757,6 +2757,177 @@ void ShaderConverter::Process_DEFB()
 	PrintTokenInformation("DEFB", token, token, token);
 }
 
+void ShaderConverter::Process_IFC()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+	uint32_t trueLabelId;
+	uint32_t falseLabelId;
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2); //, UINT_MAX, D3DSPR_INPUT
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIEqual)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIEqual)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+		break;
+	}
+
+	trueLabelId = GetNextId();
+	falseLabelId = GetNextId();
+
+	mFalseLabels.push(falseLabelId);
+	mFalseLabelCount++;
+
+	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpBranchConditional)); //size,Type
+	mFunctionDefinitionInstructions.push_back(resultId); //Condition (Id)
+	mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
+	mFunctionDefinitionInstructions.push_back(falseLabelId); //False Label (Id)
+
+	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
+	mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
+
+	PrintTokenInformation("IFC", argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_IF()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t resultId;
+	uint32_t trueLabelId;
+	uint32_t falseLabelId;
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	resultId = GetNextId();
+	trueLabelId = GetNextId();
+	falseLabelId = GetNextId();
+
+	mFalseLabels.push(falseLabelId);
+	mFalseLabelCount++;
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpBranchConditional)); //size,Type
+		mFunctionDefinitionInstructions.push_back(argumentId1); //Condition (Id)
+		mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
+		mFunctionDefinitionInstructions.push_back(falseLabelId); //False Label (Id)
+
+		mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
+		mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
+
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_IF - Unsupported data type " << dataType;
+		break;
+	}
+
+	PrintTokenInformation("IF", argumentToken1);
+}
+
+void ShaderConverter::Process_ELSE()
+{
+	uint32_t falseLabelId = mFalseLabels.top();
+
+	mFalseLabels.pop();
+
+	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
+	mFunctionDefinitionInstructions.push_back(falseLabelId); //False Label (Id)
+
+	PrintTokenInformation("ELSE");
+}
+
+void ShaderConverter::Process_ENDIF()
+{
+	if (mFalseLabels.size() == mFalseLabelCount)
+	{
+		Process_ELSE();
+	}
+	mFalseLabelCount--;
+
+	uint32_t endIfLabelId = GetNextId();
+
+	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpBranch)); //size,Type
+	mFunctionDefinitionInstructions.push_back(endIfLabelId); //End If (Id)
+
+	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
+	mFunctionDefinitionInstructions.push_back(endIfLabelId); //End If (Id)
+
+	PrintTokenInformation("ENDIF");
+}
+
 void ShaderConverter::Process_NRM()
 {
 	TypeDescription typeDescription;
@@ -3626,7 +3797,7 @@ void ShaderConverter::Process_FRC()
 	spv::Op dataType;
 	uint32_t dataTypeId;
 	uint32_t argumentId1;
-	uint32_t argumentId2=0;
+	uint32_t argumentId2 = 0;
 	uint32_t resultId;
 
 	Token resultToken = GetNextToken();
@@ -4458,7 +4629,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		BOOST_LOG_TRIVIAL(info) << "VS" << mMajorVersion << "." << mMinorVersion;
 	}
 	//Probably more info in this word but I'll handle that later.
-	
+
 
 	//Capability
 	mCapabilityInstructions.push_back(Pack(2, spv::OpCapability)); //size,Type
@@ -4641,16 +4812,16 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DSY.";
 			break;
 		case D3DSIO_IFC:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_IFC.";
+			Process_IFC();
 			break;
 		case D3DSIO_IF:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_IF.";
+			Process_IF();
 			break;
 		case D3DSIO_ELSE:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_ELSE.";
+			Process_ELSE();
 			break;
 		case D3DSIO_ENDIF:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_ENDIF.";
+			Process_ENDIF();
 			break;
 		case D3DSIO_REP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_REP.";
