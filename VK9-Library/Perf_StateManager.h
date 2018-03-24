@@ -1445,19 +1445,19 @@ struct StateManager
 	boost::container::small_vector< std::shared_ptr<RealWindow>, 1> mWindows;
 	std::atomic_size_t mWindowsKey = 0;
 
-	boost::container::small_vector< std::shared_ptr<RealVertexBuffer>, 1> mVertexBuffers;
+	std::vector< std::shared_ptr<RealVertexBuffer> > mVertexBuffers;
 	std::atomic_size_t mVertexBufferKey = 0;
 
-	boost::container::small_vector< std::shared_ptr<RealIndexBuffer>, 1> mIndexBuffers;
+	std::vector< std::shared_ptr<RealIndexBuffer> > mIndexBuffers;
 	std::atomic_size_t mIndexBufferKey = 0;
 
-	boost::container::small_vector< std::shared_ptr<RealTexture>, 1> mTextures;
+	std::vector< std::shared_ptr<RealTexture> > mTextures;
 	std::atomic_size_t mTextureKey = 0;
 
-	boost::container::small_vector< std::shared_ptr<RealSurface>, 1> mSurfaces;
+	std::vector< std::shared_ptr<RealSurface> > mSurfaces;
 	std::atomic_size_t mSurfaceKey = 0;
 
-	boost::container::small_vector< std::shared_ptr<ShaderConverter>, 1> mShaderConverters;
+	std::vector< std::shared_ptr<ShaderConverter> > mShaderConverters;
 	std::atomic_size_t mShaderConverterKey = 0;
 
 	StateManager();

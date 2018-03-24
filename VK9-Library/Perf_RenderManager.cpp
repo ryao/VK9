@@ -397,31 +397,50 @@ void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9*
 
 	//TODO: Handle dirty regions and multiple mip levels.
 
+	std::shared_ptr<RealTexture> source;
+	std::shared_ptr<RealTexture> target;
+	uint32_t width = 0;
+	uint32_t height = 0;
+
+	if (pDestinationTexture->GetType() != D3DRTYPE_CUBETEXTURE)
+	{
+		CTexture9& target9 = (*(CTexture9*)pDestinationTexture);
+		target = mStateManager.mTextures[target9.mId];
+
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
+	}
+	else
+	{
+		CCubeTexture9& target9 = (*(CCubeTexture9*)pDestinationTexture);
+		target = mStateManager.mTextures[target9.mId];
+
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 6);
+	}
+
 	if (pSourceTexture->GetType() != D3DRTYPE_CUBETEXTURE)
 	{
 		CTexture9& source9 = (*(CTexture9*)pSourceTexture);
-		CTexture9& target9 = (*(CTexture9*)pDestinationTexture);
+		source = mStateManager.mTextures[source9.mId];
 
-		auto& source = (*mStateManager.mTextures[source9.mId]);
-		auto& target = (*mStateManager.mTextures[target9.mId]);
-
-		ReallySetImageLayout(commandBuffer, source.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
-		ReallySetImageLayout(commandBuffer, target.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
-		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source9.mWidth, source9.mHeight, 0, 0, 0, 0);
-		ReallySetImageLayout(commandBuffer, target.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 0, 1);
+		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
+		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, 0, 0, 0, 0);
 	}
 	else
 	{
 		CCubeTexture9& source9 = (*(CCubeTexture9*)pSourceTexture);
-		CCubeTexture9& target9 = (*(CCubeTexture9*)pDestinationTexture);
+		source = mStateManager.mTextures[source9.mId];
 
-		auto& source = (*mStateManager.mTextures[source9.mId]);
-		auto& target = (*mStateManager.mTextures[target9.mId]);
+		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 6);
+		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mEdgeLength, source9.mEdgeLength, 0, 0, 0, 0);
+	}
 
-		ReallySetImageLayout(commandBuffer, source.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 6);
-		ReallySetImageLayout(commandBuffer, target.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 6);
-		ReallyCopyImage(commandBuffer, source.mImage, target.mImage, 0, 0, source9.mEdgeLength, source9.mEdgeLength, 0, 0, 0, 0);
-		ReallySetImageLayout(commandBuffer, target.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 0, 6);
+	if (pDestinationTexture->GetType() != D3DRTYPE_CUBETEXTURE)
+	{		
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 0, 1);
+	}
+	else
+	{				
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 0, 6);
 	}
 
 	commandBuffer.end();

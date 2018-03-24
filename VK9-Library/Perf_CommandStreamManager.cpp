@@ -3673,6 +3673,9 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 	case WorkItemType::Texture_Create:
 		key = mRenderManager.mStateManager.mTextureKey++;
 		break;
+	case WorkItemType::CubeTexture_Create:
+		key = mRenderManager.mStateManager.mTextureKey++;
+		break;
 	case WorkItemType::Surface_Create:
 		key = mRenderManager.mStateManager.mSurfaceKey++;
 		break;

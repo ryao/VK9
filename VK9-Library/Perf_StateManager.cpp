@@ -1747,6 +1747,11 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
 		return;
 	}
 
@@ -1774,7 +1779,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;
-	imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
+	imageViewCreateInfo.viewType = vk::ImageViewType::eCube; //e2D
 	imageViewCreateInfo.format = ptr->mRealFormat;
 	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
 	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
@@ -1818,15 +1823,20 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
 	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 
-	if (surface9->mCubeTexture != nullptr)
-	{
-		imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
-	}
+	//if (surface9->mCubeTexture != nullptr)
+	//{
+	//	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
+	//}
 
 	result = window->mRealDevice->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mStagingImage);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
 		return;
 	}
 

@@ -39,9 +39,13 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9";
 	//mDevice->AddRef();
 
-	if (!mLevels)
+	if (Usage & D3DUSAGE_AUTOGENMIPMAP)
 	{
-		mLevels = std::log2( max(mWidth, mHeight) ) + 1;
+		mLevels = 1;
+	}
+	else if (!mLevels)
+	{
+		mLevels = min(std::log2( max(mWidth, mHeight) ) + 1 , 10);
 	}
 
 	//mLevels = 1; //workaround
@@ -55,6 +59,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		ptr->mMipIndex = i;
 
 		mSurfaces.push_back(ptr);
+		ptr->mTargetLayer = 0;
 
 		width /= 2;
 		height /= 2;

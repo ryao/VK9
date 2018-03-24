@@ -3052,7 +3052,7 @@ void ShaderConverter::Process_MOV()
 		break;
 	}
 
-	PrintTokenInformation("MOV", resultToken, argumentToken1);
+	PrintTokenInformation("MOV", resultToken, resultId, argumentToken1, argumentId1);
 }
 
 void ShaderConverter::Process_MOVA()

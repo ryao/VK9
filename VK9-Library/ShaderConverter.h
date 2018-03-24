@@ -400,6 +400,13 @@ inline void PrintTokenInformation(const char* tokenName, Token result, Token arg
 		<< argument1.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument1.i) << ")";
 };
 
+inline void PrintTokenInformation(const char* tokenName, Token result,uint32_t resultId, Token argument1, uint32_t argument1Id)
+{
+	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
+		<< result.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(result.i) << ") [" << resultId << "] "
+		<< argument1.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument1.i) << ") [" << argument1Id << "]";
+};
+
 inline void PrintTokenInformation(const char* tokenName, Token result, Token argument1, Token argument2)
 {
 	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
