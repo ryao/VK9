@@ -538,9 +538,9 @@ inline vk::Format ConvertFormat(D3DFORMAT format) noexcept
 	case D3DFMT_P8:
 		return (vk::Format)VK_FORMAT_UNDEFINED; //P8_UINT
 	case D3DFMT_L8:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //L8_UNORM
+		return (vk::Format)VK_FORMAT_R8_UNORM;
 	case D3DFMT_A8L8:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //L8A8_UNORM
+		return (vk::Format)VK_FORMAT_R8G8_UNORM; //L8A8_UNORM
 	case D3DFMT_A4L4:
 		return (vk::Format)VK_FORMAT_UNDEFINED; //L4A4_UNORM
 	case D3DFMT_V8U8:

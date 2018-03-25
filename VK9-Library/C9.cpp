@@ -121,7 +121,14 @@ HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceTy
 	
 	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDeviceFormat is not implemented!" << AdapterFormat << " " << CheckFormat;
 
-	return D3D_OK;
+	if (ConvertFormat(CheckFormat) != vk::Format::eUndefined)
+	{
+		return D3D_OK;
+	}
+	else
+	{
+		return D3DERR_NOTAVAILABLE;
+	}
 }
 
 

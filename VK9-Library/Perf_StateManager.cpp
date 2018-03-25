@@ -365,7 +365,7 @@ RealDevice::~RealDevice()
 		return;
 	}
 	mDevice.destroyDescriptorPool(mDescriptorPool, nullptr);
-	mDevice.destroy();	
+	mDevice.destroy();
 }
 
 RealInstance::RealInstance()
@@ -380,11 +380,11 @@ RealInstance::~RealInstance()
 #ifdef _DEBUG
 	mInstance.destroyDebugReportCallbackEXT(mCallback);
 #endif
-	mInstance.destroy();	
+	mInstance.destroy();
 }
 
 RealTexture::RealTexture(RealWindow* realWindow)
-	: mRealWindow(realWindow) 
+	: mRealWindow(realWindow)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealTexture::RealTexture";
 }
@@ -404,7 +404,7 @@ RealTexture::~RealTexture()
 }
 
 RealSurface::RealSurface(RealWindow* realWindow)
-	: mRealWindow(realWindow) 
+	: mRealWindow(realWindow)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
 }
@@ -421,7 +421,7 @@ RealSurface::~RealSurface()
 }
 
 RealVertexBuffer::RealVertexBuffer(RealWindow* realWindow)
-	: mRealWindow(realWindow) 
+	: mRealWindow(realWindow)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealVertexBuffer::RealVertexBuffer";
 }
@@ -438,7 +438,7 @@ RealVertexBuffer::~RealVertexBuffer()
 }
 
 RealIndexBuffer::RealIndexBuffer(RealWindow* realWindow)
-	: mRealWindow(realWindow) 
+	: mRealWindow(realWindow)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealIndexBuffer::RealIndexBuffer";
 }
@@ -1652,6 +1652,11 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 
 	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
 
+	if (ptr->mRealFormat == vk::Format::eUndefined)//VK_FORMAT_UNDEFINED
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture unknown format: " << texture9->mFormat;
+	}
+
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
@@ -1705,6 +1710,21 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 
 	imageViewCreateInfo.subresourceRange.levelCount = texture9->mLevels;
 
+	/*
+	This block handles the luminance formats. They are converted to color formats but need a little mapping to make them work correctly.
+	*/
+	switch (texture9->mFormat)
+	{
+	case D3DFMT_L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+		break;
+	case D3DFMT_A8L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+		break;
+	default:
+		break;
+	}
+
 	result = device.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
 	if (result != vk::Result::eSuccess)
 	{
@@ -1729,6 +1749,11 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	auto& device = window->mRealDevice->mDevice;
 
 	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
+
+	if (ptr->mRealFormat == vk::Format::eUndefined)//VK_FORMAT_UNDEFINED
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture unknown format: " << texture9->mFormat;
+	}
 
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
@@ -1788,6 +1813,21 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewCreateInfo.subresourceRange.layerCount = 6;
 
+	/*
+	This block handles the luminance formats. They are converted to color formats but need a little mapping to make them work correctly.
+	*/
+	switch (texture9->mFormat)
+	{
+	case D3DFMT_L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+		break;
+	case D3DFMT_A8L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+		break;
+	default:
+		break;
+	}
+
 	result = device.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
 	if (result != vk::Result::eSuccess)
 	{
@@ -1811,6 +1851,28 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(window.get());
 
 	ptr->mRealFormat = ConvertFormat(surface9->mFormat);
+
+	if (ptr->mRealFormat == vk::Format::eUndefined)//VK_FORMAT_UNDEFINED
+	{
+		if (surface9->mFormat > 199)
+		{
+			char four[5] =
+			{
+				(char)(surface9->mFormat & 0xFF),
+				(char)((surface9->mFormat >> 8) & 0xFF),
+				(char)((surface9->mFormat >> 16) & 0xFF),
+				(char)((surface9->mFormat >> 24) & 0xFF),
+				'\0'
+			};
+
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface unknown format: " << four;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface unknown format: " << surface9->mFormat;
+		}	
+
+	}
 
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
