@@ -36,7 +36,7 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mIsDirty(true),
 	mLockCount(0)
 {
-
+	BOOST_LOG_TRIVIAL(info) << "CVertexBuffer9::CVertexBuffer9";
 }
 
 CVertexBuffer9::~CVertexBuffer9()
@@ -45,6 +45,8 @@ CVertexBuffer9::~CVertexBuffer9()
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWork(workItem);	
+
+	BOOST_LOG_TRIVIAL(info) << "CVertexBuffer9::~CVertexBuffer9";
 }
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(void)

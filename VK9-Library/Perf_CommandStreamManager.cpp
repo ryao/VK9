@@ -147,12 +147,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				break;
 				case Device_BeginScene:
 				{
-					auto& renderManager = commandStreamManager->mRenderManager;
-					auto& realWindow = (*renderManager.mStateManager.mWindows[workItem->Id]);
-					if (!realWindow.mIsSceneStarted)
-					{
-						renderManager.StartScene(realWindow);
-					}
+					//auto& renderManager = commandStreamManager->mRenderManager;
+					//auto& realWindow = (*renderManager.mStateManager.mWindows[workItem->Id]);
+					//if (!realWindow.mIsSceneStarted)
+					//{
+					//	renderManager.StartScene(realWindow);
+					//}
 				}
 				break;
 				case Device_Present:
