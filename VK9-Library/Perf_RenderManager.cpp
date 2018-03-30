@@ -1165,22 +1165,21 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 
 		realWindow.mDescriptorSetLayoutBinding[2].binding = 2;
 		realWindow.mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-		realWindow.mDescriptorSetLayoutBinding[2].descriptorCount = textureCount; //Update to use mapped texture.
+		realWindow.mDescriptorSetLayoutBinding[2].descriptorCount = deviceState.mTextures.size(); //Update to use mapped texture.
 		realWindow.mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eFragment;
 		realWindow.mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
 
 		realWindow.mDescriptorSetLayoutCreateInfo.pBindings = realWindow.mDescriptorSetLayoutBinding;
 		realWindow.mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+		realWindow.mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-		if (textureCount)
+		if (deviceState.mTextures.size())
 		{
-			realWindow.mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
-			realWindow.mPipelineLayoutCreateInfo.setLayoutCount = 1;
+			realWindow.mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.			
 		}
 		else
 		{
 			realWindow.mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.	
-			realWindow.mPipelineLayoutCreateInfo.setLayoutCount = 1;
 		}
 
 		realWindow.mVertexSpecializationInfo.pData = &deviceState.mSpecializationConstants;

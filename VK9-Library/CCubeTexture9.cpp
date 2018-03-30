@@ -307,7 +307,7 @@ void CCubeTexture9::Flush()
 {
 	for (size_t i = 0; i < 6; i++)
 	{
-		for (size_t j = 0; j < mSurfaces.size(); j++)
+		for (size_t j = 0; j < mSurfaces[i].size(); j++)
 		{
 			mSurfaces[i][j]->Flush();
 		}

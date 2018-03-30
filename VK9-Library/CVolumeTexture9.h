@@ -21,13 +21,23 @@ misrepresented as being the original software.
 #ifndef CVOLUMETEXTURE9_H
 #define CVOLUMETEXTURE9_H
 
-#include "d3d9.h" // Base class: IDirect3DVolumeTexture9
+#include <memory>
+#include <boost/container/small_vector.hpp>
+#include "d3d9.h" // Base class: IDirect3DCubeTexture9
 #include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
+#include "CSurface9.h"
+#include "Perf_CommandStreamManager.h"
 
-class CVolumeTexture9 : public IDirect3DVolumeTexture9,CBaseTexture9
+class CVolumeTexture9 : public IDirect3DVolumeTexture9
 {
-private:
+public:
+	CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
+	~CVolumeTexture9();
+
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+
 	CDevice9* mDevice;
 	UINT mWidth;
 	UINT mHeight;
@@ -38,12 +48,15 @@ private:
 	D3DPOOL mPool;
 	HANDLE* mSharedHandle;
 
-public:
-	CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
-	~CVolumeTexture9();
-
 	ULONG mReferenceCount;
 	VkResult mResult;
+	D3DTEXTUREFILTERTYPE mMipFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
+	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
+
+	std::vector< std::vector<CSurface9*> > mSurfaces;
+
+	void Flush();
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

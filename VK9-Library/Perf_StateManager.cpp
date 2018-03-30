@@ -458,6 +458,7 @@ SamplerRequest::~SamplerRequest()
 {
 	if (mRealWindow != nullptr)
 	{
+		//BOOST_LOG_TRIVIAL(warning) << "SamplerRequest::~SamplerRequest";
 		auto& device = mRealWindow->mRealDevice->mDevice;
 		device.destroySampler(Sampler, nullptr);
 	}
@@ -467,6 +468,7 @@ ResourceContext::~ResourceContext()
 {
 	if (mRealWindow != nullptr)
 	{
+		//BOOST_LOG_TRIVIAL(warning) << "ResourceContext::~ResourceContext";
 		auto& device = mRealWindow->mRealDevice->mDevice;
 		device.freeDescriptorSets(mRealWindow->mRealDevice->mDescriptorPool, 1, &DescriptorSet);
 	}
@@ -476,6 +478,7 @@ DrawContext::~DrawContext()
 {
 	if (mRealWindow != nullptr)
 	{
+		//BOOST_LOG_TRIVIAL(warning) << "DrawContext::~DrawContext";
 		auto& device = mRealWindow->mRealDevice->mDevice;
 		device.destroyPipeline(Pipeline, nullptr);
 		device.destroyPipelineLayout(PipelineLayout, nullptr);

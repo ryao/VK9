@@ -21,6 +21,7 @@ misrepresented as being the original software.
 
 #include "CVolumeTexture9.h"
 #include "CDevice9.h"
+#include "CSurface9.h"
 
 #include "Utilities.h"
 
@@ -37,12 +38,54 @@ CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT
 	mSharedHandle(pSharedHandle),
 	mResult(VK_SUCCESS)
 {
+	BOOST_LOG_TRIVIAL(info) << "CVolumeTexture9::CVolumeTexture9";
 
+	if (Usage & D3DUSAGE_AUTOGENMIPMAP)
+	{
+		mLevels = 1;
+	}
+	else if (!mLevels)
+	{
+		mLevels = min(std::log2(max(mWidth, mHeight)) + 1, 10);
+	}
+
+	//for (size_t i = 0; i < Depth; i++)
+	//{
+	//	UINT width = mWidth;
+	//	UINT height = mHeight;
+	//	std::vector<CSurface9*> surfaces;
+	//	for (size_t j = 0; j < mLevels; j++)
+	//	{
+	//		CSurface9* ptr = new CSurface9(mDevice, this, width, height, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+
+	//		ptr->mMipIndex = j;
+	//		ptr->mTargetLayer = i;
+
+	//		surfaces.push_back(ptr);
+
+	//		width /= 2;
+	//		height /= 2;
+	//	}
+	//	mSurfaces.push_back(surfaces);
+	//}
 }
 
 CVolumeTexture9::~CVolumeTexture9()
 {
+	BOOST_LOG_TRIVIAL(info) << "CVolumeTexture9::~CVolumeTexture9";
 
+	for (size_t i = 0; i < 6; i++)
+	{
+		for (size_t j = 0; j < mSurfaces[i].size(); j++)
+		{
+			mSurfaces[i][j]->Release();
+		}
+	}
+
+	//WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
+	//workItem->WorkItemType = WorkItemType::VolumeTexture_Destroy;
+	//workItem->Id = mId;
+	//mCommandStreamManager->RequestWork(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(void)
@@ -172,11 +215,7 @@ VOID STDMETHODCALLTYPE CVolumeTexture9::GenerateMipSubLevels()
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CVolumeTexture9::GetAutoGenFilterType()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::GetAutoGenFilterType is not implemented!";
-
-	return D3DTEXF_NONE;
+	return mMipFilter;
 }
 
 DWORD STDMETHODCALLTYPE CVolumeTexture9::GetLOD()
@@ -199,11 +238,9 @@ DWORD STDMETHODCALLTYPE CVolumeTexture9::GetLevelCount()
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::SetAutoGenFilterType(D3DTEXTUREFILTERTYPE FilterType)
 {
-	//TODO: Implement.
+	mMipFilter = FilterType; //revisit
 
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::SetAutoGenFilterType is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 DWORD STDMETHODCALLTYPE CVolumeTexture9::SetLOD(DWORD LODNew)
@@ -269,4 +306,15 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::UnlockBox(UINT Level)
 	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::UnlockBox is not implemented!";
 
 	return S_OK;	
+}
+
+void CVolumeTexture9::Flush()
+{
+	for (size_t i = 0; i < 6; i++)
+	{
+		for (size_t j = 0; j < mSurfaces[i].size(); j++)
+		{
+			mSurfaces[i][j]->Flush();
+		}
+	}
 }
