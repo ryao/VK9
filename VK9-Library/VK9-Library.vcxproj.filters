@@ -206,6 +206,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="VK9.conf" />
+    <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE.geom">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">
