@@ -56,21 +56,17 @@ layout (location = 3) out vec4 outEmissiveColor;
 layout (location = 4) out vec2 texcoord;
 
 void main() 
-{
-		float calculatedPointSize = pointSize;
+{	
 		vec4 position = gl_in[0].gl_Position;
-		float screenWidth = 640;
-		float screenHeight = 480;
+		float calculatedPointSize = pointSize;
 
 		if(pointScaleEnable)
 		{
-			//float d = sqrt(pow(position.x,2) + pow(position.y,2) + pow(position.z,2));
-			float d = abs(distance(position,vec4(0,0,0,0)));
-			calculatedPointSize = screenHeight * pointSize * sqrt(1/(pointScaleA + pointScaleB * d + pointScaleC * pow(d,2)));
-			calculatedPointSize = clamp(calculatedPointSize,pointSizeMinimum,pointSizeMaximum);
+			float d = sqrt(pow(position.x,2) + pow(position.y,2) + pow(position.z,2));
+			calculatedPointSize = 1 * calculatedPointSize * sqrt(1/(pointScaleA + pointScaleB * d + pointScaleC * pow(d,2)));
 		}	
 
-		calculatedPointSize = 1.0;
+		calculatedPointSize = clamp(calculatedPointSize,pointSizeMinimum,pointSizeMaximum);
 
 		gl_Position = vec4(position.x - calculatedPointSize/2, position.y + calculatedPointSize/2, position.z, position.w);
 		outdiffuseColor = indiffuseColor[0];

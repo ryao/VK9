@@ -385,7 +385,7 @@ layout(constant_id = 196) const int ambientMaterialSource = D3DMCS_MATERIAL;
 layout(constant_id = 197) const int emissiveMaterialSource = D3DMCS_MATERIAL;
 layout(constant_id = 198) const int vertexBlend = D3DVBF_DISABLE;
 layout(constant_id = 199) const int clipPlaneEnable = 0;
-layout(constant_id = 200) const int pointSize = 64;
+layout(constant_id = 200) const float pointSize = 64.0f;
 layout(constant_id = 201) const float pointSizeMinimum = 1.0f;
 layout(constant_id = 202) const bool pointSpriteEnable = false;
 layout(constant_id = 203) const bool pointScaleEnable = false;

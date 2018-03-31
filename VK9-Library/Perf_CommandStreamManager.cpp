@@ -1892,7 +1892,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						state->hasClipPlaneEnable = true;
 						break;
 					case D3DRS_POINTSIZE:
-						constants->pointSize = Value;
+						constants->pointSize = bit_cast(Value);
 						state->hasPointSize = true;
 						break;
 					case D3DRS_POINTSIZE_MIN:

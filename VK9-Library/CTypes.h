@@ -331,7 +331,7 @@ struct SpecializationConstants
 	int emissiveMaterialSource = D3DMCS_MATERIAL;
 	int vertexBlend = D3DVBF_DISABLE;
 	int clipPlaneEnable = 0;
-	int pointSize = 64;
+	float pointSize = 64.0f;
 	float pointSizeMinimum = 1.0f;
 	int pointSpriteEnable = false;
 	int pointScaleEnable = false;
