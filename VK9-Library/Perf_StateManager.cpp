@@ -1721,7 +1721,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	imageViewCreateInfo.subresourceRange.levelCount = texture9->mLevels;
 
 	/*
-	This block handles the luminance formats. They are converted to color formats but need a little mapping to make them work correctly.
+	This block handles the luminance & x formats. They are converted to color formats but need a little mapping to make them work correctly.
 	*/
 	switch (texture9->mFormat)
 	{
@@ -1730,6 +1730,10 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 		break;
 	case D3DFMT_A8L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+		break;
+	case D3DFMT_X8R8G8B8:
+	case D3DFMT_X8B8G8R8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eOne);
 		break;
 	default:
 		break;
@@ -1824,7 +1828,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	imageViewCreateInfo.subresourceRange.layerCount = 6;
 
 	/*
-	This block handles the luminance formats. They are converted to color formats but need a little mapping to make them work correctly.
+	This block handles the luminance & x formats. They are converted to color formats but need a little mapping to make them work correctly.
 	*/
 	switch (texture9->mFormat)
 	{
@@ -1833,6 +1837,10 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 		break;
 	case D3DFMT_A8L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+		break;
+	case D3DFMT_X8R8G8B8:
+	case D3DFMT_X8B8G8R8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eOne);
 		break;
 	default:
 		break;

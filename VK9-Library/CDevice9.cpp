@@ -1315,24 +1315,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetTexture(DWORD Sampler, IDirect3DBaseTextu
 	workItem->Argument2 = bit_cast<void*>(pTexture);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	if (pTexture!= nullptr)
-	{
-		switch (pTexture->GetType())
-		{
-		case D3DRTYPE_TEXTURE:
-			((CTexture9*)pTexture)->Flush();
-			break;
-		case D3DRTYPE_VOLUMETEXTURE:
-			//TODO: added flush for volume texture once volume texture is added.
-			break;
-		case D3DRTYPE_CUBETEXTURE:
-			((CCubeTexture9*)pTexture)->Flush();
-			break;
-		default:
-			break;
-		}
-	}
-
 	return S_OK;
 }
 

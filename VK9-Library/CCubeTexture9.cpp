@@ -38,13 +38,9 @@ CCubeTexture9::CCubeTexture9(CDevice9* device, UINT EdgeLength, UINT Levels, DWO
 	BOOST_LOG_TRIVIAL(info) << "CCubeTexture9::CCubeTexture9";
 	//mDevice->AddRef();
 
-	if (Usage & D3DUSAGE_AUTOGENMIPMAP)
+	if (!mLevels)
 	{
-		mLevels = 1;
-	}
-	else if (!mLevels)
-	{
-		mLevels = min(std::log2(mEdgeLength) + 1 , 10);
+		mLevels = std::log2(mEdgeLength) + 1;
 	}
 
 	//mLevels = 1; //workaround

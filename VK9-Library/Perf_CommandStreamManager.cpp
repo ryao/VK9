@@ -147,12 +147,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				break;
 				case Device_BeginScene:
 				{
-					//auto& renderManager = commandStreamManager->mRenderManager;
-					//auto& realWindow = (*renderManager.mStateManager.mWindows[workItem->Id]);
-					//if (!realWindow.mIsSceneStarted)
-					//{
-					//	renderManager.StartScene(realWindow);
-					//}
+					auto& renderManager = commandStreamManager->mRenderManager;
+					auto& realWindow = (*renderManager.mStateManager.mWindows[workItem->Id]);
+					if (!realWindow.mIsSceneStarted)
+					{
+						renderManager.StartScene(realWindow);
+					}
 				}
 				break;
 				case Device_Present:
@@ -3476,10 +3476,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 					if (surface.mData != nullptr)
 					{
-						if (surface9->mFormat == D3DFMT_X8R8G8B8)
-						{
-							SetAlpha((char*)surface.mData, surface9->mHeight, surface9->mWidth, surface.mLayouts[0].rowPitch);
-						}
+						//This work around was replaced with component mapping.
+						//if (surface9->mFormat == D3DFMT_X8R8G8B8)
+						//{
+						//	SetAlpha((char*)surface.mData, surface9->mHeight, surface9->mWidth, surface.mLayouts[0].rowPitch);
+						//}
 
 						device.unmapMemory(surface.mStagingDeviceMemory);
 						surface.mData = nullptr;
