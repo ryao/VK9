@@ -890,13 +890,15 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 	/**********************************************
 	* Figure out correct shader
 	**********************************************/
+	realWindow.mGraphicsPipelineCreateInfo.stageCount = 2;
+
 	if (context->VertexShader != nullptr)
 	{
 		realWindow.mPipelineShaderStageCreateInfo[0].module = mStateManager.mShaderConverters[context->VertexShader->mId]->mConvertedShader.ShaderModule;
 		realWindow.mPipelineShaderStageCreateInfo[1].module = mStateManager.mShaderConverters[context->PixelShader->mId]->mConvertedShader.ShaderModule;
 	}
 	else
-	{
+	{		
 		if (hasPosition && !hasColor && !hasNormal)
 		{
 			switch (textureCount)
@@ -923,7 +925,17 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 			{
 			case 0:
 				realWindow.mPipelineShaderStageCreateInfo[0].module = realWindow.mVertShaderModule_XYZ_DIFFUSE;
-				realWindow.mPipelineShaderStageCreateInfo[1].module = realWindow.mFragShaderModule_XYZ_DIFFUSE;
+
+				if (deviceState.hasPointSpriteEnable)
+				{
+					realWindow.mGraphicsPipelineCreateInfo.stageCount = 3;
+					realWindow.mPipelineShaderStageCreateInfo[1].module = realWindow.mFragShaderModule_XYZ_DIFFUSE_TEX1;
+				}
+				else
+				{
+					realWindow.mPipelineShaderStageCreateInfo[1].module = realWindow.mFragShaderModule_XYZ_DIFFUSE;
+				}
+				
 				break;
 			case 1:
 				realWindow.mPipelineShaderStageCreateInfo[0].module = realWindow.mVertShaderModule_XYZ_DIFFUSE_TEX1;

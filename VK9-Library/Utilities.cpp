@@ -784,7 +784,7 @@ vk::ShaderModule LoadShaderFromFile(vk::Device device, const char *filename)
 			}
 			else
 			{
-				BOOST_LOG_TRIVIAL(info) << "LoadShaderFromFile vkCreateShaderModule succeeded.";
+				BOOST_LOG_TRIVIAL(info) << "LoadShaderFromFile vkCreateShaderModule succeeded. " << filename;
 			}
 		}
 		else

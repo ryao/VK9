@@ -183,6 +183,7 @@ struct RealWindow
 	//Fixed Function Shaders
 	vk::ShaderModule mVertShaderModule_XYZ_DIFFUSE;
 	vk::ShaderModule mFragShaderModule_XYZ_DIFFUSE;
+	vk::ShaderModule mGeomShaderModule_XYZ_DIFFUSE;
 
 	vk::ShaderModule mVertShaderModule_XYZ_TEX1;
 	vk::ShaderModule mFragShaderModule_XYZ_TEX1;
@@ -1272,7 +1273,7 @@ struct RealWindow
 	vk::DescriptorSetLayoutCreateInfo mDescriptorSetLayoutCreateInfo;
 	vk::DescriptorSetAllocateInfo mDescriptorSetAllocateInfo;
 	vk::PipelineLayoutCreateInfo mPipelineLayoutCreateInfo;
-	vk::PipelineShaderStageCreateInfo mPipelineShaderStageCreateInfo[2];
+	vk::PipelineShaderStageCreateInfo mPipelineShaderStageCreateInfo[3];
 	vk::GraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
 	vk::PipelineCacheCreateInfo mPipelineCacheCreateInfo;
 	vk::PipelineCache mPipelineCache;

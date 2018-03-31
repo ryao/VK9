@@ -164,6 +164,7 @@ RealWindow::~RealWindow()
 	device.destroySampler(mSampler, nullptr);
 	device.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE, nullptr);
 	device.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE, nullptr);
+	device.destroyShaderModule(mGeomShaderModule_XYZ_DIFFUSE, nullptr);
 	device.destroyShaderModule(mVertShaderModule_XYZ_TEX1, nullptr);
 	device.destroyShaderModule(mFragShaderModule_XYZ_TEX1, nullptr);
 	device.destroyShaderModule(mVertShaderModule_XYZ_TEX2, nullptr);
@@ -968,6 +969,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	//Load fixed function shaders.
 	ptr->mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
 	ptr->mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
+	ptr->mGeomShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_DIFFUSE.geom.spv");
 
 	ptr->mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
 	ptr->mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
@@ -1082,6 +1084,11 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	ptr->mPipelineShaderStageCreateInfo[1].module = ptr->mFragShaderModule_XYZ_DIFFUSE;
 	ptr->mPipelineShaderStageCreateInfo[1].pName = "main";
 	ptr->mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &ptr->mPixelSpecializationInfo;
+
+	ptr->mPipelineShaderStageCreateInfo[2].stage = vk::ShaderStageFlagBits::eGeometry;
+	ptr->mPipelineShaderStageCreateInfo[2].module = ptr->mGeomShaderModule_XYZ_DIFFUSE;
+	ptr->mPipelineShaderStageCreateInfo[2].pName = "main";
+	ptr->mPipelineShaderStageCreateInfo[2].pSpecializationInfo = &ptr->mVertexSpecializationInfo;
 
 	ptr->mGraphicsPipelineCreateInfo.pVertexInputState = &ptr->mPipelineVertexInputStateCreateInfo;
 	ptr->mGraphicsPipelineCreateInfo.pInputAssemblyState = &ptr->mPipelineInputAssemblyStateCreateInfo;
