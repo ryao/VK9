@@ -23,7 +23,7 @@ misrepresented as being the original software.
 #extension GL_ARB_shading_language_420pack : enable
 
 layout (points) in;
-layout(triangle_strip, max_vertices = 4) out;
+layout(triangle_strip, max_vertices = 6) out;
 
 #include "Constants"
 #include "Structures"
@@ -58,25 +58,21 @@ layout (location = 4) out vec2 texcoord;
 void main() 
 {
 		float calculatedPointSize = pointSize;
+		vec4 position = gl_in[0].gl_Position;
+		float screenWidth = 640;
+		float screenHeight = 480;
 
 		if(pointScaleEnable)
 		{
-			float distance = sqrt((gl_in[0].gl_Position.x * gl_in[0].gl_Position.x) + (gl_in[0].gl_Position.y * gl_in[0].gl_Position.y) + (gl_in[0].gl_Position.z * gl_in[0].gl_Position.z));
-			float viewHeight = 1080; //revisit
-			float calculatedPointSize = clamp(viewHeight * pointSize * sqrt(1/(pointScaleA + pointScaleB * distance + pointScaleC * ( distance * distance ))),pointSizeMinimum,pointSizeMaximum);
-		}
+			//float d = sqrt(pow(position.x,2) + pow(position.y,2) + pow(position.z,2));
+			float d = abs(distance(position,vec4(0,0,0,0)));
+			calculatedPointSize = screenHeight * pointSize * sqrt(1/(pointScaleA + pointScaleB * d + pointScaleC * pow(d,2)));
+			calculatedPointSize = clamp(calculatedPointSize,pointSizeMinimum,pointSizeMaximum);
+		}	
 
-		vec4 position = gl_in[0].gl_Position;
+		calculatedPointSize = 1.0;
 
-		gl_Position = vec4(position.x + calculatedPointSize/2, position.y + calculatedPointSize/2, position.z, position.w);
-		outdiffuseColor = indiffuseColor[0];
-		outAmbientColor = inAmbientColor[0];
-		outSpecularColor = inSpecularColor[0];
-		outEmissiveColor = inEmissiveColor[0];
-		texcoord = vec2( 1.0, 1.0 );
-		EmitVertex();
-
-		gl_Position = vec4(position.x + calculatedPointSize/2, position.y - calculatedPointSize/2, position.z, position.w);
+		gl_Position = vec4(position.x - calculatedPointSize/2, position.y + calculatedPointSize/2, position.z, position.w);
 		outdiffuseColor = indiffuseColor[0];
 		outAmbientColor = inAmbientColor[0];
 		outSpecularColor = inSpecularColor[0];
@@ -89,7 +85,35 @@ void main()
 		outAmbientColor = inAmbientColor[0];
 		outSpecularColor = inSpecularColor[0];
 		outEmissiveColor = inEmissiveColor[0];
+		texcoord = vec2( 0.0, 0.0 ); 
+		EmitVertex();
+
+		gl_Position = vec4(position.x + calculatedPointSize/2, position.y - calculatedPointSize/2, position.z, position.w);
+		outdiffuseColor = indiffuseColor[0];
+		outAmbientColor = inAmbientColor[0];
+		outSpecularColor = inSpecularColor[0];
+		outEmissiveColor = inEmissiveColor[0];
 		texcoord = vec2( 1.0, 0.0 ); 
+		EmitVertex();
+
+		EndPrimitive();
+
+
+
+		gl_Position = vec4(position.x + calculatedPointSize/2, position.y - calculatedPointSize/2, position.z, position.w);
+		outdiffuseColor = indiffuseColor[0];
+		outAmbientColor = inAmbientColor[0];
+		outSpecularColor = inSpecularColor[0];
+		outEmissiveColor = inEmissiveColor[0];
+		texcoord = vec2( 1.0, 0.0 ); 
+		EmitVertex();
+
+		gl_Position = vec4(position.x + calculatedPointSize/2, position.y + calculatedPointSize/2, position.z, position.w);
+		outdiffuseColor = indiffuseColor[0];
+		outAmbientColor = inAmbientColor[0];
+		outSpecularColor = inSpecularColor[0];
+		outEmissiveColor = inEmissiveColor[0];
+		texcoord = vec2( 1.0, 1.0 );
 		EmitVertex();
 
 		gl_Position = vec4(position.x - calculatedPointSize/2, position.y + calculatedPointSize/2, position.z, position.w);
@@ -97,7 +121,7 @@ void main()
 		outAmbientColor = inAmbientColor[0];
 		outSpecularColor = inSpecularColor[0];
 		outEmissiveColor = inEmissiveColor[0];
-		texcoord = vec2( 0.0, 0.0 ); 
+		texcoord = vec2( 0.0, 1.0 ); 
 		EmitVertex();
 
 		EndPrimitive();

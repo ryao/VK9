@@ -444,7 +444,7 @@ void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9*
 	}
 
 	commandBuffer.end();
-
+ 
 	vk::CommandBuffer commandBuffers[] = { commandBuffer };
 	vk::Fence nullFence;
 
@@ -463,7 +463,7 @@ void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9*
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::UpdateTexture vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
-
+ 
 	realWindow.mQueue.waitIdle();
 	realWindow.mRealDevice->mDevice.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
 }
