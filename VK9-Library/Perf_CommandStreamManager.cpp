@@ -39,6 +39,11 @@ misrepresented as being the original software.
 #include "CCubeTexture9.h"
 #include "CSurface9.h"
 
+#include <iostream>
+#include <fstream>
+
+#include <winuser.h>
+
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
 	Sleep(100);
@@ -3616,14 +3621,34 @@ CommandStreamManager::CommandStreamManager()
 
 	if (mOptions.count("LogFile"))
 	{
+		std::ofstream outfile(mOptions["LogFile"].as<std::string>());
+		if (!outfile)
+		{
+			MessageBox(nullptr,
+				L"The application does not have permission to write to the log file location. If running on Windows try running as administrator.",
+				L"No Write Permission!",
+				IDOK | MB_ICONERROR);
+		}
+		outfile.close();
+
 		boost::log::add_file_log(
 			boost::log::keywords::file_name = mOptions["LogFile"].as<std::string>(),
 			boost::log::keywords::format = "[%TimeStamp%]: %Message%",
 			boost::log::keywords::auto_flush = true
-		);
+		);	
 	}
 	else
 	{
+		std::ofstream outfile("VK9.log");
+		if (!outfile)
+		{
+			MessageBox(nullptr,
+				L"The application does not have permission to write to the log file location. If running on Windows try running as administrator.",
+				L"No Write Permission!",
+				IDOK | MB_ICONERROR);
+		}
+		outfile.close();
+
 		boost::log::add_file_log(
 			boost::log::keywords::file_name = "VK9.log",
 			boost::log::keywords::format = "[%TimeStamp%]: %Message%",

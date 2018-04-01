@@ -789,14 +789,14 @@ vk::ShaderModule LoadShaderFromFile(vk::Device device, const char *filename)
 		}
 		else
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile unable to read file.";
+			BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile unable to read file. " << filename;
 		}
 		free(data);
 		fclose(fp);
 	}
 	else
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile unable to open file.";
+		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromFile unable to open file. " << filename;
 	}
 
 	return module;
