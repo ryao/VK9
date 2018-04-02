@@ -20,7 +20,9 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
+#ifdef _MSC_VER
 #include "winres.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
