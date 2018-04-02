@@ -49,7 +49,7 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c3)))
 
 /*
-Generator’s magic number. It is associated with the tool that generated
+Generator's magic number. It is associated with the tool that generated
 the module. Its value does not affect any semantics, and is allowed to be 0.
 Using a non-0 value is encouraged, and can be registered with
 Khronos at https://www.khronos.org/registry/spir-v/api/spir-v.xml.
