@@ -48,6 +48,20 @@ misrepresented as being the original software.
 #include <cstring>
 #include <fstream>
 
+#ifndef _MSC_VER
+// Used D3D9Ex constants, missing in MinGW
+
+#define D3DFMT_D32_LOCKABLE 84
+#define D3DFMT_S8_LOCKABLE  85
+
+#define D3DFMT_A1                  118
+#define D3DFMT_A2B10G10R10_XR_BIAS 119
+#define D3DFMT_BINARYBUFFER        199
+
+#define D3DBLEND_SRCCOLOR2    16
+#define D3DBLEND_INVSRCCOLOR2 17
+#endif
+
 #define D3DCOLOR_A(dw) (((float)(((dw) >> 24) & 0xFF)) / 255.0f)
 #define D3DCOLOR_R(dw) (((float)(((dw) >> 16) & 0xFF)) / 255.0f)
 #define D3DCOLOR_G(dw) (((float)(((dw) >> 8) & 0xFF)) / 255.0f)
