@@ -303,10 +303,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\VK9-Library.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -478,10 +474,6 @@
 			</File>
 			<File
 				RelativePath=".\togl\rendermechanism.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VK9-Library.h"
 				>
 			</File>
 			<File
