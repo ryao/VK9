@@ -198,12 +198,6 @@ struct TypeDescriptionComparator
 	}
 };
 
-template<typename ...ArgumentType> inline void Pack(std::vector<uint32_t> instructions, ArgumentType... arguments)
-{
-	const size_t size = sizeof...(arguments);
-	instructions.insert(instructions.end(), &arguments[0], &arguments[size]);
-}
-
 inline uint32_t Pack(uint32_t wordCount, spv::Op opcode)
 {
 	OpcodeDescription opcodeDescription;
