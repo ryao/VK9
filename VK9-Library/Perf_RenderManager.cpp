@@ -117,7 +117,7 @@ void RenderManager::StartScene(RealWindow& realWindow, bool clear)
 	UpdateBuffer(realWindow);
 
 	realWindow.mClearValues[0].color = realWindow.mClearColorValue;
-	realWindow.mClearValues[1].depthStencil = { 1.0f, 0 };
+	realWindow.mClearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
 	if (clear)
 	{

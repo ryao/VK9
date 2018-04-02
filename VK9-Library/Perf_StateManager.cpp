@@ -430,7 +430,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = depthFormat;
-	imageCreateInfo.extent = { device9->mPresentationParameters.BackBufferWidth,device9->mPresentationParameters.BackBufferHeight, 1 };
+	imageCreateInfo.extent = vk::Extent3D(device9->mPresentationParameters.BackBufferWidth,device9->mPresentationParameters.BackBufferHeight, 1);
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -467,7 +467,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.format = depthFormat;
-	imageViewCreateInfo.subresourceRange = {};
+	imageViewCreateInfo.subresourceRange = vk::ImageSubresourceRange();
 	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
 	imageViewCreateInfo.subresourceRange.levelCount = 1;
@@ -770,7 +770,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	vk::ImageCreateInfo imageCreateInfo2;
 	imageCreateInfo2.imageType = vk::ImageType::e2D;
 	imageCreateInfo2.format = textureFormat;
-	imageCreateInfo2.extent = { (uint32_t)textureWidth, (uint32_t)textureHeight, 1 };
+	imageCreateInfo2.extent = vk::Extent3D((uint32_t)textureWidth, (uint32_t)textureHeight, 1);
 	imageCreateInfo2.mipLevels = 1;
 	imageCreateInfo2.arrayLayers = 1;
 	imageCreateInfo2.samples = vk::SampleCountFlagBits::e1;
@@ -1317,7 +1317,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { texture9->mWidth, texture9->mHeight, 1 };
+	imageCreateInfo.extent = vk::Extent3D(texture9->mWidth, texture9->mHeight, 1);
 	imageCreateInfo.mipLevels = texture9->mLevels;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -1419,7 +1419,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { texture9->mEdgeLength, texture9->mEdgeLength, 1 };
+	imageCreateInfo.extent = vk::Extent3D(texture9->mEdgeLength, texture9->mEdgeLength, 1);
 	imageCreateInfo.mipLevels = texture9->mLevels;
 	imageCreateInfo.arrayLayers = 6;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -1542,7 +1542,7 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { surface9->mWidth, surface9->mHeight, 1 };
+	imageCreateInfo.extent = vk::Extent3D(surface9->mWidth, surface9->mHeight, 1);
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
