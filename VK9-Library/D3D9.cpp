@@ -65,12 +65,12 @@ int WINAPI D3DPERF_EndEvent()
 	return 0;
 }
 
-void WINAPI D3DPERF_SetMarker()
+void WINAPI D3DPERF_SetMarker(D3DCOLOR color, const WCHAR *name)
 {
 
 }
 
-void WINAPI D3DPERF_SetRegion()
+void WINAPI D3DPERF_SetRegion(D3DCOLOR color, const WCHAR *name)
 {
 
 }
