@@ -211,6 +211,7 @@
     <ClCompile Include="DrawContext.cpp" />
     <ClCompile Include="GarbageManager.cpp" />
     <ClCompile Include="Perf_CommandStreamManager.cpp" />
+    <ClCompile Include="Perf_ProcessQueue.cpp" />
     <ClCompile Include="Perf_RenderManager.cpp" />
     <ClCompile Include="Perf_StateManager.cpp" />
     <ClCompile Include="RealDevice.cpp" />
@@ -253,6 +254,7 @@
     <ClInclude Include="DrawContext.h" />
     <ClInclude Include="GarbageManager.h" />
     <ClInclude Include="Perf_CommandStreamManager.h" />
+    <ClInclude Include="Perf_ProcessQueue.h" />
     <ClInclude Include="Perf_RenderManager.h" />
     <ClInclude Include="Perf_StateManager.h" />
     <ClInclude Include="PrivateTypes.h" />
@@ -271,6 +273,8 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="WorkItem.h" />
+    <ClInclude Include="WorkItemType.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def" />
