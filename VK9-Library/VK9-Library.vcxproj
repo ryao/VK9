@@ -208,10 +208,20 @@
       </PrecompiledHeader>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
+    <ClCompile Include="DrawContext.cpp" />
     <ClCompile Include="GarbageManager.cpp" />
     <ClCompile Include="Perf_CommandStreamManager.cpp" />
     <ClCompile Include="Perf_RenderManager.cpp" />
     <ClCompile Include="Perf_StateManager.cpp" />
+    <ClCompile Include="RealDevice.cpp" />
+    <ClCompile Include="RealIndexBuffer.cpp" />
+    <ClCompile Include="RealInstance.cpp" />
+    <ClCompile Include="RealSurface.cpp" />
+    <ClCompile Include="RealTexture.cpp" />
+    <ClCompile Include="RealVertexBuffer.cpp" />
+    <ClCompile Include="RealWindow.cpp" />
+    <ClCompile Include="ResourceContext.cpp" />
+    <ClCompile Include="SamplerRequest.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
     <ClCompile Include="VK9-Library.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -240,12 +250,22 @@
     <ClInclude Include="CVertexDeclaration9.h" />
     <ClInclude Include="CVertexShader9.h" />
     <ClInclude Include="CVolumeTexture9.h" />
+    <ClInclude Include="DrawContext.h" />
     <ClInclude Include="GarbageManager.h" />
     <ClInclude Include="Perf_CommandStreamManager.h" />
     <ClInclude Include="Perf_RenderManager.h" />
     <ClInclude Include="Perf_StateManager.h" />
     <ClInclude Include="PrivateTypes.h" />
+    <ClInclude Include="RealDevice.h" />
+    <ClInclude Include="RealIndexBuffer.h" />
+    <ClInclude Include="RealInstance.h" />
+    <ClInclude Include="RealSurface.h" />
+    <ClInclude Include="RealTexture.h" />
+    <ClInclude Include="RealVertexBuffer.h" />
+    <ClInclude Include="RealWindow.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ResourceContext.h" />
+    <ClInclude Include="SamplerRequest.h" />
     <ClInclude Include="ShaderConverter.h" />
     <ClInclude Include="VK9-Library.h" />
     <ClInclude Include="stdafx.h" />
