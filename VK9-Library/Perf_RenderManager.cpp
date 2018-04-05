@@ -377,9 +377,9 @@ void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9*
 	}
 
 	vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
-	commandBufferInheritanceInfo.renderPass = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.renderPass = nullptr;
 	commandBufferInheritanceInfo.subpass = 0;
-	commandBufferInheritanceInfo.framebuffer = VK_NULL_HANDLE;
+	commandBufferInheritanceInfo.framebuffer = nullptr;
 	commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
 	//commandBufferInheritanceInfo.queryFlags = 0;
 	//commandBufferInheritanceInfo.pipelineStatistics = 0;
@@ -692,7 +692,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
 
-	if (context->DescriptorSetLayout != VK_NULL_HANDLE)
+	if (context->DescriptorSetLayout != nullptr)
 	{
 		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 

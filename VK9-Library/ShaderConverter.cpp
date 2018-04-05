@@ -64,10 +64,10 @@ ShaderConverter::ShaderConverter(vk::Device& device, ShaderConstantSlots& shader
 
 ShaderConverter::~ShaderConverter()
 {
-	if (mConvertedShader.ShaderModule != VK_NULL_HANDLE)
+	if (mConvertedShader.ShaderModule != nullptr)
 	{
-		mDevice.destroyShaderModule(mConvertedShader.ShaderModule, NULL);
-		mConvertedShader.ShaderModule = VK_NULL_HANDLE;
+		mDevice.destroyShaderModule(mConvertedShader.ShaderModule, nullptr);
+		mConvertedShader.ShaderModule = nullptr;
 	}
 }
 
@@ -403,7 +403,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			else
 			{
 				registerName = "oT" + std::to_string(registerNumber);
-				stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+				stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 				if (registerName.length() % 4 == 0)
 				{
 					stringWordSize++;

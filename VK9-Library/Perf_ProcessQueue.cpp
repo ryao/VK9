@@ -3282,7 +3282,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				realWindow.mQueue.waitIdle();
 
 				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
-				commandBuffer = VK_NULL_HANDLE;
+				commandBuffer = nullptr;
 			}
 			break;
 			case CubeTexture_GenerateMipSubLevels:
@@ -3407,7 +3407,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				realWindow.mQueue.waitIdle();
 
 				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
-				commandBuffer = VK_NULL_HANDLE;
+				commandBuffer = nullptr;
 			}
 			break;
 			case Surface_LockRect:

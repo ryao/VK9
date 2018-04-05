@@ -58,9 +58,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 HMODULE GetModule(HMODULE module = 0);
 
 vk::ShaderModule LoadShaderFromFile(vk::Device device, const char *filename);
-VkShaderModule LoadShaderFromFile(VkDevice device, const char *filename);
+vk::ShaderModule LoadShaderFromResource(vk::Device device, WORD resource);
 
-VkShaderModule LoadShaderFromResource(VkDevice device, WORD resource);
 void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer);
 void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer);
 void ReallySetImageLayout(vk::CommandBuffer commandBuffer, vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount);

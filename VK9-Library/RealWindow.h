@@ -1204,7 +1204,7 @@ struct RealWindow
 	vk::DescriptorBufferInfo mDescriptorBufferInfo[2];
 	vk::WriteDescriptorSet mWriteDescriptorSet[3];
 	vk::CommandBufferAllocateInfo mCommandBufferAllocateInfo;
-	vk::CommandBuffer mCommandBuffer = VK_NULL_HANDLE;
+	vk::CommandBuffer mCommandBuffer = nullptr;
 	vk::CommandBufferBeginInfo mBeginInfo;
 	vk::BufferCopy mCopyRegion;
 	vk::Buffer mLightBuffer;
