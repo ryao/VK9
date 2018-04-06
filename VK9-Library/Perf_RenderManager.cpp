@@ -555,7 +555,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 				}
 			}
 
-			if (request->Sampler == nullptr)
+			if (request->Sampler == vk::Sampler())
 			{
 				CreateSampler(realWindow,request);
 			}
@@ -666,7 +666,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 		}
 	}
 
-	if (context->Pipeline == nullptr)
+	if (context->Pipeline == vk::Pipeline())
 	{
 		CreatePipe(realWindow,context); //If we didn't find a matching pipeline then create a new one.	
 	}
@@ -701,7 +701,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
 
-	if (context->DescriptorSetLayout != nullptr)
+	if (context->DescriptorSetLayout != vk::DescriptorSetLayout())
 	{
 		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 

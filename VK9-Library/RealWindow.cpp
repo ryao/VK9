@@ -75,7 +75,7 @@ RealWindow::~RealWindow()
 	{
 		for (size_t i = 0; i < mSwapchainImageCount; i++)
 		{
-			if (mFramebuffers[i] != nullptr)
+			if (mFramebuffers[i] != vk::Framebuffer())
 			{
 				device.destroyFramebuffer(mFramebuffers[i], nullptr);
 			}
@@ -97,7 +97,7 @@ RealWindow::~RealWindow()
 	{
 		for (size_t i = 0; i < mSwapchainImageCount; i++)
 		{
-			if (mSwapchainViews[i] != nullptr)
+			if (mSwapchainViews[i] != vk::ImageView())
 			{
 				device.destroyImageView(mSwapchainViews[i], nullptr);
 			}

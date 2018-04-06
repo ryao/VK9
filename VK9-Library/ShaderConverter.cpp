@@ -64,7 +64,7 @@ ShaderConverter::ShaderConverter(vk::Device& device, ShaderConstantSlots& shader
 
 ShaderConverter::~ShaderConverter()
 {
-	if (mConvertedShader.ShaderModule != nullptr)
+	if (mConvertedShader.ShaderModule != vk::ShaderModule())
 	{
 		mDevice.destroyShaderModule(mConvertedShader.ShaderModule, nullptr);
 		mConvertedShader.ShaderModule = nullptr;
@@ -373,7 +373,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		if (this->mMajorVersion == 3)
 		{
 			registerName = "v" + std::to_string(registerNumber);
-			stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+			stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 			if (registerName.length() % 4 == 0)
 			{
 				stringWordSize++;
@@ -389,7 +389,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			if (registerType == D3DSPR_INPUT)
 			{
 				registerName = "oD" + std::to_string(registerNumber);
-				stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+				stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 				if (registerName.length() % 4 == 0)
 				{
 					stringWordSize++;
@@ -2082,7 +2082,7 @@ void ShaderConverter::GenerateConstantBlock()
 		}
 
 		std::string registerName = "i" + std::to_string(i);
-		size_t stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		size_t stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
@@ -2113,7 +2113,7 @@ void ShaderConverter::GenerateConstantBlock()
 		mTypeInstructions.push_back(0); //Literal Value
 
 		std::string registerName = "b" + std::to_string(i);
-		size_t stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		size_t stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
@@ -2172,7 +2172,7 @@ void ShaderConverter::GenerateConstantBlock()
 		}
 
 		std::string registerName = "c" + std::to_string(i);
-		size_t stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		size_t stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
@@ -2328,7 +2328,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mInputRegisters.push_back(tokenId);
 
 		registerName = "v" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
@@ -2352,7 +2352,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mInputRegisters.push_back(tokenId);
 
 		registerName = "T" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
@@ -2519,7 +2519,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		mInputRegisters.push_back(tokenId);
 
 		registerName = "v" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
@@ -2645,7 +2645,7 @@ void ShaderConverter::Process_DCL_Vertex()
 			break;
 		}
 
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
@@ -4476,7 +4476,7 @@ void ShaderConverter::Process_TEX()
 	if (mMajorVersion == 1)
 	{
 		registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);
+		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
 		if (registerName.length() % 4 == 0)
 		{
 			stringWordSize++;
