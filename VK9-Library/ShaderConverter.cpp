@@ -49,7 +49,7 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c3)))
 
 /*
-Generator’s magic number. It is associated with the tool that generated
+Generator's magic number. It is associated with the tool that generated
 the module. Its value does not affect any semantics, and is allowed to be 0.
 Using a non-0 value is encouraged, and can be registered with
 Khronos at https://www.khronos.org/registry/spir-v/api/spir-v.xml.
@@ -4409,7 +4409,7 @@ void ShaderConverter::Process_TEX()
 
 		PrintTokenInformation("TEX_2_0", resultToken, argumentToken1, argumentToken2);
 	}
-	else if (mMajorVersion = 1 && mMinorVersion >= 4)
+	else if (mMajorVersion == 1 && mMinorVersion >= 4)
 	{
 		Token argumentToken1 = GetNextToken();
 		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
@@ -4473,7 +4473,7 @@ void ShaderConverter::Process_TEX()
 	mFunctionDefinitionInstructions.push_back(argumentId1); //Image (Id)
 	mFunctionDefinitionInstructions.push_back(argumentId2); //Coordinate (Id)
 
-	if (mMajorVersion = 1)
+	if (mMajorVersion == 1)
 	{
 		registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
 		stringWordSize = 2 + std::max(registerName.length() / 4, 1U);

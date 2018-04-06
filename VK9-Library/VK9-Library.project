@@ -121,7 +121,6 @@
     <File Name="IDirect3DVolume9.cpp"/>
     <File Name="IDirect3DVolumeTexture9.cpp"/>
     <File Name="IUnknown.cpp"/>
-    <File Name="VK9-Library.cpp"/>
     <File Name="stdafx.cpp"/>
     <File Name="COpenGLUnknown.cpp"/>
     <File Name="COpenGLResource9.cpp"/>
@@ -161,7 +160,6 @@
     <File Name="IDirect3DVolume9.h"/>
     <File Name="IDirect3DVolumeTexture9.h"/>
     <File Name="IUnknown.h"/>
-    <File Name="VK9-Library.h"/>
     <File Name="stdafx.h"/>
     <File Name="targetver.h"/>
     <File Name="types.h"/>

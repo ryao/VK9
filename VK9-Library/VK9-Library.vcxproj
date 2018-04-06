@@ -225,7 +225,6 @@
     <ClCompile Include="ResourceContext.cpp" />
     <ClCompile Include="SamplerRequest.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
-    <ClCompile Include="VK9-Library.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -271,7 +270,6 @@
     <ClInclude Include="ResourceContext.h" />
     <ClInclude Include="SamplerRequest.h" />
     <ClInclude Include="ShaderConverter.h" />
-    <ClInclude Include="VK9-Library.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utilities.h" />
