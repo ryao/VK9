@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "CStateBlock9.h"
 #include "CTexture9.h"
 #include "CCubeTexture9.h"
+#include "CVolumeTexture9.h"
 #include "Utilities.h"
 
 #include <boost/log/core.hpp>
@@ -1503,6 +1504,113 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	mTextures.push_back(ptr);
 }
 
+void StateManager::DestroyVolumeTexture(size_t id)
+{
+	mTextures[id].reset();
+}
+
+void StateManager::CreateVolumeTexture(size_t id, void* argument1)
+{
+	vk::Result result;
+	std::shared_ptr<RealWindow> window = mWindows[id];
+	CVolumeTexture9* texture9 = bit_cast<CVolumeTexture9*>(argument1);
+	std::shared_ptr<RealTexture> ptr = std::make_shared<RealTexture>(window.get());
+	auto& device = window->mRealDevice->mDevice;
+
+	ptr->mRealFormat = ConvertFormat(texture9->mFormat);
+
+	if (ptr->mRealFormat == vk::Format::eUndefined)//VK_FORMAT_UNDEFINED
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture unknown format: " << texture9->mFormat;
+	}
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e3D;
+	imageCreateInfo.format = ptr->mRealFormat; 
+	imageCreateInfo.extent = { texture9->mWidth, texture9->mHeight, texture9->mDepth };
+	imageCreateInfo.mipLevels = texture9->mLevels;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+	//imageCreateInfo.flags = vk::ImageCreateFlagBits::eVolumeCompatible;
+	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
+	imageCreateInfo.sharingMode = vk::SharingMode::eExclusive;
+
+	result = device.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	window->mRealDevice->mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
+
+	//mMemoryAllocateInfo.allocationSize = 0;
+	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
+	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(window->mRealDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture Could not find memory type from properties.";
+		return;
+	}
+
+	result = device.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	device.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+	imageViewCreateInfo.image = ptr->mImage;
+	imageViewCreateInfo.viewType = vk::ImageViewType::e3D;
+	imageViewCreateInfo.format = ptr->mRealFormat;
+	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	//imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.levelCount = texture9->mLevels;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	/*
+	This block handles the luminance & x formats. They are converted to color formats but need a little mapping to make them work correctly.
+	*/
+	switch (texture9->mFormat)
+	{
+	case D3DFMT_L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+		break;
+	case D3DFMT_A8L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+		break;
+	case D3DFMT_X8R8G8B8:
+	case D3DFMT_X8B8G8R8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eOne);
+		break;
+	default:
+		break;
+	}
+
+	result = device.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	mTextures.push_back(ptr);
+}
+
 void StateManager::DestroySurface(size_t id)
 {
 	mSurfaces[id].reset();
@@ -1584,6 +1692,101 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	window->mRealDevice->mDevice.bindImageMemory(ptr->mStagingImage, ptr->mStagingDeviceMemory, 0);
+
+	ptr->mSubresource.mipLevel = 0;
+	ptr->mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	ptr->mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
+
+	window->mRealDevice->mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
+
+	mSurfaces.push_back(ptr);
+}
+
+void StateManager::DestroyVolume(size_t id)
+{
+	mSurfaces[id].reset();
+}
+
+void StateManager::CreateVolume(size_t id, void* argument1)
+{
+	vk::Result result;
+	auto window = mWindows[id];
+	CVolume9* volume9 = bit_cast<CVolume9*>(argument1);
+	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(window.get());
+
+	ptr->mRealFormat = ConvertFormat(volume9->mFormat);
+
+	if (ptr->mRealFormat == vk::Format::eUndefined)//VK_FORMAT_UNDEFINED
+	{
+		if (volume9->mFormat > 199)
+		{
+			char four[5] =
+			{
+				(char)(volume9->mFormat & 0xFF),
+				(char)((volume9->mFormat >> 8) & 0xFF),
+				(char)((volume9->mFormat >> 16) & 0xFF),
+				(char)((volume9->mFormat >> 24) & 0xFF),
+				'\0'
+			};
+
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume unknown format: " << four;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume unknown format: " << volume9->mFormat;
+		}
+
+	}
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e3D;
+	imageCreateInfo.format = ptr->mRealFormat;
+	imageCreateInfo.extent = { volume9->mWidth, volume9->mHeight, volume9->mDepth };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+	
+	//if (Volume9->mCubeTexture != nullptr)
+	//{
+	//	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
+	//}
+
+	result = window->mRealDevice->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mStagingImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	window->mRealDevice->mDevice.getImageMemoryRequirements(ptr->mStagingImage, &memoryRequirements);
+
+	//mMemoryAllocateInfo.allocationSize = 0;
+	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
+	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(window->mRealDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume Could not find memory type from properties.";
+		return;
+	}
+
+	result = window->mRealDevice->mDevice.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mStagingDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolume vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 

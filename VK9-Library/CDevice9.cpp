@@ -426,6 +426,18 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVolumeTexture(UINT Width, UINT Height,
 
 	CVolumeTexture9* obj = new CVolumeTexture9(this, Width, Height, Depth, Levels, Usage, Format, Pool, pSharedHandle);
 
+	obj->mCommandStreamManager = this->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->Id = this->mId;
+	workItem->WorkItemType = WorkItemType::VolumeTexture_Create;
+	workItem->Argument1 = (void*)obj;
+	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	for (size_t i = 0; i < obj->mLevels; i++)
+	{
+		obj->mVolumes[i]->Init();
+	}
+
 	(*ppVolumeTexture) = (IDirect3DVolumeTexture9*)obj;
 
 	return result;

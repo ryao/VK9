@@ -132,8 +132,14 @@ struct StateManager
 	void DestroyCubeTexture(size_t id);
 	void CreateCubeTexture(size_t id, void* argument1);
 
+	void DestroyVolumeTexture(size_t id);
+	void CreateVolumeTexture(size_t id, void* argument1);
+
 	void DestroySurface(size_t id);
 	void CreateSurface(size_t id, void* argument1);
+
+	void DestroyVolume(size_t id);
+	void CreateVolume(size_t id, void* argument1);
 
 	void DestroyShader(size_t id);
 	void CreateShader(size_t id, void* argument1, void* argument2, void* argument3);

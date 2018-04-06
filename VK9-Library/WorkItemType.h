@@ -101,11 +101,19 @@ enum WorkItemType
 	, CubeTexture_Create
 	, CubeTexture_GenerateMipSubLevels
 	, CubeTexture_Destroy
+	, VolumeTexture_Create
+	, VolumeTexture_GenerateMipSubLevels
+	, VolumeTexture_Destroy
 	, Surface_Create
 	, Surface_LockRect
 	, Surface_UnlockRect
 	, Surface_Flush
 	, Surface_Destroy
+	, Volume_Create
+	, Volume_LockRect
+	, Volume_UnlockRect
+	, Volume_Flush
+	, Volume_Destroy
 	, Shader_Create
 	, Shader_Destroy
 };

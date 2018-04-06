@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3DCubeTexture9
 #include <vulkan/vulkan.h>
 #include "CBaseTexture9.h"
-#include "CSurface9.h"
+#include "CVolume9.h"
 #include "Perf_CommandStreamManager.h"
 
 class CVolumeTexture9 : public IDirect3DVolumeTexture9
@@ -54,7 +54,7 @@ public:
 	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
 
-	std::vector< std::vector<CSurface9*> > mSurfaces;
+	std::vector<CVolume9*> mVolumes;
 
 	void Flush();
 public:

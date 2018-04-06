@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "CVertexBuffer9.h"
 #include "CTexture9.h"
 #include "CCubeTexture9.h"
+#include "CVolumeTexture9.h"
 #include "CSurface9.h"
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
@@ -103,6 +104,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.mStateManager.DestroyCubeTexture(workItem->Id);
 			}
 			break;
+			case VolumeTexture_Create:
+			{
+				commandStreamManager->mRenderManager.mStateManager.CreateVolumeTexture(workItem->Id, workItem->Argument1);
+			}
+			break;
+			case VolumeTexture_Destroy:
+			{
+				commandStreamManager->mRenderManager.mStateManager.DestroyVolumeTexture(workItem->Id);
+			}
+			break;
 			case Surface_Create:
 			{
 				commandStreamManager->mRenderManager.mStateManager.CreateSurface(workItem->Id, workItem->Argument1);
@@ -111,6 +122,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Surface_Destroy:
 			{
 				commandStreamManager->mRenderManager.mStateManager.DestroySurface(workItem->Id);
+			}
+			break;
+			case Volume_Create:
+			{
+				commandStreamManager->mRenderManager.mStateManager.CreateVolume(workItem->Id, workItem->Argument1);
+			}
+			break;
+			case Volume_Destroy:
+			{
+				commandStreamManager->mRenderManager.mStateManager.DestroyVolume(workItem->Id);
 			}
 			break;
 			case Shader_Create:
@@ -3410,6 +3431,131 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandBuffer = nullptr;
 			}
 			break;
+			case VolumeTexture_GenerateMipSubLevels:
+			{
+				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
+				auto& realWindow = (*texture.mRealWindow);
+				CVolumeTexture9* texture9 = bit_cast<CVolumeTexture9*>(workItem->Argument1);
+				auto& device = realWindow.mRealDevice->mDevice;
+
+				vk::Result result;
+				vk::PipelineStageFlags sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
+				vk::PipelineStageFlags destinationStages = vk::PipelineStageFlagBits::eTopOfPipe;
+				vk::CommandBuffer commandBuffer;
+				vk::Filter realFilter = ConvertFilter(texture9->mMipFilter);
+
+				vk::CommandBufferAllocateInfo commandBufferInfo;
+				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
+				commandBufferInfo.commandBufferCount = 1;
+
+				result = device.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
+					break;
+				}
+
+				vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
+				commandBufferInheritanceInfo.renderPass = nullptr;
+				commandBufferInheritanceInfo.subpass = 0;
+				commandBufferInheritanceInfo.framebuffer = nullptr;
+				commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+				//commandBufferInheritanceInfo.queryFlags = 0;
+				//commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+				vk::CommandBufferBeginInfo commandBufferBeginInfo;
+				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+				result = commandBuffer.begin(&commandBufferBeginInfo);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+					break;
+				}
+
+				vk::ImageMemoryBarrier imageMemoryBarrier;
+				//imageMemoryBarrier.srcAccessMask = 0;
+				//imageMemoryBarrier.dstAccessMask = 0;
+
+				vk::ImageSubresourceRange mipSubRange;
+				mipSubRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+				mipSubRange.levelCount = 1;
+				mipSubRange.layerCount = 1;
+
+				/*
+				I'm debating whether or not to have the population of the image here. If I don't I'll end up creating another command for that. On the other hand this method should purely populate the other levels as per the spec.
+				*/
+
+				// Transition zero mip level to transfer source
+				//mipSubRange.baseMipLevel = 0;
+
+				//imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				//imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				//imageMemoryBarrier.image = mImage;
+				//imageMemoryBarrier.subresourceRange = mipSubRange;
+				//vkCmdPipelineBarrier(commandBuffer, sourceStages, destinationStages, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+				for (UINT i = 1; i < texture9->mLevels; i++) //Changed to match mLevels datatype
+				{
+					vk::ImageBlit imageBlit;
+
+					// Source
+					imageBlit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+					imageBlit.srcSubresource.layerCount = 1;
+					imageBlit.srcSubresource.mipLevel = 0;
+					imageBlit.srcOffsets[1].x = int32_t(texture9->mWidth);
+					imageBlit.srcOffsets[1].y = int32_t(texture9->mHeight);
+					imageBlit.srcOffsets[1].z = 1;
+
+					// Destination
+					imageBlit.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+					imageBlit.dstSubresource.layerCount = 1;
+					imageBlit.dstSubresource.mipLevel = i;
+					imageBlit.dstOffsets[1].x = int32_t(texture9->mWidth >> i);
+					imageBlit.dstOffsets[1].y = int32_t(texture9->mHeight >> i);
+					imageBlit.dstOffsets[1].z = 1;
+
+					mipSubRange.baseMipLevel = i;
+
+					// Transition current mip level to transfer dest
+					imageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+					imageMemoryBarrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
+					imageMemoryBarrier.image = texture.mImage;
+					imageMemoryBarrier.subresourceRange = mipSubRange;
+					commandBuffer.pipelineBarrier(sourceStages, destinationStages, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+					// Blit from zero level
+					commandBuffer.blitImage(texture.mImage, vk::ImageLayout::eTransferSrcOptimal, texture.mImage, vk::ImageLayout::eTransferDstOptimal, 1, &imageBlit, vk::Filter::eLinear);
+				}
+
+				commandBuffer.end();
+
+				vk::CommandBuffer commandBuffers[] = { commandBuffer };
+				vk::Fence nullFence;
+				vk::SubmitInfo submitInfo;
+				submitInfo.waitSemaphoreCount = 0;
+				submitInfo.pWaitSemaphores = nullptr;
+				submitInfo.pWaitDstStageMask = nullptr;
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers = commandBuffers;
+				submitInfo.signalSemaphoreCount = 0;
+				submitInfo.pSignalSemaphores = nullptr;
+
+				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
+					break;
+				}
+
+				realWindow.mQueue.waitIdle();
+
+				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+				commandBuffer = nullptr;
+			}
+			break;
 			case Surface_LockRect:
 			{
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
@@ -3530,7 +3676,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
-				ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
+				ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight,1, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 
 				commandBuffer.end();
@@ -3558,6 +3704,157 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
 
 				surface.mIsFlushed = true;
+			}
+			break;
+			case Volume_LockRect:
+			{
+				auto& volume = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
+				auto& realWindow = (*volume.mRealWindow);
+				auto& device = realWindow.mRealDevice->mDevice;
+
+				D3DLOCKED_BOX* pLockedVolume = bit_cast<D3DLOCKED_BOX*>(workItem->Argument1);
+				D3DBOX* pBox = bit_cast<D3DBOX*>(workItem->Argument2);
+				DWORD Flags = bit_cast<DWORD>(workItem->Argument3);
+
+				vk::Result result;
+				char* bytes = nullptr;
+
+				if (volume.mData == nullptr)
+				{
+					if (volume.mIsFlushed)
+					{
+						realWindow.SetImageLayout(volume.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+					}
+
+					result = device.mapMemory(volume.mStagingDeviceMemory, 0, volume.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &volume.mData);
+					if (result != vk::Result::eSuccess)
+					{
+						BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkMapMemory failed with return code of " << GetResultString((VkResult)result);
+						break;
+					}
+				}
+
+				bytes = (char*)volume.mData;
+
+				if (volume.mLayouts[0].offset)
+				{
+					bytes += volume.mLayouts[0].offset;
+				}
+
+				if (pBox != nullptr)
+				{
+					bytes += (volume.mLayouts[0].rowPitch * pBox->Top);
+					bytes += (volume.mLayouts[0].depthPitch * pBox->Front);
+					bytes += (4 * pBox->Left);
+				}
+
+				pLockedVolume->pBits = (void*)bytes;
+				pLockedVolume->RowPitch = volume.mLayouts[0].rowPitch;
+				pLockedVolume->SlicePitch = volume.mLayouts[0].depthPitch;
+
+				volume.mIsFlushed = false;
+			}
+			break;
+			case Volume_UnlockRect:
+			{
+				auto& volume = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
+				auto& realWindow = (*volume.mRealWindow);
+				CVolume9* volume9 = bit_cast<CVolume9*>(workItem->Argument1);
+				auto& device = realWindow.mRealDevice->mDevice;
+
+				if (volume.mData != nullptr)
+				{
+					//This work around was replaced with component mapping.
+					//if (Volume9->mFormat == D3DFMT_X8R8G8B8)
+					//{
+					//	SetAlpha((char*)Volume.mData, Volume9->mHeight, Volume9->mWidth, Volume.mLayouts[0].rowPitch);
+					//}
+
+					device.unmapMemory(volume.mStagingDeviceMemory);
+					volume.mData = nullptr;
+				}
+
+				volume.mIsFlushed = false;
+			}
+			break;
+			case Volume_Flush:
+			{
+				auto& volume = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
+
+				if (volume.mIsFlushed)
+				{
+					break;
+				}
+
+				auto& realWindow = (*volume.mRealWindow);
+				CVolume9* volume9 = bit_cast<CVolume9*>(workItem->Argument1);
+				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[volume9->mTextureId]);
+				auto& device = realWindow.mRealDevice->mDevice;
+
+				vk::CommandBuffer commandBuffer;
+				vk::Result result;
+
+				vk::CommandBufferAllocateInfo commandBufferInfo;
+				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
+				commandBufferInfo.commandBufferCount = 1;
+
+				result = device.allocateCommandBuffers(&commandBufferInfo, &commandBuffer);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkAllocateCommandBuffers failed with return code of " << GetResultString((VkResult)result);
+					break;
+				}
+
+				vk::CommandBufferInheritanceInfo commandBufferInheritanceInfo;
+				commandBufferInheritanceInfo.renderPass = nullptr;
+				commandBufferInheritanceInfo.subpass = 0;
+				commandBufferInheritanceInfo.framebuffer = nullptr;
+				commandBufferInheritanceInfo.occlusionQueryEnable = VK_FALSE;
+				//commandBufferInheritanceInfo.queryFlags = 0;
+				//commandBufferInheritanceInfo.pipelineStatistics = 0;
+
+				vk::CommandBufferBeginInfo commandBufferBeginInfo;
+				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
+
+				result = commandBuffer.begin(&commandBufferBeginInfo);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+					break;
+				}
+
+				ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
+				ReallyCopyImage(commandBuffer, volume.mStagingImage, texture.mImage, 0, 0, volume9->mWidth, volume9->mHeight, volume9->mDepth, 0, volume9->mMipIndex, 0, volume9->mTargetLayer);
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
+
+				commandBuffer.end();
+
+				vk::CommandBuffer commandBuffers[] = { commandBuffer };
+				vk::Fence nullFence;
+				vk::SubmitInfo submitInfo;
+				submitInfo.waitSemaphoreCount = 0;
+				submitInfo.pWaitSemaphores = nullptr;
+				submitInfo.pWaitDstStageMask = nullptr;
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers = commandBuffers;
+				submitInfo.signalSemaphoreCount = 0;
+				submitInfo.pSignalSemaphores = nullptr;
+
+				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				if (result != vk::Result::eSuccess)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
+					break;
+				}
+
+				realWindow.mQueue.waitIdle();
+
+				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+
+				volume.mIsFlushed = true;
 			}
 			break;
 			default:

@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "CTypes.h"
 
 #include "CCubeTexture9.h"
+#include "CVolumeTexture9.h"
 #include "CBaseTexture9.h"
 #include "CTexture9.h"
 #include "CIndexBuffer9.h"
@@ -183,7 +184,7 @@ void RenderManager::StopScene(RealWindow& realWindow)
 
 }
 
-void RenderManager::CopyImage(RealWindow& realWindow, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip)
+void RenderManager::CopyImage(RealWindow& realWindow, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t depth, uint32_t srcMip, uint32_t dstMip)
 {
 	vk::Result result;
 	vk::CommandBuffer commandBuffer;
@@ -220,7 +221,7 @@ void RenderManager::CopyImage(RealWindow& realWindow, vk::Image srcImage, vk::Im
 		return;
 	}
 
-	ReallyCopyImage(commandBuffer, srcImage, dstImage, x, y, width, height, srcMip, dstMip, 0, 0);
+	ReallyCopyImage(commandBuffer, srcImage, dstImage, x, y, width, height, depth, srcMip, dstMip, 0, 0);
 
 	commandBuffer.end();
 
@@ -417,21 +418,29 @@ void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9*
 		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 6);
 	}
 
-	if (pSourceTexture->GetType() != D3DRTYPE_CUBETEXTURE)
-	{
-		CTexture9& source9 = (*(CTexture9*)pSourceTexture);
-		source = mStateManager.mTextures[source9.mId];
-
-		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
-		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, 0, 0, 0, 0);
-	}
-	else
+	if (pSourceTexture->GetType() == D3DRTYPE_CUBETEXTURE)
 	{
 		CCubeTexture9& source9 = (*(CCubeTexture9*)pSourceTexture);
 		source = mStateManager.mTextures[source9.mId];
 
 		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 6);
-		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mEdgeLength, source9.mEdgeLength, 0, 0, 0, 0);
+		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mEdgeLength, source9.mEdgeLength, 1, 0, 0, 0, 0);
+	}
+	else if (pSourceTexture->GetType() == D3DRTYPE_VOLUMETEXTURE)
+	{
+		CVolumeTexture9& source9 = (*(CVolumeTexture9*)pSourceTexture);
+		source = mStateManager.mTextures[source9.mId];
+
+		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
+		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, source9.mDepth, 0, 0, 0, 0);
+	}
+	else
+	{
+		CTexture9& source9 = (*(CTexture9*)pSourceTexture);
+		source = mStateManager.mTextures[source9.mId];
+
+		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
+		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, 1, 0, 0, 0, 0);
 	}
 
 	if (pDestinationTexture->GetType() != D3DRTYPE_CUBETEXTURE)

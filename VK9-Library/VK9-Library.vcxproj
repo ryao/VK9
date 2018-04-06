@@ -198,6 +198,7 @@
     <ClCompile Include="CVertexBuffer9.cpp" />
     <ClCompile Include="CVertexDeclaration9.cpp" />
     <ClCompile Include="CVertexShader9.cpp" />
+    <ClCompile Include="CVolume9.cpp" />
     <ClCompile Include="CVolumeTexture9.cpp" />
     <ClCompile Include="D3D9.cpp" />
     <ClCompile Include="dllmain.cpp">
@@ -250,6 +251,7 @@
     <ClInclude Include="CVertexBuffer9.h" />
     <ClInclude Include="CVertexDeclaration9.h" />
     <ClInclude Include="CVertexShader9.h" />
+    <ClInclude Include="CVolume9.h" />
     <ClInclude Include="CVolumeTexture9.h" />
     <ClInclude Include="DrawContext.h" />
     <ClInclude Include="GarbageManager.h" />

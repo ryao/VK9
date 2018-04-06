@@ -854,7 +854,7 @@ vk::ShaderModule LoadShaderFromResource(vk::Device device, WORD resource)
 	return module;
 }
 
-void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer)
+void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t depth, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer)
 {
 	//vk::Result result;
 
@@ -877,7 +877,7 @@ void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Im
 	region.dstOffset = { x, y, 0 };
 	region.extent.width = width;
 	region.extent.height = height;
-	region.extent.depth = 1;
+	region.extent.depth = depth;
 
 	commandBuffer.copyImage(
 		srcImage, vk::ImageLayout::eTransferSrcOptimal,

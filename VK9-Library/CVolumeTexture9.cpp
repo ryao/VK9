@@ -49,43 +49,35 @@ CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT
 		mLevels = min(std::log2(max(mWidth, mHeight)) + 1, 10);
 	}
 
-	//for (size_t i = 0; i < Depth; i++)
-	//{
-	//	UINT width = mWidth;
-	//	UINT height = mHeight;
-	//	std::vector<CSurface9*> surfaces;
-	//	for (size_t j = 0; j < mLevels; j++)
-	//	{
-	//		CSurface9* ptr = new CSurface9(mDevice, this, width, height, mLevels, mUsage, mFormat, mPool, mSharedHandle);
+	mVolumes.reserve(mLevels);
+	UINT width = mWidth, height = mHeight, depth = mDepth;
+	for (size_t i = 0; i < mLevels; i++)
+	{
+		CVolume9* ptr = new CVolume9(device, this, width, height, depth, mUsage, mFormat, mPool, mSharedHandle);
 
-	//		ptr->mMipIndex = j;
-	//		ptr->mTargetLayer = i;
+		ptr->mMipIndex = i;
 
-	//		surfaces.push_back(ptr);
+		mVolumes.push_back(ptr);
 
-	//		width /= 2;
-	//		height /= 2;
-	//	}
-	//	mSurfaces.push_back(surfaces);
-	//}
+		width /= 2;
+		height /= 2;
+		depth /= 2;
+	}
 }
 
 CVolumeTexture9::~CVolumeTexture9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CVolumeTexture9::~CVolumeTexture9";
 
-	for (size_t i = 0; i < 6; i++)
+	for (size_t i = 0; i < mVolumes.size(); i++)
 	{
-		for (size_t j = 0; j < mSurfaces[i].size(); j++)
-		{
-			mSurfaces[i][j]->Release();
-		}
+		mVolumes[i]->Release();
 	}
 
-	//WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
-	//workItem->WorkItemType = WorkItemType::VolumeTexture_Destroy;
-	//workItem->Id = mId;
-	//mCommandStreamManager->RequestWork(workItem);
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
+	workItem->WorkItemType = WorkItemType::VolumeTexture_Destroy;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWork(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(void)
@@ -206,11 +198,11 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::SetPrivateData(REFGUID refguid, const
 
 VOID STDMETHODCALLTYPE CVolumeTexture9::GenerateMipSubLevels()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::GenerateMipSubLevels is not implemented!";
-
-	return;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::VolumeTexture_GenerateMipSubLevels;
+	workItem->Id = mId;
+	workItem->Argument1 = this;
+	mCommandStreamManager->RequestWork(workItem);
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CVolumeTexture9::GetAutoGenFilterType()
@@ -274,47 +266,34 @@ HRESULT STDMETHODCALLTYPE CVolumeTexture9::AddDirtyBox(const D3DBOX* pDirtyBox)
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetLevelDesc(UINT Level, D3DVOLUME_DESC* pDesc)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::GetLevelDesc is not implemented!";
-
-	return S_OK;	
+	return mVolumes[Level]->GetDesc(pDesc);
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::GetVolumeLevel(UINT Level, IDirect3DVolume9** ppVolumeLevel)
 {
-	//TODO: Implement.
+	IDirect3DVolume9* Volume = (IDirect3DVolume9*)this->mVolumes[Level];
 
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::GetVolumeLevel is not implemented!";
+	Volume->AddRef();
 
-	return E_NOTIMPL;
+	(*ppVolumeLevel) = Volume;
+
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::LockBox(UINT Level, D3DLOCKED_BOX* pLockedVolume, const D3DBOX* pBox, DWORD Flags)
 {
-	//TODO: Implement.
-	
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::LockBox is not implemented!";
-
-	return S_OK;	
+	return mVolumes[Level]->LockBox(pLockedVolume, pBox, Flags);
 }
 
 HRESULT STDMETHODCALLTYPE CVolumeTexture9::UnlockBox(UINT Level)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CVolumeTexture9::UnlockBox is not implemented!";
-
-	return S_OK;	
+	return mVolumes[Level]->UnlockBox();
 }
 
 void CVolumeTexture9::Flush()
 {
-	for (size_t i = 0; i < 6; i++)
+	for (size_t i = 0; i < mVolumes.size(); i++)
 	{
-		for (size_t j = 0; j < mSurfaces[i].size(); j++)
-		{
-			mSurfaces[i][j]->Flush();
-		}
+		mVolumes[i]->Flush();
 	}
 }
