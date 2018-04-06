@@ -29,7 +29,7 @@ RealDevice::~RealDevice()
 {
 	BOOST_LOG_TRIVIAL(info) << "RealDevice::~RealDevice";
 	delete[] mQueueFamilyProperties;
-	if (mDevice == nullptr)
+	if (mDevice == vk::Device())
 	{
 		return;
 	}

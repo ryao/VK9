@@ -1527,7 +1527,7 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e3D;
 	imageCreateInfo.format = ptr->mRealFormat; 
-	imageCreateInfo.extent = { texture9->mWidth, texture9->mHeight, texture9->mDepth };
+	imageCreateInfo.extent = vk::Extent3D(texture9->mWidth, texture9->mHeight, texture9->mDepth);
 	imageCreateInfo.mipLevels = texture9->mLevels;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -1745,7 +1745,7 @@ void StateManager::CreateVolume(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e3D;
 	imageCreateInfo.format = ptr->mRealFormat;
-	imageCreateInfo.extent = { volume9->mWidth, volume9->mHeight, volume9->mDepth };
+	imageCreateInfo.extent = vk::Extent3D(volume9->mWidth, volume9->mHeight, volume9->mDepth);
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
