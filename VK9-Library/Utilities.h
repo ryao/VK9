@@ -1086,18 +1086,18 @@ Optimizing compilers are magic. The memcpy should go away. If not performance wi
 template <class TargetType, class SourceType>
 inline void assign(TargetType& target, const SourceType& source) noexcept
 {
-	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise assign both types must be the same size.");
 	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
-	memcpy(&target, &source, sizeof(target));
+	constexpr size_t size = std::min(sizeof(TargetType), sizeof(SourceType));
+	memcpy(&target, &source, size);
 }
 
 template <class TargetType, class SourceType>
 inline TargetType bit_cast(const SourceType& source) noexcept
 {
-	static_assert(sizeof(TargetType) == sizeof(SourceType), "To do a bitwise cast both types must be the same size.");
 	static_assert(!std::is_same<TargetType, SourceType>::value, "You've made a mistake, you don't need to bit cast if the types are the same.");
+	constexpr size_t size = std::min(sizeof(TargetType), sizeof(SourceType));
 	TargetType returnValue;
-	memcpy(&returnValue, &source, sizeof(TargetType));
+	memcpy(&returnValue, &source, size);
 	return returnValue;
 }
 
