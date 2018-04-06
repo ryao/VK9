@@ -1,0 +1,2 @@
+# Based on DXVK build system - https://github.com/doitsujin/dxvk/blob/master/meson_options.txt
+option('enable_tests', type : 'boolean', value : false)

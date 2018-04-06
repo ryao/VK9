@@ -12,3 +12,11 @@ Join the discord server (VKx) to communicate with the community. https://discord
 For the latest project news visit my blog. http://techtinker.blogspot.com/
 
 Special thanks to my patrons over on Patreon. https://www.patreon.com/disks86
+
+---
+
+Build instructions can be found in BUILD.md.
+
+---
+
+Build system based on DXVK. https://github.com/doitsujin/dxvk

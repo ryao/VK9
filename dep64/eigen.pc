@@ -1,0 +1,12 @@
+# Package Information for pkg-config
+
+prefix=/var/opt/Eigen
+exec_prefix=${prefix}
+includedir_old=${prefix}/include
+includedir_new=${prefix}/include/Eigen
+
+Name: Eigen3
+Description: A C++ template library for linear algebra: vectors, matrices, and related algorithms
+Version: 3.3.4
+Cflags: -I${includedir_old} -I${includedir_new}
+
