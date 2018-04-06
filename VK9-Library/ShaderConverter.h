@@ -46,6 +46,14 @@ https://github.com/ValveSoftware/ToGL
     ((uint32_t)(uint8_t)(c2) << 8) | \
     ((uint32_t)(uint8_t)(c3)))
 
+#ifndef _MSC_VER
+// Used D3D9 constants, missing in MinGW
+
+#define D3DSP_OPCODESPECIFICCONTROL_MASK  0x00ff0000
+#define D3DSP_OPCODESPECIFICCONTROL_SHIFT 16
+
+#endif
+
 struct ConvertedShader
 {
 	//Information about layout
@@ -197,12 +205,6 @@ struct TypeDescriptionComparator
 		return a < b;
 	}
 };
-
-template<typename ...ArgumentType> inline void Pack(std::vector<uint32_t> instructions, ArgumentType... arguments)
-{
-	const size_t size = sizeof...(arguments);
-	instructions.insert(instructions.end(), &arguments[0], &arguments[size]);
-}
 
 inline uint32_t Pack(uint32_t wordCount, spv::Op opcode)
 {

@@ -118,7 +118,7 @@ void RenderManager::StartScene(RealWindow& realWindow, bool clear)
 	UpdateBuffer(realWindow);
 
 	realWindow.mClearValues[0].color = realWindow.mClearColorValue;
-	realWindow.mClearValues[1].depthStencil = { 1.0f, 0 };
+	realWindow.mClearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
 	if (clear)
 	{
@@ -337,7 +337,7 @@ void RenderManager::DrawIndexedPrimitive(RealWindow& realWindow, D3DPRIMITIVETYP
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 	https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
 	*/
-	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].drawIndexed(min(realWindow.mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
+	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].drawIndexed(std::min(realWindow.mDeviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
 }
 
 void RenderManager::DrawPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
@@ -352,7 +352,7 @@ void RenderManager::DrawPrimitive(RealWindow& realWindow, D3DPRIMITIVETYPE Primi
 
 	BeginDraw(realWindow,context, resourceContext, PrimitiveType);
 
-	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].draw(min(realWindow.mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount)), 1, StartVertex, 0);
+	realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].draw(std::min(realWindow.mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount)), 1, StartVertex, 0);
 }
 
 void RenderManager::UpdateTexture(RealWindow& realWindow, IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture)
@@ -1269,7 +1269,7 @@ void RenderManager::CreateSampler(RealWindow& realWindow, std::shared_ptr<Sample
 	if (realWindow.mRealDevice->mPhysicalDeviceFeatures.samplerAnisotropy && samplerCreateInfo.minFilter != vk::Filter::eCubicIMG && samplerCreateInfo.magFilter != vk::Filter::eCubicIMG)
 	{
 		// Use max. level of anisotropy for this example
-		samplerCreateInfo.maxAnisotropy = min(request->MaxAnisotropy, realWindow.mRealDevice->mPhysicalDeviceProperties.limits.maxSamplerAnisotropy);
+		samplerCreateInfo.maxAnisotropy = std::min((float)request->MaxAnisotropy, realWindow.mRealDevice->mPhysicalDeviceProperties.limits.maxSamplerAnisotropy);
 
 		if (request->MinFilter == D3DTEXF_ANISOTROPIC ||
 			request->MagFilter == D3DTEXF_ANISOTROPIC ||

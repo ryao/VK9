@@ -431,7 +431,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = depthFormat;
-	imageCreateInfo.extent = { device9->mPresentationParameters.BackBufferWidth,device9->mPresentationParameters.BackBufferHeight, 1 };
+	imageCreateInfo.extent = vk::Extent3D(device9->mPresentationParameters.BackBufferWidth,device9->mPresentationParameters.BackBufferHeight, 1);
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -468,7 +468,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.format = depthFormat;
-	imageViewCreateInfo.subresourceRange = {};
+	imageViewCreateInfo.subresourceRange = vk::ImageSubresourceRange();
 	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
 	imageViewCreateInfo.subresourceRange.levelCount = 1;
@@ -771,7 +771,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	vk::ImageCreateInfo imageCreateInfo2;
 	imageCreateInfo2.imageType = vk::ImageType::e2D;
 	imageCreateInfo2.format = textureFormat;
-	imageCreateInfo2.extent = { (uint32_t)textureWidth, (uint32_t)textureHeight, 1 };
+	imageCreateInfo2.extent = vk::Extent3D((uint32_t)textureWidth, (uint32_t)textureHeight, 1);
 	imageCreateInfo2.mipLevels = 1;
 	imageCreateInfo2.arrayLayers = 1;
 	imageCreateInfo2.samples = vk::SampleCountFlagBits::e1;
@@ -1065,30 +1065,30 @@ void StateManager::CreateInstance()
 
 					vk::DescriptorPoolSize descriptorPoolSizes[11] = {};
 					descriptorPoolSizes[0].type = vk::DescriptorType::eSampler; //VK_DESCRIPTOR_TYPE_SAMPLER;
-					descriptorPoolSizes[0].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetSamplers);
+					descriptorPoolSizes[0].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetSamplers);
 					descriptorPoolSizes[1].type = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					descriptorPoolSizes[1].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxPerStageDescriptorSamplers);
+					descriptorPoolSizes[1].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxPerStageDescriptorSamplers);
 					descriptorPoolSizes[2].type = vk::DescriptorType::eSampledImage; //VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-					descriptorPoolSizes[2].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetSampledImages);
+					descriptorPoolSizes[2].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetSampledImages);
 					descriptorPoolSizes[3].type = vk::DescriptorType::eStorageImage; //VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-					descriptorPoolSizes[3].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetStorageImages);
+					descriptorPoolSizes[3].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetStorageImages);
 					descriptorPoolSizes[4].type = vk::DescriptorType::eUniformTexelBuffer; //VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-					descriptorPoolSizes[4].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxPerStageDescriptorSampledImages);
+					descriptorPoolSizes[4].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxPerStageDescriptorSampledImages);
 					descriptorPoolSizes[5].type = vk::DescriptorType::eStorageTexelBuffer; //VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-					descriptorPoolSizes[5].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxPerStageDescriptorStorageImages);
+					descriptorPoolSizes[5].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxPerStageDescriptorStorageImages);
 					descriptorPoolSizes[6].type = vk::DescriptorType::eUniformBuffer; //VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					descriptorPoolSizes[6].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffers);
+					descriptorPoolSizes[6].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffers);
 					descriptorPoolSizes[7].type = vk::DescriptorType::eStorageBuffer; //VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-					descriptorPoolSizes[7].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetStorageBuffers);
+					descriptorPoolSizes[7].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetStorageBuffers);
 					descriptorPoolSizes[8].type = vk::DescriptorType::eUniformBufferDynamic; //VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-					descriptorPoolSizes[8].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic);
+					descriptorPoolSizes[8].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffersDynamic);
 					descriptorPoolSizes[9].type = vk::DescriptorType::eStorageBufferDynamic; //VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-					descriptorPoolSizes[9].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic);
+					descriptorPoolSizes[9].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetStorageBuffersDynamic);
 					descriptorPoolSizes[10].type = vk::DescriptorType::eInputAttachment; //VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-					descriptorPoolSizes[10].descriptorCount = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetInputAttachments);
+					descriptorPoolSizes[10].descriptorCount = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetInputAttachments);
 
 					vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
-					descriptorPoolCreateInfo.maxSets = min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetSamplers);
+					descriptorPoolCreateInfo.maxSets = std::min((uint32_t)MAX_DESCRIPTOR, device->mPhysicalDeviceProperties.limits.maxDescriptorSetSamplers);
 					descriptorPoolCreateInfo.poolSizeCount = 11;
 					descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
 					descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet; //This flag allows descriptors to return to the pool when they are freed.
@@ -1318,7 +1318,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { texture9->mWidth, texture9->mHeight, 1 };
+	imageCreateInfo.extent = vk::Extent3D(texture9->mWidth, texture9->mHeight, 1);
 	imageCreateInfo.mipLevels = texture9->mLevels;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -1420,7 +1420,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { texture9->mEdgeLength, texture9->mEdgeLength, 1 };
+	imageCreateInfo.extent = vk::Extent3D(texture9->mEdgeLength, texture9->mEdgeLength, 1);
 	imageCreateInfo.mipLevels = texture9->mLevels;
 	imageCreateInfo.arrayLayers = 6;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -1650,7 +1650,7 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = { surface9->mWidth, surface9->mHeight, 1 };
+	imageCreateInfo.extent = vk::Extent3D(surface9->mWidth, surface9->mHeight, 1);
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;

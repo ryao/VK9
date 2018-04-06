@@ -20,7 +20,9 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
+#ifdef _MSC_VER
 #include "winres.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -873,8 +875,8 @@ void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Im
 	vk::ImageCopy region;
 	region.srcSubresource = subResource1;
 	region.dstSubresource = subResource2;
-	region.srcOffset = { x, y, 0 };
-	region.dstOffset = { x, y, 0 };
+	region.srcOffset = vk::Offset3D(x, y, 0);
+	region.dstOffset = vk::Offset3D(x, y, 0);
 	region.extent.width = width;
 	region.extent.height = height;
 	region.extent.depth = depth;

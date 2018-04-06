@@ -18,7 +18,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
  
-#include "D3D9.h"
+#include "d3d9.h"
 #include <vulkan/vulkan.h>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>

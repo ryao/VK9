@@ -20,7 +20,7 @@ misrepresented as being the original software.
 
 #include <vulkan/vk_sdk_platform.h>
 #include "d3d9.h"
-#include "D3D11Shader.h"
+#include "d3d11shader.h"
 #include "ShaderConverter.h"
 #include <boost/log/trivial.hpp>
 #include <boost/foreach.hpp>

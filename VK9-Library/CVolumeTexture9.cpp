@@ -25,6 +25,8 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
+#include <algorithm>
+
 CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
 	: mReferenceCount(1),
 	mDevice(device),
@@ -46,7 +48,7 @@ CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT
 	}
 	else if (!mLevels)
 	{
-		mLevels = min(std::log2(max(mWidth, mHeight)) + 1, 10);
+		mLevels = std::min(std::log2(std::max(mWidth, mHeight)) + 1.0, 10.0);
 	}
 
 	mVolumes.reserve(mLevels);

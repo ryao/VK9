@@ -41,6 +41,14 @@ misrepresented as being the original software.
 #ifndef COMMANDSTREAMMANAGER_H
 #define COMMANDSTREAMMANAGER_H
 
+#ifndef _MSC_VER
+// Used D3D9Ex constants, missing in MinGW
+
+#define D3DPBLENDCAPS_SRCCOLOR2         0x00004000L
+#define D3DPBLENDCAPS_INVSRCCOLOR2      0x00008000L
+
+#endif
+
 struct CommandStreamManager
 { 	
 	boost::program_options::variables_map mOptions;
