@@ -37,7 +37,7 @@ CVertexShader9::~CVertexShader9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Shader_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CVertexShader9::AddRef(void)

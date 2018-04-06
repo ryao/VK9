@@ -82,7 +82,7 @@ CCubeTexture9::~CCubeTexture9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::CubeTexture_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CCubeTexture9::AddRef(void)

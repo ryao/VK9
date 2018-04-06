@@ -55,13 +55,12 @@ struct CommandStreamManager
 	boost::program_options::options_description mOptionDescriptions;
 	std::thread mWorkerThread;
 	RenderManager mRenderManager;
-	//boost::lockfree::queue<WorkItem*> mWorkItems;
-	//boost::lockfree::queue<WorkItem*> mUnusedWorkItems;
 
-	//std::mutex mWorkItemMutex;
-	//std::mutex mUnusedWorkItemMutex;
-	moodycamel::ReaderWriterQueue<WorkItem*> mWorkItems;
-	moodycamel::ReaderWriterQueue<WorkItem*> mUnusedWorkItems;
+	boost::lockfree::queue<WorkItem*, boost::lockfree::capacity<1024>> mWorkItems;
+	boost::lockfree::queue<WorkItem*, boost::lockfree::capacity<1024>> mUnusedWorkItems;
+
+	//moodycamel::ReaderWriterQueue<WorkItem*> mWorkItems;
+	//moodycamel::ReaderWriterQueue<WorkItem*> mUnusedWorkItems;
 
 	std::atomic_bool IsRunning = 1;
 	std::atomic_bool IsBusy = 0;

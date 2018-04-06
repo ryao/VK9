@@ -25,6 +25,19 @@ misrepresented as being the original software.
 #include "Utilities.h"
 #include "CTypes.h"
 
+CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParameters)
+	: mDevice(Device)
+{
+	mWidth = pPresentationParameters->BackBufferWidth;
+	mHeight = pPresentationParameters->BackBufferHeight;
+	mFormat = pPresentationParameters->BackBufferFormat;
+	mMultiSample = pPresentationParameters->MultiSampleType;
+	mMultisampleQuality = pPresentationParameters->MultiSampleQuality;
+	mUsage = D3DUSAGE_DEPTHSTENCIL;
+
+	//Init();
+}
+
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle)
 	: mDevice(Device),
 	mTexture(Texture),
@@ -149,10 +162,13 @@ CSurface9::~CSurface9()
 {
 	BOOST_LOG_TRIVIAL(info) << "CSurface9::~CSurface9";
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
-	workItem->WorkItemType = WorkItemType::Surface_Destroy;
-	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	if (mId != -1)
+	{
+		WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
+		workItem->WorkItemType = WorkItemType::Surface_Destroy;
+		workItem->Id = mId;
+		mCommandStreamManager->RequestWorkAndWait(workItem);
+	}
 }
 
 ULONG STDMETHODCALLTYPE CSurface9::AddRef(void)

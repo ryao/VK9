@@ -47,7 +47,7 @@ CVolume9::~CVolume9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Volume_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 void CVolume9::Init()

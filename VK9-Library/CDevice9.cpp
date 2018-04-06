@@ -62,8 +62,11 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	}
 
 	//Add implicit swap chain.
-	CSwapChain9* ptr = new CSwapChain9(pPresentationParameters);
+	CSwapChain9* ptr = new CSwapChain9(this,pPresentationParameters);
 	mSwapChains.push_back(ptr);
+
+	//Add implicit stencil buffer surface.
+	mDepthStencilSurface = new CSurface9(this, pPresentationParameters);
 
 	//Add implicit render target
 	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mPresentationParameters.BackBufferWidth, mPresentationParameters.BackBufferHeight, D3DFMT_UNKNOWN);
@@ -75,7 +78,7 @@ CDevice9::~CDevice9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Device_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
 
@@ -568,11 +571,7 @@ UINT STDMETHODCALLTYPE CDevice9::GetAvailableTextureMem()
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetBackBuffer(UINT  iSwapChain, UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 **ppBackBuffer)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetBackBuffer is not implemented!";
-
-	return E_NOTIMPL;
+	return mSwapChains[iSwapChain]->GetBackBuffer(BackBuffer, Type, ppBackBuffer);
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetClipPlane(DWORD Index, float *pPlane)
@@ -618,6 +617,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDepthStencilSurface(IDirect3DSurface9 **p
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetDepthStencilSurface is not implemented!";
 
+	(*ppZStencilSurface) = mDepthStencilSurface;
+
 	return S_OK;
 }
 
@@ -657,11 +658,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetDisplayMode(UINT  iSwapChain, D3DDISPLAYM
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetFrontBufferData(UINT  iSwapChain, IDirect3DSurface9 *pDestSurface)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetFrontBufferData is not implemented!";
-
-	return S_OK;
+	return mSwapChains[iSwapChain]->GetFrontBufferData(pDestSurface);
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetFVF(DWORD *pFVF)
@@ -812,11 +809,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShaderConstantI(UINT StartRegister, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRasterStatus(UINT  iSwapChain, D3DRASTER_STATUS *pRasterStatus)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetRasterStatus is not implemented!";
-
-	return E_NOTIMPL;
+	return mSwapChains[iSwapChain]->GetRasterStatus(pRasterStatus);
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWORD* pValue)
@@ -1103,11 +1096,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetCursorProperties(UINT XHotSpot, UINT YHot
 	return E_NOTIMPL;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetDepthStencilSurface(IDirect3DSurface9 *pNewZStencil)
+HRESULT STDMETHODCALLTYPE CDevice9::SetDepthStencilSurface(IDirect3DSurface9* pNewZStencil)
 {
 	//TODO: Implement.
 
 	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetDepthStencilSurface is not implemented!";
+
+	mDepthStencilSurface = (CSurface9*)pNewZStencil;
 
 	return S_OK;
 }

@@ -73,7 +73,7 @@ CTexture9::~CTexture9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Texture_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)

@@ -52,7 +52,7 @@ C9::~C9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Instance_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	BOOST_LOG_TRIVIAL(info) << "C9::~C9";	
 }

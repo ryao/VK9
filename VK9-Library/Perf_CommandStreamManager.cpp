@@ -103,7 +103,8 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 		workItem->Caller->AddRef();
 	}
 
-	while (!mWorkItems.try_enqueue(workItem)) {}
+	while (!mWorkItems.push(workItem)) {}
+	//while (!mWorkItems.try_enqueue(workItem)) {}
 
 	size_t key = 0;
 
@@ -153,8 +154,6 @@ size_t CommandStreamManager::RequestWorkAndWait(WorkItem* workItem)
 
 	while (!workItem->HasBeenProcessed){}
 
-	/*while (mWorkItems.size_approx() > 0 || IsBusy){}*/
-
 	return result;
 }
 
@@ -162,7 +161,16 @@ WorkItem* CommandStreamManager::GetWorkItem(IUnknown* caller)
 {
 	WorkItem* returnValue = nullptr;
 
-	if (!mUnusedWorkItems.try_dequeue(returnValue))
+	//if (!mUnusedWorkItems.try_dequeue(returnValue))
+	//{
+	//	returnValue = new WorkItem();
+	//}
+	//else
+	//{
+	//	returnValue->HasBeenProcessed = false;
+	//}
+
+	if (!mUnusedWorkItems.pop(returnValue))
 	{
 		returnValue = new WorkItem();
 	}

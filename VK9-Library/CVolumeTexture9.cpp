@@ -79,7 +79,7 @@ CVolumeTexture9::~CVolumeTexture9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::VolumeTexture_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 ULONG STDMETHODCALLTYPE CVolumeTexture9::AddRef(void)

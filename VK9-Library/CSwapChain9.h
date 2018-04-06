@@ -24,6 +24,8 @@ misrepresented as being the original software.
 #include "d3d9.h" // Base class: IDirect3DSurface9
 #include <vulkan/vulkan.h>
 
+#include "CSurface9.h"
+
 class CDevice9;
 
 class CSwapChain9 : public IDirect3DSwapChain9
@@ -35,11 +37,13 @@ public:
 	VkResult mResult = VK_SUCCESS;
 
 	CDevice9* mDevice = nullptr;
-
 	D3DPRESENT_PARAMETERS* mPresentationParameters;
+	CSurface9* mBackBuffer = nullptr;
 
-	CSwapChain9(D3DPRESENT_PARAMETERS *pPresentationParameters);
+	CSwapChain9(CDevice9* Device, D3DPRESENT_PARAMETERS *pPresentationParameters);
 	~CSwapChain9();
+
+	
 
 public:
 	//IUnknown

@@ -44,7 +44,7 @@ CVertexBuffer9::~CVertexBuffer9()
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Destroy;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);	
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	BOOST_LOG_TRIVIAL(info) << "CVertexBuffer9::~CVertexBuffer9";
 }

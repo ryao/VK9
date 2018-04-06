@@ -23,15 +23,16 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 #include "Utilities.h"
 
-CSwapChain9::CSwapChain9(D3DPRESENT_PARAMETERS *pPresentationParameters)
-	: mPresentationParameters(pPresentationParameters)
+CSwapChain9::CSwapChain9(CDevice9* Device, D3DPRESENT_PARAMETERS *pPresentationParameters)
+	: mDevice(Device),
+	mPresentationParameters(pPresentationParameters)
 {
-
+	mBackBuffer = new CSurface9(Device, pPresentationParameters);
 }
 
 CSwapChain9::~CSwapChain9()
 {
-
+	delete mBackBuffer;
 }
 
 ULONG STDMETHODCALLTYPE CSwapChain9::AddRef(void)
@@ -84,9 +85,11 @@ ULONG STDMETHODCALLTYPE CSwapChain9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetBackBuffer(UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9  **ppBackBuffer)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetBackBuffer is not implemented!";
+	BOOST_LOG_TRIVIAL(warning) << "CSwapChain9::GetBackBuffer is not implemented!";
 
-	return E_NOTIMPL; //TODO: Implement.
+	(*ppBackBuffer) = mBackBuffer;
+
+	return S_OK; //TODO: Implement.
 }
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetDevice(IDirect3DDevice9** ppDevice)
@@ -98,9 +101,12 @@ HRESULT STDMETHODCALLTYPE CSwapChain9::GetDevice(IDirect3DDevice9** ppDevice)
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetDisplayMode(D3DDISPLAYMODE *pMode)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetDisplayMode is not implemented!";
+	pMode->Format = mPresentationParameters->BackBufferFormat;
+	pMode->Height = mPresentationParameters->BackBufferHeight;
+	pMode->Width = mPresentationParameters->BackBufferWidth;
+	pMode->RefreshRate = mPresentationParameters->FullScreen_RefreshRateInHz; //Revsit
 
-	return E_NOTIMPL; //TODO: Implement.
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetFrontBufferData(IDirect3DSurface9 *pDestSurface)
@@ -112,9 +118,9 @@ HRESULT STDMETHODCALLTYPE CSwapChain9::GetFrontBufferData(IDirect3DSurface9 *pDe
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetPresentParameters(D3DPRESENT_PARAMETERS *pPresentationParameters)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetPresentParameters is not implemented!";
+	memcpy(pPresentationParameters, mPresentationParameters, sizeof(D3DPRESENT_PARAMETERS)); //Revsit
 
-	return E_NOTIMPL; //TODO: Implement.
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetRasterStatus(D3DRASTER_STATUS *pRasterStatus)

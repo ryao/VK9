@@ -75,7 +75,7 @@ public:
 	
 	PAINTSTRUCT* mPaintInformation = {};
 
-	
+	CSurface9* mDepthStencilSurface = nullptr;
 
 public:
 
