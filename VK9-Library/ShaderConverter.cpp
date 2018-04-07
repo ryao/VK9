@@ -2691,7 +2691,7 @@ void ShaderConverter::Process_DCL()
 		else
 		{
 			Process_DCL_Vertex();
-			BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
+			//BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
 		}
 	}
 	else
@@ -2707,7 +2707,7 @@ void ShaderConverter::Process_DCL()
 		else
 		{
 			Process_DCL_Pixel();
-			BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
+			//BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::Process_DCL unsupported shader version " << mMajorVersion;
 		}
 	}
 }
