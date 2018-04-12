@@ -22,6 +22,10 @@ misrepresented as being the original software.
 "Whoever pursues righteousness and kindness will find life, righteousness, and honor." (Proverbs 21:21, ESV)
 */
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+
 #include "Perf_RenderManager.h"
 
 #include <boost/log/core.hpp>

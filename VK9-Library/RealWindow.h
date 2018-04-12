@@ -1213,6 +1213,9 @@ struct RealWindow
 	vk::DeviceMemory mMaterialBufferMemory;
 	int32_t mVertexCount = 0;
 
+	vk::DeviceSize mEstimatedMemoryUsed = 0;
+	vk::DeviceSize mEstimatedMemory = 2147483648;
+
 	RealWindow(std::shared_ptr<RealInstance>& realInstance, std::shared_ptr<RealDevice>& realDevice);
 	~RealWindow();
 

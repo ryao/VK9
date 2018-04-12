@@ -20,6 +20,10 @@ misrepresented as being the original software.
 
 #define MAX_DESCRIPTOR 2048
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+
 #include "Perf_StateManager.h"
 
 #include "C9.h"
@@ -1297,6 +1301,7 @@ void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 
 void StateManager::DestroyTexture(size_t id)
 {
+	mTextures[id]->mRealWindow->mEstimatedMemoryUsed -= mTextures[id]->mMemoryAllocateInfo.allocationSize;
 	mTextures[id].reset();
 }
 
@@ -1340,6 +1345,8 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	//mMemoryAllocateInfo.allocationSize = 0;
 	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
 	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	window->mEstimatedMemoryUsed += memoryRequirements.size;
 
 	if (!GetMemoryTypeFromProperties(window->mRealDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
 	{
@@ -1399,6 +1406,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 
 void StateManager::DestroyCubeTexture(size_t id)
 {
+	mTextures[id]->mRealWindow->mEstimatedMemoryUsed -= mTextures[id]->mMemoryAllocateInfo.allocationSize;
 	mTextures[id].reset();
 }
 
@@ -1448,6 +1456,8 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	//mMemoryAllocateInfo.allocationSize = 0;
 	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
 	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	window->mEstimatedMemoryUsed += memoryRequirements.size;
 
 	if (!GetMemoryTypeFromProperties(window->mRealDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
 	{
@@ -1506,6 +1516,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 
 void StateManager::DestroyVolumeTexture(size_t id)
 {
+	mTextures[id]->mRealWindow->mEstimatedMemoryUsed -= mTextures[id]->mMemoryAllocateInfo.allocationSize;
 	mTextures[id].reset();
 }
 
@@ -1555,6 +1566,8 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 	//mMemoryAllocateInfo.allocationSize = 0;
 	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
 	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	window->mEstimatedMemoryUsed += memoryRequirements.size;
 
 	if (!GetMemoryTypeFromProperties(window->mRealDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
 	{

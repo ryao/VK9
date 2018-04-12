@@ -83,6 +83,7 @@ enum WorkItemType
 	, Device_SetVertexShaderConstantI
 	, Device_SetViewport
 	, Device_UpdateTexture
+	, Device_GetAvailableTextureMem
 	, Device_Destroy
 	, VertexBuffer_Create
 	, VertexBuffer_Lock

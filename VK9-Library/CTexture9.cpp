@@ -18,6 +18,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+
 #include "CTexture9.h"
 #include "CDevice9.h"
 

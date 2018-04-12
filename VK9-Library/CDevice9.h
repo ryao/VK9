@@ -77,6 +77,8 @@ public:
 
 	CSurface9* mDepthStencilSurface = nullptr;
 
+	UINT mAvailableTextureMemory = 0;
+
 public:
 
 	//IUnknown

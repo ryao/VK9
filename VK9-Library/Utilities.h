@@ -18,6 +18,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
@@ -47,6 +51,8 @@ misrepresented as being the original software.
 #include <memory>
 #include <cstring>
 #include <fstream>
+#include <algorithm>
+#include <limits>
 
 #ifndef _MSC_VER
 // Used D3D9Ex constants, missing in MinGW

@@ -18,14 +18,15 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
  
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
 
 #include "CVolumeTexture9.h"
 #include "CDevice9.h"
 #include "CSurface9.h"
 
 #include "Utilities.h"
-
-#include <algorithm>
 
 CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
 	: mReferenceCount(1),

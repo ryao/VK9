@@ -18,6 +18,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+
 #include "Perf_ProcessQueue.h"
 #include "Perf_CommandStreamManager.h"
 
@@ -30,6 +34,7 @@ misrepresented as being the original software.
 #include "CCubeTexture9.h"
 #include "CVolumeTexture9.h"
 #include "CSurface9.h"
+#include "CDevice9.h"
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
@@ -2950,6 +2955,14 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				IDirect3DBaseTexture9* pDestinationTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
 
 				commandStreamManager->mRenderManager.UpdateTexture(realWindow, pSourceTexture, pDestinationTexture);
+			}
+			break;
+			case Device_GetAvailableTextureMem:
+			{
+				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				CDevice9* device9 = (CDevice9*)workItem->Caller;
+				//                                                                                            Bytes     KB      MB
+				device9->mAvailableTextureMemory = (((realWindow.mEstimatedMemory - realWindow.mEstimatedMemoryUsed) / 1024) / 1024);
 			}
 			break;
 			case Instance_GetAdapterIdentifier:

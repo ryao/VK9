@@ -18,8 +18,9 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include <algorithm>
-#include <limits>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
 
 #include "C9.h"
 #include "CDevice9.h"
@@ -562,11 +563,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::EvictManagedResources()
 
 UINT STDMETHODCALLTYPE CDevice9::GetAvailableTextureMem()
 {
-	//TODO: Implement.
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::Device_GetAvailableTextureMem;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetAvailableTextureMem is not implemented!";
-
-	return E_NOTIMPL;
+	return mAvailableTextureMemory;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetBackBuffer(UINT  iSwapChain, UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 **ppBackBuffer)
