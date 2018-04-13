@@ -175,6 +175,12 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 
 	mWindows.push_back(ptr);
 
+	for (size_t i = 0; i < device->mPhysicalDeviceMemoryProperties.memoryHeapCount; i++)
+	{
+		ptr->mEstimatedMemory += device->mPhysicalDeviceMemoryProperties.memoryHeaps[i].size;
+	}
+	BOOST_LOG_TRIVIAL(info) << "StateManager::CreateWindow1 The total size of all heaps is " << ptr->mEstimatedMemory;
+
 	result = instance->mInstance.createWin32SurfaceKHR(&surfaceCreateInfo, nullptr, &ptr->mSurface);
 	if (result != vk::Result::eSuccess)
 	{
