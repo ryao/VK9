@@ -573,6 +573,13 @@ private:
 	void Process_DP4();
 	void Process_TEX();
 
+	//matrix operators
+	void Process_M4x4();
+	void Process_M4x3();
+	void Process_M3x4();
+	void Process_M3x3();
+	void Process_M3x2();
+
 	//ternary operators
 	void Process_MAD();
 };

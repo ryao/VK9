@@ -4491,6 +4491,381 @@ void ShaderConverter::Process_TEX()
 	resultId = ApplyWriteMask(resultToken, resultId);
 }
 
+void ShaderConverter::Process_M4x4()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M4x4 - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("M4x4", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_M4x3()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M4x3 - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("M4x3", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_M3x4()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M3x4 - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("M3x4", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_M3x3()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M3x3 - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("M3x3", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_M3x2()
+{
+	TypeDescription typeDescription;
+	spv::Op dataType;
+	uint32_t dataTypeId;
+	uint32_t argumentId1;
+	uint32_t argumentId2;
+	uint32_t resultId;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+
+	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId2 = GetSwizzledId(argumentToken2);
+	resultId = GetNextId();
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeInt:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	case spv::OpTypeFloat:
+		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M3x2 - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("M3x2", resultToken, argumentToken1, argumentToken2);
+}
+
 /*
 I don't know why SPIR-V doesn't have a MAD instruction.
 */
@@ -4869,19 +5244,19 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x3SPEC.";
 			break;
 		case D3DSIO_M4x4:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_M4x4.";
+			Process_M4x4();
 			break;
 		case D3DSIO_M4x3:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_M4x3.";
+			Process_M4x3();
 			break;
 		case D3DSIO_M3x4:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_M3x4.";
+			Process_M3x4();
 			break;
 		case D3DSIO_M3x3:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_M3x3.";
+			Process_M3x3();
 			break;
 		case D3DSIO_M3x2:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_M3x2.";
+			Process_M3x2();
 			break;
 		case D3DSIO_CALLNZ:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_CALLNZ.";
