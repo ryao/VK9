@@ -2968,7 +2968,7 @@ void ShaderConverter::Process_NRM()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -2976,7 +2976,7 @@ void ShaderConverter::Process_NRM()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -2984,7 +2984,7 @@ void ShaderConverter::Process_NRM()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3147,7 +3147,7 @@ void ShaderConverter::Process_RSQ()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3155,7 +3155,7 @@ void ShaderConverter::Process_RSQ()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3163,7 +3163,7 @@ void ShaderConverter::Process_RSQ()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3226,7 +3226,7 @@ void ShaderConverter::Process_DST()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3235,7 +3235,7 @@ void ShaderConverter::Process_DST()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3244,7 +3244,7 @@ void ShaderConverter::Process_DST()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3307,7 +3307,7 @@ void ShaderConverter::Process_CRS()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3316,7 +3316,7 @@ void ShaderConverter::Process_CRS()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3325,7 +3325,7 @@ void ShaderConverter::Process_CRS()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3388,7 +3388,7 @@ void ShaderConverter::Process_POW()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3397,7 +3397,7 @@ void ShaderConverter::Process_POW()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3406,7 +3406,7 @@ void ShaderConverter::Process_POW()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3539,7 +3539,7 @@ void ShaderConverter::Process_EXP()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3547,7 +3547,7 @@ void ShaderConverter::Process_EXP()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3555,7 +3555,7 @@ void ShaderConverter::Process_EXP()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3612,7 +3612,7 @@ void ShaderConverter::Process_EXPP()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3620,7 +3620,7 @@ void ShaderConverter::Process_EXPP()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3628,7 +3628,7 @@ void ShaderConverter::Process_EXPP()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3685,7 +3685,7 @@ void ShaderConverter::Process_LOG()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3693,7 +3693,7 @@ void ShaderConverter::Process_LOG()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3701,7 +3701,7 @@ void ShaderConverter::Process_LOG()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3758,7 +3758,7 @@ void ShaderConverter::Process_LOGP()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3766,7 +3766,7 @@ void ShaderConverter::Process_LOGP()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3774,7 +3774,7 @@ void ShaderConverter::Process_LOGP()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3836,7 +3836,7 @@ void ShaderConverter::Process_FRC()
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3900,7 +3900,7 @@ void ShaderConverter::Process_ABS()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3909,7 +3909,7 @@ void ShaderConverter::Process_ABS()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -3918,7 +3918,7 @@ void ShaderConverter::Process_ABS()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -4131,7 +4131,7 @@ void ShaderConverter::Process_MIN()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -4140,7 +4140,7 @@ void ShaderConverter::Process_MIN()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -4149,7 +4149,7 @@ void ShaderConverter::Process_MIN()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -4212,7 +4212,7 @@ void ShaderConverter::Process_MAX()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -4221,7 +4221,7 @@ void ShaderConverter::Process_MAX()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -4230,7 +4230,7 @@ void ShaderConverter::Process_MAX()
 		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpExtInst)); //size,Type
+		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
 		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
 		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
 		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
@@ -4489,6 +4489,90 @@ void ShaderConverter::Process_TEX()
 	}
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+}
+
+void ShaderConverter::Process_TEXCOORD()
+{
+	spv::Op dataType = spv::OpNop;
+	uint32_t dataTypeId = 0;
+	uint32_t texcoordDataTypeId = 0;
+	uint32_t argumentId1 = 0;
+	uint32_t argumentId1_temp = 0;
+	uint32_t resultId = 0;
+	uint32_t resultTypeId = 0;
+	std::string registerName;
+	uint32_t stringWordSize = 0;
+
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+
+	TypeDescription typeDescription;
+	typeDescription.PrimaryType = spv::OpTypeVector;
+	typeDescription.SecondaryType = spv::OpTypeFloat;
+	typeDescription.ComponentCount = 4;
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+
+	resultTypeId = GetSpirVTypeId(typeDescription);
+
+	//typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
+	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	dataTypeId = GetSpirVTypeId(typeDescription);
+
+	typeDescription.ComponentCount = 3;
+	texcoordDataTypeId = GetSpirVTypeId(typeDescription);
+
+	if (mMajorVersion > 1 || mMinorVersion >= 4)
+	{
+		Token argumentToken1 = GetNextToken();
+		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_TEXTURE);
+		argumentId1 = GetNextId();
+
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+
+		PrintTokenInformation("TEXCOORD_1_4", resultToken, argumentToken1, argumentToken1);
+	}
+	else
+	{
+		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = resultRegisterType;
+
+		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
+		argumentId1 = GetNextId();
+
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
+		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+
+		PrintTokenInformation("TEXCOORD_1_0", resultToken, resultToken, resultToken);
+	}
+
+	resultId = GetNextId();
+
+	resultId = ApplyWriteMask(resultToken, argumentId1);
+
+	switch (resultRegisterType)
+	{
+	case D3DSPR_RASTOUT:
+	case D3DSPR_ATTROUT:
+	case D3DSPR_COLOROUT:
+	case D3DSPR_DEPTHOUT:
+	case D3DSPR_OUTPUT:
+		//Handled by ApplyWriteMask
+		break;
+	default:
+		dataTypeId = GetSpirVTypeId(typeDescription);
+
+		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
+		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
+		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
+		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		break;
+	}
 }
 
 void ShaderConverter::Process_M4x4()
@@ -5328,7 +5412,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXLDD.";
 			break;
 		case D3DSIO_TEXCOORD:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXCOORD.";
+			Process_TEXCOORD();
 			break;
 		case D3DSIO_TEX:
 			Process_TEX();

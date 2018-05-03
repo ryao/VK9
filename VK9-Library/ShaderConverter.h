@@ -572,6 +572,7 @@ private:
 	void Process_DP3();
 	void Process_DP4();
 	void Process_TEX();
+	void Process_TEXCOORD();
 
 	//matrix operators
 	void Process_M4x4();
