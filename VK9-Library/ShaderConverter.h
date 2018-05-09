@@ -402,7 +402,7 @@ inline void PrintTokenInformation(const char* tokenName, Token result, Token arg
 		<< argument1.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument1.i) << ")";
 };
 
-inline void PrintTokenInformation(const char* tokenName, Token result,uint32_t resultId, Token argument1, uint32_t argument1Id)
+inline void PrintTokenInformation(const char* tokenName, Token result, uint32_t resultId, Token argument1, uint32_t argument1Id)
 {
 	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
 		<< result.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(result.i) << ") [" << resultId << "] "
@@ -533,6 +533,12 @@ private:
 	void GenerateConstantBlock();
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
+
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6);
 
 	//declare
 	void Process_DCL_Pixel();

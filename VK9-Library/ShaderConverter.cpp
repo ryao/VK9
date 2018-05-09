@@ -48,6 +48,345 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c2) << 8) | \
     ((uint32_t)(uint8_t)(c3)))
 
+std::ostream& operator<< (std::ostream& os, spv::Op code)
+{
+	switch (code)
+	{
+	case spv::OpNop: return os << "OpNop";
+	case spv::OpUndef: return os << "OpUndef";
+	case spv::OpSourceContinued: return os << "OpSourceContinued";
+	case spv::OpSource: return os << "OpSource";
+	case spv::OpSourceExtension: return os << "OpSourceExtension";
+	case spv::OpName: return os << "OpName";
+	case spv::OpMemberName: return os << "OpMemberName";
+	case spv::OpString: return os << "OpString";
+	case spv::OpLine: return os << "OpLine";
+	case spv::OpExtension: return os << "OpExtension";
+	case spv::OpExtInstImport: return os << "OpExtInstImport";
+	case spv::OpExtInst: return os << "OpExtInst";
+	case spv::OpMemoryModel: return os << "OpMemoryModel";
+	case spv::OpEntryPoint: return os << "OpEntryPoint";
+	case spv::OpExecutionMode: return os << "OpExecutionMode";
+	case spv::OpCapability: return os << "OpCapability";
+	case spv::OpTypeVoid: return os << "OpTypeVoid";
+	case spv::OpTypeBool: return os << "OpTypeBool";
+	case spv::OpTypeInt: return os << "OpTypeInt";
+	case spv::OpTypeFloat: return os << "OpTypeFloat";
+	case spv::OpTypeVector: return os << "OpTypeVector";
+	case spv::OpTypeMatrix: return os << "OpTypeMatrix";
+	case spv::OpTypeImage: return os << "OpTypeImage";
+	case spv::OpTypeSampler: return os << "OpTypeSampler";
+	case spv::OpTypeSampledImage: return os << "OpTypeSampledImage";
+	case spv::OpTypeArray: return os << "OpTypeArray";
+	case spv::OpTypeRuntimeArray: return os << "OpTypeRuntimeArray";
+	case spv::OpTypeStruct: return os << "OpTypeStruct";
+	case spv::OpTypeOpaque: return os << "OpTypeOpaque";
+	case spv::OpTypePointer: return os << "OpTypePointer";
+	case spv::OpTypeFunction: return os << "OpTypeFunction";
+	case spv::OpTypeEvent: return os << "OpTypeEvent";
+	case spv::OpTypeDeviceEvent: return os << "OpTypeDeviceEvent";
+	case spv::OpTypeReserveId: return os << "OpTypeReserveId";
+	case spv::OpTypeQueue: return os << "OpTypeQueue";
+	case spv::OpTypePipe: return os << "OpTypePipe";
+	case spv::OpTypeForwardPointer: return os << "OpTypeForwardPointer";
+	case spv::OpConstantTrue: return os << "OpConstantTrue";
+	case spv::OpConstantFalse: return os << "OpConstantFalse";
+	case spv::OpConstant: return os << "OpConstant";
+	case spv::OpConstantComposite: return os << "OpConstantComposite";
+	case spv::OpConstantSampler: return os << "OpConstantSampler";
+	case spv::OpConstantNull: return os << "OpConstantNull";
+	case spv::OpSpecConstantTrue: return os << "OpSpecConstantTrue";
+	case spv::OpSpecConstantFalse: return os << "OpSpecConstantFalse";
+	case spv::OpSpecConstant: return os << "OpSpecConstant";
+	case spv::OpSpecConstantComposite: return os << "OpSpecConstantComposite";
+	case spv::OpSpecConstantOp: return os << "OpSpecConstantOp";
+	case spv::OpFunction: return os << "OpFunction";
+	case spv::OpFunctionParameter: return os << "OpFunctionParameter";
+	case spv::OpFunctionEnd: return os << "OpFunctionEnd";
+	case spv::OpFunctionCall: return os << "OpFunctionCall";
+	case spv::OpVariable: return os << "OpVariable";
+	case spv::OpImageTexelPointer: return os << "OpImageTexelPointer";
+	case spv::OpLoad: return os << "OpLoad";
+	case spv::OpStore: return os << "OpStore";
+	case spv::OpCopyMemory: return os << "OpCopyMemory";
+	case spv::OpCopyMemorySized: return os << "OpCopyMemorySized";
+	case spv::OpAccessChain: return os << "OpAccessChain";
+	case spv::OpInBoundsAccessChain: return os << "OpInBoundsAccessChain";
+	case spv::OpPtrAccessChain: return os << "OpPtrAccessChain";
+	case spv::OpArrayLength: return os << "OpArrayLength";
+	case spv::OpGenericPtrMemSemantics: return os << "OpGenericPtrMemSemantics";
+	case spv::OpInBoundsPtrAccessChain: return os << "OpInBoundsPtrAccessChain";
+	case spv::OpDecorate: return os << "OpDecorate";
+	case spv::OpMemberDecorate: return os << "OpMemberDecorate";
+	case spv::OpDecorationGroup: return os << "OpDecorationGroup";
+	case spv::OpGroupDecorate: return os << "OpGroupDecorate";
+	case spv::OpGroupMemberDecorate: return os << "OpGroupMemberDecorate";
+	case spv::OpVectorExtractDynamic: return os << "OpVectorExtractDynamic";
+	case spv::OpVectorInsertDynamic: return os << "OpVectorInsertDynamic";
+	case spv::OpVectorShuffle: return os << "OpVectorShuffle";
+	case spv::OpCompositeConstruct: return os << "OpCompositeConstruct";
+	case spv::OpCompositeExtract: return os << "OpCompositeExtract";
+	case spv::OpCompositeInsert: return os << "OpCompositeInsert";
+	case spv::OpCopyObject: return os << "OpCopyObject";
+	case spv::OpTranspose: return os << "OpTranspose";
+	case spv::OpSampledImage: return os << "OpSampledImage";
+	case spv::OpImageSampleImplicitLod: return os << "OpImageSampleImplicitLod";
+	case spv::OpImageSampleExplicitLod: return os << "OpImageSampleExplicitLod";
+	case spv::OpImageSampleDrefImplicitLod: return os << "OpImageSampleDrefImplicitLod";
+	case spv::OpImageSampleDrefExplicitLod: return os << "OpImageSampleDrefExplicitLod";
+	case spv::OpImageSampleProjImplicitLod: return os << "OpImageSampleProjImplicitLod";
+	case spv::OpImageSampleProjExplicitLod: return os << "OpImageSampleProjExplicitLod";
+	case spv::OpImageSampleProjDrefImplicitLod: return os << "OpImageSampleProjDrefImplicitLod";
+	case spv::OpImageSampleProjDrefExplicitLod: return os << "OpImageSampleProjDrefExplicitLod";
+	case spv::OpImageFetch: return os << "OpImageFetch";
+	case spv::OpImageGather: return os << "OpImageGather";
+	case spv::OpImageDrefGather: return os << "OpImageDrefGather";
+	case spv::OpImageRead: return os << "OpImageRead";
+	case spv::OpImageWrite: return os << "OpImageWrite";
+	case spv::OpImage: return os << "OpImage";
+	case spv::OpImageQueryFormat: return os << "OpImageQueryFormat";
+	case spv::OpImageQueryOrder: return os << "OpImageQueryOrder";
+	case spv::OpImageQuerySizeLod: return os << "OpImageQuerySizeLod";
+	case spv::OpImageQuerySize: return os << "OpImageQuerySize";
+	case spv::OpImageQueryLod: return os << "OpImageQueryLod";
+	case spv::OpImageQueryLevels: return os << "OpImageQueryLevels";
+	case spv::OpImageQuerySamples: return os << "OpImageQuerySamples";
+	case spv::OpConvertFToU: return os << "OpConvertFToU";
+	case spv::OpConvertFToS: return os << "OpConvertFToS";
+	case spv::OpConvertSToF: return os << "OpConvertSToF";
+	case spv::OpConvertUToF: return os << "OpConvertUToF";
+	case spv::OpUConvert: return os << "OpUConvert";
+	case spv::OpSConvert: return os << "OpSConvert";
+	case spv::OpFConvert: return os << "OpFConvert";
+	case spv::OpQuantizeToF16: return os << "OpQuantizeToF16";
+	case spv::OpConvertPtrToU: return os << "OpConvertPtrToU";
+	case spv::OpSatConvertSToU: return os << "OpSatConvertSToU";
+	case spv::OpSatConvertUToS: return os << "OpSatConvertUToS";
+	case spv::OpConvertUToPtr: return os << "OpConvertUToPtr";
+	case spv::OpPtrCastToGeneric: return os << "OpPtrCastToGeneric";
+	case spv::OpGenericCastToPtr: return os << "OpGenericCastToPtr";
+	case spv::OpGenericCastToPtrExplicit: return os << "OpGenericCastToPtrExplicit";
+	case spv::OpBitcast: return os << "OpBitcast";
+	case spv::OpSNegate: return os << "OpSNegate";
+	case spv::OpFNegate: return os << "OpFNegate";
+	case spv::OpIAdd: return os << "OpIAdd";
+	case spv::OpFAdd: return os << "OpFAdd";
+	case spv::OpISub: return os << "OpISub";
+	case spv::OpFSub: return os << "OpFSub";
+	case spv::OpIMul: return os << "OpIMul";
+	case spv::OpFMul: return os << "OpFMul";
+	case spv::OpUDiv: return os << "OpUDiv";
+	case spv::OpSDiv: return os << "OpSDiv";
+	case spv::OpFDiv: return os << "OpFDiv";
+	case spv::OpUMod: return os << "OpUMod";
+	case spv::OpSRem: return os << "OpSRem";
+	case spv::OpSMod: return os << "OpSMod";
+	case spv::OpFRem: return os << "OpFRem";
+	case spv::OpFMod: return os << "OpFMod";
+	case spv::OpVectorTimesScalar: return os << "OpVectorTimesScalar";
+	case spv::OpMatrixTimesScalar: return os << "OpMatrixTimesScalar";
+	case spv::OpVectorTimesMatrix: return os << "OpVectorTimesMatrix";
+	case spv::OpMatrixTimesVector: return os << "OpMatrixTimesVector";
+	case spv::OpMatrixTimesMatrix: return os << "OpMatrixTimesMatrix";
+	case spv::OpOuterProduct: return os << "OpOuterProduct";
+	case spv::OpDot: return os << "OpDot";
+	case spv::OpIAddCarry: return os << "OpIAddCarry";
+	case spv::OpISubBorrow: return os << "OpISubBorrow";
+	case spv::OpUMulExtended: return os << "OpUMulExtended";
+	case spv::OpSMulExtended: return os << "OpSMulExtended";
+	case spv::OpAny: return os << "OpAny";
+	case spv::OpAll: return os << "OpAll";
+	case spv::OpIsNan: return os << "OpIsNan";
+	case spv::OpIsInf: return os << "OpIsInf";
+	case spv::OpIsFinite: return os << "OpIsFinite";
+	case spv::OpIsNormal: return os << "OpIsNormal";
+	case spv::OpSignBitSet: return os << "OpSignBitSet";
+	case spv::OpLessOrGreater: return os << "OpLessOrGreater";
+	case spv::OpOrdered: return os << "OpOrdered";
+	case spv::OpUnordered: return os << "OpUnordered";
+	case spv::OpLogicalEqual: return os << "OpLogicalEqual";
+	case spv::OpLogicalNotEqual: return os << "OpLogicalNotEqual";
+	case spv::OpLogicalOr: return os << "OpLogicalOr";
+	case spv::OpLogicalAnd: return os << "OpLogicalAnd";
+	case spv::OpLogicalNot: return os << "OpLogicalNot";
+	case spv::OpSelect: return os << "OpSelect";
+	case spv::OpIEqual: return os << "OpIEqual";
+	case spv::OpINotEqual: return os << "OpINotEqual";
+	case spv::OpUGreaterThan: return os << "OpUGreaterThan";
+	case spv::OpSGreaterThan: return os << "OpSGreaterThan";
+	case spv::OpUGreaterThanEqual: return os << "OpUGreaterThanEqual";
+	case spv::OpSGreaterThanEqual: return os << "OpSGreaterThanEqual";
+	case spv::OpULessThan: return os << "OpULessThan";
+	case spv::OpSLessThan: return os << "OpSLessThan";
+	case spv::OpULessThanEqual: return os << "OpULessThanEqual";
+	case spv::OpSLessThanEqual: return os << "OpSLessThanEqual";
+	case spv::OpFOrdEqual: return os << "OpFOrdEqual";
+	case spv::OpFUnordEqual: return os << "OpFUnordEqual";
+	case spv::OpFOrdNotEqual: return os << "OpFOrdNotEqual";
+	case spv::OpFUnordNotEqual: return os << "OpFUnordNotEqual";
+	case spv::OpFOrdLessThan: return os << "OpFOrdLessThan";
+	case spv::OpFUnordLessThan: return os << "OpFUnordLessThan";
+	case spv::OpFOrdGreaterThan: return os << "OpFOrdGreaterThan";
+	case spv::OpFUnordGreaterThan: return os << "OpFUnordGreaterThan";
+	case spv::OpFOrdLessThanEqual: return os << "OpFOrdLessThanEqual";
+	case spv::OpFUnordLessThanEqual: return os << "OpFUnordLessThanEqual";
+	case spv::OpFOrdGreaterThanEqual: return os << "OpFOrdGreaterThanEqual";
+	case spv::OpFUnordGreaterThanEqual: return os << "OpFUnordGreaterThanEqual";
+	case spv::OpShiftRightLogical: return os << "OpShiftRightLogical";
+	case spv::OpShiftRightArithmetic: return os << "OpShiftRightArithmetic";
+	case spv::OpShiftLeftLogical: return os << "OpShiftLeftLogical";
+	case spv::OpBitwiseOr: return os << "OpBitwiseOr";
+	case spv::OpBitwiseXor: return os << "OpBitwiseXor";
+	case spv::OpBitwiseAnd: return os << "OpBitwiseAnd";
+	case spv::OpNot: return os << "OpNot";
+	case spv::OpBitFieldInsert: return os << "OpBitFieldInsert";
+	case spv::OpBitFieldSExtract: return os << "OpBitFieldSExtract";
+	case spv::OpBitFieldUExtract: return os << "OpBitFieldUExtract";
+	case spv::OpBitReverse: return os << "OpBitReverse";
+	case spv::OpBitCount: return os << "OpBitCount";
+	case spv::OpDPdx: return os << "OpDPdx";
+	case spv::OpDPdy: return os << "OpDPdy";
+	case spv::OpFwidth: return os << "OpFwidth";
+	case spv::OpDPdxFine: return os << "OpDPdxFine";
+	case spv::OpDPdyFine: return os << "OpDPdyFine";
+	case spv::OpFwidthFine: return os << "OpFwidthFine";
+	case spv::OpDPdxCoarse: return os << "OpDPdxCoarse";
+	case spv::OpDPdyCoarse: return os << "OpDPdyCoarse";
+	case spv::OpFwidthCoarse: return os << "OpFwidthCoarse";
+	case spv::OpEmitVertex: return os << "OpEmitVertex";
+	case spv::OpEndPrimitive: return os << "OpEndPrimitive";
+	case spv::OpEmitStreamVertex: return os << "OpEmitStreamVertex";
+	case spv::OpEndStreamPrimitive: return os << "OpEndStreamPrimitive";
+	case spv::OpControlBarrier: return os << "OpControlBarrier";
+	case spv::OpMemoryBarrier: return os << "OpMemoryBarrier";
+	case spv::OpAtomicLoad: return os << "OpAtomicLoad";
+	case spv::OpAtomicStore: return os << "OpAtomicStore";
+	case spv::OpAtomicExchange: return os << "OpAtomicExchange";
+	case spv::OpAtomicCompareExchange: return os << "OpAtomicCompareExchange";
+	case spv::OpAtomicCompareExchangeWeak: return os << "OpAtomicCompareExchangeWeak";
+	case spv::OpAtomicIIncrement: return os << "OpAtomicIIncrement";
+	case spv::OpAtomicIDecrement: return os << "OpAtomicIDecrement";
+	case spv::OpAtomicIAdd: return os << "OpAtomicIAdd";
+	case spv::OpAtomicISub: return os << "OpAtomicISub";
+	case spv::OpAtomicSMin: return os << "OpAtomicSMin";
+	case spv::OpAtomicUMin: return os << "OpAtomicUMin";
+	case spv::OpAtomicSMax: return os << "OpAtomicSMax";
+	case spv::OpAtomicUMax: return os << "OpAtomicUMax";
+	case spv::OpAtomicAnd: return os << "OpAtomicAnd";
+	case spv::OpAtomicOr: return os << "OpAtomicOr";
+	case spv::OpAtomicXor: return os << "OpAtomicXor";
+	case spv::OpPhi: return os << "OpPhi";
+	case spv::OpLoopMerge: return os << "OpLoopMerge";
+	case spv::OpSelectionMerge: return os << "OpSelectionMerge";
+	case spv::OpLabel: return os << "OpLabel";
+	case spv::OpBranch: return os << "OpBranch";
+	case spv::OpBranchConditional: return os << "OpBranchConditional";
+	case spv::OpSwitch: return os << "OpSwitch";
+	case spv::OpKill: return os << "OpKill";
+	case spv::OpReturn: return os << "OpReturn";
+	case spv::OpReturnValue: return os << "OpReturnValue";
+	case spv::OpUnreachable: return os << "OpUnreachable";
+	case spv::OpLifetimeStart: return os << "OpLifetimeStart";
+	case spv::OpLifetimeStop: return os << "OpLifetimeStop";
+	case spv::OpGroupAsyncCopy: return os << "OpGroupAsyncCopy";
+	case spv::OpGroupWaitEvents: return os << "OpGroupWaitEvents";
+	case spv::OpGroupAll: return os << "OpGroupAll";
+	case spv::OpGroupAny: return os << "OpGroupAny";
+	case spv::OpGroupBroadcast: return os << "OpGroupBroadcast";
+	case spv::OpGroupIAdd: return os << "OpGroupIAdd";
+	case spv::OpGroupFAdd: return os << "OpGroupFAdd";
+	case spv::OpGroupFMin: return os << "OpGroupFMin";
+	case spv::OpGroupUMin: return os << "OpGroupUMin";
+	case spv::OpGroupSMin: return os << "OpGroupSMin";
+	case spv::OpGroupFMax: return os << "OpGroupFMax";
+	case spv::OpGroupUMax: return os << "OpGroupUMax";
+	case spv::OpGroupSMax: return os << "OpGroupSMax";
+	case spv::OpReadPipe: return os << "OpReadPipe";
+	case spv::OpWritePipe: return os << "OpWritePipe";
+	case spv::OpReservedReadPipe: return os << "OpReservedReadPipe";
+	case spv::OpReservedWritePipe: return os << "OpReservedWritePipe";
+	case spv::OpReserveReadPipePackets: return os << "OpReserveReadPipePackets";
+	case spv::OpReserveWritePipePackets: return os << "OpReserveWritePipePackets";
+	case spv::OpCommitReadPipe: return os << "OpCommitReadPipe";
+	case spv::OpCommitWritePipe: return os << "OpCommitWritePipe";
+	case spv::OpIsValidReserveId: return os << "OpIsValidReserveId";
+	case spv::OpGetNumPipePackets: return os << "OpGetNumPipePackets";
+	case spv::OpGetMaxPipePackets: return os << "OpGetMaxPipePackets";
+	case spv::OpGroupReserveReadPipePackets: return os << "OpGroupReserveReadPipePackets";
+	case spv::OpGroupReserveWritePipePackets: return os << "OpGroupReserveWritePipePackets";
+	case spv::OpGroupCommitReadPipe: return os << "OpGroupCommitReadPipe";
+	case spv::OpGroupCommitWritePipe: return os << "OpGroupCommitWritePipe";
+	case spv::OpEnqueueMarker: return os << "OpEnqueueMarker";
+	case spv::OpEnqueueKernel: return os << "OpEnqueueKernel";
+	case spv::OpGetKernelNDrangeSubGroupCount: return os << "OpGetKernelNDrangeSubGroupCount";
+	case spv::OpGetKernelNDrangeMaxSubGroupSize: return os << "OpGetKernelNDrangeMaxSubGroupSize";
+	case spv::OpGetKernelWorkGroupSize: return os << "OpGetKernelWorkGroupSize";
+	case spv::OpGetKernelPreferredWorkGroupSizeMultiple: return os << "OpGetKernelPreferredWorkGroupSizeMultiple";
+	case spv::OpRetainEvent: return os << "OpRetainEvent";
+	case spv::OpReleaseEvent: return os << "OpReleaseEvent";
+	case spv::OpCreateUserEvent: return os << "OpCreateUserEvent";
+	case spv::OpIsValidEvent: return os << "OpIsValidEvent";
+	case spv::OpSetUserEventStatus: return os << "OpSetUserEventStatus";
+	case spv::OpCaptureEventProfilingInfo: return os << "OpCaptureEventProfilingInfo";
+	case spv::OpGetDefaultQueue: return os << "OpGetDefaultQueue";
+	case spv::OpBuildNDRange: return os << "OpBuildNDRange";
+	case spv::OpImageSparseSampleImplicitLod: return os << "OpImageSparseSampleImplicitLod";
+	case spv::OpImageSparseSampleExplicitLod: return os << "OpImageSparseSampleExplicitLod";
+	case spv::OpImageSparseSampleDrefImplicitLod: return os << "OpImageSparseSampleDrefImplicitLod";
+	case spv::OpImageSparseSampleDrefExplicitLod: return os << "OpImageSparseSampleDrefExplicitLod";
+	case spv::OpImageSparseSampleProjImplicitLod: return os << "OpImageSparseSampleProjImplicitLod";
+	case spv::OpImageSparseSampleProjExplicitLod: return os << "OpImageSparseSampleProjExplicitLod";
+	case spv::OpImageSparseSampleProjDrefImplicitLod: return os << "OpImageSparseSampleProjDrefImplicitLod";
+	case spv::OpImageSparseSampleProjDrefExplicitLod: return os << "OpImageSparseSampleProjDrefExplicitLod";
+	case spv::OpImageSparseFetch: return os << "OpImageSparseFetch";
+	case spv::OpImageSparseGather: return os << "OpImageSparseGather";
+	case spv::OpImageSparseDrefGather: return os << "OpImageSparseDrefGather";
+	case spv::OpImageSparseTexelsResident: return os << "OpImageSparseTexelsResident";
+	case spv::OpNoLine: return os << "OpNoLine";
+	case spv::OpAtomicFlagTestAndSet: return os << "OpAtomicFlagTestAndSet";
+	case spv::OpAtomicFlagClear: return os << "OpAtomicFlagClear";
+	case spv::OpImageSparseRead: return os << "OpImageSparseRead";
+	case spv::OpSizeOf: return os << "OpSizeOf";
+	case spv::OpTypePipeStorage: return os << "OpTypePipeStorage";
+	case spv::OpConstantPipeStorage: return os << "OpConstantPipeStorage";
+	case spv::OpCreatePipeFromPipeStorage: return os << "OpCreatePipeFromPipeStorage";
+	case spv::OpGetKernelLocalSizeForSubgroupCount: return os << "OpGetKernelLocalSizeForSubgroupCount";
+	case spv::OpGetKernelMaxNumSubgroups: return os << "OpGetKernelMaxNumSubgroups";
+	case spv::OpTypeNamedBarrier: return os << "OpTypeNamedBarrier";
+	case spv::OpNamedBarrierInitialize: return os << "OpNamedBarrierInitialize";
+	case spv::OpMemoryNamedBarrier: return os << "OpMemoryNamedBarrier";
+	case spv::OpModuleProcessed: return os << "OpModuleProcessed";
+	case spv::OpExecutionModeId: return os << "OpExecutionModeId";
+	case spv::OpDecorateId: return os << "OpDecorateId";
+	case spv::OpSubgroupBallotKHR: return os << "OpSubgroupBallotKHR";
+	case spv::OpSubgroupFirstInvocationKHR: return os << "OpSubgroupFirstInvocationKHR";
+	case spv::OpSubgroupAllKHR: return os << "OpSubgroupAllKHR";
+	case spv::OpSubgroupAnyKHR: return os << "OpSubgroupAnyKHR";
+	case spv::OpSubgroupAllEqualKHR: return os << "OpSubgroupAllEqualKHR";
+	case spv::OpSubgroupReadInvocationKHR: return os << "OpSubgroupReadInvocationKHR";
+	case spv::OpGroupIAddNonUniformAMD: return os << "OpGroupIAddNonUniformAMD";
+	case spv::OpGroupFAddNonUniformAMD: return os << "OpGroupFAddNonUniformAMD";
+	case spv::OpGroupFMinNonUniformAMD: return os << "OpGroupFMinNonUniformAMD";
+	case spv::OpGroupUMinNonUniformAMD: return os << "OpGroupUMinNonUniformAMD";
+	case spv::OpGroupSMinNonUniformAMD: return os << "OpGroupSMinNonUniformAMD";
+	case spv::OpGroupFMaxNonUniformAMD: return os << "OpGroupFMaxNonUniformAMD";
+	case spv::OpGroupUMaxNonUniformAMD: return os << "OpGroupUMaxNonUniformAMD";
+	case spv::OpGroupSMaxNonUniformAMD: return os << "OpGroupSMaxNonUniformAMD";
+	case spv::OpFragmentMaskFetchAMD: return os << "OpFragmentMaskFetchAMD";
+	case spv::OpFragmentFetchAMD: return os << "OpFragmentFetchAMD";
+	case spv::OpSubgroupShuffleINTEL: return os << "OpSubgroupShuffleINTEL";
+	case spv::OpSubgroupShuffleDownINTEL: return os << "OpSubgroupShuffleDownINTEL";
+	case spv::OpSubgroupShuffleUpINTEL: return os << "OpSubgroupShuffleUpINTEL";
+	case spv::OpSubgroupShuffleXorINTEL: return os << "OpSubgroupShuffleXorINTEL";
+	case spv::OpSubgroupBlockReadINTEL: return os << "OpSubgroupBlockReadINTEL";
+	case spv::OpSubgroupBlockWriteINTEL: return os << "OpSubgroupBlockWriteINTEL";
+	case spv::OpSubgroupImageBlockReadINTEL: return os << "OpSubgroupImageBlockReadINTEL";
+	case spv::OpSubgroupImageBlockWriteINTEL: return os << "OpSubgroupImageBlockWriteINTEL";
+	case spv::OpMax: return os << "OpMax";
+	};
+	return os << static_cast<std::uint32_t>(code);
+}
+
 /*
 Generator's magic number. It is associated with the tool that generated
 the module. Its value does not affect any semantics, and is allowed to be 0.
@@ -1095,119 +1434,65 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
 
 				uint32_t rId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(rId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(0); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, intTypeId, rId, modifiedId, 0);
+
 				uint32_t r2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(r2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(rId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
+
 				uint32_t rDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(rDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(r2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, rDividedId, r2Id, m255FloatId);
 
 				uint32_t gId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(gId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(1); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, intTypeId, gId, modifiedId, 1);
+
 				uint32_t g2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(g2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(gId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
+
 				uint32_t gDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(gDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(g2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, gDividedId, g2Id, m255FloatId);
 
 				uint32_t bId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(bId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(2); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, intTypeId, bId, modifiedId, 2);
+
 				uint32_t b2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(b2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(bId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
+
 				uint32_t bDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(bDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(b2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, bDividedId, b2Id, m255FloatId);
 
 				uint32_t aId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(intTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(aId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(3); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, intTypeId, aId, modifiedId,3);
+
 				uint32_t a2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(a2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(aId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
+
 				uint32_t aDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(aDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(a2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, aDividedId, a2Id, m255FloatId);
 
 				if (originalId == mColor1Id)
 				{
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1XId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1XId, rDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1YId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1YId, gDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1ZId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1ZId, bDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1WId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1WId, aDividedId);
 				}
 				else
 				{
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2XId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2XId, rDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2YId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2YId, gDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2ZId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2ZId, bDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2WId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2WId, aDividedId);
 				}
 			}
 			else
 			{
-				mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-				mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)	
+				Push(spv::OpStore, swizzledId, outputId);
 			}
 		}
 		else
@@ -1319,119 +1604,65 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
 
 				uint32_t rId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(rId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(0); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, floatTypeId, rId, modifiedId, 0);
+
 				uint32_t r2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(r2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(rId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
+
 				uint32_t rDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(rDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(r2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, rDividedId, r2Id, m255FloatId);
 
 				uint32_t gId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(gId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(1); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, floatTypeId, gId, modifiedId,1);
+
 				uint32_t g2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(g2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(gId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
+
 				uint32_t gDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(gDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(g2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, gDividedId, g2Id, m255FloatId);
 
 				uint32_t bId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(bId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(2); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, floatTypeId, bId, modifiedId,2);
+
 				uint32_t b2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(b2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(bId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
+
 				uint32_t bDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(bDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(b2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, bDividedId, b2Id, m255FloatId);
 
 				uint32_t aId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(aId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(modifiedId); //Composite (Id)
-				mFunctionDefinitionInstructions.push_back(3); //Indexes (Literal)
+				Push(spv::OpCompositeExtract, floatTypeId, aId, modifiedId, 3);
+
 				uint32_t a2Id = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertUToF)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(a2Id); //result (Id)
-				mFunctionDefinitionInstructions.push_back(aId); //Unsigned Value (Id)
+				Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
+
 				uint32_t aDividedId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFDiv)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(aDividedId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(a2Id); //argument1 (Id)
-				mFunctionDefinitionInstructions.push_back(m255FloatId); //argument2 (Id)
+				Push(spv::OpFDiv, floatTypeId, aDividedId, a2Id, m255FloatId);
 
 				if (originalId == mColor1Id)
 				{
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1XId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1XId, rDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1YId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1YId, gDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1ZId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1ZId, bDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor1WId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor1WId, aDividedId);
 				}
 				else
 				{
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2XId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(rDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2XId, rDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2YId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(gDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2YId, gDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2ZId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(bDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2ZId, bDividedId);
 
-					mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-					mFunctionDefinitionInstructions.push_back(mColor2WId); //result (Id)
-					mFunctionDefinitionInstructions.push_back(aDividedId); //argument1 (Id)	
+					Push(spv::OpStore, mColor2WId, aDividedId);
 				}
 			}
 			else
 			{
-				mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-				mFunctionDefinitionInstructions.push_back(swizzledId); //result (Id)
-				mFunctionDefinitionInstructions.push_back(outputId); //argument1 (Id)	
+				Push(spv::OpStore, swizzledId, outputId);
 			}
 		}
 	}
@@ -2266,6 +2497,61 @@ void ShaderConverter::CreateSpirVModule()
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(3, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2;
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(4, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3;
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(5, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4;
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(6, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5;
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(7, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+	mFunctionDefinitionInstructions.push_back(argument6);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5 << ", " << argument6;
 }
 
 void ShaderConverter::Process_DCL_Pixel()
@@ -3981,25 +4267,13 @@ void ShaderConverter::Process_ADD()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpIAdd, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpIAdd, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFAdd)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpFAdd, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_ADD - Unsupported data type " << dataType;
@@ -4402,10 +4676,7 @@ void ShaderConverter::Process_TEX()
 
 		argumentId1 = GetNextId();
 
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
 
 		PrintTokenInformation("TEX_2_0", resultToken, argumentToken1, argumentToken2);
 	}
@@ -4419,10 +4690,7 @@ void ShaderConverter::Process_TEX()
 
 		argumentId1 = GetNextId();
 
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
 
 		PrintTokenInformation("TEX_1_4", resultToken, argumentToken1, argumentToken1);
 	}
@@ -4440,15 +4708,9 @@ void ShaderConverter::Process_TEX()
 		Before PS 1.4 this is a single result register which means the image will always be a binding and the texcoord will always an input.
 		That means we'll always need to load before doing a OpImageFetch on ps 1.0 through 1.3.
 		*/
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2_temp); //pointer (Id)	
+		Push(spv::OpLoad, dataTypeId, argumentId2, argumentId2_temp);
 
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
+		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
 
 		PrintTokenInformation("TEX_1_0", resultToken, resultToken, resultToken);
 	}
@@ -4458,20 +4720,10 @@ void ShaderConverter::Process_TEX()
 	//I don't know what swizzle will be done but it will likely be a vec4 output so I need to use a shuffle to get a vec2.
 	argumentId2_temp = argumentId2;
 	argumentId2 = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(5 + 2, spv::OpVectorShuffle)); //size,Type
-	mFunctionDefinitionInstructions.push_back(texcoordDataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId2); // Result (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId2_temp); //Vector1 (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId2_temp); //Vector2 (Id)
-	mFunctionDefinitionInstructions.push_back(0); //Component Literal
-	mFunctionDefinitionInstructions.push_back(1); //Component Literal
+	Push(spv::OpVectorShuffle, texcoordDataTypeId, argumentId2, argumentId2_temp, argumentId2_temp, 0, 1);
 
 	//Sample image
-	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpImageSampleImplicitLod)); //size,Type
-	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId1); //Image (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId2); //Coordinate (Id)
+	Push(spv::OpImageSampleImplicitLod, dataTypeId, resultId, argumentId1, argumentId2);
 
 	if (mMajorVersion == 1)
 	{
@@ -4493,65 +4745,43 @@ void ShaderConverter::Process_TEX()
 
 void ShaderConverter::Process_TEXCOORD()
 {
-	spv::Op dataType = spv::OpNop;
-	uint32_t dataTypeId = 0;
-	uint32_t texcoordDataTypeId = 0;
-	uint32_t argumentId1 = 0;
-	uint32_t argumentId1_temp = 0;
-	uint32_t resultId = 0;
-	uint32_t resultTypeId = 0;
-	std::string registerName;
-	uint32_t stringWordSize = 0;
-
-	Token resultToken = GetNextToken();
-	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
-
 	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeVector;
-	typeDescription.SecondaryType = spv::OpTypeFloat;
-	typeDescription.ComponentCount = 4;
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	//spv::Op dataType;
+	uint32_t dataTypeId=0;
+	uint32_t resultId=0;
+	uint32_t argumentId1=0;
+	//uint32_t argumentId2;
+	Token resultToken;
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType;
 
-	resultTypeId = GetSpirVTypeId(typeDescription);
+	Token argumentToken1;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
 
-	//typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
-	dataTypeId = GetSpirVTypeId(typeDescription);
-
-	typeDescription.ComponentCount = 3;
-	texcoordDataTypeId = GetSpirVTypeId(typeDescription);
+	resultToken = GetNextToken();
+	resultRegisterType = GetRegisterType(resultToken.i);
 
 	if (mMajorVersion > 1 || mMinorVersion >= 4)
 	{
-		Token argumentToken1 = GetNextToken();
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-
-		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_TEXTURE);
-		argumentId1 = GetNextId();
-
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
-
-		PrintTokenInformation("TEXCOORD_1_4", resultToken, argumentToken1, argumentToken1);
+		argumentToken1 = GetNextToken();
+		argumentRegisterType1 = GetRegisterType(argumentToken1.i);	
 	}
 	else
 	{
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = resultRegisterType;
+		argumentToken1 = resultToken;
+		argumentRegisterType1 = resultRegisterType;	
+	}	
 
-		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
-		argumentId1 = GetNextId();
+	resultId = GetIdByRegister(resultToken);
+	typeDescription = GetTypeByRegister(resultToken);
 
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-		mFunctionDefinitionInstructions.push_back(resultTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1_temp); //pointer (Id)	
-
-		PrintTokenInformation("TEXCOORD_1_0", resultToken, resultToken, resultToken);
+	if (resultId == mColor1Id || resultId == mColor2Id)
+	{
+		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_COLOR);
 	}
-
-	resultId = GetNextId();
+	else
+	{
+		argumentId1 = GetSwizzledId(argumentToken1);
+	}
 
 	resultId = ApplyWriteMask(resultToken, argumentId1);
 
@@ -4573,6 +4803,8 @@ void ShaderConverter::Process_TEXCOORD()
 		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
 		break;
 	}
+
+	PrintTokenInformation("TEXCOORD", resultToken, resultId, argumentToken1, argumentId1);
 }
 
 void ShaderConverter::Process_M4x4()
