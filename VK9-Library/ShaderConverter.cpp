@@ -48,7 +48,8 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c2) << 8) | \
     ((uint32_t)(uint8_t)(c3)))
 
-std::ostream& operator<< (std::ostream& os, spv::Op code)
+//template<class StreamType, std::enable_if_t<!(std::is_base_of<std::decay_t<StreamType>, std::ostream>::value)>* = nullptr>
+boost::log::v2s_mt_nt6::basic_record_ostream<char>& operator<< (boost::log::v2s_mt_nt6::basic_record_ostream<char>& os, spv::Op code)
 {
 	switch (code)
 	{
