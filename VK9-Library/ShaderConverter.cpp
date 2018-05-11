@@ -48,7 +48,6 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c2) << 8) | \
     ((uint32_t)(uint8_t)(c3)))
 
-//template<class StreamType, std::enable_if_t<!(std::is_base_of<std::decay_t<StreamType>, std::ostream>::value)>* = nullptr>
 boost::log::v2s_mt_nt6::basic_record_ostream<char>& operator<< (boost::log::v2s_mt_nt6::basic_record_ostream<char>& os, spv::Op code)
 {
 	switch (code)
@@ -837,32 +836,16 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
 
 				mColor2XId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2XId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2XId, mColor2Id, m0Id);
 
 				mColor2YId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2YId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2YId, mColor2Id, m1Id);
 
 				mColor2ZId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2ZId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2ZId, mColor2Id, m2Id);
 
 				mColor2WId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2WId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2WId, mColor2Id, m3Id);
 			}
 			else
 			{
@@ -875,32 +858,16 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
 
 				mColor1XId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1XId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1XId, mColor1Id, m0Id);
 
 				mColor1YId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1YId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1YId, mColor1Id, m1Id);
 
 				mColor1ZId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1ZId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1ZId, mColor1Id, m2Id);
 
 				mColor1WId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1WId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1WId, mColor1Id, m3Id);
 			}
 
 			registerName = "oD" + std::to_string(registerNumber);
@@ -1121,10 +1088,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			//deference pointer into a register.
 			inputId = GetNextId();
 			uint32_t tokenId = GetIdByRegister(token);
-			mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-			mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(inputId); //result (Id)
-			mFunctionDefinitionInstructions.push_back(tokenId); //pointer (Id)	
+			Push(spv::OpLoad, dataTypeId, inputId, tokenId);
 
 			if (this->mMajorVersion == 3)
 			{
@@ -1762,21 +1726,11 @@ void ShaderConverter::GenerateYFlip()
 	mTypeInstructions.push_back(bit_cast(-1.0f)); //Literal Value
 
 	uint32_t positionYId = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-	mFunctionDefinitionInstructions.push_back(typeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(positionYId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(mPositionYId); //pointer (Id)	
+	Push(spv::OpLoad, typeId, positionYId, mPositionYId);
 
 	uint32_t resultId = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
-	mFunctionDefinitionInstructions.push_back(typeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(positionYId); //argument1 (Id)
-	mFunctionDefinitionInstructions.push_back(negativeId); //argument2 (Id)
-
-	mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-	mFunctionDefinitionInstructions.push_back(mPositionYId); //Pointer (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //Object (Id)
+	Push(spv::OpFMul, typeId, resultId, positionYId, negativeId);
+	Push(spv::OpStore, mPositionYId, resultId);
 }
 
 void ShaderConverter::GeneratePushConstant()
@@ -1892,57 +1846,29 @@ void ShaderConverter::GeneratePushConstant()
 
 	//Create Access Chains
 	uint32_t c0 = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c0); //Result (Id)
-	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
-	mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+	Push(spv::OpAccessChain, registerPointerTypeId, c0, pushConstantPointerId, m0Id);
 
 	uint32_t c1 = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c1); //Result (Id)
-	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
-	mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+	Push(spv::OpAccessChain, registerPointerTypeId, c1, pushConstantPointerId, m1Id);
 
 	uint32_t c2 = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c2); //Result (Id)
-	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
-	mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+	Push(spv::OpAccessChain, registerPointerTypeId, c2, pushConstantPointerId, m2Id);
 
 	uint32_t c3 = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerPointerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c3); //Result (Id)
-	mFunctionDefinitionInstructions.push_back(pushConstantPointerId); //Base (Id)
-	mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+	Push(spv::OpAccessChain, registerPointerTypeId, c3, pushConstantPointerId, m3Id);
 
 	//Load Access Chains
 	uint32_t c0_loaded = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c0_loaded); //result (Id)
-	mFunctionDefinitionInstructions.push_back(c0); //pointer (Id)
+	Push(spv::OpLoad, registerTypeId, c0_loaded, c0);
 
 	uint32_t c1_loaded = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c1_loaded); //result (Id)
-	mFunctionDefinitionInstructions.push_back(c1); //pointer (Id)	
+	Push(spv::OpLoad, registerTypeId, c1_loaded, c1);
 
 	uint32_t c2_loaded = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c2_loaded); //result (Id)
-	mFunctionDefinitionInstructions.push_back(c2); //pointer (Id)	
+	Push(spv::OpLoad, registerTypeId, c2_loaded, c2);
 
 	uint32_t c3_loaded = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpLoad)); //size,Type
-	mFunctionDefinitionInstructions.push_back(registerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(c3_loaded); //result (Id)
-	mFunctionDefinitionInstructions.push_back(c3); //pointer (Id)	
+	Push(spv::OpLoad, registerTypeId, c3_loaded, c3);
 
 	//Remap c0-c3 to push constant.
 	mIdsByRegister[D3DSPR_CONST][0] = c0_loaded;
@@ -2077,11 +2003,7 @@ void ShaderConverter::GeneratePostition()
 	mTypeInstructions.push_back(positionStructurePointerId); //Result (Id)
 	mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 
-	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(positionPointerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(positionPointerId); //Result (Id)
-	mFunctionDefinitionInstructions.push_back(positionStructurePointerId); //Base (Id)
-	mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+	Push(spv::OpAccessChain, positionPointerTypeId, positionPointerId, positionStructurePointerId, m0Id);
 
 	//Updated tracking structures
 	mPositionId = positionPointerId;
@@ -2094,11 +2016,7 @@ void ShaderConverter::GeneratePostition()
 
 	//Add an access chain for later flipping.
 	mPositionYId = GetNextId();
-	mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(floatPointerTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(mPositionYId); //Result (Id)
-	mFunctionDefinitionInstructions.push_back(positionPointerId); //Base (Id)
-	mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+	Push(spv::OpAccessChain, floatPointerTypeId, mPositionYId, positionPointerId, m1Id);
 }
 
 void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
@@ -2114,9 +2032,7 @@ void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
 	case D3DSPR_COLOROUT:
 	case D3DSPR_DEPTHOUT:
 	case D3DSPR_OUTPUT:
-		mFunctionDefinitionInstructions.push_back(Pack(3, spv::OpStore)); //size,Type
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpStore, resultId, argumentId1);
 		break;
 	default:
 		break;
