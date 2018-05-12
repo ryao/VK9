@@ -534,11 +534,15 @@ private:
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
+	void Push(spv::Op code);
+	void Push(spv::Op code, uint32_t argument1);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, GLSLstd450 argument4, uint32_t argument5);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, GLSLstd450 argument4, uint32_t argument5, uint32_t argument6);
 
 	//declare
 	void Process_DCL_Pixel();

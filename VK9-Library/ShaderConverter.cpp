@@ -48,6 +48,96 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c2) << 8) | \
     ((uint32_t)(uint8_t)(c3)))
 
+boost::log::v2s_mt_nt6::basic_record_ostream<char>& operator<< (boost::log::v2s_mt_nt6::basic_record_ostream<char>& os, GLSLstd450 code)
+{
+	switch (code)
+	{
+	case GLSLstd450Bad: return os << "GLSLstd450Bad";
+	case GLSLstd450Round: return os << "GLSLstd450Round";
+	case GLSLstd450RoundEven: return os << "GLSLstd450RoundEven";
+	case GLSLstd450Trunc: return os << "GLSLstd450Trunc";
+	case GLSLstd450FAbs: return os << "GLSLstd450FAbs";
+	case GLSLstd450SAbs: return os << "GLSLstd450SAbs";
+	case GLSLstd450FSign: return os << "GLSLstd450FSign";
+	case GLSLstd450SSign: return os << "GLSLstd450SSign";
+	case GLSLstd450Floor: return os << "GLSLstd450Floor";
+	case GLSLstd450Ceil: return os << "GLSLstd450Ceil";
+	case GLSLstd450Fract: return os << "GLSLstd450Fract";
+	case GLSLstd450Radians: return os << "GLSLstd450Radians";
+	case GLSLstd450Degrees: return os << "GLSLstd450Degrees";
+	case GLSLstd450Sin: return os << "GLSLstd450Sin";
+	case GLSLstd450Cos: return os << "GLSLstd450Cos";
+	case GLSLstd450Tan: return os << "GLSLstd450Tan";
+	case GLSLstd450Asin: return os << "GLSLstd450Asin";
+	case GLSLstd450Acos: return os << "GLSLstd450Acos";
+	case GLSLstd450Atan: return os << "GLSLstd450Atan";
+	case GLSLstd450Sinh: return os << "GLSLstd450Sinh";
+	case GLSLstd450Cosh: return os << "GLSLstd450Cosh";
+	case GLSLstd450Tanh: return os << "GLSLstd450Tanh";
+	case GLSLstd450Asinh: return os << "GLSLstd450Asinh";
+	case GLSLstd450Acosh: return os << "GLSLstd450Acosh";
+	case GLSLstd450Atanh: return os << "GLSLstd450Atanh";
+	case GLSLstd450Atan2: return os << "GLSLstd450Atan2";
+	case GLSLstd450Pow: return os << "GLSLstd450Pow";
+	case GLSLstd450Exp: return os << "GLSLstd450Exp";
+	case GLSLstd450Log: return os << "GLSLstd450Log";
+	case GLSLstd450Exp2: return os << "GLSLstd450Exp2";
+	case GLSLstd450Log2: return os << "GLSLstd450Log2";
+	case GLSLstd450Sqrt: return os << "GLSLstd450Sqrt";
+	case GLSLstd450InverseSqrt: return os << "GLSLstd450InverseSqrt";
+	case GLSLstd450Determinant: return os << "GLSLstd450Determinant";
+	case GLSLstd450MatrixInverse: return os << "GLSLstd450MatrixInverse";
+	case GLSLstd450Modf: return os << "GLSLstd450Modf";
+	case GLSLstd450ModfStruct: return os << "GLSLstd450ModfStruct";
+	case GLSLstd450FMin: return os << "GLSLstd450FMin";
+	case GLSLstd450UMin: return os << "GLSLstd450UMin";
+	case GLSLstd450SMin: return os << "GLSLstd450SMin";
+	case GLSLstd450FMax: return os << "GLSLstd450FMax";
+	case GLSLstd450UMax: return os << "GLSLstd450UMax";
+	case GLSLstd450SMax: return os << "GLSLstd450SMax";
+	case GLSLstd450FClamp: return os << "GLSLstd450FClamp";
+	case GLSLstd450UClamp: return os << "GLSLstd450UClamp";
+	case GLSLstd450SClamp: return os << "GLSLstd450SClamp";
+	case GLSLstd450FMix: return os << "GLSLstd450FMix";
+	case GLSLstd450IMix: return os << "GLSLstd450IMix";
+	case GLSLstd450Step: return os << "GLSLstd450Step";
+	case GLSLstd450SmoothStep: return os << "GLSLstd450SmoothStep";
+	case GLSLstd450Fma: return os << "GLSLstd450Fma";
+	case GLSLstd450Frexp: return os << "GLSLstd450Frexp";
+	case GLSLstd450FrexpStruct: return os << "GLSLstd450FrexpStruct";
+	case GLSLstd450Ldexp: return os << "GLSLstd450Ldexp";
+	case GLSLstd450PackSnorm4x8: return os << "GLSLstd450PackSnorm4x8";
+	case GLSLstd450PackUnorm4x8: return os << "GLSLstd450PackUnorm4x8";
+	case GLSLstd450PackSnorm2x16: return os << "GLSLstd450PackSnorm2x16";
+	case GLSLstd450PackUnorm2x16: return os << "GLSLstd450PackUnorm2x16";
+	case GLSLstd450PackHalf2x16: return os << "GLSLstd450PackHalf2x16";
+	case GLSLstd450PackDouble2x32: return os << "GLSLstd450PackDouble2x32";
+	case GLSLstd450UnpackSnorm2x16: return os << "GLSLstd450UnpackSnorm2x16";
+	case GLSLstd450UnpackUnorm2x16: return os << "GLSLstd450UnpackUnorm2x16";
+	case GLSLstd450UnpackHalf2x16: return os << "GLSLstd450UnpackHalf2x16";
+	case GLSLstd450UnpackSnorm4x8: return os << "GLSLstd450UnpackSnorm4x8";
+	case GLSLstd450UnpackUnorm4x8: return os << "GLSLstd450UnpackUnorm4x8";
+	case GLSLstd450UnpackDouble2x32: return os << "GLSLstd450UnpackDouble2x32";
+	case GLSLstd450Length: return os << "GLSLstd450Length";
+	case GLSLstd450Distance: return os << "GLSLstd450Distance";
+	case GLSLstd450Cross: return os << "GLSLstd450Cross";
+	case GLSLstd450Normalize: return os << "GLSLstd450Normalize";
+	case GLSLstd450FaceForward: return os << "GLSLstd450FaceForward";
+	case GLSLstd450Reflect: return os << "GLSLstd450Reflect";
+	case GLSLstd450Refract: return os << "GLSLstd450Refract";
+	case GLSLstd450FindILsb: return os << "GLSLstd450FindILsb";
+	case GLSLstd450FindSMsb: return os << "GLSLstd450FindSMsb";
+	case GLSLstd450FindUMsb: return os << "GLSLstd450FindUMsb";
+	case GLSLstd450InterpolateAtCentroid: return os << "GLSLstd450InterpolateAtCentroid";
+	case GLSLstd450InterpolateAtSample: return os << "GLSLstd450InterpolateAtSample";
+	case GLSLstd450InterpolateAtOffset: return os << "GLSLstd450InterpolateAtOffset";
+	case GLSLstd450NMin: return os << "GLSLstd450NMin";
+	case GLSLstd450NMax: return os << "GLSLstd450NMax";
+	case GLSLstd450NClamp: return os << "GLSLstd450NClamp";
+	};
+	return os << static_cast<std::uint32_t>(code);
+}
+
 boost::log::v2s_mt_nt6::basic_record_ostream<char>& operator<< (boost::log::v2s_mt_nt6::basic_record_ostream<char>& os, spv::Op code)
 {
 	switch (code)
@@ -1426,7 +1516,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				Push(spv::OpFDiv, floatTypeId, bDividedId, b2Id, m255FloatId);
 
 				uint32_t aId = GetNextId();
-				Push(spv::OpCompositeExtract, intTypeId, aId, modifiedId,3);
+				Push(spv::OpCompositeExtract, intTypeId, aId, modifiedId, 3);
 
 				uint32_t a2Id = GetNextId();
 				Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
@@ -1578,7 +1668,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				Push(spv::OpFDiv, floatTypeId, rDividedId, r2Id, m255FloatId);
 
 				uint32_t gId = GetNextId();
-				Push(spv::OpCompositeExtract, floatTypeId, gId, modifiedId,1);
+				Push(spv::OpCompositeExtract, floatTypeId, gId, modifiedId, 1);
 
 				uint32_t g2Id = GetNextId();
 				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
@@ -1587,7 +1677,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				Push(spv::OpFDiv, floatTypeId, gDividedId, g2Id, m255FloatId);
 
 				uint32_t bId = GetNextId();
-				Push(spv::OpCompositeExtract, floatTypeId, bId, modifiedId,2);
+				Push(spv::OpCompositeExtract, floatTypeId, bId, modifiedId, 2);
 
 				uint32_t b2Id = GetNextId();
 				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
@@ -2416,6 +2506,21 @@ void ShaderConverter::CreateSpirVModule()
 	}
 }
 
+void ShaderConverter::Push(spv::Op code)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(1, code)); //size,Type
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code;
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(2, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1;
+}
+
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2)
 {
 	mFunctionDefinitionInstructions.push_back(Pack(3, code)); //size,Type
@@ -2458,7 +2563,32 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5;
 }
 
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, GLSLstd450 argument4, uint32_t argument5)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(6, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5;
+}
+
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(7, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+	mFunctionDefinitionInstructions.push_back(argument6);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5 << ", " << argument6;
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, GLSLstd450 argument4, uint32_t argument5, uint32_t argument6)
 {
 	mFunctionDefinitionInstructions.push_back(Pack(7, code)); //size,Type
 	mFunctionDefinitionInstructions.push_back(argument1);
@@ -2772,32 +2902,16 @@ void ShaderConverter::Process_DCL_Vertex()
 				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
 
 				mColor2XId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2XId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2XId, mColor2Id, m0Id);
 
 				mColor2YId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2YId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2YId, mColor2Id, m1Id);
 
 				mColor2ZId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2ZId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2ZId, mColor2Id, m2Id);
 
 				mColor2WId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2WId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor2Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor2WId, mColor2Id, m3Id);
 			}
 			else
 			{
@@ -2810,32 +2924,16 @@ void ShaderConverter::Process_DCL_Vertex()
 				uint32_t floatTypeId = GetSpirVTypeId(pointerFloatType);
 
 				mColor1XId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1XId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1XId, mColor1Id, m0Id);
 
 				mColor1YId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1YId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1YId, mColor1Id, m1Id);
 
 				mColor1ZId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1ZId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1ZId, mColor1Id, m2Id);
 
 				mColor1WId = GetNextId();
-				mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpAccessChain)); //size,Type
-				mFunctionDefinitionInstructions.push_back(floatTypeId); //Result Type (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1WId); //Result (Id)
-				mFunctionDefinitionInstructions.push_back(mColor1Id); //Base (Id)
-				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+				Push(spv::OpAccessChain, floatTypeId, mColor1WId, mColor1Id, m3Id);
 			}
 
 			registerName = "oD" + std::to_string(registerNumber);
@@ -3004,18 +3102,10 @@ void ShaderConverter::Process_IFC()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIEqual)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpIEqual, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIEqual)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpIEqual, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
@@ -3028,14 +3118,8 @@ void ShaderConverter::Process_IFC()
 	mFalseLabels.push(falseLabelId);
 	mFalseLabelCount++;
 
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpBranchConditional)); //size,Type
-	mFunctionDefinitionInstructions.push_back(resultId); //Condition (Id)
-	mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
-	mFunctionDefinitionInstructions.push_back(falseLabelId); //False Label (Id)
-
-	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
-	mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
-
+	Push(spv::OpBranchConditional, resultId, trueLabelId, falseLabelId);
+	Push(spv::OpLabel, trueLabelId);
 	PrintTokenInformation("IFC", argumentToken1, argumentToken2);
 }
 
@@ -3083,14 +3167,8 @@ void ShaderConverter::Process_IF()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpBranchConditional)); //size,Type
-		mFunctionDefinitionInstructions.push_back(argumentId1); //Condition (Id)
-		mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
-		mFunctionDefinitionInstructions.push_back(falseLabelId); //False Label (Id)
-
-		mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
-		mFunctionDefinitionInstructions.push_back(trueLabelId); //True Label (Id)
-
+		Push(spv::OpBranchConditional, argumentId1, trueLabelId, falseLabelId);
+		Push(spv::OpLabel, trueLabelId);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_IF - Unsupported data type " << dataType;
@@ -3106,9 +3184,7 @@ void ShaderConverter::Process_ELSE()
 
 	mFalseLabels.pop();
 
-	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
-	mFunctionDefinitionInstructions.push_back(falseLabelId); //False Label (Id)
-
+	Push(spv::OpLabel, falseLabelId);
 	PrintTokenInformation("ELSE");
 }
 
@@ -3122,11 +3198,8 @@ void ShaderConverter::Process_ENDIF()
 
 	uint32_t endIfLabelId = GetNextId();
 
-	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpBranch)); //size,Type
-	mFunctionDefinitionInstructions.push_back(endIfLabelId); //End If (Id)
-
-	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
-	mFunctionDefinitionInstructions.push_back(endIfLabelId); //End If (Id)
+	Push(spv::OpBranch, endIfLabelId);
+	Push(spv::OpLabel, endIfLabelId);
 
 	PrintTokenInformation("ENDIF");
 }
@@ -3171,28 +3244,13 @@ void ShaderConverter::Process_NRM()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Normalize); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Normalize, argumentId1);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Normalize); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Normalize, argumentId1);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Normalize); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Normalize, argumentId1);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_NRM - Unsupported data type " << dataType;
@@ -3248,10 +3306,7 @@ void ShaderConverter::Process_MOV()
 	default:
 		dataTypeId = GetSpirVTypeId(typeDescription);
 
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
 		break;
 	}
 
@@ -3300,10 +3355,7 @@ void ShaderConverter::Process_MOVA()
 	argumentId1 = GetSwizzledId(argumentToken1);
 	resultId = GetNextId();
 
-	mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpConvertFToS)); //size,Type
-	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId1); //Operand (Id)
+	Push(spv::OpConvertFToS, dataTypeId, resultId, argumentId1);
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -3350,28 +3402,13 @@ void ShaderConverter::Process_RSQ()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450InverseSqrt); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId1);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450InverseSqrt); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId1);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450InverseSqrt); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId1);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_RSQ - Unsupported data type " << dataType;
@@ -3429,31 +3466,13 @@ void ShaderConverter::Process_DST()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Distance); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Distance, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Distance); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Distance, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Distance); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Distance, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_DST - Unsupported data type " << dataType;
@@ -3510,31 +3529,13 @@ void ShaderConverter::Process_CRS()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Cross); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Cross, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Cross); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Cross, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Cross); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Cross, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_CRS - Unsupported data type " << dataType;
@@ -3591,31 +3592,13 @@ void ShaderConverter::Process_POW()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Pow); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Pow, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Pow); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Pow, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Pow); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Pow, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_POW - Unsupported data type " << dataType;
@@ -3672,25 +3655,13 @@ void ShaderConverter::Process_MUL()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpIMul, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpIMul, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpFMul, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_MUL - Unsupported data type " << dataType;
@@ -3742,28 +3713,13 @@ void ShaderConverter::Process_EXP()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Exp2, argumentId1);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Exp2, argumentId1);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Exp2, argumentId1);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_EXP - Unsupported data type " << dataType;
@@ -3815,28 +3771,13 @@ void ShaderConverter::Process_EXPP()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Exp2, argumentId1);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Exp2, argumentId1);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Exp2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Exp2, argumentId1);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_EXPP - Unsupported data type " << dataType;
@@ -3888,28 +3829,13 @@ void ShaderConverter::Process_LOG()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Log2, argumentId1);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Log2, argumentId1);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Log2, argumentId1);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_LOG - Unsupported data type " << dataType;
@@ -3961,28 +3887,13 @@ void ShaderConverter::Process_LOGP()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Log2, argumentId1);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Log2, argumentId1);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(6, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Log2); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Log2, argumentId1);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_LOGP - Unsupported data type " << dataType;
@@ -4039,13 +3950,7 @@ void ShaderConverter::Process_FRC()
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450Modf); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id) For some reason I'm required to provide an integer pointer.
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Modf, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_FRC - Unsupported data type " << dataType;
@@ -4103,31 +4008,13 @@ void ShaderConverter::Process_ABS()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SAbs); //Instruction Set (There is no UAbs
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SAbs); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450FAbs); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAX - Unsupported data type " << dataType;
@@ -4247,25 +4134,13 @@ void ShaderConverter::Process_SUB()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpISub)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpISub, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpISub)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpISub, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFSub)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpFSub, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_SUB - Unsupported data type " << dataType;
@@ -4322,31 +4197,13 @@ void ShaderConverter::Process_MIN()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450UMin); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450UMin, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SMin); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SMin, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450FMin); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450FMin, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_MIN - Unsupported data type " << dataType;
@@ -4403,31 +4260,13 @@ void ShaderConverter::Process_MAX()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450UMax); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450UMax, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450SMax); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SMax, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(7, spv::OpExtInst)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(mGlslExtensionId); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(GLSLstd450::GLSLstd450FMax); //Instruction Set
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450FMax, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAX - Unsupported data type " << dataType;
@@ -4483,11 +4322,7 @@ void ShaderConverter::Process_DP3()
 	argumentId2 = GetSwizzledId(argumentToken2);
 	resultId = GetNextId();
 
-	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
-	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+	Push(spv::OpDot, dataTypeId, resultId, argumentId1, argumentId2);
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4537,11 +4372,7 @@ void ShaderConverter::Process_DP4()
 	argumentId2 = GetSwizzledId(argumentToken2);
 	resultId = GetNextId();
 
-	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpDot)); //size,Type
-	mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-	mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+	Push(spv::OpDot, dataTypeId, resultId, argumentId1, argumentId2);
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4664,9 +4495,9 @@ void ShaderConverter::Process_TEXCOORD()
 {
 	TypeDescription typeDescription;
 	//spv::Op dataType;
-	uint32_t dataTypeId=0;
-	uint32_t resultId=0;
-	uint32_t argumentId1=0;
+	uint32_t dataTypeId = 0;
+	uint32_t resultId = 0;
+	uint32_t argumentId1 = 0;
 	//uint32_t argumentId2;
 	Token resultToken;
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType;
@@ -4680,13 +4511,13 @@ void ShaderConverter::Process_TEXCOORD()
 	if (mMajorVersion > 1 || mMinorVersion >= 4)
 	{
 		argumentToken1 = GetNextToken();
-		argumentRegisterType1 = GetRegisterType(argumentToken1.i);	
+		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 	}
 	else
 	{
 		argumentToken1 = resultToken;
-		argumentRegisterType1 = resultRegisterType;	
-	}	
+		argumentRegisterType1 = resultRegisterType;
+	}
 
 	resultId = GetIdByRegister(resultToken);
 	typeDescription = GetTypeByRegister(resultToken);
@@ -4714,10 +4545,7 @@ void ShaderConverter::Process_TEXCOORD()
 	default:
 		dataTypeId = GetSpirVTypeId(typeDescription);
 
-		mFunctionDefinitionInstructions.push_back(Pack(4, spv::OpCopyObject)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
+		Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
 		break;
 	}
 
@@ -4769,25 +4597,13 @@ void ShaderConverter::Process_M4x4()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_M4x4 - Unsupported data type " << dataType;
@@ -4844,25 +4660,13 @@ void ShaderConverter::Process_M4x3()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_M4x3 - Unsupported data type " << dataType;
@@ -4919,25 +4723,13 @@ void ShaderConverter::Process_M3x4()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_M3x4 - Unsupported data type " << dataType;
@@ -4994,25 +4786,13 @@ void ShaderConverter::Process_M3x3()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_M3x3 - Unsupported data type " << dataType;
@@ -5069,25 +4849,13 @@ void ShaderConverter::Process_M3x2()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeInt:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	case spv::OpTypeFloat:
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpVectorTimesMatrix)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_M3x2 - Unsupported data type " << dataType;
@@ -5156,51 +4924,21 @@ void ShaderConverter::Process_MAD()
 	{
 	case spv::OpTypeBool:
 		//Write out multiply
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
-
+		Push(spv::OpIMul, dataTypeId, resultId, argumentId1, argumentId2);
 		//Write out add
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId3); //argument2 (Id)
-
+		Push(spv::OpIAdd, dataTypeId, resultId2, resultId, argumentId3);
 		break;
 	case spv::OpTypeInt:
 		//Write out multiply
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIMul)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
-
+		Push(spv::OpIMul, dataTypeId, resultId, argumentId1, argumentId2);
 		//Write out add
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpIAdd)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId3); //argument2 (Id)
-
+		Push(spv::OpIAdd, dataTypeId, resultId2, resultId, argumentId3);
 		break;
 	case spv::OpTypeFloat:
 		//Write out multiply
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFMul)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //result (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId1); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId2); //argument2 (Id)
-
+		Push(spv::OpFMul, dataTypeId, resultId, argumentId1, argumentId2);
 		//Write out add
-		mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFAdd)); //size,Type
-		mFunctionDefinitionInstructions.push_back(dataTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(resultId2); //result (Id)
-		mFunctionDefinitionInstructions.push_back(resultId); //argument1 (Id)
-		mFunctionDefinitionInstructions.push_back(argumentId3); //argument2 (Id)
-
+		Push(spv::OpFAdd, dataTypeId, resultId2, resultId, argumentId3);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAD - Unsupported data type " << dataType;
@@ -5308,14 +5046,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mEntryPointTypeId = GetNextId();
 	mEntryPointId = GetNextId();
 
-	mFunctionDefinitionInstructions.push_back(Pack(5, spv::OpFunction)); //size,Type
-	mFunctionDefinitionInstructions.push_back(GetSpirVTypeId(spv::OpTypeVoid)); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(mEntryPointId); //result (Id)
-	mFunctionDefinitionInstructions.push_back(spv::FunctionControlMaskNone); //Function Control
-	mFunctionDefinitionInstructions.push_back(mEntryPointTypeId); //Function Type (Id)
-
-	mFunctionDefinitionInstructions.push_back(Pack(2, spv::OpLabel)); //size,Type
-	mFunctionDefinitionInstructions.push_back(GetNextId()); //result (Id)
+	Push(spv::OpFunction, GetSpirVTypeId(spv::OpTypeVoid), mEntryPointId, spv::FunctionControlMaskNone, mEntryPointTypeId);
+	Push(spv::OpLabel, GetNextId());
 
 	if (mIsVertexShader)
 	{
@@ -5603,9 +5335,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	GetSpirVTypeId(spv::OpTypeFunction, mEntryPointTypeId);
 
 	//End of entry point
-	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpReturn)); //size,Type
-	mFunctionDefinitionInstructions.push_back(Pack(1, spv::OpFunctionEnd)); //size,Type
-
+	Push(spv::OpReturn);
+	Push(spv::OpFunctionEnd);
 	uint32_t outputIndex = 0;
 
 	//EntryPoint
