@@ -527,6 +527,7 @@ private:
 	void GenerateYFlip();
 	void GeneratePushConstant();
 	void GeneratePostition();
+	void GenerateConstantIndices();
 	void GenerateStore(const Token& token, uint32_t inputId);
 	void GenerateDecoration(uint32_t registerNumber, uint32_t inputId, _D3DDECLUSAGE usage, bool isInput);
 	void Generate255Constants();

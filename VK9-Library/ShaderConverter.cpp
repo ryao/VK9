@@ -1258,24 +1258,19 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 	{
 		vectorTypeId = GetSpirVTypeId(spv::OpTypeFloat); //Revisit may not be a float
 
-		mFunctionDefinitionInstructions.push_back(Pack(4 + 1, spv::OpCompositeExtract)); //size,Type
-		mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-		mFunctionDefinitionInstructions.push_back(inputId); //Composite (Id)
-
 		switch (xSource)
 		{
 		case D3DVS_X_X:
-			mFunctionDefinitionInstructions.push_back(0); //Component Literal
+			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 0);
 			break;
 		case D3DVS_X_Y:
-			mFunctionDefinitionInstructions.push_back(1); //Component Literal
+			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 1);
 			break;
 		case D3DVS_X_Z:
-			mFunctionDefinitionInstructions.push_back(2); //Component Literal
+			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 2);
 			break;
 		case D3DVS_X_W:
-			mFunctionDefinitionInstructions.push_back(3); //Component Literal
+			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 3);
 			break;
 		}
 
@@ -1292,6 +1287,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+
+			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
 
 			switch (xSource)
 			{
@@ -1332,6 +1329,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+
+			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
 
 			switch (xSource)
 			{
@@ -1388,6 +1387,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+
+			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
 
 			switch (xSource)
 			{
@@ -1632,25 +1633,30 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 			mFunctionDefinitionInstructions.push_back(swizzledId); //Result (Id)
 			mFunctionDefinitionInstructions.push_back(originalId); //Base (Id)
 
+			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::ApplyWriteMask " << spv::OpAccessChain << " " << vectorTypeId << ", " << swizzledId << ", " << originalId;
 
 			if (token.i & D3DSP_WRITEMASK_0)
 			{
 				mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+				BOOST_LOG_TRIVIAL(info) << m0Id;
 			}
 
 			if (token.i & D3DSP_WRITEMASK_1)
 			{
 				mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+				BOOST_LOG_TRIVIAL(info) << m1Id;
 			}
 
 			if (token.i & D3DSP_WRITEMASK_2)
 			{
 				mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+				BOOST_LOG_TRIVIAL(info) << m2Id;
 			}
 
 			if (token.i & D3DSP_WRITEMASK_3)
 			{
 				mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+				BOOST_LOG_TRIVIAL(info) << m3Id;
 			}
 
 			if (originalId == mColor1Id || originalId == mColor2Id)
@@ -1737,40 +1743,50 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 			mFunctionDefinitionInstructions.push_back(originalId); //Vector1 (Id)
 			mFunctionDefinitionInstructions.push_back(modifiedId); //Vector2 (Id)
 
+			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::ApplyWriteMask " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << swizzledId << ", " << originalId << ", " << modifiedId;
+
 			if (token.i & D3DSP_WRITEMASK_0)
 			{
 				mFunctionDefinitionInstructions.push_back(4); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 4;
 			}
 			else
 			{
 				mFunctionDefinitionInstructions.push_back(0); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 0;
 			}
 
 			if (token.i & D3DSP_WRITEMASK_1)
 			{
 				mFunctionDefinitionInstructions.push_back(5); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 5;
 			}
 			else
 			{
 				mFunctionDefinitionInstructions.push_back(1); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 1;
 			}
 
 			if (token.i & D3DSP_WRITEMASK_2)
 			{
 				mFunctionDefinitionInstructions.push_back(6); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 6;
 			}
 			else
 			{
 				mFunctionDefinitionInstructions.push_back(2); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 2;
 			}
 
 			if (token.i & D3DSP_WRITEMASK_3)
 			{
 				mFunctionDefinitionInstructions.push_back(7); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 7;
 			}
 			else
 			{
 				mFunctionDefinitionInstructions.push_back(3); //Component Literal
+				BOOST_LOG_TRIVIAL(info) << 3;
 			}
 
 			SetIdByRegister(token, swizzledId);
@@ -1974,6 +1990,66 @@ void ShaderConverter::GeneratePushConstant()
 	mRegistersById[D3DSPR_CONST][c3_loaded] = 3;
 }
 
+void ShaderConverter::GenerateConstantIndices()
+{
+	std::string registerName;
+	uint32_t stringWordSize = 0;
+
+	uint32_t intTypeId = GetSpirVTypeId(spv::OpTypeInt);
+
+	m0Id = GetNextId();
+	m1Id = GetNextId();
+	m2Id = GetNextId();
+	m3Id = GetNextId();
+
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(m0Id); //Result (Id)
+	mTypeInstructions.push_back(0); //Literal Value
+
+	registerName = "int_0";
+	stringWordSize = 3 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+	mNameInstructions.push_back(m0Id); //target (Id)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(m1Id); //Result (Id)
+	mTypeInstructions.push_back(1); //Literal Value
+
+	registerName = "int_1";
+	stringWordSize = 3 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+	mNameInstructions.push_back(m1Id); //target (Id)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(m2Id); //Result (Id)
+	mTypeInstructions.push_back(2); //Literal Value
+
+	registerName = "int_2";
+	stringWordSize = 3 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+	mNameInstructions.push_back(m2Id); //target (Id)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+
+
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(m3Id); //Result (Id)
+	mTypeInstructions.push_back(3); //Literal Value
+
+	registerName = "int_3";
+	stringWordSize = 3 + (registerName.length() / 4);
+	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
+	mNameInstructions.push_back(m3Id); //target (Id)
+	PutStringInVector(registerName, mNameInstructions); //Literal
+}
+
 void ShaderConverter::GeneratePostition()
 {
 	TypeDescription positionType;
@@ -1994,7 +2070,7 @@ void ShaderConverter::GeneratePostition()
 	uint32_t floatPointerTypeId = GetSpirVTypeId(floatPointerType);
 
 	uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
-	uint32_t intTypeId = GetSpirVTypeId(spv::OpTypeInt);
+	
 	uint32_t positionTypeId = GetSpirVTypeId(positionType);
 	uint32_t positionPointerTypeId = GetSpirVTypeId(positionPointerType);
 	uint32_t positionStructureTypeId = GetNextId();
@@ -2003,55 +2079,6 @@ void ShaderConverter::GeneratePostition()
 	uint32_t positionPointerId = GetNextId();
 	std::string registerName;
 	uint32_t stringWordSize = 0;
-
-	m0Id = GetNextId();
-	m1Id = GetNextId();
-	m2Id = GetNextId();
-	m3Id = GetNextId();
-
-	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
-	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
-	mTypeInstructions.push_back(m0Id); //Result (Id)
-	mTypeInstructions.push_back(0); //Literal Value
-
-	registerName = "int_0";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m0Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
-	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
-	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
-	mTypeInstructions.push_back(m1Id); //Result (Id)
-	mTypeInstructions.push_back(1); //Literal Value
-
-	registerName = "int_1";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m1Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
-	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
-	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
-	mTypeInstructions.push_back(m2Id); //Result (Id)
-	mTypeInstructions.push_back(2); //Literal Value
-
-	registerName = "int_2";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m2Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
-	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
-	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
-	mTypeInstructions.push_back(m3Id); //Result (Id)
-	mTypeInstructions.push_back(3); //Literal Value
-
-	registerName = "int_3";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m3Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
 
 	mTypeInstructions.push_back(Pack(2 + 1, spv::OpTypeStruct)); //size,Type
 	mTypeInstructions.push_back(positionStructureTypeId); //Result (Id)
@@ -5049,6 +5076,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	Push(spv::OpFunction, GetSpirVTypeId(spv::OpTypeVoid), mEntryPointId, spv::FunctionControlMaskNone, mEntryPointTypeId);
 	Push(spv::OpLabel, GetNextId());
 
+	GenerateConstantIndices();
 	if (mIsVertexShader)
 	{
 		GeneratePostition();
