@@ -2628,6 +2628,20 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5 << ", " << argument6;
 }
 
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(8, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+	mFunctionDefinitionInstructions.push_back(argument6);
+	mFunctionDefinitionInstructions.push_back(argument7);
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5 << ", " << argument6 << ", " << argument7;
+}
+
 void ShaderConverter::Process_DCL_Pixel()
 {
 	Token token = GetNextToken();
@@ -3332,8 +3346,8 @@ void ShaderConverter::Process_MOV()
 		break;
 	default:
 		dataTypeId = GetSpirVTypeId(typeDescription);
-
-		Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
+		//resultId = GetNextId();
+		//Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
 		break;
 	}
 
@@ -4520,44 +4534,48 @@ void ShaderConverter::Process_TEX()
 
 void ShaderConverter::Process_TEXCOORD()
 {
-	TypeDescription typeDescription;
-	//spv::Op dataType;
+	spv::Op dataType = spv::OpNop;
 	uint32_t dataTypeId = 0;
-	uint32_t resultId = 0;
+	uint32_t texcoordDataTypeId = 0;
 	uint32_t argumentId1 = 0;
-	//uint32_t argumentId2;
-	Token resultToken;
-	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType;
+	uint32_t argumentId1_temp = 0;
+	uint32_t resultId = 0;
+	uint32_t resultTypeId = 0;
+	std::string registerName;
+	uint32_t stringWordSize = 0;
 
-	Token argumentToken1;
-	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
 
-	resultToken = GetNextToken();
-	resultRegisterType = GetRegisterType(resultToken.i);
+	TypeDescription typeDescription;
+	typeDescription.PrimaryType = spv::OpTypeVector;
+	typeDescription.SecondaryType = spv::OpTypeFloat;
+	typeDescription.ComponentCount = 4;
+	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	dataTypeId = GetSpirVTypeId(typeDescription);
+	//typeDescription.ComponentCount = 3;
+	resultTypeId = GetSpirVTypeId(typeDescription);
 
 	if (mMajorVersion > 1 || mMinorVersion >= 4)
 	{
-		argumentToken1 = GetNextToken();
-		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+		Token argumentToken1 = GetNextToken();
+		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+
+		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_TEXTURE);
+		argumentId1 = GetNextId();
+		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
+		PrintTokenInformation("TEXCOORD", resultToken, argumentToken1);
 	}
 	else
 	{
-		argumentToken1 = resultToken;
-		argumentRegisterType1 = resultRegisterType;
-	}
+		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(resultToken.i);
 
-	resultId = GetIdByRegister(resultToken);
-	typeDescription = GetTypeByRegister(resultToken);
-
-	if (resultId == mColor1Id || resultId == mColor2Id)
-	{
-		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_COLOR);
+		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
+		argumentId1 = GetNextId();
+		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
+		PrintTokenInformation("TEXCOORD", resultToken, resultToken);
 	}
-	else
-	{
-		argumentId1 = GetSwizzledId(argumentToken1);
-	}
-
+	
 	resultId = ApplyWriteMask(resultToken, argumentId1);
 
 	switch (resultRegisterType)
@@ -4571,12 +4589,10 @@ void ShaderConverter::Process_TEXCOORD()
 		break;
 	default:
 		dataTypeId = GetSpirVTypeId(typeDescription);
-
-		Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
+		//resultId = GetNextId();
+		//Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
 		break;
 	}
-
-	PrintTokenInformation("TEXCOORD", resultToken, resultId, argumentToken1, argumentId1);
 }
 
 void ShaderConverter::Process_M4x4()
