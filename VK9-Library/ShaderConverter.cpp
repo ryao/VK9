@@ -612,9 +612,12 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 		mTypeInstructions.push_back(id); //Id
 		mTypeInstructions.push_back(32); //Number of bits.
 		break;
-	case spv::OpTypeVector:
-		//Matrix and Vector type opcodes are laid out the same but exchange component for column.
 	case spv::OpTypeMatrix:
+		//Matrix and Vector type opcodes are laid out the same but exchange component for column.
+		mDecorateInstructions.push_back(Pack(3, spv::OpDecorate)); //size,Type
+		mDecorateInstructions.push_back(id); //target (Id)
+		mDecorateInstructions.push_back(spv::DecorationRowMajor); //Decoration Type (Id)															   
+	case spv::OpTypeVector:
 		columnTypeId = GetSpirVTypeId(registerType.SecondaryType);
 
 		mTypeInstructions.push_back(Pack(4, registerType.PrimaryType)); //size,Type
@@ -2675,7 +2678,9 @@ void ShaderConverter::Process_DCL_Pixel()
 		typeDescription.ComponentCount = 2;
 		break;
 	case 7: //vec3
-		typeDescription.ComponentCount = 3;
+		//This is really a vec3 but I'm going to declare it has a vec4 to make later code easier.
+		//typeDescription.ComponentCount = 3;
+		typeDescription.ComponentCount = 4;
 		break;
 	case 0xF: //vec4
 		typeDescription.ComponentCount = 4;
@@ -2844,7 +2849,9 @@ void ShaderConverter::Process_DCL_Vertex()
 		typeDescription.ComponentCount = 2;
 		break;
 	case 7: //vec3
-		typeDescription.ComponentCount = 3;
+			//This is really a vec3 but I'm going to declare it has a vec4 to make later code easier.
+			//typeDescription.ComponentCount = 3;
+		typeDescription.ComponentCount = 4;
 		break;
 	case 0xF: //vec4
 		typeDescription.ComponentCount = 4;
@@ -4437,6 +4444,12 @@ void ShaderConverter::Process_TEX()
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
 
+	Token argumentToken1;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
+
+	Token argumentToken2;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2;
+
 	TypeDescription typeDescription;
 	typeDescription.PrimaryType = spv::OpTypeVector;
 	typeDescription.SecondaryType = spv::OpTypeFloat;
@@ -4454,38 +4467,45 @@ void ShaderConverter::Process_TEX()
 
 	if (mMajorVersion > 1)
 	{
-		Token argumentToken1 = GetNextToken();
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+		argumentToken1 = GetNextToken();
+		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-		Token argumentToken2 = GetNextToken();
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+		argumentToken2 = GetNextToken();
+		argumentRegisterType2 = GetRegisterType(argumentToken2.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
+		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
 		argumentId1_temp = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
 
 		argumentId1 = GetNextId();
+		argumentId2 = GetNextId();
 
 		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
-
-		PrintTokenInformation("TEX_2_0", resultToken, argumentToken1, argumentToken2);
+		Push(spv::OpLoad, dataTypeId, argumentId2, argumentId2_temp);
 	}
 	else if (mMajorVersion == 1 && mMinorVersion >= 4)
 	{
-		Token argumentToken1 = GetNextToken();
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+		argumentToken1 = GetNextToken();
+		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
-		argumentId2 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
+		argumentToken2 = argumentToken1;
+		argumentRegisterType2 = argumentRegisterType1;
+
+		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
 		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
 
 		argumentId1 = GetNextId();
+		argumentId2 = GetNextId();
 
 		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
-
-		PrintTokenInformation("TEX_1_4", resultToken, argumentToken1, argumentToken1);
+		Push(spv::OpLoad, dataTypeId, argumentId2, argumentId2_temp);
 	}
 	else
 	{
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(resultToken.i);
+		argumentToken1 = resultToken;
+		argumentRegisterType1 = GetRegisterType(resultToken.i);
+
+		argumentToken2 = argumentToken1;
+		argumentRegisterType2 = argumentRegisterType1;
 
 		argumentId2_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
 		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
@@ -4500,8 +4520,6 @@ void ShaderConverter::Process_TEX()
 		Push(spv::OpLoad, dataTypeId, argumentId2, argumentId2_temp);
 
 		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
-
-		PrintTokenInformation("TEX_1_0", resultToken, resultToken, resultToken);
 	}
 
 	resultId = GetNextId();
@@ -4530,6 +4548,8 @@ void ShaderConverter::Process_TEX()
 	}
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("TEX", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_TEXCOORD()
@@ -4547,33 +4567,34 @@ void ShaderConverter::Process_TEXCOORD()
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
 
+	Token argumentToken1;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
+
 	TypeDescription typeDescription;
 	typeDescription.PrimaryType = spv::OpTypeVector;
 	typeDescription.SecondaryType = spv::OpTypeFloat;
 	typeDescription.ComponentCount = 4;
 	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	//typeDescription.ComponentCount = 3;
 	resultTypeId = GetSpirVTypeId(typeDescription);
 
 	if (mMajorVersion > 1 || mMinorVersion >= 4)
 	{
-		Token argumentToken1 = GetNextToken();
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+		argumentToken1 = GetNextToken();
+		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 
 		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_TEXTURE);
 		argumentId1 = GetNextId();
 		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
-		PrintTokenInformation("TEXCOORD", resultToken, argumentToken1);
 	}
 	else
 	{
-		_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(resultToken.i);
+		argumentToken1 = resultToken;
+		argumentRegisterType1 = resultRegisterType;	
 
 		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
 		argumentId1 = GetNextId();
-		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
-		PrintTokenInformation("TEXCOORD", resultToken, resultToken);
+		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);	
 	}
 	
 	resultId = ApplyWriteMask(resultToken, argumentId1);
@@ -4593,6 +4614,8 @@ void ShaderConverter::Process_TEXCOORD()
 		//Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
 		break;
 	}
+
+	PrintTokenInformation("TEXCOORD", resultToken, argumentToken1);
 }
 
 void ShaderConverter::Process_M4x4()
