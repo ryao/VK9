@@ -1267,21 +1267,26 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 6)))
 			)
 	{
-		vectorTypeId = GetSpirVTypeId(spv::OpTypeFloat); //Revisit may not be a float
+		//vectorTypeId = GetSpirVTypeId(spv::OpTypeFloat); //Revisit may not be a float
+		TypeDescription outputType = mIdTypePairs[inputId];
+		outputType.PrimaryType = outputType.SecondaryType;
+		outputType.SecondaryType = outputType.TernaryType;
+		outputType.TernaryType = spv::OpTypeVoid;
+		uint32_t outputTypeId = GetSpirVTypeId(outputType);
 
 		switch (xSource)
 		{
 		case D3DVS_X_X:
-			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 0);
+			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 0);
 			break;
 		case D3DVS_X_Y:
-			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 1);
+			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 1);
 			break;
 		case D3DVS_X_Z:
-			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 2);
+			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 2);
 			break;
 		case D3DVS_X_W:
-			Push(spv::OpCompositeExtract, vectorTypeId, outputId, inputId, 3);
+			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 3);
 			break;
 		}
 
@@ -1479,8 +1484,9 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId, _D3DDECLUSAGE usage) //Old routine
 {
 	TypeDescription typeDescription = GetTypeByRegister(token);
+	//uint32_t typeDescriptionId = GetSpirVTypeId(typeDescription);
 	D3DSHADER_PARAM_REGISTER_TYPE registerType = GetRegisterType(token.i);
-	uint32_t originalId = GetIdByRegister(token, registerType, usage);
+	uint32_t originalId = GetIdByRegister(token); //, registerType, usage
 	uint32_t outputId = modifiedId;
 	uint32_t swizzledId = originalId;
 	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
@@ -1494,8 +1500,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 			((token.i & D3DSP_WRITEMASK_0) && (token.i & D3DSP_WRITEMASK_1) && registerType == D3DSPR_TEXCRDOUT)
 			)
 		{
-
-			if (originalId == mColor1Id || originalId == mColor2Id)
+			if ( (originalId == mColor1Id || originalId == mColor2Id))
 			{
 				uint32_t intTypeId = GetSpirVTypeId(spv::OpTypeInt);
 				uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
@@ -1503,35 +1508,37 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				uint32_t rId = GetNextId();
 				Push(spv::OpCompositeExtract, intTypeId, rId, modifiedId, 0);
 
-				uint32_t r2Id = GetNextId();
-				Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
-
-				uint32_t rDividedId = GetNextId();
-				Push(spv::OpFDiv, floatTypeId, rDividedId, r2Id, m255FloatId);
-
 				uint32_t gId = GetNextId();
 				Push(spv::OpCompositeExtract, intTypeId, gId, modifiedId, 1);
-
-				uint32_t g2Id = GetNextId();
-				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
-
-				uint32_t gDividedId = GetNextId();
-				Push(spv::OpFDiv, floatTypeId, gDividedId, g2Id, m255FloatId);
 
 				uint32_t bId = GetNextId();
 				Push(spv::OpCompositeExtract, intTypeId, bId, modifiedId, 2);
 
-				uint32_t b2Id = GetNextId();
-				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
-
-				uint32_t bDividedId = GetNextId();
-				Push(spv::OpFDiv, floatTypeId, bDividedId, b2Id, m255FloatId);
-
 				uint32_t aId = GetNextId();
 				Push(spv::OpCompositeExtract, intTypeId, aId, modifiedId, 3);
 
+
+				uint32_t r2Id = GetNextId();
+				Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
+
+				uint32_t g2Id = GetNextId();
+				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
+
+				uint32_t b2Id = GetNextId();
+				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
+
 				uint32_t a2Id = GetNextId();
 				Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
+
+
+				uint32_t rDividedId = GetNextId();
+				Push(spv::OpFDiv, floatTypeId, rDividedId, r2Id, m255FloatId);
+
+				uint32_t gDividedId = GetNextId();
+				Push(spv::OpFDiv, floatTypeId, gDividedId, g2Id, m255FloatId);
+
+				uint32_t bDividedId = GetNextId();
+				Push(spv::OpFDiv, floatTypeId, bDividedId, b2Id, m255FloatId);
 
 				uint32_t aDividedId = GetNextId();
 				Push(spv::OpFDiv, floatTypeId, aDividedId, a2Id, m255FloatId);
@@ -2064,7 +2071,7 @@ void ShaderConverter::GeneratePostition()
 	uint32_t floatPointerTypeId = GetSpirVTypeId(floatPointerType);
 
 	uint32_t floatTypeId = GetSpirVTypeId(spv::OpTypeFloat);
-	
+
 	uint32_t positionTypeId = GetSpirVTypeId(positionType);
 	uint32_t positionPointerTypeId = GetSpirVTypeId(positionPointerType);
 	uint32_t positionStructureTypeId = GetNextId();
@@ -2442,6 +2449,29 @@ void ShaderConverter::GenerateConstantBlock()
 
 		mIdsByRegister[D3DSPR_CONST][i] = id;
 		mRegistersById[D3DSPR_CONST][id] = i;
+	}
+
+	//Make matrices
+	typeDescription.PrimaryType = spv::OpTypeMatrix;
+	typeDescription.SecondaryType = spv::OpTypeVector;
+	typeDescription.TernaryType = spv::OpTypeFloat;
+	typeDescription.ComponentCount = 4;
+	typeId = GetSpirVTypeId(typeDescription);
+
+	for (size_t i = 0; i < 64; i++)
+	{
+		uint32_t id = GetNextId();
+
+		mTypeInstructions.push_back(Pack(3 + 4, spv::OpSpecConstantComposite)); //size,Type
+		mTypeInstructions.push_back(typeId); //Result Type (Id)
+		mTypeInstructions.push_back(id); //Result (Id)
+		for (size_t j = 0; j < 4; j++)
+		{
+			mTypeInstructions.push_back(mIdsByRegister[D3DSPR_CONST][i * 4 + j]); //Constituents
+		}
+
+		mIdsByRegister[(_D3DSHADER_PARAM_REGISTER_TYPE)1337][i * 4] = id;
+		mRegistersById[(_D3DSHADER_PARAM_REGISTER_TYPE)1337][id] = i * 4;
 	}
 }
 
@@ -4581,13 +4611,13 @@ void ShaderConverter::Process_TEXCOORD()
 	else
 	{
 		argumentToken1 = resultToken;
-		argumentRegisterType1 = resultRegisterType;	
+		argumentRegisterType1 = resultRegisterType;
 
 		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
 		argumentId1 = GetNextId();
-		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);	
+		Push(spv::OpLoad, resultTypeId, argumentId1, argumentId1_temp);
 	}
-	
+
 	resultId = ApplyWriteMask(resultToken, argumentId1);
 
 	switch (resultRegisterType)
@@ -5145,69 +5175,91 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_TEXDEPTH:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXDEPTH.";
+			SkipTokens(1);
 			break;
 		case D3DSIO_TEXKILL:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXKILL.";
+			SkipTokens(1);
 			break;
 		case D3DSIO_BEM:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_BEM.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXBEM:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXBEM.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXBEML:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXBEML.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXDP3:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXDP3.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXDP3TEX:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXDP3TEX.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXM3x2DEPTH:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x2DEPTH.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXM3x2TEX:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x2TEX.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXM3x3:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x3.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXM3x3PAD:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x3PAD.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXM3x3TEX:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x3TEX.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXM3x3VSPEC:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x3VSPEC.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXREG2AR:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXREG2AR.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXREG2GB:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXREG2GB.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_TEXREG2RGB:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXREG2RGB.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_LABEL:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LABEL.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_CALL:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_CALL.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_LOOP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LOOP.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_BREAKP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_BREAKP.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_DSX:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DSX.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_DSY:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DSY.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_IFC:
 			Process_IFC();
@@ -5223,6 +5275,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_REP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_REP.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_ENDREP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_ENDREP.";
@@ -5238,6 +5291,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_RCP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_RCP.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_RSQ:
 			Process_RSQ();
@@ -5259,12 +5313,14 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_LIT:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LIT.";
+			SkipTokens(2);
 			break;
 		case D3DSIO_ABS:
 			Process_ABS();
 			break;
 		case D3DSIO_TEXM3x3SPEC:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXM3x3SPEC.";
+			SkipTokens(3);
 			break;
 		case D3DSIO_M4x4:
 			Process_M4x4();
@@ -5283,12 +5339,15 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_CALLNZ:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_CALLNZ.";
+			SkipTokens(3);
 			break;
 		case D3DSIO_SETP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SETP.";
+			SkipTokens(3);
 			break;
 		case D3DSIO_BREAKC:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_BREAKC.";
+			SkipTokens(3);
 			break;
 		case D3DSIO_ADD:
 			Process_ADD();
@@ -5316,9 +5375,11 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_SLT:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SLT.";
+			SkipTokens(3);
 			break;
 		case D3DSIO_SGE:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SGE.";
+			SkipTokens(3);
 			break;
 		case D3DSIO_CRS:
 			Process_CRS();
@@ -5328,27 +5389,41 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_DP2ADD:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_DP2ADD.";
+			SkipTokens(4);
 			break;
 		case D3DSIO_LRP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LRP.";
+			SkipTokens(4);
 			break;
 		case D3DSIO_SGN:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SGN.";
+			SkipTokens(4);
 			break;
 		case D3DSIO_CND:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_CND.";
+			SkipTokens(4);
 			break;
 		case D3DSIO_CMP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_CMP.";
+			SkipTokens(4);
 			break;
 		case D3DSIO_SINCOS:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SINCOS.";
+			if (mMajorVersion>=3)
+			{
+				SkipTokens(3);
+			}
+			else
+			{
+				SkipTokens(2);
+			}		
 			break;
 		case D3DSIO_MAD:
 			Process_MAD();
 			break;
 		case D3DSIO_TEXLDD:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXLDD.";
+			SkipTokens(5);
 			break;
 		case D3DSIO_TEXCOORD:
 			Process_TEXCOORD();
@@ -5358,6 +5433,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			break;
 		case D3DSIO_TEXLDL:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXLDL.";
+			SkipTokens(3);
 			break;
 		case D3DSIO_DCL:
 			Process_DCL();
