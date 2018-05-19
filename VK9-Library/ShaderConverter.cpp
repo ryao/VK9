@@ -613,10 +613,18 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 		mTypeInstructions.push_back(32); //Number of bits.
 		break;
 	case spv::OpTypeMatrix:
-		//Matrix and Vector type opcodes are laid out the same but exchange component for column.
+		columnTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, registerType.ComponentCount);
+
+		mTypeInstructions.push_back(Pack(4, registerType.PrimaryType)); //size,Type
+		mTypeInstructions.push_back(id); //Id
+		mTypeInstructions.push_back(columnTypeId); //Component/Column Type
+		mTypeInstructions.push_back(registerType.ComponentCount);
+
 		mDecorateInstructions.push_back(Pack(3, spv::OpDecorate)); //size,Type
 		mDecorateInstructions.push_back(id); //target (Id)
-		mDecorateInstructions.push_back(spv::DecorationRowMajor); //Decoration Type (Id)															   
+		mDecorateInstructions.push_back(spv::DecorationColMajor); //Decoration Type (Id)	
+		//mDecorateInstructions.push_back(spv::DecorationRowMajor); //Decoration Type (Id)	
+		break;
 	case spv::OpTypeVector:
 		columnTypeId = GetSpirVTypeId(registerType.SecondaryType);
 
@@ -1844,32 +1852,45 @@ void ShaderConverter::GenerateYFlip()
 
 void ShaderConverter::GeneratePushConstant()
 {
-	TypeDescription registerPointerType;
-	registerPointerType.PrimaryType = spv::OpTypePointer;
-	registerPointerType.SecondaryType = spv::OpTypeVector;
-	registerPointerType.TernaryType = spv::OpTypeFloat;
-	registerPointerType.ComponentCount = 4;
-	registerPointerType.StorageClass = spv::StorageClassPushConstant;
-
-	TypeDescription registerType;
-	registerType.PrimaryType = spv::OpTypeVector;
-	registerType.SecondaryType = spv::OpTypeFloat;
-	registerType.ComponentCount = 4;
-
 	std::string registerName;
 	uint32_t stringWordSize = 0;
-	uint32_t registerPointerTypeId = GetSpirVTypeId(registerPointerType);
-	uint32_t registerTypeId = GetSpirVTypeId(registerType);
+
+	TypeDescription matrixPointerType;
+	matrixPointerType.PrimaryType = spv::OpTypePointer;
+	matrixPointerType.SecondaryType = spv::OpTypeMatrix;
+	matrixPointerType.TernaryType = spv::OpTypeVector;
+	matrixPointerType.ComponentCount = 4;
+	matrixPointerType.StorageClass = spv::StorageClassPushConstant;
+
+	TypeDescription vectorPointerType;
+	vectorPointerType.PrimaryType = spv::OpTypePointer;
+	vectorPointerType.SecondaryType = spv::OpTypeVector;
+	vectorPointerType.TernaryType = spv::OpTypeFloat;
+	vectorPointerType.ComponentCount = 4;
+	vectorPointerType.StorageClass = spv::StorageClassPushConstant;
+
+	TypeDescription matrixType;
+	matrixType.PrimaryType = spv::OpTypeMatrix;
+	matrixType.SecondaryType = spv::OpTypeVector;
+	matrixType.ComponentCount = 4;
+
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+
+	uint32_t matrixPointerTypeId = GetSpirVTypeId(matrixPointerType);
+	uint32_t vectorPointerTypeId = GetSpirVTypeId(vectorPointerType);
+	uint32_t matrixTypeId = GetSpirVTypeId(matrixType);
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+
 	uint32_t pushConstantTypeId = GetNextId();
 	uint32_t pushConstantPointerTypeId = GetNextId();
 	uint32_t pushConstantPointerId = GetNextId();
 
-	mTypeInstructions.push_back(Pack(2 + 4, spv::OpTypeStruct)); //size,Type
+	mTypeInstructions.push_back(Pack(2 + 1, spv::OpTypeStruct)); //size,Type
 	mTypeInstructions.push_back(pushConstantTypeId); //Result (Id)
-	mTypeInstructions.push_back(registerTypeId); //Member 0 type (Id)
-	mTypeInstructions.push_back(registerTypeId); //Member 1 type (Id)
-	mTypeInstructions.push_back(registerTypeId); //Member 2 type (Id)
-	mTypeInstructions.push_back(registerTypeId); //Member 3 type (Id)
+	mTypeInstructions.push_back(matrixTypeId); //Member 0 type (Id)
 
 	//Name and decorate push constant structure type.
 	registerName = "PushConstants";
@@ -1890,51 +1911,12 @@ void ShaderConverter::GeneratePushConstant()
 	mNameInstructions.push_back(0); //Member (Literal)
 	PutStringInVector(registerName, mNameInstructions); //Literal
 
-	registerName = "c1";
-	stringWordSize = 4 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
-	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
-	mNameInstructions.push_back(1); //Member (Literal)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
-	registerName = "c2";
-	stringWordSize = 4 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
-	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
-	mNameInstructions.push_back(2); //Member (Literal)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
-	registerName = "c3";
-	stringWordSize = 4 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
-	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
-	mNameInstructions.push_back(3); //Member (Literal)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
 	//Set member offsets
 	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
 	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
 	mDecorateInstructions.push_back(0); //Member (Literal)
 	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
 	mDecorateInstructions.push_back(0);
-
-	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
-	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
-	mDecorateInstructions.push_back(1); //Member (Literal)
-	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
-	mDecorateInstructions.push_back(16);
-
-	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
-	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
-	mDecorateInstructions.push_back(2); //Member (Literal)
-	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
-	mDecorateInstructions.push_back(32);
-
-	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
-	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
-	mDecorateInstructions.push_back(3); //Member (Literal)
-	mDecorateInstructions.push_back(spv::DecorationOffset); //Decoration Type (Id)
-	mDecorateInstructions.push_back(48);
 
 	//Create Pointer type and variable
 	mTypeInstructions.push_back(Pack(4, spv::OpTypePointer)); //size,Type
@@ -1954,32 +1936,41 @@ void ShaderConverter::GeneratePushConstant()
 	PutStringInVector(registerName, mNameInstructions); //Literal
 
 	//Create Access Chains
+	uint32_t matrixPointerId = GetNextId();
+	Push(spv::OpAccessChain, matrixPointerTypeId, matrixPointerId, pushConstantPointerId, m0Id);
+
 	uint32_t c0 = GetNextId();
-	Push(spv::OpAccessChain, registerPointerTypeId, c0, pushConstantPointerId, m0Id);
+	Push(spv::OpAccessChain, vectorPointerTypeId, c0, matrixPointerId, m0Id);
 
 	uint32_t c1 = GetNextId();
-	Push(spv::OpAccessChain, registerPointerTypeId, c1, pushConstantPointerId, m1Id);
+	Push(spv::OpAccessChain, vectorPointerTypeId, c1, matrixPointerId, m1Id);
 
 	uint32_t c2 = GetNextId();
-	Push(spv::OpAccessChain, registerPointerTypeId, c2, pushConstantPointerId, m2Id);
+	Push(spv::OpAccessChain, vectorPointerTypeId, c2, matrixPointerId, m2Id);
 
 	uint32_t c3 = GetNextId();
-	Push(spv::OpAccessChain, registerPointerTypeId, c3, pushConstantPointerId, m3Id);
+	Push(spv::OpAccessChain, vectorPointerTypeId, c3, matrixPointerId, m3Id);
 
 	//Load Access Chains
+	uint32_t matrix_loaded = GetNextId();
+	Push(spv::OpLoad, matrixTypeId, matrix_loaded, matrixPointerId);
+
 	uint32_t c0_loaded = GetNextId();
-	Push(spv::OpLoad, registerTypeId, c0_loaded, c0);
+	Push(spv::OpLoad, vectorTypeId, c0_loaded, c0);
 
 	uint32_t c1_loaded = GetNextId();
-	Push(spv::OpLoad, registerTypeId, c1_loaded, c1);
+	Push(spv::OpLoad, vectorTypeId, c1_loaded, c1);
 
 	uint32_t c2_loaded = GetNextId();
-	Push(spv::OpLoad, registerTypeId, c2_loaded, c2);
+	Push(spv::OpLoad, vectorTypeId, c2_loaded, c2);
 
 	uint32_t c3_loaded = GetNextId();
-	Push(spv::OpLoad, registerTypeId, c3_loaded, c3);
+	Push(spv::OpLoad, vectorTypeId, c3_loaded, c3);
 
 	//Remap c0-c3 to push constant.
+	mIdsByRegister[(_D3DSHADER_PARAM_REGISTER_TYPE)1337][0] = matrix_loaded;
+	mRegistersById[(_D3DSHADER_PARAM_REGISTER_TYPE)1337][matrix_loaded] = 0;
+
 	mIdsByRegister[D3DSPR_CONST][0] = c0_loaded;
 	mRegistersById[D3DSPR_CONST][c0_loaded] = 0;
 
@@ -4657,7 +4648,7 @@ void ShaderConverter::Process_M4x4()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
 	resultId = GetNextId();
 
 	switch (dataType)
@@ -4720,7 +4711,7 @@ void ShaderConverter::Process_M4x3()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
 	resultId = GetNextId();
 
 	switch (dataType)
@@ -4783,7 +4774,7 @@ void ShaderConverter::Process_M3x4()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
 	resultId = GetNextId();
 
 	switch (dataType)
@@ -4846,7 +4837,7 @@ void ShaderConverter::Process_M3x3()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
 	resultId = GetNextId();
 
 	switch (dataType)
@@ -4909,7 +4900,7 @@ void ShaderConverter::Process_M3x2()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
+	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
 	resultId = GetNextId();
 
 	switch (dataType)
