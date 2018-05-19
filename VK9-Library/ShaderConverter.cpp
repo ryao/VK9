@@ -2680,7 +2680,7 @@ void ShaderConverter::Process_DCL_Pixel()
 	uint32_t resultTypeId;
 	uint32_t textureType;
 	std::string registerName;
-	size_t stringWordSize;
+	uint32_t stringWordSize;
 
 	typeDescription.PrimaryType = spv::OpTypePointer;
 	typeDescription.SecondaryType = spv::OpTypeVector;
@@ -2837,7 +2837,7 @@ void ShaderConverter::Process_DCL_Vertex()
 	uint32_t registerComponents = (registerToken.i & D3DSP_WRITEMASK_ALL) >> 16;
 	uint32_t resultTypeId;
 	std::string registerName;
-	size_t stringWordSize;
+	uint32_t stringWordSize;
 
 	typeDescription.PrimaryType = spv::OpTypePointer;
 	typeDescription.SecondaryType = spv::OpTypeVector;
