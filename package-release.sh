@@ -6,6 +6,8 @@ if [ -z "$1" ] || [ -z "$2" ]; then
   exit 1
 fi
 
+export WINEPREFIX=~/.wine/VK9-build
+
 VK9_VERSION="$1"
 VK9_SRC_DIR=`dirname $(readlink -f $0)`
 VK9_BUILD_DIR=$(realpath "$2")"/vk9-$VK9_VERSION"
