@@ -117,36 +117,46 @@ vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argumen
 
 vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D tex,vec2 texcoord)
 {
-	switch(argument)
+	vec4 realResult;
+	switch(argument & D3DTA_SELECTMASK)
 	{
 		case D3DTA_CONSTANT:
-			return Convert(constant);
+			realResult = Convert(constant);
 		break;
 		case D3DTA_CURRENT:
-			return result;
+			realResult = result;
 		break;
 		case D3DTA_DIFFUSE:
-			return diffuseColor;
-		break;
-		case D3DTA_SELECTMASK:
-			return vec4(0);
+			realResult = diffuseColor;
 		break;
 		case D3DTA_SPECULAR:
-			return specularColor;
+			realResult = specularColor;
 		break;
 		case D3DTA_TEMP:
-			return temp;
+			realResult = temp;
 		break;
 		case D3DTA_TEXTURE:
-			return texture(tex, texcoord.xy);
+			realResult = texture(tex, texcoord.xy);
 		break;
 		case D3DTA_TFACTOR:
-			return vec4(0);
+			realResult = vec4(0);
 		break;
 		default:
-			return vec4(0);
+			realResult = vec4(0);
 		break;
 	}
+	
+	if((argument & D3DTA_ALPHAREPLICATE) != 0)
+	{
+		realResult.rgb = vec3(realResult.a,realResult.a,realResult.a);
+	}
+
+	if((argument & D3DTA_COMPLEMENT) != 0)
+	{
+		realResult = (1.0 - realResult);
+	}
+	
+	return realResult;
 }
 
 void processStage(sampler2D tex,int textureIndex, int constant, int resultArgument,
@@ -156,7 +166,7 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 {
 	vec4 temp = tempIn;
 	vec4 result = resultIn;
-	vec4 tempResult = vec4(1); //This is the result regardless if selected target.
+	vec4 tempResult = resultIn; //This is the result regardless if selected target.
 	vec2 texcoord = getTextureCoord(textureIndex);
 
 	vec4 colorArg1 = getStageArgument(colorArgument1,tempIn,constant,resultIn, tex, texcoord);

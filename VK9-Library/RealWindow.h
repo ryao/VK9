@@ -122,6 +122,9 @@ struct RealWindow
 	vk::ShaderModule mVertShaderModule_XYZ_NORMAL_TEX1;
 	vk::ShaderModule mFragShaderModule_XYZ_NORMAL_TEX1;
 
+	vk::ShaderModule mVertShaderModule_XYZ_NORMAL_TEX2;
+	vk::ShaderModule mFragShaderModule_XYZ_NORMAL_TEX2;
+
 	vk::ShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE;
 	vk::ShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE;
 

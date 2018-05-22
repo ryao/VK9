@@ -992,6 +992,10 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 				realWindow.mPipelineShaderStageCreateInfo[0].module = realWindow.mVertShaderModule_XYZ_NORMAL_TEX1;
 				realWindow.mPipelineShaderStageCreateInfo[1].module = realWindow.mFragShaderModule_XYZ_NORMAL_TEX1;
 				break;
+			case 2:
+				realWindow.mPipelineShaderStageCreateInfo[0].module = realWindow.mVertShaderModule_XYZ_NORMAL_TEX2;
+				realWindow.mPipelineShaderStageCreateInfo[1].module = realWindow.mFragShaderModule_XYZ_NORMAL_TEX2;
+				break;
 			default:
 				BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe unsupported texture count " << textureCount;
 				break;
@@ -1006,13 +1010,6 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 	/**********************************************
 	* Figure out attributes
 	**********************************************/
-	//if (context->VertexShader != nullptr)
-	//{
-	//	//Revisit, make sure this copies properly.
-	//	memcpy(&mVertexInputAttributeDescription, &context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescription, sizeof(mVertexInputAttributeDescription));
-	//	mPipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = mVertexInputAttributeDescription;
-	//	attributeCount = context->VertexShader->mShaderConverter.mConvertedShader.mVertexInputAttributeDescriptionCount;
-	//}
 
 	if (context->VertexDeclaration != nullptr)
 	{

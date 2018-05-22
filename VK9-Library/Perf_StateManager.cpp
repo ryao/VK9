@@ -647,6 +647,9 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	ptr->mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
 	ptr->mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
 
+	ptr->mVertShaderModule_XYZ_NORMAL_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX2.vert.spv");
+	ptr->mFragShaderModule_XYZ_NORMAL_TEX2 = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_TEX2.frag.spv");
+
 	ptr->mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.spv");
 	ptr->mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(device->mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.spv");
 

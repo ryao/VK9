@@ -156,6 +156,8 @@
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -215,6 +217,8 @@
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -274,7 +278,10 @@
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"</Command>
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -332,7 +339,10 @@
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"</Command>
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -559,6 +569,8 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
     </CustomBuild>
     <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE.geom" />
+    <None Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag" />
+    <None Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert" />
     <None Include="VK9.conf">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

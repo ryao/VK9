@@ -48,9 +48,10 @@ layout (location = 1) in vec4 ambientColor;
 layout (location = 2) in vec4 specularColor;
 layout (location = 3) in vec4 emissiveColor;
 layout (location = 4) in vec4 normal;
-layout (location = 5) in vec2 texcoord;
-layout (location = 6) in vec4 pos;
-layout (location = 7) in vec4 globalIllumination;
+layout (location = 5) in vec2 texcoord1;
+layout (location = 6) in vec2 texcoord2;
+layout (location = 7) in vec4 pos;
+layout (location = 8) in vec4 globalIllumination;
 layout (location = 0) out vec4 uFragColor;
 
 vec2 getTextureCoord(int index)
@@ -58,10 +59,10 @@ vec2 getTextureCoord(int index)
 	switch(index)
 	{
 		case 0:
-			return texcoord;
+			return texcoord1;
 		break;
 		case 1:
-			return vec2(0,0);
+			return texcoord2;
 		break;
 		default:
 			return vec2(0,0);
@@ -73,7 +74,7 @@ vec2 getTextureCoord(int index)
 
 void main() 
 {
-	vec4 temp;
+	vec4 temp = vec4(1.0,1.0,1.0,1.0);
 	vec4 result = vec4(1.0,1.0,1.0,1.0); //On stage 0 CURRENT is the same as DIFFUSE
 
 	if(textureCount>0)
@@ -84,6 +85,14 @@ void main()
 		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
 	}
 
+	if(textureCount>1)
+	{
+		processStage(textures[1],texureCoordinateIndex_1, Constant_1, Result_1,
+		result, temp, result, temp,
+		colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
+		alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
+	}
+	
 	uFragColor = result;
 	
 	if(lighting)

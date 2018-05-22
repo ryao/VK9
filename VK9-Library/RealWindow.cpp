@@ -63,6 +63,8 @@ RealWindow::~RealWindow()
 	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL, nullptr);
 	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_TEX1, nullptr);
 	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_TEX1, nullptr);
+	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_TEX2, nullptr);
+	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_TEX2, nullptr);
 	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_DIFFUSE, nullptr);
 	device.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_DIFFUSE, nullptr);
 	device.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, nullptr);
