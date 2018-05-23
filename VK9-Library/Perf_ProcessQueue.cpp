@@ -743,15 +743,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realWindow.mDeviceState;
 				}
 
-				auto it = state->mTextures.find(Stage);
-				if (it != state->mTextures.end())
-				{
-					(*ppTexture) = it->second;
-				}
-				else
-				{
-					(*ppTexture) = nullptr;
-				}
+				(*ppTexture) = state->mTextures[Stage];
 			}
 			break;
 			case Device_GetTextureStageState:
@@ -2202,19 +2194,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realWindow.mDeviceState;
 				}
 
-				if (pTexture == nullptr)
-				{
-					auto it = state->mTextures.find(Sampler);
-					if (it != state->mTextures.end())
-					{
-						state->mTextures.erase(it);
-					}
-				}
-				else
-				{
-					state->mTextures[Sampler] = pTexture;
-					//texture->AddRef();
-				}
+				state->mTextures[Sampler] = pTexture;
 			}
 			break;
 			case Device_SetTextureStageState:
@@ -3044,9 +3024,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				pCaps->TextureOpCaps = D3DTEXOPCAPS_DISABLE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2 | D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_MODULATE2X | D3DTEXOPCAPS_MODULATE4X | D3DTEXOPCAPS_ADD | D3DTEXOPCAPS_ADDSIGNED | D3DTEXOPCAPS_ADDSIGNED2X | D3DTEXOPCAPS_SUBTRACT | D3DTEXOPCAPS_ADDSMOOTH | D3DTEXOPCAPS_BLENDDIFFUSEALPHA | D3DTEXOPCAPS_BLENDTEXTUREALPHA | D3DTEXOPCAPS_BLENDFACTORALPHA | D3DTEXOPCAPS_BLENDTEXTUREALPHAPM | D3DTEXOPCAPS_BLENDCURRENTALPHA | D3DTEXOPCAPS_PREMODULATE | D3DTEXOPCAPS_MODULATEALPHA_ADDCOLOR | D3DTEXOPCAPS_MODULATECOLOR_ADDALPHA | D3DTEXOPCAPS_MODULATEINVALPHA_ADDCOLOR | D3DTEXOPCAPS_MODULATEINVCOLOR_ADDALPHA | D3DTEXOPCAPS_BUMPENVMAP | D3DTEXOPCAPS_BUMPENVMAPLUMINANCE | D3DTEXOPCAPS_DOTPRODUCT3 | D3DTEXOPCAPS_MULTIPLYADD | D3DTEXOPCAPS_LERP;
 				pCaps->MaxTextureBlendStages = properties.limits.maxDescriptorSetSamplers; //revisit
 
-																						   /*
-																						   I'm setting this to 16 so I can make my array 16 and be safe ish
-																						   */
+				/*
+				I'm setting this to 16 so I can make my array 16 and be safe ish
+				*/
 				pCaps->MaxSimultaneousTextures = 16; // properties.limits.maxDescriptorSetSampledImages; //revisit
 
 				pCaps->VertexProcessingCaps = D3DVTXPCAPS_TEXGEN | D3DVTXPCAPS_MATERIALSOURCE7 | D3DVTXPCAPS_DIRECTIONALLIGHTS | D3DVTXPCAPS_POSITIONALLIGHTS | D3DVTXPCAPS_LOCALVIEWER | D3DVTXPCAPS_TWEENING;

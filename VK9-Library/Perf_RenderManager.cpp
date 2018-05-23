@@ -504,18 +504,18 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 	auto& deviceState = realWindow.mDeviceState;
 	auto& samplerStates = deviceState.mSamplerStates;
 
-	BOOST_FOREACH(const auto& pair1, deviceState.mTextures)
+	for (size_t i = 0; i < 16; i++)
 	{
-		vk::DescriptorImageInfo& targetSampler = deviceState.mDescriptorImageInfo[pair1.first];
+		vk::DescriptorImageInfo& targetSampler = deviceState.mDescriptorImageInfo[i];
 
-		if (pair1.second != nullptr)
+		if (deviceState.mTextures[i] != nullptr)
 		{
 			std::shared_ptr<SamplerRequest> request = std::make_shared<SamplerRequest>(&realWindow);
 			auto& currentSampler = samplerStates[request->SamplerIndex];
 
-			if (pair1.second->GetType() == D3DRTYPE_CUBETEXTURE)
+			if (deviceState.mTextures[i]->GetType() == D3DRTYPE_CUBETEXTURE)
 			{
-				CCubeTexture9* texture9 = (CCubeTexture9*)pair1.second;
+				CCubeTexture9* texture9 = (CCubeTexture9*)deviceState.mTextures[i];
 				auto& texture = mStateManager.mTextures[texture9->mId];
 
 				request->MaxLod = texture9->mLevels;
@@ -523,7 +523,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 			}
 			else
 			{
-				CTexture9* texture9 = (CTexture9*)pair1.second;
+				CTexture9* texture9 = (CTexture9*)deviceState.mTextures[i];
 				auto& texture = mStateManager.mTextures[texture9->mId];
 
 				request->MaxLod = texture9->mLevels;
@@ -561,7 +561,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 
 			if (request->Sampler == vk::Sampler())
 			{
-				CreateSampler(realWindow,request);
+				CreateSampler(realWindow, request);
 			}
 
 			targetSampler.sampler = request->Sampler;
@@ -573,6 +573,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 			targetSampler.imageView = realWindow.mImageView;
 			targetSampler.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 		}
+
 	}
 
 	/**********************************************
@@ -620,7 +621,19 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 	ShaderConstantSlots& pixelSlots = context->mPixelShaderConstantSlots;
 
 	constants.lightCount = deviceState.mLights.size();
-	constants.textureCount = deviceState.mTextures.size();
+	constants.textureCount = 0;
+
+	for (size_t i = 0; i < 16; i++)
+	{
+		if (deviceState.mTextures[i] != nullptr)
+		{
+			constants.textureCount++;
+		}
+		else
+		{
+			break;
+		}
+	}
 
 	deviceState.mSpecializationConstants.lightCount = constants.lightCount;
 	deviceState.mSpecializationConstants.textureCount = constants.textureCount;
@@ -729,10 +742,10 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 			realWindow.mWriteDescriptorSet[1].pBufferInfo = &realWindow.mDescriptorBufferInfo[1];
 
 			realWindow.mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-			realWindow.mWriteDescriptorSet[2].descriptorCount = deviceState.mTextures.size();
+			realWindow.mWriteDescriptorSet[2].descriptorCount = constants.textureCount;
 			realWindow.mWriteDescriptorSet[2].pImageInfo = resourceContext->DescriptorImageInfo;
 
-			if (deviceState.mTextures.size())
+			if (constants.textureCount)
 			{
 				currentSwapChainBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 3, realWindow.mWriteDescriptorSet);
 			}
@@ -745,7 +758,7 @@ void RenderManager::BeginDraw(RealWindow& realWindow, std::shared_ptr<DrawContex
 		{
 			realWindow.mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eCombinedImageSampler;
 			realWindow.mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-			realWindow.mWriteDescriptorSet[0].descriptorCount = deviceState.mTextures.size(); //Revisit
+			realWindow.mWriteDescriptorSet[0].descriptorCount = constants.textureCount; //Revisit
 			realWindow.mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
 
 			currentSwapChainBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 1, realWindow.mWriteDescriptorSet);
@@ -792,7 +805,7 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 	**********************************************/
 	SpecializationConstants& constants = context->mSpecializationConstants;
 	uint32_t attributeCount = 0;
-	uint32_t textureCount = 0;
+	uint32_t textureCount = 0; //constants.textureCount
 	uint32_t lightCount = constants.lightCount;
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
@@ -1187,7 +1200,7 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 
 		realWindow.mDescriptorSetLayoutBinding[2].binding = 2;
 		realWindow.mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-		realWindow.mDescriptorSetLayoutBinding[2].descriptorCount = deviceState.mTextures.size(); //Update to use mapped texture.
+		realWindow.mDescriptorSetLayoutBinding[2].descriptorCount = constants.textureCount; //Update to use mapped texture.
 		realWindow.mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eFragment;
 		realWindow.mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
 
@@ -1195,7 +1208,7 @@ void RenderManager::CreatePipe(RealWindow& realWindow, std::shared_ptr<DrawConte
 		realWindow.mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 		realWindow.mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-		if (deviceState.mTextures.size())
+		if (constants.textureCount)
 		{
 			realWindow.mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.			
 		}

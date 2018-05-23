@@ -538,7 +538,8 @@ struct DeviceState
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
 	vk::DescriptorImageInfo mDescriptorImageInfo[16];
-	boost::container::flat_map<DWORD, IDirect3DBaseTexture9*> mTextures;
+	//boost::container::flat_map<DWORD, IDirect3DBaseTexture9*> mTextures;
+	IDirect3DBaseTexture9* mTextures[16] = {};
 
 	//IDirect3DDevice9::SetTextureStageState
 	//boost::container::flat_map<DWORD, boost::container::flat_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;

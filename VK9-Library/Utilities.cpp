@@ -519,11 +519,19 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
-	BOOST_FOREACH(const auto& pair1, sourceState.mTextures)
+	//BOOST_FOREACH(const auto& pair1, sourceState.mTextures)
+	//{
+	//	if ((type == D3DSBT_ALL))
+	//	{
+	//		targetState.mTextures[pair1.first] = pair1.second;
+	//	}
+	//}
+
+	for (size_t i = 0; i < 16; i++)
 	{
 		if ((type == D3DSBT_ALL))
 		{
-			targetState.mTextures[pair1.first] = pair1.second;
+			targetState.mTextures[i] = sourceState.mTextures[i];
 		}
 	}
 
