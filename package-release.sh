@@ -1,15 +1,70 @@
 #!/bin/bash
 # Based on DXVK build script - https://github.com/doitsujin/dxvk/blob/master/package-release.sh
 
+function print_usage {
+  echo "Usage: package-release.sh version destdir [options]
+    Options are:
+        --no-package:    Do not build tar package
+        --keep-builddir: Do not delete builddir, use this to keep logfiles for debugging
+        --no-32bit:      Do not build 32 bit binaries
+        --no-64bit:      Do not build 64 bit binaries"
+}
+
 if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Usage: package-release.sh version destdir [--no-package]"
-  exit 1
+  print_usage
+  exit -1
 fi
 
+export WINEPREFIX=~/.wine/VK9-build
+
+# Get positional arguments and remove them from argument list
 VK9_VERSION="$1"
 VK9_SRC_DIR=`dirname $(readlink -f $0)`
 VK9_BUILD_DIR=$(realpath "$2")"/vk9-$VK9_VERSION"
 VK9_ARCHIVE_PATH=$(realpath "$2")"/vk9-$VK9_VERSION.tar.gz"
+shift
+shift
+
+BUILD_PACKAGE=true
+BUILD_32BIT=true
+BUILD_64BIT=true
+KEEP_BUILDDIR=false
+
+# Parse options
+while [[ $# -gt 0 ]]
+do
+  key="$1"
+
+  case $key in
+    --no-package)
+    BUILD_PACKAGE=false
+    shift
+    ;;
+  --keep-builddir)
+    KEEP_BUILDDIR=true
+    shift
+    ;;
+  --no-32bit)
+    BUILD_32BIT=false
+    shift
+    ;;
+  --no-64bit)
+    BUILD_64BIT=false
+    shift
+    ;;
+  *)    # unknown option
+    echo "Found unknown argument \"$key\". Abort!"
+    print_usage
+    exit -1
+    ;;
+  esac
+done
+
+echo "Building VK9 with the following options:"
+echo "    tar package:   $BUILD_PACKAGE"
+echo "    32 bit:        $BUILD_32BIT"
+echo "    64 bit:        $BUILD_64BIT"
+echo "    keep builddir: $KEEP_BUILDDIR"
 
 function build_arch {
   cd "$VK9_SRC_DIR"
@@ -38,19 +93,46 @@ function build_arch {
     cp "$VK9_BUILD_DIR/build.$1/VK9-Library/Shaders/Shaders@cus/"*.spv "$VK9_BUILD_DIR/Shaders/"
   fi
 
-  rm -R "$VK9_BUILD_DIR/build.$1"
-  rm -R "$VK9_BUILD_DIR/install.$1"
+  if [ $KEEP_BUILDDIR == false ]; then
+    rm -R "$VK9_BUILD_DIR/build.$1"
+    rm -R "$VK9_BUILD_DIR/install.$1"
+  fi
 }
 
 function package {
+  echo "Building package..."
   cd "$VK9_BUILD_DIR/.."
-  tar -czf "$VK9_ARCHIVE_PATH" "vk9-$VK9_VERSION"
-  rm -R "vk9-$VK9_VERSION"
+  TAR_DIRS=""
+  if [ -d "vk9-$VK9_VERSION/x64" ]; then
+    TAR_DIRS="vk9-$VK9_VERSION/x64"
+  fi
+  if [ -d "vk9-$VK9_VERSION/x32" ]; then
+    TAR_DIRS="$TAR_DIRS vk9-$VK9_VERSION/x32"
+  fi
+  if [ -d "vk9-$VK9_VERSION/Shaders" ]; then
+    TAR_DIRS="$TAR_DIRS vk9-$VK9_VERSION/Shaders"
+  fi
+
+  tar -czvf "$VK9_ARCHIVE_PATH" $TAR_DIRS
+  if [ $KEEP_BUILDDIR == false ]; then
+    rm -R "vk9-$VK9_VERSION"
+  fi
 }
 
-build_arch 32 true
-build_arch 64 false
+BUILD_SHADERS=true
 
-if [ "$3" != "--no-package" ]; then
+if [ $BUILD_32BIT == true ]; then
+  build_arch 32 $BUILD_SHADERS
+  BUILD_SHADERS=false
+fi
+
+if [ $BUILD_64BIT == true ]; then
+  build_arch 64 $BUILD_SHADERS
+  BUILD_SHADERS=false
+fi
+
+if [ $BUILD_PACKAGE == true ]; then
   package
 fi
+
+exit 0

@@ -44,7 +44,7 @@ d3d9_src = [
 d3d9_dll = shared_library('d3d9', d3d9_src,
   name_prefix         : '',
   link_with           : [ ],
-  dependencies        : [ boost_dep, vulkan_dep, eigen_dep, spirv_dep ],
+  dependencies        : [ boost_dep, vulkan_dep, eigen_dep ],
   cpp_args            : [ vulkan_defs, '-DSCHAEFERGLLIBRARY_EXPORTS' ],
   install             : true,
   vs_module_defs      : 'd3d9.def',
@@ -53,3 +53,5 @@ d3d9_dll = shared_library('d3d9', d3d9_src,
 d3d9_dep = declare_dependency(
   link_with           : [ d3d9_dll ],
   include_directories : [ include_directories('.') ])
+
+subdir('Shaders')

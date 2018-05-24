@@ -48,7 +48,7 @@ const uint16_t mShaderTypeVertex = 0xFFFE;
     ((uint32_t)(uint8_t)(c2) << 8) | \
     ((uint32_t)(uint8_t)(c3)))
 
-boost::log::v2s_mt_nt6::basic_record_ostream<char>& operator<< (boost::log::v2s_mt_nt6::basic_record_ostream<char>& os, GLSLstd450 code)
+boost::log::BOOST_LOG_VERSION_NAMESPACE::basic_record_ostream<char>& operator<< (boost::log::BOOST_LOG_VERSION_NAMESPACE::basic_record_ostream<char>& os, GLSLstd450 code)
 {
 	switch (code)
 	{
@@ -138,7 +138,7 @@ boost::log::v2s_mt_nt6::basic_record_ostream<char>& operator<< (boost::log::v2s_
 	return os << static_cast<std::uint32_t>(code);
 }
 
-boost::log::v2s_mt_nt6::basic_record_ostream<char>& operator<< (boost::log::v2s_mt_nt6::basic_record_ostream<char>& os, spv::Op code)
+boost::log::BOOST_LOG_VERSION_NAMESPACE::basic_record_ostream<char>& operator<< (boost::log::BOOST_LOG_VERSION_NAMESPACE::basic_record_ostream<char>& os, spv::Op code)
 {
 	switch (code)
 	{
