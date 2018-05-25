@@ -349,4 +349,9 @@
       <Filter>Shaders</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="VK9-Logo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

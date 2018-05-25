@@ -113,11 +113,7 @@ HRESULT STDMETHODCALLTYPE CQuery9::GetDevice(IDirect3DDevice9** ppDevice)
 
 D3DQUERYTYPE STDMETHODCALLTYPE CQuery9::GetType()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CQuery9::GetType is not implemented!";
-
-	return D3DQUERYTYPE_EVENT;
+	return mType;
 }
 
 
