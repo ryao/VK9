@@ -14,7 +14,6 @@ add_global_arguments( ['-DUNICODE', '-D_UNICODE'], language : 'cpp')
 boost_dep = dependency('boost', modules : ['system', 'filesystem', 'thread', 'program_options', 'log', 'log_setup'])
 vulkan_dep= dependency('vulkan-1')
 eigen_dep = dependency('eigen')
-spirv_dep = dependency('spirv')
 
 vulkan_defs = ['-DVK_USE_PLATFORM_WIN32_KHR', '-DVK_PROTOTYPES', '-DVULKAN_HPP_NO_EXCEPTIONS',
 	'-DVULKAN_HPP_NO_SMART_HANDLE', '-DVK_KHR_push_descriptor', '-DVK_EXT_debug_report']
