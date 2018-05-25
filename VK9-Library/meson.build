@@ -46,6 +46,7 @@ d3d9_dll = shared_library('d3d9', d3d9_src,
   link_with           : [ ],
   dependencies        : [ boost_dep, vulkan_dep, eigen_dep ],
   cpp_args            : [ vulkan_defs, '-DSCHAEFERGLLIBRARY_EXPORTS' ],
+  cpp_pch             : ['pch/stdafx.h', 'pch/stdafx.cpp'],
   install             : true,
   vs_module_defs      : 'd3d9.def',
   override_options    : ['cpp_std='+vk9_cpp_std])
