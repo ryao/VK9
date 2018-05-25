@@ -7,7 +7,9 @@ function print_usage {
         --no-package:    Do not build tar package
         --keep-builddir: Do not delete builddir, use this to keep logfiles for debugging
         --no-32bit:      Do not build 32 bit binaries
-        --no-64bit:      Do not build 64 bit binaries"
+        --no-64bit:      Do not build 64 bit binaries
+        --debug:         Build debug version of the library
+        --no-pch:        Do not use precompiled headers"
 }
 
 if [ -z "$1" ] || [ -z "$2" ]; then
@@ -28,7 +30,9 @@ shift
 BUILD_PACKAGE=true
 BUILD_32BIT=true
 BUILD_64BIT=true
+BUILD_TYPE="release"
 KEEP_BUILDDIR=false
+USE_PCH=true
 
 # Parse options
 while [[ $# -gt 0 ]]
@@ -52,6 +56,14 @@ do
     BUILD_64BIT=false
     shift
     ;;
+  --debug)
+    $BUILD_TYPE="debug"
+    shift
+    ;;
+  --no-pch)
+    USE_PCH=false
+    shift
+    ;;
   *)    # unknown option
     echo "Found unknown argument \"$key\". Abort!"
     print_usage
@@ -61,20 +73,23 @@ do
 done
 
 echo "Building VK9 with the following options:"
-echo "    tar package:   $BUILD_PACKAGE"
-echo "    32 bit:        $BUILD_32BIT"
-echo "    64 bit:        $BUILD_64BIT"
-echo "    keep builddir: $KEEP_BUILDDIR"
+echo "    tar package:        $BUILD_PACKAGE"
+echo "    32 bit:             $BUILD_32BIT"
+echo "    64 bit:             $BUILD_64BIT"
+echo "    build type:         $BUILD_TYPE"
+echo "    keep builddir:      $KEEP_BUILDDIR"
+echo "    precompiled header: $USE_PCH"
 
 function build_arch {
   cd "$VK9_SRC_DIR"
 
   export PKG_CONFIG_PATH=./dep$1
   meson --cross-file "$VK9_SRC_DIR/build-win$1.txt"   \
-        --buildtype "release"                         \
+        --buildtype $BUILD_TYPE                       \
         --prefix "$VK9_BUILD_DIR/install.$1"          \
         --unity off                                   \
         --strip                                       \
+        -Db_pch=$USE_PCH                              \
         -Denable_tests=false                          \
         "$VK9_BUILD_DIR/build.$1"
 

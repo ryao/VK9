@@ -107,7 +107,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
@@ -123,6 +123,8 @@
       <OpenMPSupport>true</OpenMPSupport>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
+      <PrecompiledHeaderFile>pch/stdafx.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch/stdafx.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -169,7 +171,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
@@ -185,6 +187,8 @@
       <OpenMPSupport>true</OpenMPSupport>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
+      <ForcedIncludeFiles>pch/stdafx.h</ForcedIncludeFiles>
+      <PrecompiledHeaderFile>pch/stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -229,7 +233,7 @@
       <PreprocessorDefinitions>_WIN32;WIN32;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;NDEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>None</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -246,6 +250,8 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <EnablePREfast>false</EnablePREfast>
+      <ForcedIncludeFiles>pch/stdafx.h</ForcedIncludeFiles>
+      <PrecompiledHeaderFile>pch/stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -291,7 +297,7 @@
       <PreprocessorDefinitions>_WIN32;WIN32;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;NDEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>None</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -308,6 +314,8 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <EnablePREfast>false</EnablePREfast>
+      <ForcedIncludeFiles>pch/stdafx.h</ForcedIncludeFiles>
+      <PrecompiledHeaderFile>pch/stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -383,6 +391,24 @@
     </ClCompile>
     <ClCompile Include="DrawContext.cpp" />
     <ClCompile Include="GarbageManager.cpp" />
+    <ClCompile Include="pch\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ForcedIncludeFiles>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ForcedIncludeFiles>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="Perf_CommandStreamManager.cpp" />
     <ClCompile Include="Perf_ProcessQueue.cpp" />
     <ClCompile Include="Perf_RenderManager.cpp" />
@@ -397,12 +423,6 @@
     <ClCompile Include="ResourceContext.cpp" />
     <ClCompile Include="SamplerRequest.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -428,6 +448,7 @@
     <ClInclude Include="CVolumeTexture9.h" />
     <ClInclude Include="DrawContext.h" />
     <ClInclude Include="GarbageManager.h" />
+    <ClInclude Include="pch\stdafx.h" />
     <ClInclude Include="Perf_CommandStreamManager.h" />
     <ClInclude Include="Perf_ProcessQueue.h" />
     <ClInclude Include="Perf_RenderManager.h" />
@@ -444,7 +465,6 @@
     <ClInclude Include="ResourceContext.h" />
     <ClInclude Include="SamplerRequest.h" />
     <ClInclude Include="ShaderConverter.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="WorkItem.h" />

@@ -16,15 +16,15 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{cc225075-770e-4039-8f2b-4822226ae36b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Precompiled Header">
+      <UniqueIdentifier>{9fe8e0df-1556-4253-ba91-c7f8675ba07f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D3D9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C9.cpp">
@@ -138,11 +138,11 @@
     <ClCompile Include="CVolume9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pch\stdafx.cpp">
+      <Filter>Precompiled Header</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -268,6 +268,9 @@
     </ClInclude>
     <ClInclude Include="CVolume9.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch\stdafx.h">
+      <Filter>Precompiled Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
