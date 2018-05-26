@@ -21,21 +21,29 @@ misrepresented as being the original software.
 #ifndef CQUERY9_H
 #define CQUERY9_H
 
-#include "d3d9.h" // Base class: IDirect3DQuery9
+#include <memory>
+#include "d3d9.h"
 #include <vulkan/vulkan.h>
 #include "CResource9.h"
+#include "Perf_CommandStreamManager.h"
+
+class CDevice9;
 
 class CQuery9 : public IDirect3DQuery9
 {
-private:
-	CDevice9* mDevice;
-	D3DQUERYTYPE mType;
 public:
 	CQuery9(CDevice9* device, D3DQUERYTYPE Type);
 	~CQuery9();
 	
+	size_t mId = -1;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
+	
+	void* mData = nullptr;
+	size_t mSize = 4;
+
+	CDevice9* mDevice;
+	D3DQUERYTYPE mType;
 	ULONG mReferenceCount;
-	VkResult mResult;
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

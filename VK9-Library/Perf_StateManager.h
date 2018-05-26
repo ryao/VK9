@@ -84,6 +84,7 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 #include "RealSurface.h"
 #include "RealVertexBuffer.h"
 #include "RealIndexBuffer.h"
+#include "RealQuery.h"
 #include "SamplerRequest.h"
 #include "ResourceContext.h"
 #include "DrawContext.h"
@@ -110,6 +111,9 @@ struct StateManager
 
 	std::vector< std::shared_ptr<ShaderConverter> > mShaderConverters;
 	std::atomic_size_t mShaderConverterKey = 0;
+
+	std::vector< std::shared_ptr<RealQuery> > mQueries;
+	std::atomic_size_t mQueryKey = 0;
 
 	StateManager();
 	~StateManager();
@@ -143,6 +147,10 @@ struct StateManager
 
 	void DestroyShader(size_t id);
 	void CreateShader(size_t id, void* argument1, void* argument2, void* argument3);
+
+	void DestroyQuery(size_t id);
+	void CreateQuery(size_t id, void* argument1);
+
 
 };
 

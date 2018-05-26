@@ -22,19 +22,31 @@ misrepresented as being the original software.
 #include "CDevice9.h"
 
 #include "Utilities.h"
+#include "CTypes.h"
 
 CQuery9::CQuery9(CDevice9* device, D3DQUERYTYPE Type)
 	: mReferenceCount(1),
 		mDevice(device),
-		mType(Type),
-	mResult(VK_SUCCESS)
+		mType(Type)
 {
+	mCommandStreamManager = mDevice->mCommandStreamManager;
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->Id = mDevice->mId;
+	workItem->WorkItemType = WorkItemType::Query_Create;
+	workItem->Argument1 = this;
+	mId = mCommandStreamManager->RequestWorkAndWait(workItem);
 
 }
 
 CQuery9::~CQuery9()
 {
-
+	if (mId != -1)
+	{
+		WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
+		workItem->WorkItemType = WorkItemType::Query_Destroy;
+		workItem->Id = mId;
+		mCommandStreamManager->RequestWorkAndWait(workItem);
+	}
 }
 
 ULONG STDMETHODCALLTYPE CQuery9::AddRef(void)
@@ -87,9 +99,13 @@ ULONG STDMETHODCALLTYPE CQuery9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CQuery9::GetData is not implemented!";
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::Query_GetData;
+	workItem->Id = mId;
+	workItem->Argument1 = (void*)pData;
+	workItem->Argument2 = (void*)dwSize;
+	workItem->Argument3 = (void*)dwGetDataFlags;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
@@ -97,11 +113,12 @@ HRESULT STDMETHODCALLTYPE CQuery9::GetData(void* pData, DWORD dwSize, DWORD dwGe
 
 DWORD STDMETHODCALLTYPE CQuery9::GetDataSize()
 {
-	//TODO: Implement.
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::Query_GetDataSize;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	BOOST_LOG_TRIVIAL(warning) << "CQuery9::GetDataSize is not implemented!";
-
-	return 0;
+	return mSize;
 }
 
 HRESULT STDMETHODCALLTYPE CQuery9::GetDevice(IDirect3DDevice9** ppDevice)
@@ -119,9 +136,11 @@ D3DQUERYTYPE STDMETHODCALLTYPE CQuery9::GetType()
 
 HRESULT STDMETHODCALLTYPE CQuery9::Issue(DWORD dwIssueFlags)
 {
-	//TODO: Implement.
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::Query_Issue;
+	workItem->Id = mId;
+	workItem->Argument1 = (void*)dwIssueFlags;
+	mCommandStreamManager->RequestWork(workItem);
 
-	BOOST_LOG_TRIVIAL(warning) << "CQuery9::Issue is not implemented!";
-
-	return S_OK;	
+	return S_OK;
 }

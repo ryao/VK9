@@ -441,7 +441,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = depthFormat;
-	imageCreateInfo.extent = vk::Extent3D(device9->mPresentationParameters.BackBufferWidth,device9->mPresentationParameters.BackBufferHeight, 1);
+	imageCreateInfo.extent = vk::Extent3D(device9->mPresentationParameters.BackBufferWidth, device9->mPresentationParameters.BackBufferHeight, 1);
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
@@ -1546,7 +1546,7 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e3D;
-	imageCreateInfo.format = ptr->mRealFormat; 
+	imageCreateInfo.format = ptr->mRealFormat;
 	imageCreateInfo.extent = vk::Extent3D(texture9->mWidth, texture9->mHeight, texture9->mDepth);
 	imageCreateInfo.mipLevels = texture9->mLevels;
 	imageCreateInfo.arrayLayers = 1;
@@ -1665,7 +1665,7 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 		else
 		{
 			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface unknown format: " << surface9->mFormat;
-		}	
+		}
 
 	}
 
@@ -1774,7 +1774,7 @@ void StateManager::CreateVolume(size_t id, void* argument1)
 	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
 	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
 	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
-	
+
 	//if (Volume9->mCubeTexture != nullptr)
 	//{
 	//	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
@@ -1851,4 +1851,88 @@ void StateManager::CreateShader(size_t id, void* argument1, void* argument2, voi
 		mShaderConverters.push_back(ptr);
 	}
 
+}
+
+void StateManager::DestroyQuery(size_t id)
+{
+	mQueries[id].reset();
+}
+
+void StateManager::CreateQuery(size_t id, void* argument1)
+{
+	vk::Result result;
+	auto window = mWindows[id];
+	CQuery9* query9 = bit_cast<CQuery9*>(argument1);
+	std::shared_ptr<RealQuery> ptr = std::make_shared<RealQuery>(window.get());
+
+	vk::QueryPoolCreateInfo info;
+	info.queryCount = 1;
+
+	/*
+	case D3DQUERYTYPE_VCACHE:
+	break;
+	case D3DQUERYTYPE_RESOURCEMANAGER:
+	break;
+	case D3DQUERYTYPE_VERTEXSTATS:
+	break;
+	case D3DQUERYTYPE_PIPELINETIMINGS:
+	break;
+	case D3DQUERYTYPE_INTERFACETIMINGS:
+	break;
+	case D3DQUERYTYPE_VERTEXTIMINGS:
+	break;
+	case D3DQUERYTYPE_PIXELTIMINGS:
+	break;
+	case D3DQUERYTYPE_BANDWIDTHTIMINGS:
+	break;
+	case D3DQUERYTYPE_CACHEUTILIZATION:
+	break;
+	case D3DQUERYTYPE_EVENT:
+	break;
+	*/
+
+	/*
+	eInputAssemblyVertices = VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT,
+	eInputAssemblyPrimitives = VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT,
+	eVertexShaderInvocations = VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT,
+	eGeometryShaderInvocations = VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT,
+	eGeometryShaderPrimitives = VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT,
+	eClippingInvocations = VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT,
+	eClippingPrimitives = VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT,
+	eFragmentShaderInvocations = VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT,
+	eTessellationControlShaderPatches = VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT,
+	eTessellationEvaluationShaderInvocations = VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT,
+	eComputeShaderInvocations = VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT
+	*/
+
+	switch (query9->mType)
+	{
+	case D3DQUERYTYPE_OCCLUSION:
+		info.queryType = vk::QueryType::eOcclusion;
+		break;
+	case D3DQUERYTYPE_TIMESTAMP:
+		info.queryType = vk::QueryType::eTimestamp;
+		break;
+	case D3DQUERYTYPE_TIMESTAMPDISJOINT:
+		info.queryType = vk::QueryType::eTimestamp;
+		break;
+	case D3DQUERYTYPE_TIMESTAMPFREQ:
+		info.queryType = vk::QueryType::eTimestamp;
+		break;
+	default:
+		info.queryType = vk::QueryType::ePipelineStatistics;
+		info.pipelineStatistics = vk::QueryPipelineStatisticFlagBits::eVertexShaderInvocations;
+		BOOST_LOG_TRIVIAL(info) << "StateManager::CreateQuery Unsupported query type " << query9->mType;
+		break;
+	}
+
+	vk::ResultValue<vk::QueryPool> poolResult = window->mRealDevice->mDevice.createQueryPool(info, nullptr); //&(ptr->mQueryPool)
+	if (poolResult.result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateQuery vkCreateQueryPool failed with return code of " << GetResultString((VkResult)poolResult.result);
+		return;
+	}
+	ptr->mQueryPool = poolResult.value;
+
+	mQueries.push_back(ptr);
 }

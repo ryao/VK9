@@ -110,6 +110,11 @@ enum WorkItemType
 	, Surface_UnlockRect
 	, Surface_Flush
 	, Surface_Destroy
+	, Query_Create
+	, Query_GetData
+	, Query_GetDataSize
+	, Query_Issue
+	, Query_Destroy
 	, Volume_Create
 	, Volume_LockRect
 	, Volume_UnlockRect

@@ -148,6 +148,9 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 	case WorkItemType::Shader_Create:
 		key = mRenderManager.mStateManager.mShaderConverterKey++;
 		break;
+	case WorkItemType::Query_Create:
+		key = mRenderManager.mStateManager.mQueryKey++;
+		break;
 	default:
 		break;
 	}

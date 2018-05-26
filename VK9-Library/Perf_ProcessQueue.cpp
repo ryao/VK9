@@ -150,6 +150,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.mStateManager.DestroyShader(workItem->Id);
 			}
 			break;
+			case Query_Create:
+			{
+				commandStreamManager->mRenderManager.mStateManager.CreateQuery(workItem->Id, workItem->Argument1);
+			}
+			break;
+			case Query_Destroy:
+			{
+				commandStreamManager->mRenderManager.mStateManager.DestroyQuery(workItem->Id);
+			}
+			break;
 			case Device_Clear:
 			{
 				DWORD Count = bit_cast<DWORD>(workItem->Argument1);
@@ -3849,6 +3859,48 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
 
 				volume.mIsFlushed = true;
+			}
+			break;
+			case Query_Issue:
+			{
+				auto& realQuery = (*commandStreamManager->mRenderManager.mStateManager.mQueries[workItem->Id]);
+				auto& realWindow = (*realQuery.mRealWindow);
+				auto& realDevice = (*realWindow.mRealDevice);
+
+				DWORD dwIssueFlags = bit_cast<DWORD>(workItem->Argument1);
+
+				switch (dwIssueFlags)
+				{
+				case D3DISSUE_BEGIN:
+					realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].beginQuery(realQuery.mQueryPool, 0,vk::QueryControlFlags());
+					break;
+				case D3DISSUE_END:
+					realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].endQuery(realQuery.mQueryPool, 0);
+					break;
+				default:
+					BOOST_LOG_TRIVIAL(error) << "ProcessQueue unknown query issue type " << dwIssueFlags;
+					break;
+				}
+
+				//(*pViewport) = realWindow.mDeviceState.m9Viewport;
+			}
+			break;
+			case Query_GetData:
+			{
+				auto& realQuery = (*commandStreamManager->mRenderManager.mStateManager.mQueries[workItem->Id]);
+				auto& realWindow = (*realQuery.mRealWindow);
+				auto& realDevice = (*realWindow.mRealDevice);
+
+				void* pData = workItem->Argument1;
+				DWORD dwSize = bit_cast<DWORD>(workItem->Argument2);
+				DWORD dwGetDataFlags = bit_cast<DWORD>(workItem->Argument3);
+
+				realDevice.mDevice.getQueryPoolResults(realQuery.mQueryPool, (uint32_t)0, (uint32_t)1, (size_t)dwSize, pData, (vk::DeviceSize)4, vk::QueryResultFlags());
+			}
+			break;
+			case Query_GetDataSize:
+			{
+				BOOST_LOG_TRIVIAL(warning) << "ProcessQueue assuming 4 byte query result size.";
 			}
 			break;
 			default:

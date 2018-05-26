@@ -18,21 +18,20 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "RealIndexBuffer.h"
+#include "RealQuery.h"
 
-RealIndexBuffer::RealIndexBuffer(RealWindow* realWindow)
+RealQuery::RealQuery(RealWindow* realWindow)
 	: mRealWindow(realWindow)
 {
-	BOOST_LOG_TRIVIAL(info) << "RealIndexBuffer::RealIndexBuffer";
+	BOOST_LOG_TRIVIAL(info) << "RealQuery::RealQuery";
 }
 
-RealIndexBuffer::~RealIndexBuffer()
+RealQuery::~RealQuery()
 {
-	BOOST_LOG_TRIVIAL(info) << "RealIndexBuffer::~RealIndexBuffer";
+	BOOST_LOG_TRIVIAL(info) << "RealQuery::~RealQuery";
 	if (mRealWindow != nullptr)
 	{
 		auto& device = mRealWindow->mRealDevice->mDevice;
-		device.destroyBuffer(mBuffer, nullptr);
-		device.freeMemory(mMemory, nullptr);
+		device.destroyQueryPool(mQueryPool);
 	}
 }

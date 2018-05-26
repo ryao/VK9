@@ -310,16 +310,30 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type, IDirect3DQuer
 	//If null is passed the call is checking to see if a query type is supported.
 	if (ppQuery == nullptr)
 	{
-		return D3DERR_NOTAVAILABLE;
+		if (Type == D3DQUERYTYPE_OCCLUSION || Type == D3DQUERYTYPE_TIMESTAMP || Type == D3DQUERYTYPE_TIMESTAMPDISJOINT || Type == D3DQUERYTYPE_TIMESTAMPFREQ)
+		{
+			return S_OK;
+		}
+		else
+		{
+			return D3DERR_NOTAVAILABLE;
+		}
 	}
 
-	HRESULT result = S_OK;
+	if (Type == D3DQUERYTYPE_OCCLUSION || Type == D3DQUERYTYPE_TIMESTAMP || Type == D3DQUERYTYPE_TIMESTAMPDISJOINT || Type == D3DQUERYTYPE_TIMESTAMPFREQ)
+	{
+		HRESULT result = S_OK;
 
-	CQuery9* obj = new CQuery9(this, Type);
+		CQuery9* obj = new CQuery9(this, Type);
 
-	(*ppQuery) = (IDirect3DQuery9*)obj;
+		(*ppQuery) = (IDirect3DQuery9*)obj;
 
-	return result;
+		return result;
+	}
+	else
+	{
+		return D3DERR_NOTAVAILABLE;
+	}
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::CreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9 **ppSurface, HANDLE *pSharedHandle)

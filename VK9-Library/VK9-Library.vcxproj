@@ -416,6 +416,7 @@
     <ClCompile Include="RealDevice.cpp" />
     <ClCompile Include="RealIndexBuffer.cpp" />
     <ClCompile Include="RealInstance.cpp" />
+    <ClCompile Include="RealQuery.cpp" />
     <ClCompile Include="RealSurface.cpp" />
     <ClCompile Include="RealTexture.cpp" />
     <ClCompile Include="RealVertexBuffer.cpp" />
@@ -457,6 +458,7 @@
     <ClInclude Include="RealDevice.h" />
     <ClInclude Include="RealIndexBuffer.h" />
     <ClInclude Include="RealInstance.h" />
+    <ClInclude Include="RealQuery.h" />
     <ClInclude Include="RealSurface.h" />
     <ClInclude Include="RealTexture.h" />
     <ClInclude Include="RealVertexBuffer.h" />

@@ -18,21 +18,30 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "RealIndexBuffer.h"
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vk_sdk_platform.h>
+#include <boost/container/small_vector.hpp>
 
-RealIndexBuffer::RealIndexBuffer(RealWindow* realWindow)
-	: mRealWindow(realWindow)
-{
-	BOOST_LOG_TRIVIAL(info) << "RealIndexBuffer::RealIndexBuffer";
-}
+#include "Utilities.h"
+#include "CTypes.h"
 
-RealIndexBuffer::~RealIndexBuffer()
+#include "RealDevice.h"
+#include "RealInstance.h"
+#include "RealWindow.h"
+
+#ifndef REALQUERY_H
+#define REALQUERY_H
+
+struct RealQuery
 {
-	BOOST_LOG_TRIVIAL(info) << "RealIndexBuffer::~RealIndexBuffer";
-	if (mRealWindow != nullptr)
-	{
-		auto& device = mRealWindow->mRealDevice->mDevice;
-		device.destroyBuffer(mBuffer, nullptr);
-		device.freeMemory(mMemory, nullptr);
-	}
-}
+	void* mData = nullptr;
+	int32_t mSize;
+
+	vk::QueryPool mQueryPool;
+
+	RealWindow* mRealWindow = nullptr; //null if not owner.
+	RealQuery(RealWindow* realWindow);
+	~RealQuery();
+};
+
+#endif //REALQUERY_H
