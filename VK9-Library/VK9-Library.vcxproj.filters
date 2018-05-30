@@ -144,6 +144,9 @@
     <ClCompile Include="RealQuery.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RealSwapChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -276,6 +279,9 @@
       <Filter>Precompiled Header</Filter>
     </ClInclude>
     <ClInclude Include="RealQuery.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RealSwapChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
