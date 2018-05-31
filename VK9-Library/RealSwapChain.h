@@ -69,16 +69,25 @@ struct RealSwapChain
 	//Render Pass
 	vk::AttachmentDescription mRenderAttachments[2];
 	vk::RenderPass mRenderPass;
+	vk::RenderPassBeginInfo mRenderPassBeginInfo;
+	vk::ImageMemoryBarrier mImageMemoryBarrier;
+	vk::ClearValue mClearValues[2];
 
 	//Framebuffer
 	vk::Framebuffer* mFramebuffers;
 	vk::SemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo;
 	vk::Semaphore mPresentCompleteSemaphore;
 
+	//Presentation
+	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
+	vk::PipelineStageFlags mPipeStageFlags;
+	vk::SubmitInfo mSubmitInfo;
+	vk::ImageMemoryBarrier mPrePresentBarrier;
+
 	//Misc
 	vk::Result mResult;
 	uint32_t mCurrentIndex;
-	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
+	vk::Fence mNullFence;
 
 	//Functions
 	RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, HWND windowHandle, uint32_t width, uint32_t height);
@@ -96,8 +105,8 @@ struct RealSwapChain
 	void DestroyFramebuffer();
 
 	void StartPresentation(vk::CommandBuffer commandBuffer);
-	void StopPresentation(vk::CommandBuffer commandBuffer);
-	void Present(vk::CommandBuffer commandBuffer,vk::ImageView source);
+	void StopPresentation(vk::CommandBuffer commandBuffer, vk::Queue queue);
+	void Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source);
 
 };
 
