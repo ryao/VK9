@@ -31,6 +31,7 @@ d3d9_src = [
   'RealDevice.cpp',
   'RealIndexBuffer.cpp',
   'RealInstance.cpp',
+  'RealQuery.cpp',
   'RealSurface.cpp',
   'RealSwapChain.cpp',
   'RealTexture.cpp',
