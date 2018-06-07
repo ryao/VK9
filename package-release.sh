@@ -84,6 +84,9 @@ function build_arch {
   cd "$VK9_SRC_DIR"
 
   export PKG_CONFIG_PATH=./dep$1
+  # Some distributions use PKG_CONFIG_PATH_CUSTOM instead.
+  export PKG_CONFIG_PATH_CUSTOM=./dep$1
+
   meson --cross-file "$VK9_SRC_DIR/build-win$1.txt"   \
         --buildtype $BUILD_TYPE                       \
         --prefix "$VK9_BUILD_DIR/install.$1"          \
@@ -96,14 +99,14 @@ function build_arch {
   cd "$VK9_BUILD_DIR/build.$1"
   ninja install
 
-  mkdir "$VK9_BUILD_DIR/x$1"
+  mkdir -p "$VK9_BUILD_DIR/x$1"
 
   cp "$VK9_BUILD_DIR/install.$1/bin/d3d9.dll" "$VK9_BUILD_DIR/x$1/d3d9.dll"
   cp "$VK9_SRC_DIR/VK9-Library/VK9.conf" "$VK9_BUILD_DIR/x$1/VK9.conf"
   cp "$VK9_BUILD_DIR/install.$1/bin/setup_vk9.sh" "$VK9_BUILD_DIR/x$1/setup_vk9.sh"
 
   if [ $2 == true ]; then
-    mkdir "$VK9_BUILD_DIR/Shaders"
+    mkdir -p "$VK9_BUILD_DIR/Shaders"
     # *.spv suffix must be outside of quotes
     cp "$VK9_BUILD_DIR/build.$1/VK9-Library/Shaders/Shaders@cus/"*.spv "$VK9_BUILD_DIR/Shaders/"
   fi
