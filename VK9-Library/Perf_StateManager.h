@@ -85,6 +85,7 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 #include "RealVertexBuffer.h"
 #include "RealIndexBuffer.h"
 #include "RealQuery.h"
+#include "RealSwapChain.h"
 #include "SamplerRequest.h"
 #include "ResourceContext.h"
 #include "DrawContext.h"
@@ -114,6 +115,8 @@ struct StateManager
 
 	std::vector< std::shared_ptr<RealQuery> > mQueries;
 	std::atomic_size_t mQueryKey = 0;
+
+	boost::container::flat_map<HWND, std::shared_ptr<RealSwapChain> > mSwapChains;
 
 	StateManager();
 	~StateManager();
@@ -151,7 +154,7 @@ struct StateManager
 	void DestroyQuery(size_t id);
 	void CreateQuery(size_t id, void* argument1);
 
-
+	std::shared_ptr<RealSwapChain> GetSwapChain(std::shared_ptr<RealWindow> realWindow, HWND handle);
 };
 
 #endif // STATEMANAGER_H

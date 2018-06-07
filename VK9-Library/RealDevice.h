@@ -37,6 +37,7 @@ struct RealDevice
 	uint32_t mQueueFamilyPropertyCount;
 
 	//Stuff that does things.
+	vk::PhysicalDevice mPhysicalDevice;
 	vk::Device mDevice;
 	vk::DescriptorPool mDescriptorPool;
 

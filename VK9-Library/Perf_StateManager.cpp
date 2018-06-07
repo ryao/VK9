@@ -1067,7 +1067,8 @@ void StateManager::CreateInstance()
 				device_info.enabledLayerCount = layerNames.size();
 				device_info.ppEnabledLayerNames = layerNames.data();
 				device_info.pEnabledFeatures = &device->mPhysicalDeviceFeatures; //Enable all available because we don't know ahead of time what features will be used.
-
+				
+				device->mPhysicalDevice = physicalDevice;
 				result = physicalDevice.createDevice(&device_info, nullptr, &device->mDevice);
 				if (result == vk::Result::eSuccess)
 				{
@@ -1860,7 +1861,6 @@ void StateManager::DestroyQuery(size_t id)
 
 void StateManager::CreateQuery(size_t id, void* argument1)
 {
-	vk::Result result;
 	auto window = mWindows[id];
 	CQuery9* query9 = bit_cast<CQuery9*>(argument1);
 	std::shared_ptr<RealQuery> ptr = std::make_shared<RealQuery>(window.get());
@@ -1935,4 +1935,23 @@ void StateManager::CreateQuery(size_t id, void* argument1)
 	ptr->mQueryPool = poolResult.value;
 
 	mQueries.push_back(ptr);
+}
+
+std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealWindow> realWindow, HWND handle)
+{
+	auto it = mSwapChains.find(handle);
+	if (it != mSwapChains.end())
+	{
+		return (*it).second;
+	}
+	else
+	{
+		vk::Instance instance = realWindow->mRealInstance->mInstance;
+		vk::PhysicalDevice physicalDevice = realWindow->mRealDevice->mPhysicalDevice;
+		vk::Device device = realWindow->mRealDevice->mDevice;
+		HWND windowHandle = handle;
+		uint32_t width = realWindow->mSwapchainExtent.width;
+		uint32_t height = realWindow->mSwapchainExtent.height;
+		mSwapChains[handle] = std::make_shared<RealSwapChain>(instance, physicalDevice, device, windowHandle, width, height);
+	}
 }
