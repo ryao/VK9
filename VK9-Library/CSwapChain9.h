@@ -39,11 +39,15 @@ public:
 	CDevice9* mDevice = nullptr;
 	D3DPRESENT_PARAMETERS* mPresentationParameters;
 	CSurface9* mBackBuffer = nullptr;
+	CSurface9* mFrontBuffer = nullptr;
+
+	size_t mId;
+	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 
 	CSwapChain9(CDevice9* Device, D3DPRESENT_PARAMETERS *pPresentationParameters);
 	~CSwapChain9();
 
-	
+	void Init();
 
 public:
 	//IUnknown

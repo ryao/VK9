@@ -18,22 +18,38 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vk_sdk_platform.h>
+#include <boost/container/small_vector.hpp>
+
+#include "Utilities.h"
+#include "CTypes.h"
+
+#include "RealDevice.h"
+#include "RealInstance.h"
+#include "RealWindow.h"
 #include "RealSurface.h"
 
-RealSurface::RealSurface(RealWindow* realWindow)
-	: mRealWindow(realWindow)
-{
-	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
-}
+#ifndef REALRENDERTARGET_H
+#define REALRENDERTARGET_H
 
-RealSurface::~RealSurface()
+struct RealRenderTarget
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealSurface::~RealSurface";
-	if (mRealWindow != nullptr)
-	{
-		auto& device = mRealWindow->mRealDevice->mDevice;
-		device.destroyImageView(mStagingImageView, nullptr);
-		device.destroyImage(mStagingImage, nullptr);
-		device.freeMemory(mStagingDeviceMemory, nullptr);
-	}
-}
+	vk::Device mDevice;
+	RealSurface* mColorSurface = nullptr;
+	RealSurface* mDepthSurface = nullptr;
+
+	RealRenderTarget(vk::Device device,RealSurface* colorSurface, RealSurface* depthSurface);
+	~RealRenderTarget();
+
+	vk::RenderPass mStoreRenderPass;
+	vk::RenderPass mClearRenderPass;
+	vk::AttachmentDescription mRenderAttachments[2];
+	vk::ClearValue mClearValues[2];
+	vk::ColorSpaceKHR mColorSpace;
+	vk::ClearColorValue mClearColorValue;
+	vk::Framebuffer mFramebuffer;
+
+};
+
+#endif // REALRENDERTARGET_H

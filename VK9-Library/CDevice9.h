@@ -70,7 +70,8 @@ public:
 	ULONG mReferenceCount = 1;
 	uint32_t mDisplayCount = 0;	
 	boost::container::small_vector<CSwapChain9*, 2> mSwapChains;
-	boost::container::small_vector<CRenderTargetSurface9*, 16> mRenderTargets;
+	CSurface9* mRenderTargets[4] = {};
+
 	BOOL mIsDirty = true;
 	
 	PAINTSTRUCT* mPaintInformation = {};

@@ -28,11 +28,21 @@ CSwapChain9::CSwapChain9(CDevice9* Device, D3DPRESENT_PARAMETERS *pPresentationP
 	mPresentationParameters(pPresentationParameters)
 {
 	mBackBuffer = new CSurface9(Device, pPresentationParameters);
+	mFrontBuffer = new CSurface9(Device, pPresentationParameters);
+	mCommandStreamManager = mDevice->mCommandStreamManager;
+	mId = mDevice->mId;
 }
 
 CSwapChain9::~CSwapChain9()
 {
 	delete mBackBuffer;
+	delete mFrontBuffer;
+}
+
+void CSwapChain9::Init()
+{
+	mBackBuffer->Init();
+	mFrontBuffer->Init();
 }
 
 ULONG STDMETHODCALLTYPE CSwapChain9::AddRef(void)
@@ -85,18 +95,29 @@ ULONG STDMETHODCALLTYPE CSwapChain9::Release(void)
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetBackBuffer(UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9  **ppBackBuffer)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CSwapChain9::GetBackBuffer is not implemented!";
-
-	(*ppBackBuffer) = mBackBuffer;
-
-	return S_OK; //TODO: Implement.
+	switch (Type)
+	{
+	case D3DBACKBUFFER_TYPE_MONO:
+		(*ppBackBuffer) = mBackBuffer;
+		return S_OK;
+		break;
+	case D3DBACKBUFFER_TYPE_LEFT:
+		BOOST_LOG_TRIVIAL(warning) << "CSwapChain9::GetBackBuffer left type is not implemented!";
+		return E_NOTIMPL;
+	case D3DBACKBUFFER_TYPE_RIGHT:
+		BOOST_LOG_TRIVIAL(warning) << "CSwapChain9::GetBackBuffer right type is not implemented!";
+		return E_NOTIMPL;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "CSwapChain9::GetBackBuffer unknown type is not implemented!";
+		return E_NOTIMPL;
+	}
 }
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetDevice(IDirect3DDevice9** ppDevice)
 {
-	mDevice->AddRef(); 
-	(*ppDevice) = (IDirect3DDevice9*)mDevice; 
-	return S_OK; 
+	mDevice->AddRef();
+	(*ppDevice) = (IDirect3DDevice9*)mDevice;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetDisplayMode(D3DDISPLAYMODE *pMode)
@@ -125,12 +146,13 @@ HRESULT STDMETHODCALLTYPE CSwapChain9::GetPresentParameters(D3DPRESENT_PARAMETER
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::GetRasterStatus(D3DRASTER_STATUS *pRasterStatus)
 {
+	(*pRasterStatus) = {};
 	BOOST_LOG_TRIVIAL(warning) << "CSurface9::GetRasterStatus is not implemented!";
 
 	return E_NOTIMPL; //TODO: Implement.
 }
 
-HRESULT STDMETHODCALLTYPE CSwapChain9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride,const RGNDATA *pDirtyRegion, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE CSwapChain9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion, DWORD dwFlags)
 {
 	BOOST_LOG_TRIVIAL(warning) << "CSurface9::Present is not implemented!";
 

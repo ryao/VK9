@@ -38,7 +38,9 @@ struct RealSurface
 	void* mData = nullptr;
 	vk::Image mStagingImage;
 	vk::DeviceMemory mStagingDeviceMemory;
+	vk::ImageView mStagingImageView;
 
+	vk::Extent3D mExtent;
 	vk::Format mRealFormat = vk::Format::eR8G8B8A8Unorm;
 	vk::MemoryAllocateInfo mMemoryAllocateInfo;
 	vk::ImageLayout mImageLayout = vk::ImageLayout::eGeneral;

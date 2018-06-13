@@ -70,8 +70,7 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	mDepthStencilSurface = new CSurface9(this, pPresentationParameters);
 
 	//Add implicit render target
-	CRenderTargetSurface9* ptr2 = new CRenderTargetSurface9(this, mPresentationParameters.BackBufferWidth, mPresentationParameters.BackBufferHeight, D3DFMT_UNKNOWN);
-	mRenderTargets.push_back(ptr2);
+	mRenderTargets[0] = ptr->mBackBuffer;
 }
 
 CDevice9::~CDevice9()
@@ -1268,7 +1267,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 *pRenderTarget)
 {
-	mRenderTargets[RenderTargetIndex] = (CRenderTargetSurface9*)pRenderTarget;
+	mRenderTargets[RenderTargetIndex] = (CSurface9*)pRenderTarget;
 
 	return S_OK;
 }

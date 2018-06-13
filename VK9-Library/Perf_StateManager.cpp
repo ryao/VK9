@@ -165,13 +165,8 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	vk::Bool32 doesSupportPresentation = false;
 	vk::Bool32 doesSupportGraphics = false;
 	uint32_t graphicsQueueIndex = 0;
-	uint32_t presentationQueueIndex = 0;
 	vk::Format depthFormat = vk::Format::eD16Unorm;
 	vk::SurfaceTransformFlagBitsKHR transformFlags;
-
-	vk::Win32SurfaceCreateInfoKHR surfaceCreateInfo;
-	surfaceCreateInfo.hinstance = bit_cast<HINSTANCE>(argument2);
-	surfaceCreateInfo.hwnd = device9->mFocusWindow; //hFocusWindow;
 
 	mWindows.push_back(ptr);
 
@@ -181,44 +176,13 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	}
 	BOOST_LOG_TRIVIAL(info) << "StateManager::CreateWindow1 The total size of all heaps is " << ptr->mEstimatedMemory;
 
-	result = instance->mInstance.createWin32SurfaceKHR(&surfaceCreateInfo, nullptr, &ptr->mSurface);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateWin32SurfaceKHR failed with a return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	result = physicaldevice.getSurfaceCapabilitiesKHR(ptr->mSurface, &ptr->mSurfaceCapabilities);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	/*
-	Search for queues to use for graphics and presentation.
-	It's easier if one queue does both so if we find one that supports both than just exit.
-	Otherwise look for one for presentation and one for graphics.
-	The index of the queue us stored for later use.
-	*/
 	for (uint32_t i = 0; i < device->mQueueFamilyPropertyCount; i++)
 	{
-		result = physicaldevice.getSurfaceSupportKHR(i, ptr->mSurface, &doesSupportPresentation);
 		doesSupportGraphics = (device->mQueueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlagBits(0);
-
-		if (doesSupportPresentation && doesSupportGraphics)
+		if (doesSupportGraphics)
 		{
 			graphicsQueueIndex = i;
-			presentationQueueIndex = i;
 			break;
-		}
-		else if (doesSupportPresentation && presentationQueueIndex == UINT32_MAX)
-		{
-			presentationQueueIndex = i;
-		}
-		else if (doesSupportGraphics && graphicsQueueIndex == UINT32_MAX)
-		{
-			graphicsQueueIndex = i;
 		}
 	}
 
@@ -245,20 +209,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	*/
 	auto& presentationParameters = device9->mPresentationParameters;
 	auto& deviceState = ptr->mDeviceState;
-	auto& surfaceCapabilities = ptr->mSurfaceCapabilities;
-	if (surfaceCapabilities.currentExtent.width < (uint32_t)1 || surfaceCapabilities.currentExtent.height < (uint32_t)1)
-	{
-		//If the height/width are -1 then just set it to the requested size and hope for the best.
-		ptr->mSwapchainExtent.width = presentationParameters.BackBufferWidth;
-		ptr->mSwapchainExtent.height = presentationParameters.BackBufferHeight;
-	}
-	else
-	{
-		//Apparently the swap chain size must match the surface size if it is defined.
-		ptr->mSwapchainExtent = surfaceCapabilities.currentExtent;
-		presentationParameters.BackBufferWidth = surfaceCapabilities.currentExtent.width;
-		presentationParameters.BackBufferHeight = surfaceCapabilities.currentExtent.height;
-	}
+
 
 	//initialize vulkan/d3d9 viewport and scissor structures.
 	//mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
@@ -283,20 +234,7 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 	deviceState.m9Scissor.left = 0;
 	deviceState.m9Scissor.top = 0;
 
-	result = physicaldevice.getSurfaceFormatsKHR(ptr->mSurface, &ptr->mSurfaceFormatCount, nullptr);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	ptr->mSurfaceFormats = new vk::SurfaceFormatKHR[ptr->mSurfaceFormatCount];
-	result = physicaldevice.getSurfaceFormatsKHR(ptr->mSurface, &ptr->mSurfaceFormatCount, ptr->mSurfaceFormats);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfaceFormatsKHR failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
+	
 
 	if (ptr->mSurfaceFormatCount == 1 && ptr->mSurfaceFormats[0].format == vk::Format::eUndefined)
 	{
@@ -307,89 +245,9 @@ void StateManager::CreateWindow1(size_t id, void* argument1, void* argument2)
 		ptr->mFormat = ptr->mSurfaceFormats[0].format; //Pull the preferred format.
 	}
 
-	if (ptr->mSurfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)
-	{
-		transformFlags = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-	}
-	else
-	{
-		transformFlags = ptr->mSurfaceCapabilities.currentTransform;
-	}
+	
 
-	result = physicaldevice.getSurfacePresentModesKHR(ptr->mSurface, &ptr->mPresentationModeCount, nullptr);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
 
-	ptr->mPresentationModes = new vk::PresentModeKHR[ptr->mPresentationModeCount];
-	result = physicaldevice.getSurfacePresentModesKHR(ptr->mSurface, &ptr->mPresentationModeCount, ptr->mPresentationModes);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetPhysicalDeviceSurfacePresentModesKHR failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	/*
-	Trying modes in order of preference (Mailbox,immediate,FIFO)
-	VK_PRESENT_MODE_MAILBOX_KHR - Wait for the next vertical blanking interval to update the image. New images replace the one waiting to be displayed.
-	VK_PRESENT_MODE_IMMEDIATE_KHR - Do not wait for vertical blanking to update the image.
-	VK_PRESENT_MODE_FIFO_KHR - Wait for the next vertical blanking interval to update the image. If the interval is missed wait for the next one. New images will be queued for display.
-	*/
-	ptr->mSwapchainPresentMode = vk::PresentModeKHR::eFifo;
-	for (size_t i = 0; i < ptr->mPresentationModeCount; i++)
-	{
-		if (ptr->mPresentationModes[i] == vk::PresentModeKHR::eMailbox)
-		{
-			ptr->mSwapchainPresentMode = vk::PresentModeKHR::eMailbox;
-			break;
-		}
-		else if (ptr->mPresentationModes[i] == vk::PresentModeKHR::eImmediate)
-		{
-			ptr->mSwapchainPresentMode = vk::PresentModeKHR::eImmediate;
-		} //Already defaulted to FIFO so do nothing for else.
-	}
-
-	/*
-	Finally create the swap chain based on the information collected.
-	This swap chain will handle the work done by the implicit swap chain in D3D9.
-	*/
-	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
-	swapchainCreateInfo.surface = ptr->mSurface;
-	swapchainCreateInfo.minImageCount = ptr->mSurfaceCapabilities.minImageCount + 1;
-	swapchainCreateInfo.imageFormat = ptr->mFormat;
-	swapchainCreateInfo.imageColorSpace = ptr->mSurfaceFormats[0].colorSpace;
-	swapchainCreateInfo.imageExtent = ptr->mSwapchainExtent;
-	swapchainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
-	swapchainCreateInfo.preTransform = transformFlags;
-	swapchainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-	swapchainCreateInfo.imageArrayLayers = 1;
-	swapchainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
-	swapchainCreateInfo.queueFamilyIndexCount = 0;
-	swapchainCreateInfo.pQueueFamilyIndices = nullptr;
-	swapchainCreateInfo.presentMode = ptr->mSwapchainPresentMode;
-	swapchainCreateInfo.oldSwapchain = ptr->mSwapchain; //There is no old swapchain yet.
-	swapchainCreateInfo.clipped = true;
-
-	result = device->mDevice.createSwapchainKHR(&swapchainCreateInfo, nullptr, &ptr->mSwapchain);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSwapchainKHR failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	//Create the images (buffers) that will be used by the swap chain.
-	result = device->mDevice.getSwapchainImagesKHR(ptr->mSwapchain, &ptr->mSwapchainImageCount, nullptr);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkGetSwapchainImagesKHR failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	ptr->mSwapchainImages = new vk::Image[ptr->mSwapchainImageCount];
-	ptr->mSwapchainViews = new vk::ImageView[ptr->mSwapchainImageCount];
-	ptr->mSwapchainBuffers = new vk::CommandBuffer[ptr->mSwapchainImageCount];
 
 	result = device->mDevice.getSwapchainImagesKHR(ptr->mSwapchain, &ptr->mSwapchainImageCount, ptr->mSwapchainImages);
 	if (result != vk::Result::eSuccess)
@@ -1680,6 +1538,7 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
 	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
 	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+	ptr->mExtent = imageCreateInfo.extent;
 
 	//if (surface9->mCubeTexture != nullptr)
 	//{
@@ -1725,6 +1584,42 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	ptr->mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 
 	window->mRealDevice->mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
+
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+	imageViewCreateInfo.image = ptr->mStagingImage;
+	imageViewCreateInfo.viewType = vk::ImageViewType::e3D;
+	imageViewCreateInfo.format = ptr->mRealFormat;
+	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	/*
+	This block handles the luminance & x formats. They are converted to color formats but need a little mapping to make them work correctly.
+	*/
+	switch (surface9->mFormat)
+	{
+	case D3DFMT_L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+		break;
+	case D3DFMT_A8L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+		break;
+	case D3DFMT_X8R8G8B8:
+	case D3DFMT_X8B8G8R8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eOne);
+		break;
+	default:
+		break;
+	}
+
+	result = window->mRealDevice->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mStagingImageView);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
 
 	mSurfaces.push_back(ptr);
 }
@@ -1952,6 +1847,9 @@ std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealWi
 		HWND windowHandle = handle;
 		uint32_t width = realWindow->mSwapchainExtent.width;
 		uint32_t height = realWindow->mSwapchainExtent.height;
-		mSwapChains[handle] = std::make_shared<RealSwapChain>(instance, physicalDevice, device, windowHandle, width, height);
+		auto output = std::make_shared<RealSwapChain>(instance, physicalDevice, device, windowHandle, width, height);
+		mSwapChains[handle] = output;
+
+		return output;
 	}
 }
