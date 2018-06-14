@@ -828,7 +828,7 @@ vk::ShaderModule LoadShaderFromResource(vk::Device device, WORD resource)
 	}
 	else
 	{
-		HRSRC hRes = FindResource(dllModule, MAKEINTRESOURCE(resource), L"Shader");
+		HRSRC hRes = FindResource(dllModule, MAKEINTRESOURCE(resource), TEXT("Shader"));
 		if (NULL != hRes)
 		{
 			HGLOBAL hData = LoadResource(dllModule, hRes);
