@@ -86,6 +86,7 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 #include "RealIndexBuffer.h"
 #include "RealQuery.h"
 #include "RealSwapChain.h"
+#include "RealRenderTarget.h"
 #include "SamplerRequest.h"
 #include "ResourceContext.h"
 #include "DrawContext.h"

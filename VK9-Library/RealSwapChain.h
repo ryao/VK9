@@ -25,10 +25,6 @@ misrepresented as being the original software.
 #include "Utilities.h"
 #include "CTypes.h"
 
-#include "RealDevice.h"
-#include "RealInstance.h"
-#include "RealWindow.h"
-
 #ifndef REALSWAPCHAIN_H
 #define REALSWAPCHAIN_H
 

@@ -25,9 +25,6 @@ misrepresented as being the original software.
 #include "Utilities.h"
 #include "CTypes.h"
 
-#include "RealDevice.h"
-#include "RealInstance.h"
-#include "RealWindow.h"
 #include "RealSurface.h"
 
 #ifndef REALRENDERTARGET_H
@@ -42,6 +39,7 @@ struct RealRenderTarget
 	RealRenderTarget(vk::Device device,RealSurface* colorSurface, RealSurface* depthSurface);
 	~RealRenderTarget();
 
+	bool mIsSceneStarted = false;
 	vk::RenderPass mStoreRenderPass;
 	vk::RenderPass mClearRenderPass;
 	vk::AttachmentDescription mRenderAttachments[2];
@@ -49,7 +47,18 @@ struct RealRenderTarget
 	vk::ColorSpaceKHR mColorSpace;
 	vk::ClearColorValue mClearColorValue;
 	vk::Framebuffer mFramebuffer;
+	vk::RenderPassBeginInfo mRenderPassBeginInfo;
+	vk::ImageMemoryBarrier mImageMemoryBarrier;
+	vk::ImageMemoryBarrier mPrePresentBarrier;
+	vk::PipelineStageFlags mPipeStageFlags;
+	vk::SemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo;
+	vk::Semaphore mPresentCompleteSemaphore;
+	vk::SubmitInfo mSubmitInfo;
+	vk::Fence mNullFence;
 
+	void StartScene(vk::CommandBuffer command, bool clear);
+	void StopScene(vk::CommandBuffer command, vk::Queue queue);
+	void Clear(vk::CommandBuffer command, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 };
 
 #endif // REALRENDERTARGET_H
