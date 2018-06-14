@@ -43,6 +43,7 @@ struct RealInstance
 	boost::container::small_vector<std::shared_ptr<RealDevice>, 1> mDevices;
 
 #ifdef _DEBUG
+	HMODULE mRenderDocDll = nullptr;
 	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
 	vk::DebugReportCallbackEXT mCallback;
 #endif // _DEBUG
