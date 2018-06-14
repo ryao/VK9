@@ -820,9 +820,9 @@ vk::ShaderModule LoadShaderFromResource(vk::Device device, WORD resource)
 	HMODULE dllModule = NULL;
 
 	//dllModule = GetModule();
-	dllModule = GetModuleHandle(L"D3d9.dll");
+	BOOL res = GetModuleHandleEx(0, TEXT("d3d9"), &dllModule);
 
-	if (dllModule == NULL)
+	if (res == FALSE)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource dllModule is null.";
 	}
@@ -859,6 +859,8 @@ vk::ShaderModule LoadShaderFromResource(vk::Device device, WORD resource)
 		{
 			BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromResource resource not found.";
 		}
+
+		FreeLibrary(dllModule);
 	}
 
 	return module;
