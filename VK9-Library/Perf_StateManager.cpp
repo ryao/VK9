@@ -815,11 +815,10 @@ void StateManager::CreateInstance()
 	extensionNames.push_back("VK_EXT_debug_report");
 	layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
 
-	HINSTANCE instance = LoadLibraryA("renderdoc.dll");
-	HMODULE mod = GetModuleHandleA("renderdoc.dll");
-	if (mod != nullptr)
+	BOOL res = GetModuleHandleEx(0, TEXT("renderdoc"), &ptr->mRenderDocDll);
+	if (res != FALSE)
 	{
-		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
+		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(ptr->mRenderDocDll, "RENDERDOC_GetAPI");
 		if (RENDERDOC_GetAPI != nullptr)
 		{
 			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_1, (void **)&ptr->mRenderDocApi);
