@@ -58,8 +58,8 @@ CommandStreamManager::CommandStreamManager()
 		if (!outfile)
 		{
 			MessageBox(nullptr,
-				L"The application does not have permission to write to the log file location. If running on Windows try running as administrator.",
-				L"No Write Permission!",
+				TEXT("The application does not have permission to write to the log file location. If running on Windows try running as administrator."),
+				TEXT("No Write Permission!"),
 				IDOK | MB_ICONERROR);
 		}
 		outfile.close();
@@ -76,8 +76,8 @@ CommandStreamManager::CommandStreamManager()
 		if (!outfile)
 		{
 			MessageBox(nullptr,
-				L"The application does not have permission to write to the log file location. If running on Windows try running as administrator.",
-				L"No Write Permission!",
+				TEXT("The application does not have permission to write to the log file location. If running on Windows try running as administrator."),
+				TEXT("No Write Permission!"),
 				IDOK | MB_ICONERROR);
 		}
 		outfile.close();

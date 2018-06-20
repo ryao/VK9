@@ -31,6 +31,10 @@ RealInstance::~RealInstance()
 	mDevices.clear();
 #ifdef _DEBUG
 	mInstance.destroyDebugReportCallbackEXT(mCallback);
+	if ( mRenderDocDll != nullptr )
+	{
+		FreeLibrary(mRenderDocDll);
+	}
 #endif
 	mInstance.destroy();
 }
