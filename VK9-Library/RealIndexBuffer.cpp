@@ -20,8 +20,8 @@ misrepresented as being the original software.
 
 #include "RealIndexBuffer.h"
 
-RealIndexBuffer::RealIndexBuffer(RealWindow* realWindow)
-	: mRealWindow(realWindow)
+RealIndexBuffer::RealIndexBuffer(RealDevice* realDevice)
+	: mRealDevice(realDevice)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealIndexBuffer::RealIndexBuffer";
 }
@@ -29,9 +29,9 @@ RealIndexBuffer::RealIndexBuffer(RealWindow* realWindow)
 RealIndexBuffer::~RealIndexBuffer()
 {
 	BOOST_LOG_TRIVIAL(info) << "RealIndexBuffer::~RealIndexBuffer";
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice->mDevice;
+		auto& device = mRealDevice->mDevice;
 		device.destroyBuffer(mBuffer, nullptr);
 		device.freeMemory(mMemory, nullptr);
 	}

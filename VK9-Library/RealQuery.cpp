@@ -20,8 +20,8 @@ misrepresented as being the original software.
 
 #include "RealQuery.h"
 
-RealQuery::RealQuery(RealWindow* realWindow)
-	: mRealWindow(realWindow)
+RealQuery::RealQuery(RealDevice* realDevice)
+	: mRealDevice(realDevice)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealQuery::RealQuery";
 }
@@ -29,9 +29,9 @@ RealQuery::RealQuery(RealWindow* realWindow)
 RealQuery::~RealQuery()
 {
 	BOOST_LOG_TRIVIAL(info) << "RealQuery::~RealQuery";
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice->mDevice;
+		auto& device = mRealDevice->mDevice;
 		device.destroyQueryPool(mQueryPool);
 	}
 }

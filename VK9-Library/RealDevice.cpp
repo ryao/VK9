@@ -19,9 +19,11 @@ misrepresented as being the original software.
 */
 
 #include "RealDevice.h"
+#include "RealRenderTarget.h"
 
-RealDevice::RealDevice(vk::PhysicalDevice physicalDevice)
-	: mPhysicalDevice(physicalDevice)
+RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
+	: mInstance(instance),
+	mPhysicalDevice(physicalDevice)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealDevice::RealDevice";
 

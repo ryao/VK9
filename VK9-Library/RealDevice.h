@@ -20,9 +20,15 @@ misrepresented as being the original software.
 
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vk_sdk_platform.h>
+#include <memory>
 
 #include "Utilities.h"
 #include "CTypes.h"
+
+struct RealRenderTarget;
+struct SamplerRequest;
+struct DrawContext;
+class CStateBlock9;
 
 #ifndef MAX_DESCRIPTOR
 #define MAX_DESCRIPTOR 2048
@@ -51,9 +57,11 @@ struct RealDevice
 	//Stuff that does things.
 	vk::PhysicalDevice mPhysicalDevice;
 	vk::Device mDevice;
+	vk::Instance mInstance;
 	vk::DescriptorPool mDescriptorPool;
 	vk::CommandPool mCommandPool;
 	vk::CommandBuffer mCommandBuffers[2];
+	uint32_t mCurrentCommandBuffer = 0;
 	vk::Queue mQueue;
 	vk::Sampler mSampler;
 
@@ -61,6 +69,12 @@ struct RealDevice
 	vk::DeviceSize mEstimatedMemoryUsed = 0;
 	vk::DeviceSize mEstimatedMemory = 2147483648;
 	DeviceState mDeviceState = {};
+	CStateBlock9* mCurrentStateRecording = nullptr;
+	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
+	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;
+	int32_t mVertexCount = 0;
+	Transformations mTransformations;
+	bool mIsDirty = true;
 
 	//Fixed Function Shaders
 	vk::ShaderModule mVertShaderModule_XYZ_DIFFUSE;
@@ -1184,7 +1198,10 @@ struct RealDevice
 	vk::CommandBufferBeginInfo mBeginInfo;
 	vk::SubmitInfo mSubmitInfo;
 
-	RealDevice(vk::PhysicalDevice physicalDevice);
+	//Render Target Stuff
+	std::shared_ptr<RealRenderTarget> mRenderTarget;
+
+	RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice);
 	~RealDevice();
 
 	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);

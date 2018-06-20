@@ -195,7 +195,6 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	workItem->Id = obj->mInstanceId;
 	workItem->WorkItemType = WorkItemType::Device_Create;
 	workItem->Argument1 = obj;
-	workItem->Argument2 = GetModuleHandle(nullptr);
 	obj->mId = obj->mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	obj->mSwapChains[0]->Init();

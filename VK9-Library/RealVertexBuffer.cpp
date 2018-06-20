@@ -20,8 +20,8 @@ misrepresented as being the original software.
 
 #include "RealVertexBuffer.h"
 
-RealVertexBuffer::RealVertexBuffer(RealWindow* realWindow)
-	: mRealWindow(realWindow)
+RealVertexBuffer::RealVertexBuffer(RealDevice* realDevice)
+	: mRealDevice(realDevice)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealVertexBuffer::RealVertexBuffer";
 }
@@ -29,9 +29,9 @@ RealVertexBuffer::RealVertexBuffer(RealWindow* realWindow)
 RealVertexBuffer::~RealVertexBuffer()
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealVertexBuffer::~RealVertexBuffer";
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice->mDevice;
+		auto& device = mRealDevice->mDevice;
 		device.destroyBuffer(mBuffer, nullptr);
 		device.freeMemory(mMemory, nullptr);
 	}

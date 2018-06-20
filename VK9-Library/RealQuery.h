@@ -27,7 +27,7 @@ misrepresented as being the original software.
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
+#include "RealDevice.h"
 
 #ifndef REALQUERY_H
 #define REALQUERY_H
@@ -39,8 +39,8 @@ struct RealQuery
 
 	vk::QueryPool mQueryPool;
 
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealQuery(RealWindow* realWindow);
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	RealQuery(RealDevice* realDevice);
 	~RealQuery();
 };
 

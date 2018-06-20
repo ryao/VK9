@@ -22,10 +22,10 @@ misrepresented as being the original software.
 
 SamplerRequest::~SamplerRequest()
 {
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
 		//BOOST_LOG_TRIVIAL(warning) << "SamplerRequest::~SamplerRequest";
-		auto& device = mRealWindow->mRealDevice->mDevice;
+		auto& device = mRealDevice->mDevice;
 		device.destroySampler(Sampler, nullptr);
 	}
 }

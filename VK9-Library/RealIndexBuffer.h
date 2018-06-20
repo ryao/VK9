@@ -27,7 +27,7 @@ misrepresented as being the original software.
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
+#include "RealDevice.h"
 
 #ifndef REALINDEXBUFFER_H
 #define REALINDEXBUFFER_H
@@ -41,8 +41,8 @@ struct RealIndexBuffer
 	void* mData = nullptr;
 	int32_t mSize;
 
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealIndexBuffer(RealWindow* realWindow);
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	RealIndexBuffer(RealDevice* realDevice);
 	~RealIndexBuffer();
 };
 

@@ -27,7 +27,6 @@ misrepresented as being the original software.
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
 
 #ifndef REALSURFACE_H
 #define REALSURFACE_H
@@ -47,8 +46,8 @@ struct RealSurface
 	vk::SubresourceLayout mLayouts[1] = {};
 	vk::ImageSubresource mSubresource;
 
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealSurface(RealWindow* realWindow);
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	RealSurface(RealDevice* realDevice);
 	~RealSurface();
 };
 

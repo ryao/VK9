@@ -28,7 +28,7 @@ misrepresented as being the original software.
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
+#include "RealDevice.h"
 
 #ifndef RESOURCECONTEXT_H
 #define RESOURCECONTEXT_H
@@ -45,8 +45,8 @@ struct ResourceContext
 
 							//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	ResourceContext(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	ResourceContext(RealDevice* realDevice) : mRealDevice(realDevice) {}
 	~ResourceContext();
 };
 

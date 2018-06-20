@@ -27,7 +27,6 @@ misrepresented as being the original software.
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
 
 #ifndef REALVERTEXBUFFER_H
 #define REALVERTEXBUFFER_H
@@ -40,8 +39,8 @@ struct RealVertexBuffer
 	void* mData = nullptr;
 	int32_t mSize;
 
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealVertexBuffer(RealWindow* realWindow);
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	RealVertexBuffer(RealDevice* realDevice);
 	~RealVertexBuffer();
 };
 

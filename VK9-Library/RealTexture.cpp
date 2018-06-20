@@ -20,8 +20,8 @@ misrepresented as being the original software.
 
 #include "RealTexture.h"
 
-RealTexture::RealTexture(RealWindow* realWindow)
-	: mRealWindow(realWindow)
+RealTexture::RealTexture(RealDevice* realDevice)
+	: mRealDevice(realDevice)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealTexture::RealTexture";
 }
@@ -29,9 +29,9 @@ RealTexture::RealTexture(RealWindow* realWindow)
 RealTexture::~RealTexture()
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealTexture::~RealTexture";
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice->mDevice;
+		auto& device = mRealDevice->mDevice;
 		device.destroyImageView(mImageView, nullptr);
 		device.destroySampler(mSampler, nullptr);
 		device.destroyImage(mImage, nullptr);

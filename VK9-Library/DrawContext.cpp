@@ -2,10 +2,10 @@
 
 DrawContext::~DrawContext()
 {
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
 		//BOOST_LOG_TRIVIAL(warning) << "DrawContext::~DrawContext";
-		auto& device = mRealWindow->mRealDevice->mDevice;
+		auto& device = mRealDevice->mDevice;
 		device.destroyPipeline(Pipeline, nullptr);
 		device.destroyPipelineLayout(PipelineLayout, nullptr);
 		device.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);

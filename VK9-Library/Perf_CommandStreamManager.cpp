@@ -122,7 +122,7 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 		key = mRenderManager.mStateManager.mInstanceKey++;
 		break;
 	case WorkItemType::Device_Create:
-		key = mRenderManager.mStateManager.mWindowsKey++;
+		key = mRenderManager.mStateManager.mDeviceKey++;
 		break;
 	case WorkItemType::VertexBuffer_Create:
 		key = mRenderManager.mStateManager.mVertexBufferKey++;

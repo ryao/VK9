@@ -62,12 +62,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_Create:
 			{
-				commandStreamManager->mRenderManager.mStateManager.CreateWindow1(workItem->Id, workItem->Argument1, workItem->Argument2);
+				commandStreamManager->mRenderManager.mStateManager.CreateDevice(workItem->Id, workItem->Argument1);
 			}
 			break;
 			case Device_Destroy:
 			{
-				commandStreamManager->mRenderManager.mStateManager.DestroyWindow(workItem->Id);
+				commandStreamManager->mRenderManager.mStateManager.DestroyDevice(workItem->Id);
 			}
 			break;
 			case VertexBuffer_Create:
@@ -169,17 +169,18 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				float Z = bit_cast<float>(workItem->Argument5);
 				DWORD Stencil = bit_cast<DWORD>(workItem->Argument6);
 
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				commandStreamManager->mRenderManager.Clear(realWindow, Count, pRects, Flags, Color, Z, Stencil);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
+
+				commandStreamManager->mRenderManager.Clear(realDevice, Count, pRects, Flags, Color, Z, Stencil);
 			}
 			break;
 			case Device_BeginScene:
 			{
 				auto& renderManager = commandStreamManager->mRenderManager;
-				auto& realWindow = (*renderManager.mStateManager.mWindows[workItem->Id]);
-				if (!realWindow.mIsSceneStarted)
+				auto& realDevice = renderManager.mStateManager.mDevices[workItem->Id];
+				if (!realDevice->mRenderTarget->mIsSceneStarted)
 				{
-					renderManager.StartScene(realWindow);
+					renderManager.StartScene(realDevice);
 				}
 			}
 			break;
@@ -190,16 +191,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				HWND hDestWindowOverride = bit_cast<HWND>(workItem->Argument3);
 				RGNDATA* pDirtyRegion = bit_cast<RGNDATA*>(workItem->Argument4);
 
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				commandStreamManager->mRenderManager.Present(realWindow, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
+				commandStreamManager->mRenderManager.Present(realDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 			}
 			break;
 			case Device_BeginStateBlock:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				CDevice9* device = bit_cast<CDevice9*>(workItem->Argument1);
 
-				realWindow.mCurrentStateRecording = new CStateBlock9(device);
+				realDevice->mCurrentStateRecording = new CStateBlock9(device);
 			}
 			break;
 			case Device_DrawIndexedPrimitive:
@@ -211,8 +212,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT StartIndex = bit_cast<UINT>(workItem->Argument5);
 				UINT PrimitiveCount = bit_cast<UINT>(workItem->Argument6);
 
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				commandStreamManager->mRenderManager.DrawIndexedPrimitive(realWindow, Type, BaseVertexIndex, MinIndex, NumVertices, StartIndex, PrimitiveCount);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
+				commandStreamManager->mRenderManager.DrawIndexedPrimitive(realDevice, Type, BaseVertexIndex, MinIndex, NumVertices, StartIndex, PrimitiveCount);
 			}
 			break;
 			case Device_DrawPrimitive:
@@ -221,24 +222,24 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT StartVertex = bit_cast<UINT>(workItem->Argument2);
 				UINT PrimitiveCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
-				commandStreamManager->mRenderManager.DrawPrimitive(realWindow, PrimitiveType, StartVertex, PrimitiveCount);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
+				commandStreamManager->mRenderManager.DrawPrimitive(realDevice, PrimitiveType, StartVertex, PrimitiveCount);
 			}
 			break;
 			case Device_EndStateBlock:
 			{
 				IDirect3DStateBlock9** ppSB = bit_cast<IDirect3DStateBlock9**>(workItem->Argument1);
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 
-				(*ppSB) = realWindow.mCurrentStateRecording;
-				realWindow.mCurrentStateRecording = nullptr;
+				(*ppSB) = realDevice->mCurrentStateRecording;
+				realDevice->mCurrentStateRecording = nullptr;
 			}
 			break;
 			case Device_GetDisplayMode:
 			{
 				UINT iSwapChain = bit_cast<UINT>(workItem->Argument1);
 				D3DDISPLAYMODE* pMode = bit_cast<D3DDISPLAYMODE*>(workItem->Argument2);
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 
 				if (iSwapChain)
 				{
@@ -247,27 +248,27 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 				else
 				{
-					pMode->Height = realWindow.mSwapchainExtent.height;
-					pMode->Width = realWindow.mSwapchainExtent.width;
+					pMode->Height = realDevice->mRenderTarget->mColorSurface->mExtent.height;
+					pMode->Width = realDevice->mRenderTarget->mColorSurface->mExtent.width;
 					pMode->RefreshRate = 60; //fake it till you make it.
-					pMode->Format = ConvertFormat(realWindow.mFormat);
+					pMode->Format = ConvertFormat(realDevice->mRenderTarget->mColorSurface->mRealFormat);
 				}
 			}
 			break;
 			case Device_GetFVF:
 			{
 				DWORD* pFVF = bit_cast<DWORD*>(workItem->Argument1);
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 
-				(*pFVF) = realWindow.mDeviceState.mFVF;
+				(*pFVF) = realDevice->mDeviceState.mFVF;
 			}
 			break;
 			case Device_GetLight:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
 				D3DLIGHT9* pLight = bit_cast<D3DLIGHT9*>(workItem->Argument2);
-				auto& light = realWindow.mDeviceState.mLights[Index];
+				auto& light = realDevice->mDeviceState.mLights[Index];
 
 				pLight->Type = (*(D3DLIGHTTYPE*)light.Type);
 				pLight->Diffuse = (*(D3DCOLORVALUE*)light.Diffuse);
@@ -288,45 +289,45 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetLightEnable:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
 				BOOL* pEnable = bit_cast<BOOL*>(workItem->Argument2);
 
-				(*pEnable) = realWindow.mDeviceState.mLights[Index].IsEnabled;
+				(*pEnable) = realDevice->mDeviceState.mLights[Index].IsEnabled;
 			}
 			break;
 			case Device_GetMaterial:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DMATERIAL9* pMaterial = bit_cast<D3DMATERIAL9*>(workItem->Argument1);
 
-				(*pMaterial) = realWindow.mDeviceState.mMaterial;
+				(*pMaterial) = realDevice->mDeviceState.mMaterial;
 			}
 			break;
 			case Device_GetNPatchMode:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				FLOAT* output = bit_cast<FLOAT*>(workItem->Argument1);
 
-				(*output) = realWindow.mDeviceState.mNSegments;
+				(*output) = realDevice->mDeviceState.mNSegments;
 			}
 			break;
 			case Device_GetPixelShader:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DPixelShader9** ppShader = bit_cast<IDirect3DPixelShader9**>(workItem->Argument1);
 
-				(*ppShader) = (IDirect3DPixelShader9*)realWindow.mDeviceState.mPixelShader;
+				(*ppShader) = (IDirect3DPixelShader9*)realDevice->mDeviceState.mPixelShader;
 			}
 			break;
 			case Device_GetPixelShaderConstantB:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
 				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
 				{
 					pConstantData[i] = slots.BooleanConstants[StartRegister + i];
@@ -335,12 +336,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetPixelShaderConstantF:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				float* pConstantData = bit_cast<float*>(workItem->Argument2);
 				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4fCount * 4);
 				for (size_t i = 0; i < length; i++)
@@ -351,12 +352,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetPixelShaderConstantI:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				int* pConstantData = bit_cast<int*>(workItem->Argument2);
 				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4iCount * 4);
 				for (size_t i = 0; i < length; i++)
@@ -367,19 +368,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetRenderState:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DRENDERSTATETYPE State = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
 				DWORD* pValue = bit_cast<DWORD*>(workItem->Argument2);
 
 				SpecializationConstants* constants = nullptr;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					constants = &realWindow.mCurrentStateRecording->mDeviceState.mSpecializationConstants;
+					constants = &realDevice->mCurrentStateRecording->mDeviceState.mSpecializationConstants;
 				}
 				else
 				{
-					constants = &realWindow.mDeviceState.mSpecializationConstants;
+					constants = &realDevice->mDeviceState.mSpecializationConstants;
 				}
 
 				switch (State)
@@ -701,31 +702,31 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetSamplerState:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Sampler = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
 				D3DSAMPLERSTATETYPE Type = bit_cast<D3DSAMPLERSTATETYPE>(workItem->Argument2);
 				DWORD* pValue = bit_cast<DWORD*>(workItem->Argument3);
 
-				(*pValue) = realWindow.mDeviceState.mSamplerStates[Sampler][Type];
+				(*pValue) = realDevice->mDeviceState.mSamplerStates[Sampler][Type];
 			}
 			break;
 			case Device_GetScissorRect:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				RECT* pRect = bit_cast<RECT*>(workItem->Argument1);
 
-				(*pRect) = realWindow.mDeviceState.m9Scissor;
+				(*pRect) = realDevice->mDeviceState.m9Scissor;
 			}
 			break;
 			case Device_GetStreamSource:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StreamNumber = bit_cast<UINT>(workItem->Argument1);
 				IDirect3DVertexBuffer9** ppStreamData = bit_cast<IDirect3DVertexBuffer9**>(workItem->Argument2);
 				UINT* pOffsetInBytes = bit_cast<UINT*>(workItem->Argument3);
 				UINT* pStride = bit_cast<UINT*>(workItem->Argument4);
 
-				StreamSource& value = realWindow.mDeviceState.mStreamSources[StreamNumber];
+				StreamSource& value = realDevice->mDeviceState.mStreamSources[StreamNumber];
 
 				(*ppStreamData) = (IDirect3DVertexBuffer9*)value.StreamData;
 				/*
@@ -738,19 +739,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetTexture:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Stage = bit_cast<DWORD>(workItem->Argument1);
 				IDirect3DBaseTexture9** ppTexture = bit_cast<IDirect3DBaseTexture9**>(workItem->Argument2);
 
 				DeviceState* state = NULL;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				(*ppTexture) = state->mTextures[Stage];
@@ -758,20 +759,20 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetTextureStageState:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Stage = bit_cast<DWORD>(workItem->Argument1);
 				D3DTEXTURESTAGESTATETYPE Type = bit_cast<D3DTEXTURESTAGESTATETYPE>(workItem->Argument2);
 				DWORD* pValue = bit_cast<DWORD*>(workItem->Argument3);
 
 				DeviceState* state = nullptr;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				switch (Type)
@@ -1341,37 +1342,37 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetTransform:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DTRANSFORMSTATETYPE State = bit_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
 				D3DMATRIX* pMatrix = bit_cast<D3DMATRIX*>(workItem->Argument2);
 
-				(*pMatrix) = realWindow.mDeviceState.mTransforms[State];
+				(*pMatrix) = realDevice->mDeviceState.mTransforms[State];
 			}
 			break;
 			case Device_GetVertexDeclaration:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DVertexDeclaration9** ppDecl = bit_cast<IDirect3DVertexDeclaration9**>(workItem->Argument1);
 
-				(*ppDecl) = (IDirect3DVertexDeclaration9*)realWindow.mDeviceState.mVertexDeclaration;
+				(*ppDecl) = (IDirect3DVertexDeclaration9*)realDevice->mDeviceState.mVertexDeclaration;
 			}
 			break;
 			case Device_GetVertexShader:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DVertexShader9** ppShader = bit_cast<IDirect3DVertexShader9**>(workItem->Argument1);
 
-				(*ppShader) = (IDirect3DVertexShader9*)realWindow.mDeviceState.mVertexShader;
+				(*ppShader) = (IDirect3DVertexShader9*)realDevice->mDeviceState.mVertexShader;
 			}
 			break;
 			case Device_GetVertexShaderConstantB:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
 				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
 				{
 					pConstantData[i] = slots.BooleanConstants[StartRegister + i];
@@ -1380,19 +1381,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetVertexShaderConstantF:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				float* pConstantData = bit_cast<float*>(workItem->Argument2);
 				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4fCount * 4);
 				for (size_t i = 0; i < length; i++)
 				{
 					if ((startIndex + i) < 128)
 					{
-						pConstantData[i] = realWindow.mDeviceState.mPushConstants[startIndex + i];
+						pConstantData[i] = realDevice->mDeviceState.mPushConstants[startIndex + i];
 					}
 					else
 					{
@@ -1403,12 +1404,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetVertexShaderConstantI:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				int* pConstantData = bit_cast<int*>(workItem->Argument2);
 				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4iCount * 4);
 				for (size_t i = 0; i < length; i++)
@@ -1419,27 +1420,27 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_GetViewport:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DVIEWPORT9* pViewport = bit_cast<D3DVIEWPORT9*>(workItem->Argument1);
 
-				(*pViewport) = realWindow.mDeviceState.m9Viewport;
+				(*pViewport) = realDevice->mDeviceState.m9Viewport;
 			}
 			break;
 			case Device_LightEnable:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD LightIndex = bit_cast<DWORD>(workItem->Argument1);
 				BOOL bEnable = bit_cast<BOOL>(workItem->Argument2);
 
 				DeviceState* state = nullptr;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				Light light = {};
@@ -1459,35 +1460,35 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetFVF:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD FVF = bit_cast<DWORD>(workItem->Argument1);
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.mFVF = FVF;
-					realWindow.mCurrentStateRecording->mDeviceState.mHasFVF = true;
-					realWindow.mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = false;
+					realDevice->mCurrentStateRecording->mDeviceState.mFVF = FVF;
+					realDevice->mCurrentStateRecording->mDeviceState.mHasFVF = true;
+					realDevice->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = false;
 				}
 				else
 				{
-					realWindow.mDeviceState.mFVF = FVF;
-					realWindow.mDeviceState.mHasFVF = true;
-					realWindow.mDeviceState.mHasVertexDeclaration = false;
+					realDevice->mDeviceState.mFVF = FVF;
+					realDevice->mDeviceState.mHasFVF = true;
+					realDevice->mDeviceState.mHasVertexDeclaration = false;
 				}
 			}
 			break;
 			case Device_SetIndices:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DIndexBuffer9* pIndexData = bit_cast<IDirect3DIndexBuffer9*>(workItem->Argument1);
 				DeviceState* state = nullptr;
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				if (pIndexData != nullptr)
@@ -1506,19 +1507,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetLight:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
 				D3DLIGHT9* pLight = bit_cast<D3DLIGHT9*>(workItem->Argument2);
 
 				DeviceState* state = nullptr;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				Light light = {};
@@ -1573,24 +1574,24 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetMaterial:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DMATERIAL9* pMaterial = bit_cast<D3DMATERIAL9*>(workItem->Argument1);
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.mMaterial = (*pMaterial);
-					realWindow.mCurrentStateRecording->mDeviceState.mIsMaterialDirty = true;
+					realDevice->mCurrentStateRecording->mDeviceState.mMaterial = (*pMaterial);
+					realDevice->mCurrentStateRecording->mDeviceState.mIsMaterialDirty = true;
 				}
 				else
 				{
-					realWindow.mDeviceState.mMaterial = (*pMaterial);
-					realWindow.mDeviceState.mIsMaterialDirty = true;
+					realDevice->mDeviceState.mMaterial = (*pMaterial);
+					realDevice->mDeviceState.mIsMaterialDirty = true;
 				}
 			}
 			break;
 			case Device_SetNPatchMode:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				float nSegments = bit_cast<float>(workItem->Argument1);
 
 				if (nSegments > 0.0f)
@@ -1598,19 +1599,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					BOOST_LOG_TRIVIAL(warning) << "ProcessQueue nPatch greater than zero not supported.";
 				}
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.mNSegments = nSegments;
+					realDevice->mCurrentStateRecording->mDeviceState.mNSegments = nSegments;
 				}
 				else
 				{
-					realWindow.mDeviceState.mNSegments = nSegments;
+					realDevice->mDeviceState.mNSegments = nSegments;
 				}
 			}
 			break;
 			case Device_SetPixelShader:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DPixelShader9* pShader = bit_cast<IDirect3DPixelShader9*>(workItem->Argument1);
 
 				if (pShader != nullptr)
@@ -1618,31 +1619,31 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					pShader->AddRef();
 				}
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.mPixelShader = (CPixelShader9*)pShader;
-					realWindow.mCurrentStateRecording->mDeviceState.mHasPixelShader = true;
+					realDevice->mCurrentStateRecording->mDeviceState.mPixelShader = (CPixelShader9*)pShader;
+					realDevice->mCurrentStateRecording->mDeviceState.mHasPixelShader = true;
 				}
 				else
 				{
-					if (realWindow.mDeviceState.mPixelShader != nullptr)
+					if (realDevice->mDeviceState.mPixelShader != nullptr)
 					{
-						realWindow.mDeviceState.mPixelShader->Release();
+						realDevice->mDeviceState.mPixelShader->Release();
 					}
 
-					realWindow.mDeviceState.mPixelShader = (CPixelShader9*)pShader;
-					realWindow.mDeviceState.mHasPixelShader = true;
+					realDevice->mDeviceState.mPixelShader = (CPixelShader9*)pShader;
+					realDevice->mDeviceState.mHasPixelShader = true;
 				}
 			}
 			break;
 			case Device_SetPixelShaderConstantB:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
 				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
 				{
 					slots.BooleanConstants[StartRegister + i] = pConstantData[i];
@@ -1651,12 +1652,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetPixelShaderConstantF:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				float* pConstantData = bit_cast<float*>(workItem->Argument2);
 				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4fCount * 4);
 				for (size_t i = 0; i < length; i++)
@@ -1667,12 +1668,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetPixelShaderConstantI:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				int* pConstantData = bit_cast<int*>(workItem->Argument2);
 				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mPixelShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4iCount * 4);
 				for (size_t i = 0; i < length; i++)
@@ -1683,22 +1684,22 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetRenderState:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DRENDERSTATETYPE State = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
 				DWORD Value = bit_cast<DWORD>(workItem->Argument2);
 
 				SpecializationConstants* constants = nullptr;
 				DeviceState* state = NULL;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					constants = &realWindow.mCurrentStateRecording->mDeviceState.mSpecializationConstants;
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					constants = &realDevice->mCurrentStateRecording->mDeviceState.mSpecializationConstants;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					constants = &realWindow.mDeviceState.mSpecializationConstants;
-					state = &realWindow.mDeviceState;
+					constants = &realDevice->mDeviceState.mSpecializationConstants;
+					state = &realDevice->mDeviceState;
 				}
 
 				switch (State)
@@ -2123,20 +2124,20 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetSamplerState:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Sampler = bit_cast<DWORD>(workItem->Argument1);
 				D3DSAMPLERSTATETYPE Type = bit_cast<D3DSAMPLERSTATETYPE>(workItem->Argument2);
 				DWORD Value = bit_cast<DWORD>(workItem->Argument3);
 
 				DeviceState* state = NULL;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				state->mSamplerStates[Sampler][Type] = Value;
@@ -2144,32 +2145,32 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetScissorRect:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				RECT* pRect = bit_cast<RECT*>(workItem->Argument1);
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.m9Scissor = (*pRect);
+					realDevice->mCurrentStateRecording->mDeviceState.m9Scissor = (*pRect);
 
-					realWindow.mCurrentStateRecording->mDeviceState.mScissor.extent.width = realWindow.mCurrentStateRecording->mDeviceState.m9Scissor.right;
-					realWindow.mCurrentStateRecording->mDeviceState.mScissor.extent.height = realWindow.mCurrentStateRecording->mDeviceState.m9Scissor.bottom;
-					realWindow.mCurrentStateRecording->mDeviceState.mScissor.offset.x = realWindow.mCurrentStateRecording->mDeviceState.m9Scissor.left;
-					realWindow.mCurrentStateRecording->mDeviceState.mScissor.offset.y = realWindow.mCurrentStateRecording->mDeviceState.m9Scissor.top;
+					realDevice->mCurrentStateRecording->mDeviceState.mScissor.extent.width = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.right;
+					realDevice->mCurrentStateRecording->mDeviceState.mScissor.extent.height = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.bottom;
+					realDevice->mCurrentStateRecording->mDeviceState.mScissor.offset.x = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.left;
+					realDevice->mCurrentStateRecording->mDeviceState.mScissor.offset.y = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.top;
 				}
 				else
 				{
-					realWindow.mDeviceState.m9Scissor = (*pRect);
+					realDevice->mDeviceState.m9Scissor = (*pRect);
 
-					realWindow.mDeviceState.mScissor.extent.width = realWindow.mDeviceState.m9Scissor.right;
-					realWindow.mDeviceState.mScissor.extent.height = realWindow.mDeviceState.m9Scissor.bottom;
-					realWindow.mDeviceState.mScissor.offset.x = realWindow.mDeviceState.m9Scissor.left;
-					realWindow.mDeviceState.mScissor.offset.y = realWindow.mDeviceState.m9Scissor.top;
+					realDevice->mDeviceState.mScissor.extent.width = realDevice->mDeviceState.m9Scissor.right;
+					realDevice->mDeviceState.mScissor.extent.height = realDevice->mDeviceState.m9Scissor.bottom;
+					realDevice->mDeviceState.mScissor.offset.x = realDevice->mDeviceState.m9Scissor.left;
+					realDevice->mDeviceState.mScissor.offset.y = realDevice->mDeviceState.m9Scissor.top;
 				}
 			}
 			break;
 			case Device_SetStreamSource:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StreamNumber = bit_cast<UINT>(workItem->Argument1);
 				IDirect3DVertexBuffer9* pStreamData = bit_cast<IDirect3DVertexBuffer9*>(workItem->Argument2);
 				UINT OffsetInBytes = bit_cast<UINT>(workItem->Argument3);
@@ -2177,31 +2178,31 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				CVertexBuffer9* streamData = (CVertexBuffer9*)pStreamData;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
+					realDevice->mCurrentStateRecording->mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
 				}
 				else
 				{
-					realWindow.mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
+					realDevice->mDeviceState.mStreamSources[StreamNumber] = StreamSource(StreamNumber, streamData, OffsetInBytes, Stride);
 				}
 			}
 			break;
 			case Device_SetTexture:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Sampler = bit_cast<DWORD>(workItem->Argument1);
 				IDirect3DBaseTexture9* pTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
 
 				DeviceState* state = NULL;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				state->mTextures[Sampler] = pTexture;
@@ -2209,20 +2210,20 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetTextureStageState:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Stage = bit_cast<DWORD>(workItem->Argument1);
 				D3DTEXTURESTAGESTATETYPE Type = bit_cast<D3DTEXTURESTAGESTATETYPE>(workItem->Argument2);
 				DWORD Value = bit_cast<DWORD>(workItem->Argument3);
 
 				DeviceState* state = nullptr;
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					state = &realWindow.mCurrentStateRecording->mDeviceState;
+					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					state = &realWindow.mDeviceState;
+					state = &realDevice->mDeviceState;
 				}
 
 				switch (Type)
@@ -2792,46 +2793,46 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetTransform:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DTRANSFORMSTATETYPE State = bit_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
 				D3DMATRIX* pMatrix = bit_cast<D3DMATRIX*>(workItem->Argument2);
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
-					realWindow.mCurrentStateRecording->mDeviceState.mHasTransformsChanged = true;
+					realDevice->mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
+					realDevice->mCurrentStateRecording->mDeviceState.mHasTransformsChanged = true;
 				}
 				else
 				{
-					realWindow.mDeviceState.mTransforms[State] = (*pMatrix);
-					realWindow.mDeviceState.mHasTransformsChanged = true;
+					realDevice->mDeviceState.mTransforms[State] = (*pMatrix);
+					realDevice->mDeviceState.mHasTransformsChanged = true;
 				}
 			}
 			break;
 			case Device_SetVertexDeclaration:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DVertexDeclaration9* pDecl = bit_cast<IDirect3DVertexDeclaration9*>(workItem->Argument1);
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+					realDevice->mCurrentStateRecording->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
 
-					realWindow.mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
-					realWindow.mCurrentStateRecording->mDeviceState.mHasFVF = false;
+					realDevice->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
+					realDevice->mCurrentStateRecording->mDeviceState.mHasFVF = false;
 				}
 				else
 				{
-					realWindow.mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+					realDevice->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
 
-					realWindow.mDeviceState.mHasVertexDeclaration = true;
-					realWindow.mDeviceState.mHasFVF = false;
+					realDevice->mDeviceState.mHasVertexDeclaration = true;
+					realDevice->mDeviceState.mHasFVF = false;
 				}
 			}
 			break;
 			case Device_SetVertexShader:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DVertexShader9* pShader = bit_cast<IDirect3DVertexShader9*>(workItem->Argument1);
 
 				if (pShader != nullptr)
@@ -2839,32 +2840,32 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					pShader->AddRef();
 				}
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
 					//BOOST_LOG_TRIVIAL(info) << "Recorded VertexShader";
-					realWindow.mCurrentStateRecording->mDeviceState.mVertexShader = (CVertexShader9*)pShader;
-					realWindow.mCurrentStateRecording->mDeviceState.mHasVertexShader = true;
+					realDevice->mCurrentStateRecording->mDeviceState.mVertexShader = (CVertexShader9*)pShader;
+					realDevice->mCurrentStateRecording->mDeviceState.mHasVertexShader = true;
 				}
 				else
 				{
-					if (realWindow.mDeviceState.mVertexShader != nullptr)
+					if (realDevice->mDeviceState.mVertexShader != nullptr)
 					{
-						realWindow.mDeviceState.mVertexShader->Release();
+						realDevice->mDeviceState.mVertexShader->Release();
 					}
 
-					realWindow.mDeviceState.mVertexShader = (CVertexShader9*)pShader;
-					realWindow.mDeviceState.mHasVertexShader = true;
+					realDevice->mDeviceState.mVertexShader = (CVertexShader9*)pShader;
+					realDevice->mDeviceState.mHasVertexShader = true;
 				}
 			}
 			break;
 			case Device_SetVertexShaderConstantB:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
 				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
 				{
 					slots.BooleanConstants[StartRegister + i] = pConstantData[i];
@@ -2873,19 +2874,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetVertexShaderConstantF:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				float* pConstantData = bit_cast<float*>(workItem->Argument2);
 				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4fCount * 4);
 				for (size_t i = 0; i < length; i++)
 				{
 					if ((startIndex + i) < 128)
 					{
-						realWindow.mDeviceState.mPushConstants[startIndex + i] = pConstantData[i];
+						realDevice->mDeviceState.mPushConstants[startIndex + i] = pConstantData[i];
 					}
 					else
 					{
@@ -2896,12 +2897,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetVertexShaderConstantI:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				int* pConstantData = bit_cast<int*>(workItem->Argument2);
 				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
 
-				auto& slots = realWindow.mDeviceState.mVertexShaderConstantSlots;
+				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
 				uint32_t length = (Vector4iCount * 4);
 				for (size_t i = 0; i < length; i++)
@@ -2912,47 +2913,47 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetViewport:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DVIEWPORT9* pViewport = bit_cast<D3DVIEWPORT9*>(workItem->Argument1);
 
-				if (realWindow.mCurrentStateRecording != nullptr)
+				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realWindow.mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
+					realDevice->mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
 
-					//realWindow.mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
-					realWindow.mCurrentStateRecording->mDeviceState.mViewport.width = (float)realWindow.mDeviceState.m9Viewport.Width;
-					//realWindow.mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
-					realWindow.mCurrentStateRecording->mDeviceState.mViewport.height = (float)realWindow.mDeviceState.m9Viewport.Height;
-					realWindow.mCurrentStateRecording->mDeviceState.mViewport.minDepth = realWindow.mDeviceState.m9Viewport.MinZ;
-					realWindow.mCurrentStateRecording->mDeviceState.mViewport.maxDepth = realWindow.mDeviceState.m9Viewport.MaxZ;
+					//realDevice.mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
+					realDevice->mCurrentStateRecording->mDeviceState.mViewport.width = (float)realDevice->mDeviceState.m9Viewport.Width;
+					//realDevice.mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
+					realDevice->mCurrentStateRecording->mDeviceState.mViewport.height = (float)realDevice->mDeviceState.m9Viewport.Height;
+					realDevice->mCurrentStateRecording->mDeviceState.mViewport.minDepth = realDevice->mDeviceState.m9Viewport.MinZ;
+					realDevice->mCurrentStateRecording->mDeviceState.mViewport.maxDepth = realDevice->mDeviceState.m9Viewport.MaxZ;
 				}
 				else
 				{
-					realWindow.mDeviceState.m9Viewport = (*pViewport);
+					realDevice->mDeviceState.m9Viewport = (*pViewport);
 
-					realWindow.mDeviceState.mViewport.y = (float)realWindow.mDeviceState.m9Viewport.Height;
-					realWindow.mDeviceState.mViewport.width = (float)realWindow.mDeviceState.m9Viewport.Width;
-					realWindow.mDeviceState.mViewport.height = -(float)realWindow.mDeviceState.m9Viewport.Height;
-					realWindow.mDeviceState.mViewport.minDepth = realWindow.mDeviceState.m9Viewport.MinZ;
-					realWindow.mDeviceState.mViewport.maxDepth = realWindow.mDeviceState.m9Viewport.MaxZ;
+					realDevice->mDeviceState.mViewport.y = (float)realDevice->mDeviceState.m9Viewport.Height;
+					realDevice->mDeviceState.mViewport.width = (float)realDevice->mDeviceState.m9Viewport.Width;
+					realDevice->mDeviceState.mViewport.height = -(float)realDevice->mDeviceState.m9Viewport.Height;
+					realDevice->mDeviceState.mViewport.minDepth = realDevice->mDeviceState.m9Viewport.MinZ;
+					realDevice->mDeviceState.mViewport.maxDepth = realDevice->mDeviceState.m9Viewport.MaxZ;
 				}
 			}
 			break;
 			case Device_UpdateTexture:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				IDirect3DBaseTexture9* pSourceTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument1);
 				IDirect3DBaseTexture9* pDestinationTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
 
-				commandStreamManager->mRenderManager.UpdateTexture(realWindow, pSourceTexture, pDestinationTexture);
+				commandStreamManager->mRenderManager.UpdateTexture(realDevice, pSourceTexture, pDestinationTexture);
 			}
 			break;
 			case Device_GetAvailableTextureMem:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				CDevice9* device9 = (CDevice9*)workItem->Caller;
 				//                                                                                            Bytes     KB      MB
-				device9->mAvailableTextureMemory = (((realWindow.mEstimatedMemory - realWindow.mEstimatedMemoryUsed) / 1024) / 1024);
+				device9->mAvailableTextureMemory = (((realDevice->mEstimatedMemory - realDevice->mEstimatedMemoryUsed) / 1024) / 1024);
 			}
 			break;
 			case Instance_GetAdapterIdentifier:
@@ -3088,7 +3089,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData == nullptr)
 				{
-					realVertexBuffer.mData = realVertexBuffer.mRealWindow->mRealDevice->mDevice.mapMemory(realVertexBuffer.mMemory, 0, realVertexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
+					realVertexBuffer.mData = realVertexBuffer.mRealDevice->mDevice.mapMemory(realVertexBuffer.mMemory, 0, realVertexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
 					if (realVertexBuffer.mData == nullptr)
 					{
 						*ppbData = nullptr;
@@ -3110,7 +3111,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData != nullptr)
 				{
-					realVertexBuffer.mRealWindow->mRealDevice->mDevice.unmapMemory(realVertexBuffer.mMemory);
+					realVertexBuffer.mRealDevice->mDevice.unmapMemory(realVertexBuffer.mMemory);
 					realVertexBuffer.mData = nullptr;
 				}
 			}
@@ -3125,7 +3126,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData == nullptr)
 				{
-					realIndexBuffer.mData = realIndexBuffer.mRealWindow->mRealDevice->mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
+					realIndexBuffer.mData = realIndexBuffer.mRealDevice->mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
 					if (realIndexBuffer.mData == nullptr)
 					{
 						(*ppbData) = nullptr;
@@ -3147,50 +3148,50 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData != nullptr)
 				{
-					realIndexBuffer.mRealWindow->mRealDevice->mDevice.unmapMemory(realIndexBuffer.mMemory);
+					realIndexBuffer.mRealDevice->mDevice.unmapMemory(realIndexBuffer.mMemory);
 					realIndexBuffer.mData = nullptr;
 				}
 			}
 			break;
 			case StateBlock_Create:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
-				MergeState(realWindow.mDeviceState, stateBlock->mDeviceState, stateBlock->mType, false);
+				MergeState(realDevice->mDeviceState, stateBlock->mDeviceState, stateBlock->mType, false);
 			}
 			break;
 			case StateBlock_Capture:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
 				/*
 				Capture only captures the current state of state that has already been recorded (eg update not insert)
 				https://msdn.microsoft.com/en-us/library/windows/desktop/bb205890(v=vs.85).aspx
 				*/
-				MergeState(realWindow.mDeviceState, stateBlock->mDeviceState, stateBlock->mType, true);
+				MergeState(realDevice->mDeviceState, stateBlock->mDeviceState, stateBlock->mType, true);
 			}
 			break;
 			case StateBlock_Apply:
 			{
-				auto& realWindow = (*commandStreamManager->mRenderManager.mStateManager.mWindows[workItem->Id]);
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
-				MergeState(stateBlock->mDeviceState, realWindow.mDeviceState, stateBlock->mType);
+				MergeState(stateBlock->mDeviceState, realDevice->mDeviceState, stateBlock->mType);
 
 				if (stateBlock->mType == D3DSBT_ALL)
 				{
-					realWindow.mDeviceState.mHasTransformsChanged = true;
+					realDevice->mDeviceState.mHasTransformsChanged = true;
 				}
 			}
 			break;
 			case Texture_GenerateMipSubLevels:
 			{
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
-				auto& realWindow = (*texture.mRealWindow);
+				auto& realDevice = texture.mRealDevice;
 				CTexture9* texture9 = bit_cast<CTexture9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				vk::Result result;
 				vk::PipelineStageFlags sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
@@ -3199,7 +3200,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				vk::Filter realFilter = ConvertFilter(texture9->mMipFilter);
 
 				vk::CommandBufferAllocateInfo commandBufferInfo;
-				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.commandPool = realDevice->mCommandPool;
 				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
 				commandBufferInfo.commandBufferCount = 1;
 
@@ -3297,25 +3298,25 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				submitInfo.signalSemaphoreCount = 0;
 				submitInfo.pSignalSemaphores = nullptr;
 
-				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				result = realDevice->mQueue.submit(1, &submitInfo, nullFence);
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 					break;
 				}
 
-				realWindow.mQueue.waitIdle();
+				realDevice->mQueue.waitIdle();
 
-				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+				device.freeCommandBuffers(realDevice->mCommandPool, 1, commandBuffers);
 				commandBuffer = nullptr;
 			}
 			break;
 			case CubeTexture_GenerateMipSubLevels:
 			{
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
-				auto& realWindow = (*texture.mRealWindow);
+				auto& realDevice = texture.mRealDevice;
 				CCubeTexture9* texture9 = bit_cast<CCubeTexture9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				vk::Result result;
 				vk::PipelineStageFlags sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
@@ -3324,7 +3325,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				vk::Filter realFilter = ConvertFilter(texture9->mMipFilter);
 
 				vk::CommandBufferAllocateInfo commandBufferInfo;
-				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.commandPool = realDevice->mCommandPool;
 				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
 				commandBufferInfo.commandBufferCount = 1;
 
@@ -3422,25 +3423,25 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				submitInfo.signalSemaphoreCount = 0;
 				submitInfo.pSignalSemaphores = nullptr;
 
-				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				result = realDevice->mQueue.submit(1, &submitInfo, nullFence);
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 					break;
 				}
 
-				realWindow.mQueue.waitIdle();
+				realDevice->mQueue.waitIdle();
 
-				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+				device.freeCommandBuffers(realDevice->mCommandPool, 1, commandBuffers);
 				commandBuffer = nullptr;
 			}
 			break;
 			case VolumeTexture_GenerateMipSubLevels:
 			{
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[workItem->Id]);
-				auto& realWindow = (*texture.mRealWindow);
+				auto& realDevice = texture.mRealDevice;
 				CVolumeTexture9* texture9 = bit_cast<CVolumeTexture9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				vk::Result result;
 				vk::PipelineStageFlags sourceStages = vk::PipelineStageFlagBits::eTopOfPipe;
@@ -3449,7 +3450,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				vk::Filter realFilter = ConvertFilter(texture9->mMipFilter);
 
 				vk::CommandBufferAllocateInfo commandBufferInfo;
-				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.commandPool = realDevice->mCommandPool;
 				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
 				commandBufferInfo.commandBufferCount = 1;
 
@@ -3547,25 +3548,25 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				submitInfo.signalSemaphoreCount = 0;
 				submitInfo.pSignalSemaphores = nullptr;
 
-				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				result = realDevice->mQueue.submit(1, &submitInfo, nullFence);
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 					break;
 				}
 
-				realWindow.mQueue.waitIdle();
+				realDevice->mQueue.waitIdle();
 
-				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+				device.freeCommandBuffers(realDevice->mCommandPool, 1, commandBuffers);
 				commandBuffer = nullptr;
 			}
 			break;
 			case Surface_LockRect:
 			{
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
-				auto& realWindow = (*surface.mRealWindow);
+				auto& realDevice = surface.mRealDevice;
 				//CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				D3DLOCKED_RECT* pLockedRect = bit_cast<D3DLOCKED_RECT*>(workItem->Argument1);
 				RECT* pRect = bit_cast<RECT*>(workItem->Argument2);
@@ -3578,7 +3579,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					if (surface.mIsFlushed)
 					{
-						realWindow.SetImageLayout(surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+						realDevice->SetImageLayout(surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 					}
 
 					result = device.mapMemory(surface.mStagingDeviceMemory, 0, surface.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &surface.mData);
@@ -3611,9 +3612,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Surface_UnlockRect:
 			{
 				auto& surface = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
-				auto& realWindow = (*surface.mRealWindow);
+				auto& realDevice = surface.mRealDevice;
 				CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				if (surface.mData != nullptr)
 				{
@@ -3639,16 +3640,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				}
 
-				auto& realWindow = (*surface.mRealWindow);
+				auto& realDevice = surface.mRealDevice;
 				CSurface9* surface9 = bit_cast<CSurface9*>(workItem->Argument1);
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[surface9->mTextureId]);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				vk::CommandBuffer commandBuffer;
 				vk::Result result;
 
 				vk::CommandBufferAllocateInfo commandBufferInfo;
-				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.commandPool = realDevice->mCommandPool;
 				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
 				commandBufferInfo.commandBufferCount = 1;
 
@@ -3696,16 +3697,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				submitInfo.signalSemaphoreCount = 0;
 				submitInfo.pSignalSemaphores = nullptr;
 
-				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				result = realDevice->mQueue.submit(1, &submitInfo, nullFence);
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 					break;
 				}
 
-				realWindow.mQueue.waitIdle();
+				realDevice->mQueue.waitIdle();
 
-				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+				device.freeCommandBuffers(realDevice->mCommandPool, 1, commandBuffers);
 
 				surface.mIsFlushed = true;
 			}
@@ -3713,8 +3714,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Volume_LockRect:
 			{
 				auto& volume = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
-				auto& realWindow = (*volume.mRealWindow);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& realDevice = volume.mRealDevice;
+				auto& device = realDevice->mDevice;
 
 				D3DLOCKED_BOX* pLockedVolume = bit_cast<D3DLOCKED_BOX*>(workItem->Argument1);
 				D3DBOX* pBox = bit_cast<D3DBOX*>(workItem->Argument2);
@@ -3727,7 +3728,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					if (volume.mIsFlushed)
 					{
-						realWindow.SetImageLayout(volume.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+						realDevice->SetImageLayout(volume.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 					}
 
 					result = device.mapMemory(volume.mStagingDeviceMemory, 0, volume.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &volume.mData);
@@ -3762,9 +3763,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Volume_UnlockRect:
 			{
 				auto& volume = (*commandStreamManager->mRenderManager.mStateManager.mSurfaces[workItem->Id]);
-				auto& realWindow = (*volume.mRealWindow);
+				auto& realDevice = volume.mRealDevice;
 				CVolume9* volume9 = bit_cast<CVolume9*>(workItem->Argument1);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				if (volume.mData != nullptr)
 				{
@@ -3790,16 +3791,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				}
 
-				auto& realWindow = (*volume.mRealWindow);
+				auto& realDevice = volume.mRealDevice;
 				CVolume9* volume9 = bit_cast<CVolume9*>(workItem->Argument1);
 				auto& texture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[volume9->mTextureId]);
-				auto& device = realWindow.mRealDevice->mDevice;
+				auto& device = realDevice->mDevice;
 
 				vk::CommandBuffer commandBuffer;
 				vk::Result result;
 
 				vk::CommandBufferAllocateInfo commandBufferInfo;
-				commandBufferInfo.commandPool = realWindow.mCommandPool;
+				commandBufferInfo.commandPool = realDevice->mCommandPool;
 				commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
 				commandBufferInfo.commandBufferCount = 1;
 
@@ -3847,16 +3848,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				submitInfo.signalSemaphoreCount = 0;
 				submitInfo.pSignalSemaphores = nullptr;
 
-				result = realWindow.mQueue.submit(1, &submitInfo, nullFence);
+				result = realDevice->mQueue.submit(1, &submitInfo, nullFence);
 				if (result != vk::Result::eSuccess)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 					break;
 				}
 
-				realWindow.mQueue.waitIdle();
+				realDevice->mQueue.waitIdle();
 
-				device.freeCommandBuffers(realWindow.mCommandPool, 1, commandBuffers);
+				device.freeCommandBuffers(realDevice->mCommandPool, 1, commandBuffers);
 
 				volume.mIsFlushed = true;
 			}
@@ -3864,38 +3865,36 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Query_Issue:
 			{
 				auto& realQuery = (*commandStreamManager->mRenderManager.mStateManager.mQueries[workItem->Id]);
-				auto& realWindow = (*realQuery.mRealWindow);
-				auto& realDevice = (*realWindow.mRealDevice);
+				auto& realDevice = realQuery.mRealDevice;
 
 				DWORD dwIssueFlags = bit_cast<DWORD>(workItem->Argument1);
 
 				switch (dwIssueFlags)
 				{
 				case D3DISSUE_BEGIN:
-					realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].beginQuery(realQuery.mQueryPool, 0,vk::QueryControlFlags());
+					realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer].beginQuery(realQuery.mQueryPool, 0,vk::QueryControlFlags());
 					break;
 				case D3DISSUE_END:
-					realWindow.mSwapchainBuffers[realWindow.mCurrentSwapchainBuffer].endQuery(realQuery.mQueryPool, 0);
+					realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer].endQuery(realQuery.mQueryPool, 0);
 					break;
 				default:
 					BOOST_LOG_TRIVIAL(error) << "ProcessQueue unknown query issue type " << dwIssueFlags;
 					break;
 				}
 
-				//(*pViewport) = realWindow.mDeviceState.m9Viewport;
+				//(*pViewport) = realDevice.mDeviceState.m9Viewport;
 			}
 			break;
 			case Query_GetData:
 			{
 				auto& realQuery = (*commandStreamManager->mRenderManager.mStateManager.mQueries[workItem->Id]);
-				auto& realWindow = (*realQuery.mRealWindow);
-				auto& realDevice = (*realWindow.mRealDevice);
+				auto& realDevice = realQuery.mRealDevice;
 
 				void* pData = workItem->Argument1;
 				DWORD dwSize = bit_cast<DWORD>(workItem->Argument2);
 				DWORD dwGetDataFlags = bit_cast<DWORD>(workItem->Argument3);
 
-				realDevice.mDevice.getQueryPoolResults(realQuery.mQueryPool, (uint32_t)0, (uint32_t)1, (size_t)dwSize, pData, (vk::DeviceSize)4, vk::QueryResultFlags());
+				realDevice->mDevice.getQueryPoolResults(realQuery.mQueryPool, (uint32_t)0, (uint32_t)1, (size_t)dwSize, pData, (vk::DeviceSize)4, vk::QueryResultFlags());
 			}
 			break;
 			case Query_GetDataSize:

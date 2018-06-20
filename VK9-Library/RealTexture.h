@@ -27,7 +27,7 @@ misrepresented as being the original software.
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
+#include "RealDevice.h"
 
 #ifndef REALTEXTURE_H
 #define REALTEXTURE_H
@@ -44,8 +44,8 @@ struct RealTexture
 	vk::Sampler mSampler;
 	vk::ImageView mImageView;
 
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	RealTexture(RealWindow* realWindow);
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	RealTexture(RealDevice* realDevice);
 	~RealTexture();
 };
 

@@ -79,7 +79,6 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
 #include "RealTexture.h"
 #include "RealSurface.h"
 #include "RealVertexBuffer.h"
@@ -96,8 +95,8 @@ struct StateManager
 	boost::container::small_vector< std::shared_ptr<RealInstance>, 1> mInstances;
 	std::atomic_size_t mInstanceKey = 0;
 
-	boost::container::small_vector< std::shared_ptr<RealWindow>, 1> mWindows;
-	std::atomic_size_t mWindowsKey = 0;
+	boost::container::small_vector< std::shared_ptr<RealDevice>, 1> mDevices;
+	std::atomic_size_t mDeviceKey = 0;
 
 	std::vector< std::shared_ptr<RealVertexBuffer> > mVertexBuffers;
 	std::atomic_size_t mVertexBufferKey = 0;
@@ -122,8 +121,8 @@ struct StateManager
 	StateManager();
 	~StateManager();
 
-	void DestroyWindow(size_t id);
-	void CreateWindow1(size_t id, void* argument1, void* argument2);
+	void DestroyDevice(size_t id);
+	void CreateDevice(size_t id, void* argument1);
 
 	void DestroyInstance(size_t id);
 	void CreateInstance();
@@ -155,7 +154,7 @@ struct StateManager
 	void DestroyQuery(size_t id);
 	void CreateQuery(size_t id, void* argument1);
 
-	std::shared_ptr<RealSwapChain> GetSwapChain(std::shared_ptr<RealWindow> realWindow, HWND handle);
+	std::shared_ptr<RealSwapChain> GetSwapChain(std::shared_ptr<RealDevice> realDevice, HWND handle);
 };
 
 #endif // STATEMANAGER_H

@@ -8,7 +8,6 @@
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
 
 #include "ResourceContext.h"
 
@@ -43,8 +42,8 @@ struct DrawContext
 
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	DrawContext(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	DrawContext(RealDevice* realDevice) : mRealDevice(realDevice) {}
 	~DrawContext();
 };
 

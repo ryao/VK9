@@ -22,10 +22,10 @@ misrepresented as being the original software.
 
 ResourceContext::~ResourceContext()
 {
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
 		//BOOST_LOG_TRIVIAL(warning) << "ResourceContext::~ResourceContext";
-		auto& device = mRealWindow->mRealDevice->mDevice;
-		device.freeDescriptorSets(mRealWindow->mRealDevice->mDescriptorPool, 1, &DescriptorSet);
+		auto& device = mRealDevice->mDevice;
+		device.freeDescriptorSets(mRealDevice->mDescriptorPool, 1, &DescriptorSet);
 	}
 }

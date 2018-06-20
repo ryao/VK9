@@ -28,7 +28,6 @@ misrepresented as being the original software.
 
 #include "RealDevice.h"
 #include "RealInstance.h"
-#include "RealWindow.h"
 
 #ifndef SAMPLERREQUEST_H
 #define SAMPLERREQUEST_H
@@ -52,8 +51,8 @@ struct SamplerRequest
 
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();
-	RealWindow* mRealWindow = nullptr; //null if not owner.
-	SamplerRequest(RealWindow* realWindow) : mRealWindow(realWindow) {}
+	RealDevice* mRealDevice = nullptr; //null if not owner.
+	SamplerRequest(RealDevice* realDevice) : mRealDevice(realDevice) {}
 	~SamplerRequest();
 };
 

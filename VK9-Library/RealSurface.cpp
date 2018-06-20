@@ -20,8 +20,8 @@ misrepresented as being the original software.
 
 #include "RealSurface.h"
 
-RealSurface::RealSurface(RealWindow* realWindow)
-	: mRealWindow(realWindow)
+RealSurface::RealSurface(RealDevice* realDevice)
+	: mRealDevice(realDevice)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
 }
@@ -29,9 +29,9 @@ RealSurface::RealSurface(RealWindow* realWindow)
 RealSurface::~RealSurface()
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealSurface::~RealSurface";
-	if (mRealWindow != nullptr)
+	if (mRealDevice != nullptr)
 	{
-		auto& device = mRealWindow->mRealDevice->mDevice;
+		auto& device = mRealDevice->mDevice;
 		device.destroyImageView(mStagingImageView, nullptr);
 		device.destroyImage(mStagingImage, nullptr);
 		device.freeMemory(mStagingDeviceMemory, nullptr);
