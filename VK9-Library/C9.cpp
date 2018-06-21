@@ -197,7 +197,17 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	workItem->Argument1 = obj;
 	obj->mId = obj->mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	obj->mSwapChains[0]->Init();
+	//Add implicit swap chain.
+	CSwapChain9* ptr = nullptr; //= new CSwapChain9(this, pPresentationParameters);
+	obj->CreateAdditionalSwapChain(&obj->mPresentationParameters, (IDirect3DSwapChain9**)&ptr);
+	ptr->Init();
+	obj->mSwapChains.push_back(ptr);
+	
+	//Add implicit render target
+	obj->SetRenderTarget(0, ptr->mBackBuffer);
+
+	//Add implicit stencil buffer surface.
+	obj->SetDepthStencilSurface(new CSurface9(obj, &obj->mPresentationParameters, D3DFMT_D16));
 
 	return result;	
 }

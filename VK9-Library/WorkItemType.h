@@ -84,6 +84,8 @@ enum WorkItemType
 	, Device_SetViewport
 	, Device_UpdateTexture
 	, Device_GetAvailableTextureMem
+	, Device_SetRenderTarget
+	, Device_SetDepthStencilSurface
 	, Device_Destroy
 	, VertexBuffer_Create
 	, VertexBuffer_Lock

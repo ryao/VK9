@@ -25,6 +25,19 @@ misrepresented as being the original software.
 #include "Utilities.h"
 #include "CTypes.h"
 
+CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParameters, D3DFORMAT Format)
+	: mDevice(Device)
+{
+	mWidth = pPresentationParameters->BackBufferWidth;
+	mHeight = pPresentationParameters->BackBufferHeight;
+	mFormat = Format;
+	mMultiSample = pPresentationParameters->MultiSampleType;
+	mMultisampleQuality = pPresentationParameters->MultiSampleQuality;
+	mUsage = D3DUSAGE_DEPTHSTENCIL;
+
+	//Init();
+}
+
 CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParameters)
 	: mDevice(Device)
 {

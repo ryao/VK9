@@ -61,16 +61,6 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		SetWindowPos(hFocusWindow, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		InvalidateRect(hFocusWindow, 0, true);
 	}
-
-	//Add implicit swap chain.
-	CSwapChain9* ptr = new CSwapChain9(this,pPresentationParameters);
-	mSwapChains.push_back(ptr);
-
-	//Add implicit stencil buffer surface.
-	mDepthStencilSurface = new CSurface9(this, pPresentationParameters);
-
-	//Add implicit render target
-	mRenderTargets[0] = ptr->mBackBuffer;
 }
 
 CDevice9::~CDevice9()
@@ -203,11 +193,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::ColorFill(IDirect3DSurface9 *pSurface, const
 
 HRESULT STDMETHODCALLTYPE CDevice9::CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DSwapChain9 **ppSwapChain)
 {
-	//TODO: Implement.
+	auto ptr = new CSwapChain9(this, pPresentationParameters);
+	ptr->Init();
+	(*ppSwapChain) = ptr;
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::CreateAdditionalSwapChain is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::CreateCubeTexture(UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DCubeTexture9 **ppCubeTexture, HANDLE *pSharedHandle)
@@ -1113,11 +1103,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetCursorProperties(UINT XHotSpot, UINT YHot
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetDepthStencilSurface(IDirect3DSurface9* pNewZStencil)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetDepthStencilSurface is not implemented!";
 
 	mDepthStencilSurface = (CSurface9*)pNewZStencil;
+
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::Device_SetDepthStencilSurface;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }
@@ -1268,6 +1260,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 *pRenderTarget)
 {
 	mRenderTargets[RenderTargetIndex] = (CSurface9*)pRenderTarget;
+
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::Device_SetRenderTarget;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
 }

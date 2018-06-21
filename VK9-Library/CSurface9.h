@@ -35,6 +35,7 @@ class CSurface9 : public IDirect3DSurface9
 private:
 
 public:
+	CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParameters, D3DFORMAT Format);
 	CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParameters);
 	CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
 	CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle);
