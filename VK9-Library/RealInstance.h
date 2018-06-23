@@ -40,7 +40,7 @@ struct RealInstance
 	vk::PhysicalDevice* mPhysicalDevices = nullptr;
 	uint32_t mPhysicalDeviceCount = 0;
 
-	boost::container::small_vector<std::shared_ptr<RealDevice>, 1> mDevices;
+	//boost::container::small_vector<std::shared_ptr<RealDevice>, 1> mDevices;
 
 #ifdef _DEBUG
 	HMODULE mRenderDocDll = nullptr;

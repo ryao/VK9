@@ -21,7 +21,7 @@ misrepresented as being the original software.
 #include "RealDevice.h"
 #include "RealRenderTarget.h"
 
-RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
+RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice, int32_t width, int32_t height)
 	: mInstance(instance),
 	mPhysicalDevice(physicalDevice)
 {
@@ -325,7 +325,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 	result = mDevice.createSampler(&samplerCreateInfo, nullptr, &mSampler);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSampler failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkCreateSampler failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
@@ -335,8 +335,6 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 	const vk::Format textureFormat = vk::Format::eB8G8R8A8Unorm;
 	vk::FormatProperties formatProperties;
 	const uint32_t textureColors[2] = { 0xffff0000, 0xff00ff00 };
-	const int32_t textureWidth = 1;
-	const int32_t textureHeight = 1;
 	//mFormat = vk::Format::eB8G8R8A8Unorm;
 
 	mPhysicalDevice.getFormatProperties(textureFormat, &formatProperties);
@@ -344,7 +342,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 	vk::ImageCreateInfo imageCreateInfo2;
 	imageCreateInfo2.imageType = vk::ImageType::e2D;
 	imageCreateInfo2.format = textureFormat;
-	imageCreateInfo2.extent = vk::Extent3D((uint32_t)textureWidth, (uint32_t)textureHeight, 1);
+	imageCreateInfo2.extent = vk::Extent3D((uint32_t)width, (uint32_t)height, 1);
 	imageCreateInfo2.mipLevels = 1;
 	imageCreateInfo2.arrayLayers = 1;
 	imageCreateInfo2.samples = vk::SampleCountFlagBits::e1;
@@ -362,7 +360,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 	result = mDevice.createImage(&imageCreateInfo2, nullptr, &mImage);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkCreateImage failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
@@ -373,7 +371,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 	result = mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &mDeviceMemory);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
@@ -394,14 +392,14 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 	data = mDevice.mapMemory(mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags()).value;
 	if (data == nullptr)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkMapMemory failed.";
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkMapMemory failed.";
 		return;
 	}
 
-	for (y = 0; y < textureHeight; y++)
+	for (y = 0; y < height; y++)
 	{
 		uint32_t *row = (uint32_t *)((char *)data + subresourceLayout.rowPitch * y);
-		for (x = 0; x < textureWidth; x++)
+		for (x = 0; x < width; x++)
 		{
 			row[x] = textureColors[(x & 1) ^ (y & 1)];
 		}
@@ -426,7 +424,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 	result = mDevice.createImageView(&imageViewCreateInfo2, nullptr, &mImageView);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
@@ -472,9 +470,9 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 
 	//initialize vulkan/d3d9 viewport and scissor structures.
 	//mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
-	mDeviceState.mViewport.width = (float)1024;
+	mDeviceState.mViewport.width = (float)width;
 	//mDeviceState.mViewport.height = -(float)mPresentationParameters.BackBufferHeight;
-	mDeviceState.mViewport.height = (float)768;
+	mDeviceState.mViewport.height = (float)height;
 	mDeviceState.mViewport.minDepth = 0.0f;
 	mDeviceState.mViewport.maxDepth = 1.0f;
 
@@ -485,11 +483,11 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice)
 
 	mDeviceState.mScissor.offset.x = 0;
 	mDeviceState.mScissor.offset.y = 0;
-	mDeviceState.mScissor.extent.width = 1024;
-	mDeviceState.mScissor.extent.height = 768;
+	mDeviceState.mScissor.extent.width = width;
+	mDeviceState.mScissor.extent.height = height;
 
-	mDeviceState.m9Scissor.right = 1024;
-	mDeviceState.m9Scissor.bottom = 768;
+	mDeviceState.m9Scissor.right = width;
+	mDeviceState.m9Scissor.bottom = height;
 	mDeviceState.m9Scissor.left = 0;
 	mDeviceState.m9Scissor.top = 0;
 

@@ -28,7 +28,7 @@ RealInstance::RealInstance()
 RealInstance::~RealInstance()
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealInstance::~RealInstance";
-	mDevices.clear();
+	//mDevices.clear();
 #ifdef _DEBUG
 	mInstance.destroyDebugReportCallbackEXT(mCallback);
 	if ( mRenderDocDll != nullptr )

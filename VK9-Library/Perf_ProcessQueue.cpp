@@ -160,6 +160,51 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				commandStreamManager->mRenderManager.mStateManager.DestroyQuery(workItem->Id);
 			}
 			break;
+			case Device_SetRenderTarget:
+			{
+				CDevice9* device9 = bit_cast<CDevice9*>(workItem->Caller);
+				DWORD RenderTargetIndex = bit_cast<DWORD>(workItem->Argument1);
+				CSurface9* pRenderTarget = bit_cast<CSurface9*>(workItem->Argument2);
+
+				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
+				auto& realDevice = stateManager.mDevices[workItem->Id];
+				RealSurface* colorSurface = nullptr;
+				RealSurface* depthSurface = nullptr;
+
+				if (device9->mRenderTargets[RenderTargetIndex] != nullptr)
+				{
+					colorSurface = stateManager.mSurfaces[device9->mRenderTargets[RenderTargetIndex]->mId].get();
+				}	
+				if (device9->mDepthStencilSurface != nullptr)
+				{
+					depthSurface = stateManager.mSurfaces[device9->mDepthStencilSurface->mId].get();
+				}
+
+				realDevice->mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+			}
+			break;
+			case Device_SetDepthStencilSurface:
+			{
+				CDevice9* device9 = bit_cast<CDevice9*>(workItem->Caller);
+				CSurface9* pNewZStencil = bit_cast<CSurface9*>(workItem->Argument1);
+
+				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
+				auto& realDevice = stateManager.mDevices[workItem->Id];
+				RealSurface* colorSurface = nullptr;
+				RealSurface* depthSurface = nullptr;
+
+				if (device9->mRenderTargets[0] != nullptr)
+				{
+					colorSurface = stateManager.mSurfaces[device9->mRenderTargets[0]->mId].get();
+				}
+				if (device9->mDepthStencilSurface != nullptr)
+				{
+					depthSurface = stateManager.mSurfaces[device9->mDepthStencilSurface->mId].get();
+				}
+
+				realDevice->mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);  //new RealRenderTarget(realDevice->mDevice, colorSurface, depthSurface);
+			}
+			break;
 			case Device_Clear:
 			{
 				DWORD Count = bit_cast<DWORD>(workItem->Argument1);
@@ -186,10 +231,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_Present:
 			{
+				CDevice9* device9 = bit_cast<CDevice9*>(workItem->Caller);
 				RECT* pSourceRect = bit_cast<RECT*>(workItem->Argument1);
 				RECT* pDestRect = bit_cast<RECT*>(workItem->Argument2);
 				HWND hDestWindowOverride = bit_cast<HWND>(workItem->Argument3);
 				RGNDATA* pDirtyRegion = bit_cast<RGNDATA*>(workItem->Argument4);
+
+				if (!hDestWindowOverride)
+				{
+					hDestWindowOverride = device9->mFocusWindow;
+				}
 
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				commandStreamManager->mRenderManager.Present(realDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
@@ -2962,7 +3013,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Flags = bit_cast<DWORD>(workItem->Argument2);
 				D3DADAPTER_IDENTIFIER9* pIdentifier = bit_cast<D3DADAPTER_IDENTIFIER9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter]->mPhysicalDeviceProperties; //mPhysicalDeviceProperties
+				vk::PhysicalDeviceProperties properties; // = instance->mPhysicalDeviceProperties[Adapter]; //TODO: Fix device properties.
 
 				(*pIdentifier) = {}; //zero it out.
 
@@ -2985,8 +3036,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DDEVTYPE DeviceType = bit_cast<D3DDEVTYPE>(workItem->Argument2);
 				D3DCAPS9* pCaps = bit_cast<D3DCAPS9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				vk::PhysicalDeviceProperties& properties = instance->mDevices[Adapter]->mPhysicalDeviceProperties;
-				vk::PhysicalDeviceFeatures& features = instance->mDevices[Adapter]->mPhysicalDeviceFeatures;
+				vk::PhysicalDeviceProperties properties; //= instance->mDevices[Adapter]->mPhysicalDeviceProperties;
+				vk::PhysicalDeviceFeatures features; //= instance->mDevices[Adapter]->mPhysicalDeviceFeatures;
 
 				/*
 				https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#VkPhysicalDeviceProperties
@@ -3681,7 +3732,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
-				ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight,1, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
+				ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight, 1, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 
 				commandBuffer.end();
@@ -3872,7 +3923,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				switch (dwIssueFlags)
 				{
 				case D3DISSUE_BEGIN:
-					realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer].beginQuery(realQuery.mQueryPool, 0,vk::QueryControlFlags());
+					realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer].beginQuery(realQuery.mQueryPool, 0, vk::QueryControlFlags());
 					break;
 				case D3DISSUE_END:
 					realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer].endQuery(realQuery.mQueryPool, 0);

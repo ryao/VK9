@@ -156,10 +156,12 @@ void StateManager::DestroyDevice(size_t id)
 
 void StateManager::CreateDevice(size_t id, void* argument1)
 {
-	auto instance = mInstances[id];
 	CDevice9* device9 = (CDevice9*)argument1;
-	
-	mDevices.push_back(instance->mDevices[device9->mAdapter]);
+	auto instance = mInstances[id];
+	auto physicalDevice = instance->mPhysicalDevices[device9->mAdapter];
+	auto device = std::make_shared<RealDevice>(instance->mInstance, physicalDevice, device9->mPresentationParameters.BackBufferWidth, device9->mPresentationParameters.BackBufferHeight);
+
+	mDevices.push_back(device);
 }
 
 void StateManager::DestroyInstance(size_t id)
@@ -246,13 +248,6 @@ void StateManager::CreateInstance()
 		{
 			ptr->mPhysicalDevices = new vk::PhysicalDevice[ptr->mPhysicalDeviceCount];
 			ptr->mInstance.enumeratePhysicalDevices(&ptr->mPhysicalDeviceCount, ptr->mPhysicalDevices);
-
-			for (size_t i = 0; i < ptr->mPhysicalDeviceCount; i++)
-			{
-				auto& physicalDevice = ptr->mPhysicalDevices[i];
-				auto device = std::make_shared<RealDevice>(ptr->mInstance,physicalDevice);
-				ptr->mDevices.push_back(device);
-			} //for
 		}
 		else
 		{
@@ -805,7 +800,15 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
 	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
-	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+	//imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+	if (ptr->mRealFormat == vk::Format::eD16Unorm)
+	{
+		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eInputAttachment;
+	}
+	else
+	{
+		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment;
+	}	
 	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 	ptr->mExtent = imageCreateInfo.extent;
 
@@ -849,16 +852,35 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	device->mDevice.bindImageMemory(ptr->mStagingImage, ptr->mStagingDeviceMemory, 0);
 
 	ptr->mSubresource.mipLevel = 0;
-	ptr->mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+
+	if (ptr->mRealFormat == vk::Format::eD16Unorm)
+	{
+		ptr->mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
+	}
+	else
+	{
+		ptr->mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+
 	ptr->mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 
 	device->mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mStagingImage;
-	imageViewCreateInfo.viewType = vk::ImageViewType::e3D;
+	//imageViewCreateInfo.viewType = vk::ImageViewType::e3D;
+	imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
 	imageViewCreateInfo.format = ptr->mRealFormat;
-	imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+
+	if (ptr->mRealFormat == vk::Format::eD16Unorm)
+	{
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+	}
+	else
+	{
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+
 	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
 	imageViewCreateInfo.subresourceRange.levelCount = 1;
 	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;

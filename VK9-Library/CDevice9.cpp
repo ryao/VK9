@@ -1109,6 +1109,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDepthStencilSurface(IDirect3DSurface9* pN
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetDepthStencilSurface;
 	workItem->Id = mId;
+	workItem->Argument1 = bit_cast<void*>(pNewZStencil);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
@@ -1257,13 +1258,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWO
 	return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 *pRenderTarget)
+HRESULT STDMETHODCALLTYPE CDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget)
 {
 	mRenderTargets[RenderTargetIndex] = (CSurface9*)pRenderTarget;
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetRenderTarget;
 	workItem->Id = mId;
+	workItem->Argument1 = bit_cast<void*>(RenderTargetIndex);
+	workItem->Argument2 = bit_cast<void*>(pRenderTarget);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;
