@@ -155,8 +155,28 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
 		mRenderPassBeginInfo.renderPass = mStoreRenderPass;
 	}
 
+	vk::Result result = command.begin(&mCommandBufferBeginInfo);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::StartScene vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
+	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1, 0, 1);
+
 	command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
-	command.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
+
+	//mImageMemoryBarrier.srcAccessMask = 0;
+	//mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead; //VK_ACCESS_MEMORY_READ_BIT;
+	//mImageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+	//mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	//mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	//mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	//mImageMemoryBarrier.image = this->mColorSurface->mStagingImage;
+	//mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+	//command.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
 	//Set the pass back to store so draw calls won't be lost if they require stop/start of render pass.
 	mRenderPassBeginInfo.renderPass = mStoreRenderPass;
@@ -168,10 +188,10 @@ void RealRenderTarget::StopScene(vk::CommandBuffer command, vk::Queue queue)
 
 	command.endRenderPass();
 
-	mPrePresentBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead; //VK_ACCESS_MEMORY_READ_BIT;
-	mPrePresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead; //VK_ACCESS_MEMORY_READ_BIT;
-	mPrePresentBarrier.oldLayout = vk::ImageLayout::ePresentSrcKHR; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	mPrePresentBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	mPrePresentBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+	mPrePresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+	mPrePresentBarrier.oldLayout = vk::ImageLayout::eUndefined;  //vk::ImageLayout::ePresentSrcKHR; 
+	mPrePresentBarrier.newLayout = vk::ImageLayout::eTransferSrcOptimal; //vk::ImageLayout::ePresentSrcKHR;
 	mPrePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mPrePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mPrePresentBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
@@ -182,14 +202,14 @@ void RealRenderTarget::StopScene(vk::CommandBuffer command, vk::Queue queue)
 	command.end();
 
 	mPipeStageFlags = vk::PipelineStageFlagBits::eBottomOfPipe; //VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	mSubmitInfo.waitSemaphoreCount = 1;
-	mSubmitInfo.pWaitSemaphores = &mPresentCompleteSemaphore;
+	mSubmitInfo.waitSemaphoreCount = 0;
+	mSubmitInfo.pWaitSemaphores = nullptr; //&mPresentCompleteSemaphore;
 	mSubmitInfo.pWaitDstStageMask = &mPipeStageFlags;
 	mSubmitInfo.commandBufferCount = 1;
 	mSubmitInfo.pCommandBuffers = &command;
 	mSubmitInfo.signalSemaphoreCount = 0;
 	mSubmitInfo.pSignalSemaphores = nullptr;
-
+	
 	vk::Result result = queue.submit(1, &mSubmitInfo, mNullFence);
 	if (result != vk::Result::eSuccess)
 	{

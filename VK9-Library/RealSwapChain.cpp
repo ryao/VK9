@@ -361,7 +361,7 @@ void RealSwapChain::InitRenderPass()
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorReference;
 	subpass.pResolveAttachments = nullptr;
-	//subpass.pDepthStencilAttachment = &depthReference;
+	subpass.pDepthStencilAttachment = &depthReference;
 	subpass.preserveAttachmentCount = 0;
 	subpass.pPreserveAttachments = nullptr;
 
@@ -384,7 +384,7 @@ void RealSwapChain::InitRenderPass()
 	mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;
-	renderPassCreateInfo.attachmentCount = 1; //2; //revisit
+	renderPassCreateInfo.attachmentCount = 2; //revisit
 	renderPassCreateInfo.pAttachments = mRenderAttachments;
 	renderPassCreateInfo.subpassCount = 1;
 	renderPassCreateInfo.pSubpasses = &subpass;
@@ -542,8 +542,11 @@ void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk
 	ReallySetImageLayout(commandBuffer, source, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
 	ReallySetImageLayout(commandBuffer, mImages[mCurrentIndex], vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
 	ReallyCopyImage(commandBuffer, source, mImages[mCurrentIndex], 0, 0, mSwapchainExtent.width, mSwapchainExtent.height, 1, 0, 0, 0, 0);
+
 	ReallySetImageLayout(commandBuffer, mImages[mCurrentIndex], vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
 	StopPresentation(commandBuffer, queue);
+
+	mPresentInfo.pImageIndices = &mCurrentIndex;
 
 	mResult = queue.presentKHR(&mPresentInfo);
 	if (mResult != vk::Result::eSuccess)

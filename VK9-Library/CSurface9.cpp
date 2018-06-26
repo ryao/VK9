@@ -33,7 +33,11 @@ CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParam
 	mFormat = Format;
 	mMultiSample = pPresentationParameters->MultiSampleType;
 	mMultisampleQuality = pPresentationParameters->MultiSampleQuality;
-	mUsage = D3DUSAGE_DEPTHSTENCIL;
+	
+	if (Format == D3DFMT_D16)
+	{
+		mUsage = D3DUSAGE_DEPTHSTENCIL;
+	}
 
 	//Init();
 }

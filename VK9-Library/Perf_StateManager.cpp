@@ -799,17 +799,28 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
-	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
-	//imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
-	if (ptr->mRealFormat == vk::Format::eD16Unorm)
+	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+
+	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
 	{
-		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eInputAttachment;
+		imageCreateInfo.tiling = vk::ImageTiling::eLinear;
+		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;			
 	}
 	else
 	{
-		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment;
+		imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+		if (ptr->mRealFormat == vk::Format::eD16Unorm)
+		{
+			//imageCreateInfo.initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eDepthStencilAttachment;
+		}
+		else
+		{
+			//imageCreateInfo.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eColorAttachment;
+		}
 	}	
-	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+	
 	ptr->mExtent = imageCreateInfo.extent;
 
 	//if (surface9->mCubeTexture != nullptr)
@@ -836,10 +847,21 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	ptr->mMemoryAllocateInfo.memoryTypeIndex = 0;
 	ptr->mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
 
-	if (!GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface Could not find memory type from properties.";
-		return;
+		if (!GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface Could not find memory type from properties.";
+			return;
+		}
+	}
+	else
+	{
+		if (!GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &ptr->mMemoryAllocateInfo.memoryTypeIndex))
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateSurface Could not find memory type from properties.";
+			return;
+		}
 	}
 
 	result = device->mDevice.allocateMemory(&ptr->mMemoryAllocateInfo, nullptr, &ptr->mStagingDeviceMemory);
@@ -864,7 +886,10 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 
 	ptr->mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 
-	device->mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
+	if (imageCreateInfo.tiling == vk::ImageTiling::eLinear)
+	{
+		device->mDevice.getImageSubresourceLayout(ptr->mStagingImage, &ptr->mSubresource, &ptr->mLayouts[0]);
+	}
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mStagingImage;
@@ -889,21 +914,33 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	/*
 	This block handles the luminance & x formats. They are converted to color formats but need a little mapping to make them work correctly.
 	*/
-	switch (surface9->mFormat)
+	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
 	{
-	case D3DFMT_L8:
-		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
-		break;
-	case D3DFMT_A8L8:
-		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
-		break;
-	case D3DFMT_X8R8G8B8:
-	case D3DFMT_X8B8G8R8:
-		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eOne);
-		break;
-	default:
-		break;
+		switch (surface9->mFormat)
+		{
+		case D3DFMT_L8:
+			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+			break;
+		case D3DFMT_A8L8:
+			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+			break;
+		case D3DFMT_X8R8G8B8:
+		case D3DFMT_X8B8G8R8:
+			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eOne);
+			break;
+		default:
+			break;
+		}
 	}
+	else
+	{
+		imageViewCreateInfo.components.r = vk::ComponentSwizzle::eIdentity;
+		imageViewCreateInfo.components.g = vk::ComponentSwizzle::eIdentity;
+		imageViewCreateInfo.components.b = vk::ComponentSwizzle::eIdentity;
+		imageViewCreateInfo.components.a = vk::ComponentSwizzle::eIdentity;
+	}
+
+
 
 	result = device->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mStagingImageView);
 	if (result != vk::Result::eSuccess)

@@ -55,6 +55,7 @@ struct RealRenderTarget
 	vk::Semaphore mPresentCompleteSemaphore;
 	vk::SubmitInfo mSubmitInfo;
 	vk::Fence mNullFence;
+	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
 
 	void StartScene(vk::CommandBuffer command, bool clear);
 	void StopScene(vk::CommandBuffer command, vk::Queue queue);
