@@ -19,11 +19,285 @@ misrepresented as being the original software.
 */
 
 #include "RealSurface.h"
+#include "CSurface9.h"
+#include "CVolume9.h"
 
-RealSurface::RealSurface(RealDevice* realDevice)
+RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 	: mRealDevice(realDevice)
 {
 	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
+
+	vk::Result result;
+
+	mRealFormat = ConvertFormat(surface9->mFormat);
+
+	if (mRealFormat == vk::Format::eUndefined)//VK_FORMAT_UNDEFINED
+	{
+		if (surface9->mFormat > 199)
+		{
+			char four[5] =
+			{
+				(char)(surface9->mFormat & 0xFF),
+				(char)((surface9->mFormat >> 8) & 0xFF),
+				(char)((surface9->mFormat >> 16) & 0xFF),
+				(char)((surface9->mFormat >> 24) & 0xFF),
+				'\0'
+			};
+
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface unknown format: " << four;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface unknown format: " << surface9->mFormat;
+		}
+
+	}
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e2D;
+	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
+	imageCreateInfo.extent = vk::Extent3D(surface9->mWidth, surface9->mHeight, 1);
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+
+	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
+	{
+		imageCreateInfo.tiling = vk::ImageTiling::eLinear;
+		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+	}
+	else
+	{
+		imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+
+		if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
+		{
+			//imageCreateInfo.initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eDepthStencilAttachment;
+		}
+		else
+		{
+			//imageCreateInfo.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eColorAttachment;
+		}
+	}
+
+	mExtent = imageCreateInfo.extent;
+
+	//if (surface9->mCubeTexture != nullptr)
+	//{
+	//	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
+	//}
+
+	result = realDevice->mDevice.createImage(&imageCreateInfo, nullptr, &mStagingImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	realDevice->mDevice.getImageMemoryRequirements(mStagingImage, &memoryRequirements);
+
+	//mMemoryAllocateInfo.allocationSize = 0;
+	mMemoryAllocateInfo.memoryTypeIndex = 0;
+	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
+	{
+		if (!GetMemoryTypeFromProperties(realDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &mMemoryAllocateInfo.memoryTypeIndex))
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface Could not find memory type from properties.";
+			return;
+		}
+	}
+	else
+	{
+		if (!GetMemoryTypeFromProperties(realDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &mMemoryAllocateInfo.memoryTypeIndex))
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface Could not find memory type from properties.";
+			return;
+		}
+	}
+
+	result = realDevice->mDevice.allocateMemory(&mMemoryAllocateInfo, nullptr, &mStagingDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	realDevice->mDevice.bindImageMemory(mStagingImage, mStagingDeviceMemory, 0);
+
+	mSubresource.mipLevel = 0;
+
+	if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
+	{
+		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
+	}
+	else
+	{
+		mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+
+	mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
+
+	if (imageCreateInfo.tiling == vk::ImageTiling::eLinear)
+	{
+		realDevice->mDevice.getImageSubresourceLayout(mStagingImage, &mSubresource, &mLayouts[0]);
+	}
+
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+	imageViewCreateInfo.image = mStagingImage;
+	//imageViewCreateInfo.viewType = vk::ImageViewType::e3D;
+	imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
+	imageViewCreateInfo.format = mRealFormat;
+
+	if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
+	{
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+	}
+	else
+	{
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	/*
+	This block handles the luminance & x formats. They are converted to color formats but need a little mapping to make them work correctly.
+	*/
+	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
+	{
+		switch (surface9->mFormat)
+		{
+		case D3DFMT_L8:
+			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+			break;
+		case D3DFMT_A8L8:
+			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
+			break;
+		case D3DFMT_X8R8G8B8:
+		case D3DFMT_X8B8G8R8:
+			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eOne);
+			break;
+		default:
+			break;
+		}
+	}
+	else
+	{
+		imageViewCreateInfo.components.r = vk::ComponentSwizzle::eIdentity;
+		imageViewCreateInfo.components.g = vk::ComponentSwizzle::eIdentity;
+		imageViewCreateInfo.components.b = vk::ComponentSwizzle::eIdentity;
+		imageViewCreateInfo.components.a = vk::ComponentSwizzle::eIdentity;
+	}
+
+
+
+	result = realDevice->mDevice.createImageView(&imageViewCreateInfo, nullptr, &mStagingImageView);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+}
+
+RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
+	: mRealDevice(realDevice)
+{
+	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
+
+	vk::Result result;
+
+	mRealFormat = ConvertFormat(volume9->mFormat);
+
+	if (mRealFormat == vk::Format::eUndefined)//VK_FORMAT_UNDEFINED
+	{
+		if (volume9->mFormat > 199)
+		{
+			char four[5] =
+			{
+				(char)(volume9->mFormat & 0xFF),
+				(char)((volume9->mFormat >> 8) & 0xFF),
+				(char)((volume9->mFormat >> 16) & 0xFF),
+				(char)((volume9->mFormat >> 24) & 0xFF),
+				'\0'
+			};
+
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface unknown format: " << four;
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface unknown format: " << volume9->mFormat;
+		}
+
+	}
+
+	vk::ImageCreateInfo imageCreateInfo;
+	imageCreateInfo.imageType = vk::ImageType::e3D;
+	imageCreateInfo.format = mRealFormat;
+	imageCreateInfo.extent = vk::Extent3D(volume9->mWidth, volume9->mHeight, volume9->mDepth);
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
+	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+
+	//if (Volume9->mCubeTexture != nullptr)
+	//{
+	//	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
+	//}
+
+	result = realDevice->mDevice.createImage(&imageCreateInfo, nullptr, &mStagingImage);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
+		return;
+	}
+
+	vk::MemoryRequirements memoryRequirements;
+	realDevice->mDevice.getImageMemoryRequirements(mStagingImage, &memoryRequirements);
+
+	//mMemoryAllocateInfo.allocationSize = 0;
+	mMemoryAllocateInfo.memoryTypeIndex = 0;
+	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+	if (!GetMemoryTypeFromProperties(realDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &mMemoryAllocateInfo.memoryTypeIndex))
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface Could not find memory type from properties.";
+		return;
+	}
+
+	result = realDevice->mDevice.allocateMemory(&mMemoryAllocateInfo, nullptr, &mStagingDeviceMemory);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	realDevice->mDevice.bindImageMemory(mStagingImage, mStagingDeviceMemory, 0);
+
+	mSubresource.mipLevel = 0;
+	mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
+
+	realDevice->mDevice.getImageSubresourceLayout(mStagingImage, &mSubresource, &mLayouts[0]);
 }
 
 RealSurface::~RealSurface()

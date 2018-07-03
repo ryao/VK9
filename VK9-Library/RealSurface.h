@@ -31,6 +31,9 @@ misrepresented as being the original software.
 #ifndef REALSURFACE_H
 #define REALSURFACE_H
 
+class CSurface9;
+class CVolume9;
+
 struct RealSurface
 {
 	BOOL mIsFlushed = false;
@@ -47,7 +50,8 @@ struct RealSurface
 	vk::ImageSubresource mSubresource;
 
 	RealDevice* mRealDevice = nullptr; //null if not owner.
-	RealSurface(RealDevice* realDevice);
+	RealSurface(RealDevice* realDevice, CSurface9* surface9);
+	RealSurface(RealDevice* realDevice, CVolume9* volume9);
 	~RealSurface();
 };
 

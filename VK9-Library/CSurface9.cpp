@@ -34,7 +34,7 @@ CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParam
 	mMultiSample = pPresentationParameters->MultiSampleType;
 	mMultisampleQuality = pPresentationParameters->MultiSampleQuality;
 	
-	if (Format == D3DFMT_D16)
+	if (mFormat == D3DFMT_D16)
 	{
 		mUsage = D3DUSAGE_DEPTHSTENCIL;
 	}
@@ -50,7 +50,11 @@ CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParam
 	mFormat = pPresentationParameters->BackBufferFormat;
 	mMultiSample = pPresentationParameters->MultiSampleType;
 	mMultisampleQuality = pPresentationParameters->MultiSampleQuality;
-	mUsage = D3DUSAGE_DEPTHSTENCIL;
+
+	if (mFormat == D3DFMT_D16)
+	{
+		mUsage = D3DUSAGE_DEPTHSTENCIL;
+	}
 
 	//Init();
 }
@@ -67,6 +71,12 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mSharedHandle(pSharedHandle)
 {
 	//Init();
+
+	if (mFormat == D3DFMT_D16)
+	{
+		mUsage = D3DUSAGE_DEPTHSTENCIL;
+	}
+
 }
 
 CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, HANDLE *pSharedHandle)
@@ -81,6 +91,12 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 	mSharedHandle(pSharedHandle)
 {
 	//Init();
+
+	if (mFormat == D3DFMT_D16)
+	{
+		mUsage = D3DUSAGE_DEPTHSTENCIL;
+	}
+
 }
 
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle, int32_t filler)
@@ -95,6 +111,12 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 	mSharedHandle(pSharedHandle)
 {
 	//Init();
+
+	if (mFormat == D3DFMT_D16)
+	{
+		mUsage = D3DUSAGE_DEPTHSTENCIL;
+	}
+
 }
 
 CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, HANDLE *pSharedHandle, int32_t filler)
@@ -109,6 +131,12 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 	mSharedHandle(pSharedHandle)
 {
 	//Init();
+
+	if (mFormat == D3DFMT_D16)
+	{
+		mUsage = D3DUSAGE_DEPTHSTENCIL;
+	}
+
 }
 
 CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle)
