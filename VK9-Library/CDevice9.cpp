@@ -1103,8 +1103,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetCursorProperties(UINT XHotSpot, UINT YHot
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetDepthStencilSurface(IDirect3DSurface9* pNewZStencil)
 {
-
+	if (mDepthStencilSurface != nullptr)
+	{
+		mDepthStencilSurface->Release();
+	}
 	mDepthStencilSurface = (CSurface9*)pNewZStencil;
+	if (mDepthStencilSurface != nullptr)
+	{
+		mDepthStencilSurface->AddRef();
+	}
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetDepthStencilSurface;

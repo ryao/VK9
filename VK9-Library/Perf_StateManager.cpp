@@ -193,6 +193,11 @@ StateManager::~StateManager()
 
 void StateManager::DestroyDevice(size_t id)
 {
+	if (mDevices.size() == 1)
+	{
+		mSurfaces.clear();
+	}
+	mSwapChains.clear();
 	mDevices[id].reset();
 }
 
@@ -227,8 +232,12 @@ void StateManager::CreateInstance()
 	//extensionNames.push_back("VK_EXT_debug_marker");
 	layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
 
-	BOOL res = GetModuleHandleEx(0, TEXT("renderdoc"), &ptr->mRenderDocDll);
-	if (res != FALSE)
+	//This didn't work so I switched it back to what I had.
+	//BOOL res = GetModuleHandleEx(0, TEXT("renderdoc.dll"), &ptr->mRenderDocDll);
+
+	HINSTANCE instance = LoadLibraryA("renderdoc.dll");
+	ptr->mRenderDocDll = GetModuleHandleA("renderdoc.dll");
+	if (ptr->mRenderDocDll != nullptr)
 	{
 		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(ptr->mRenderDocDll, "RENDERDOC_GetAPI");
 		if (RENDERDOC_GetAPI != nullptr)
@@ -801,7 +810,10 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 
 void StateManager::DestroySurface(size_t id)
 {
-	mSurfaces[id].reset();
+	if (mSurfaces.size())
+	{
+		mSurfaces[id].reset();
+	}
 }
 
 void StateManager::CreateSurface(size_t id, void* argument1)
