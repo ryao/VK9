@@ -51,22 +51,64 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, 
 	switch (flags)
 	{
 	case VK_DEBUG_REPORT_INFORMATION_BIT_EXT:
-		BOOST_LOG_TRIVIAL(info) << "DebugReport(Info): " << message << " " << objectType;
+		BOOST_LOG_TRIVIAL(info) << "------DebugReport(Info)------";
+		BOOST_LOG_TRIVIAL(info) << "ObjectType: " << objectType;
+		BOOST_LOG_TRIVIAL(info) << "Object: " << object;
+		BOOST_LOG_TRIVIAL(info) << "Location: " << location;
+		BOOST_LOG_TRIVIAL(info) << "MessageCode: " << messageCode;
+		BOOST_LOG_TRIVIAL(info) << "LayerPrefix: " << layerPrefix;
+		BOOST_LOG_TRIVIAL(info) << "Message: " << message;
+		BOOST_LOG_TRIVIAL(info) << "-----------------------------";
 		break;
 	case VK_DEBUG_REPORT_WARNING_BIT_EXT:
-		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Warn): " << message << " " << objectType;
+		BOOST_LOG_TRIVIAL(warning) << "------DebugReport(Warn)------";
+		BOOST_LOG_TRIVIAL(warning) << "ObjectType: " << objectType;
+		BOOST_LOG_TRIVIAL(warning) << "Object: " << object;
+		BOOST_LOG_TRIVIAL(warning) << "Location: " << location;
+		BOOST_LOG_TRIVIAL(warning) << "MessageCode: " << messageCode;
+		BOOST_LOG_TRIVIAL(warning) << "LayerPrefix: " << layerPrefix;
+		BOOST_LOG_TRIVIAL(warning) << "Message: " << message;
+		BOOST_LOG_TRIVIAL(warning) << "-----------------------------";
 		break;
 	case VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT:
-		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Perf): " << message << " " << objectType;
+		BOOST_LOG_TRIVIAL(warning) << "------DebugReport(Perf)------";
+		BOOST_LOG_TRIVIAL(warning) << "ObjectType: " << objectType;
+		BOOST_LOG_TRIVIAL(warning) << "Object: " << object;
+		BOOST_LOG_TRIVIAL(warning) << "Location: " << location;
+		BOOST_LOG_TRIVIAL(warning) << "MessageCode: " << messageCode;
+		BOOST_LOG_TRIVIAL(warning) << "LayerPrefix: " << layerPrefix;
+		BOOST_LOG_TRIVIAL(warning) << "Message: " << message;
+		BOOST_LOG_TRIVIAL(warning) << "-----------------------------";
 		break;
 	case VK_DEBUG_REPORT_ERROR_BIT_EXT:
-		BOOST_LOG_TRIVIAL(error) << "DebugReport(Error): " << message << " " << objectType;
+		BOOST_LOG_TRIVIAL(error) << "------DebugReport(Error)------";
+		BOOST_LOG_TRIVIAL(error) << "ObjectType: " << objectType;
+		BOOST_LOG_TRIVIAL(error) << "Object: " << object;
+		BOOST_LOG_TRIVIAL(error) << "Location: " << location;
+		BOOST_LOG_TRIVIAL(error) << "MessageCode: " << messageCode;
+		BOOST_LOG_TRIVIAL(error) << "LayerPrefix: " << layerPrefix;
+		BOOST_LOG_TRIVIAL(error) << "Message: " << message;		
+		BOOST_LOG_TRIVIAL(error) << "------------------------------";
 		break;
 	case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
-		BOOST_LOG_TRIVIAL(warning) << "DebugReport(Debug): " << message << " " << objectType;
+		BOOST_LOG_TRIVIAL(warning) << "------DebugReport(Debug)------";
+		BOOST_LOG_TRIVIAL(warning) << "ObjectType: " << objectType;
+		BOOST_LOG_TRIVIAL(warning) << "Object: " << object;
+		BOOST_LOG_TRIVIAL(warning) << "Location: " << location;
+		BOOST_LOG_TRIVIAL(warning) << "MessageCode: " << messageCode;
+		BOOST_LOG_TRIVIAL(warning) << "LayerPrefix: " << layerPrefix;
+		BOOST_LOG_TRIVIAL(warning) << "Message: " << message;
+		BOOST_LOG_TRIVIAL(warning) << "------------------------------";
 		break;
 	default:
-		BOOST_LOG_TRIVIAL(error) << "DebugReport(?): " << message << " " << objectType;
+		BOOST_LOG_TRIVIAL(error) << "------DebugReport(?)------";
+		BOOST_LOG_TRIVIAL(error) << "ObjectType: " << objectType;
+		BOOST_LOG_TRIVIAL(error) << "Object: " << object;
+		BOOST_LOG_TRIVIAL(error) << "Location: " << location;
+		BOOST_LOG_TRIVIAL(error) << "MessageCode: " << messageCode;
+		BOOST_LOG_TRIVIAL(error) << "LayerPrefix: " << layerPrefix;
+		BOOST_LOG_TRIVIAL(error) << "Message: " << message;
+		BOOST_LOG_TRIVIAL(error) << "--------------------------";
 		break;
 	}
 
@@ -182,6 +224,7 @@ void StateManager::CreateInstance()
 
 #ifdef _DEBUG
 	extensionNames.push_back("VK_EXT_debug_report");
+	//extensionNames.push_back("VK_EXT_debug_marker");
 	layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
 
 	BOOL res = GetModuleHandleEx(0, TEXT("renderdoc"), &ptr->mRenderDocDll);

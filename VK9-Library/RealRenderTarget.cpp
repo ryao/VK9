@@ -25,6 +25,8 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mColorSurface(colorSurface),
 	mDepthSurface(depthSurface)
 {
+	BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::RealRenderTarget";
+
 	vk::Result result;
 
 	vk::AttachmentReference colorReference;
@@ -132,14 +134,20 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSemaphore failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
+	vk::FenceCreateInfo fenceInfo;
+
+	mDevice.createFence(&fenceInfo, nullptr, &mCommandFence);
 }
 
 RealRenderTarget::~RealRenderTarget()
 {
+	BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::~RealRenderTarget";
+	mDevice.destroyFence(mCommandFence,nullptr);
 	mDevice.destroySemaphore(mPresentCompleteSemaphore, nullptr);
 	mDevice.destroyFramebuffer(mFramebuffer, nullptr);
 	mDevice.destroyRenderPass(mStoreRenderPass, nullptr);
-	mDevice.destroyRenderPass(mClearRenderPass, nullptr);	
+	mDevice.destroyRenderPass(mClearRenderPass, nullptr);
 }
 
 void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
@@ -163,7 +171,7 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
 	}
 
 	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
-	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1, 0, 1);
+	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1, 0, 1);
 
 	command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 
@@ -209,13 +217,17 @@ void RealRenderTarget::StopScene(vk::CommandBuffer command, vk::Queue queue)
 	mSubmitInfo.pCommandBuffers = &command;
 	mSubmitInfo.signalSemaphoreCount = 0;
 	mSubmitInfo.pSignalSemaphores = nullptr;
-	
-	vk::Result result = queue.submit(1, &mSubmitInfo, mNullFence);
+
+	vk::Result result = queue.submit(1, &mSubmitInfo, mCommandFence);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::StopScene vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
+	mDevice.waitForFences(1, &mCommandFence, true, 100000000); //timeout 1 second.
+	mDevice.resetFences(1, &mCommandFence);
+
 }
 
 void RealRenderTarget::Clear(vk::CommandBuffer command, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)

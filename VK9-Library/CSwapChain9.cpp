@@ -27,6 +27,8 @@ CSwapChain9::CSwapChain9(CDevice9* Device, D3DPRESENT_PARAMETERS *pPresentationP
 	: mDevice(Device),
 	mPresentationParameters(pPresentationParameters)
 {
+	BOOST_LOG_TRIVIAL(info) << "CSwapChain9::CSwapChain9";
+
 	mBackBuffer = new CSurface9(Device, pPresentationParameters);
 	mFrontBuffer = new CSurface9(Device, pPresentationParameters);
 	mCommandStreamManager = mDevice->mCommandStreamManager;
@@ -35,6 +37,8 @@ CSwapChain9::CSwapChain9(CDevice9* Device, D3DPRESENT_PARAMETERS *pPresentationP
 
 CSwapChain9::~CSwapChain9()
 {
+	BOOST_LOG_TRIVIAL(info) << "CSwapChain9::~CSwapChain9";
+
 	delete mBackBuffer;
 	delete mFrontBuffer;
 }

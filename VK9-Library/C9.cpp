@@ -208,7 +208,6 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	//Add implicit swap chain.
 	CSwapChain9* ptr = nullptr; //= new CSwapChain9(this, pPresentationParameters);
 	obj->CreateAdditionalSwapChain(&obj->mPresentationParameters, (IDirect3DSwapChain9**)&ptr);
-	ptr->Init();
 	obj->mSwapChains.push_back(ptr);
 	
 	//Add implicit render target

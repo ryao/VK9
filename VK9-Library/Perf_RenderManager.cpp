@@ -185,8 +185,8 @@ void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *
 
 	swapchain->Present(currentBuffer, realDevice->mQueue, realDevice->mRenderTarget->mColorSurface->mStagingImage);
 
-	realDevice->mQueue.waitIdle();
-	currentBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+	//realDevice->mQueue.waitIdle();
+	//currentBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
 	realDevice->mCurrentCommandBuffer = !realDevice->mCurrentCommandBuffer;
 

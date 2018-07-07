@@ -25,7 +25,7 @@ misrepresented as being the original software.
 RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 	: mRealDevice(realDevice)
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
+	BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface";
 
 	vk::Result result;
 
@@ -60,12 +60,12 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
-	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 
 	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
 	{
 		imageCreateInfo.tiling = vk::ImageTiling::eLinear;
 		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+		imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 	}
 	else
 	{
@@ -75,11 +75,13 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 		{
 			//imageCreateInfo.initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eDepthStencilAttachment;
+			imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 		}
 		else
 		{
 			//imageCreateInfo.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
 			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eColorAttachment;
+			imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 		}
 	}
 
@@ -101,6 +103,14 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
 		return;
 	}
+
+	BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface vkCreateImage: " << static_cast<uint64_t>(mStagingImage);
+
+	//vk::DebugMarkerObjectNameInfoEXT objectName;
+	//objectName.object = static_cast<uint64_t>(mStagingImage);
+	//objectName.objectType = vk::DebugReportObjectTypeEXT::eImage;
+
+	//realDevice->mDevice.debugMarkerSetObjectNameEXT(objectName);
 
 	vk::MemoryRequirements memoryRequirements;
 	realDevice->mDevice.getImageMemoryRequirements(mStagingImage, &memoryRequirements);
@@ -215,7 +225,7 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
 	: mRealDevice(realDevice)
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealSurface::RealSurface";
+	BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface";
 
 	vk::Result result;
 
@@ -271,6 +281,8 @@ RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
 		return;
 	}
 
+	BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface vkCreateImage: " << static_cast<uint64_t>( mStagingImage);
+
 	vk::MemoryRequirements memoryRequirements;
 	realDevice->mDevice.getImageMemoryRequirements(mStagingImage, &memoryRequirements);
 
@@ -302,7 +314,7 @@ RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
 
 RealSurface::~RealSurface()
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealSurface::~RealSurface";
+	BOOST_LOG_TRIVIAL(info) << "RealSurface::~RealSurface";
 	if (mRealDevice != nullptr)
 	{
 		auto& device = mRealDevice->mDevice;

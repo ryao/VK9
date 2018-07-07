@@ -23,12 +23,12 @@ misrepresented as being the original software.
 RealTexture::RealTexture(RealDevice* realDevice)
 	: mRealDevice(realDevice)
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealTexture::RealTexture";
+	BOOST_LOG_TRIVIAL(info) << "RealTexture::RealTexture";
 }
 
 RealTexture::~RealTexture()
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealTexture::~RealTexture";
+	BOOST_LOG_TRIVIAL(info) << "RealTexture::~RealTexture";
 	if (mRealDevice != nullptr)
 	{
 		auto& device = mRealDevice->mDevice;

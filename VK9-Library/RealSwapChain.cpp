@@ -31,7 +31,7 @@ RealSwapChain::RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalD
 	BOOST_LOG_TRIVIAL(info) << "RealSwapChain::RealSwapChain";
 	InitSurface();
 	InitSwapChain();
-	//InitDepthBuffer(); //Might not need will revisit later.
+	InitDepthBuffer(); //Might not need will revisit later.
 	InitRenderPass();
 	InitFramebuffer();
 }
@@ -42,7 +42,7 @@ RealSwapChain::~RealSwapChain()
 
 	DestroyFramebuffer();
 	DestroyRenderPass();
-	//DestroyDepthBuffer(); //Might not need will revisit later.
+	DestroyDepthBuffer(); //Might not need will revisit later.
 	DestroySwapChain();
 	DestroySurface();
 }
@@ -457,31 +457,6 @@ void RealSwapChain::DestroyFramebuffer()
 
 void RealSwapChain::StartPresentation(vk::CommandBuffer commandBuffer)
 {
-	mResult = mDevice.acquireNextImageKHR(mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, nullptr, &mCurrentIndex);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StartPresentation vkAcquireNextImageKHR failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
-
-	mResult = commandBuffer.begin(&mCommandBufferBeginInfo);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StartPresentation vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
-
-	//mImageMemoryBarrier.srcAccessMask = 0;
-	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
-	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mImageMemoryBarrier.image = mImages[mCurrentIndex];
-	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
-
 	//mClearValues[0].color = mClearColorValue; //default is 0.0f
 	mClearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
@@ -538,12 +513,39 @@ void RealSwapChain::StopPresentation(vk::CommandBuffer commandBuffer, vk::Queue 
 
 void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source)
 {
-	StartPresentation(commandBuffer);
+	mResult = commandBuffer.begin(&mCommandBufferBeginInfo);
+	if (mResult != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StartPresentation vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)mResult);
+		return;
+	}
+
+	mResult = mDevice.acquireNextImageKHR(mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, nullptr, &mCurrentIndex);
+	if (mResult != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StartPresentation vkAcquireNextImageKHR failed with return code of " << GetResultString((VkResult)mResult);
+		return;
+	}
+
+	//mImageMemoryBarrier.srcAccessMask = 0;
+	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
+	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	mImageMemoryBarrier.image = mImages[mCurrentIndex];
+	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
+
 	ReallySetImageLayout(commandBuffer, source, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
 	ReallySetImageLayout(commandBuffer, mImages[mCurrentIndex], vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
 	ReallyCopyImage(commandBuffer, source, mImages[mCurrentIndex], 0, 0, mSwapchainExtent.width, mSwapchainExtent.height, 1, 0, 0, 0, 0);
-
 	ReallySetImageLayout(commandBuffer, mImages[mCurrentIndex], vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
+
+	ReallySetImageLayout(commandBuffer, mDepthImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1, 0, 1);
+
+	StartPresentation(commandBuffer);
 	StopPresentation(commandBuffer, queue);
 
 	mPresentInfo.pImageIndices = &mCurrentIndex;

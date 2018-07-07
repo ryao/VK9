@@ -151,7 +151,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	vk::CommandBufferAllocateInfo commandBufferInfo;
 	commandBufferInfo.commandPool = mCommandPool;
 	commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
-	commandBufferInfo.commandBufferCount = 1;
+	commandBufferInfo.commandBufferCount = 2;
 
 	result = mDevice.allocateCommandBuffers(&commandBufferInfo, mCommandBuffers);
 	if (result != vk::Result::eSuccess)
@@ -505,6 +505,7 @@ RealDevice::~RealDevice()
 		return;
 	}
 
+	mRenderTarget.reset();
 	
 	mDevice.destroyBuffer(mLightBuffer, nullptr);
 	mDevice.freeMemory(mLightBufferMemory, nullptr);
