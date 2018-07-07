@@ -457,69 +457,16 @@ void RealSwapChain::DestroyFramebuffer()
 
 void RealSwapChain::StartPresentation(vk::CommandBuffer commandBuffer)
 {
-	//mClearValues[0].color = mClearColorValue; //default is 0.0f
-	mClearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
-	mRenderPassBeginInfo.renderPass = mRenderPass;
-	mRenderPassBeginInfo.framebuffer = mFramebuffers[mCurrentIndex];
-	mRenderPassBeginInfo.renderArea.offset.x = 0;
-	mRenderPassBeginInfo.renderArea.offset.y = 0;
-	mRenderPassBeginInfo.renderArea.extent.width = mSwapchainExtent.width;
-	mRenderPassBeginInfo.renderArea.extent.height = mSwapchainExtent.height;
-	mRenderPassBeginInfo.clearValueCount = 2;
-	mRenderPassBeginInfo.pClearValues = mClearValues;
-
-	commandBuffer.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
-
-	//commandBuffer.setViewport(0, 1, &realWindow.mDeviceState.mViewport);
-	//commandBuffer.setScissor(0, 1, &realWindow.mDeviceState.mScissor);
 }
 
 void RealSwapChain::StopPresentation(vk::CommandBuffer commandBuffer, vk::Queue queue)
 {
-	mPipeStageFlags = vk::PipelineStageFlagBits::eBottomOfPipe;
-
-	commandBuffer.endRenderPass();
-
-	mSubmitInfo.waitSemaphoreCount = 1;
-	mSubmitInfo.pWaitSemaphores = &mPresentCompleteSemaphore;
-	mSubmitInfo.pWaitDstStageMask = &mPipeStageFlags;
-	mSubmitInfo.commandBufferCount = 1;
-	mSubmitInfo.pCommandBuffers = &commandBuffer;
-	mSubmitInfo.signalSemaphoreCount = 0;
-	mSubmitInfo.pSignalSemaphores = nullptr;
-	mPresentInfo.pImageIndices = &mCurrentIndex;
-
-	mPrePresentBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mPrePresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mPrePresentBarrier.oldLayout = vk::ImageLayout::ePresentSrcKHR;
-	mPrePresentBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
-	mPrePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mPrePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mPrePresentBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	mPrePresentBarrier.image = mImages[mCurrentIndex];
-
-	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mPrePresentBarrier);
-	commandBuffer.end();
-
-	mResult = queue.submit(1, &mSubmitInfo, mNullFence);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StopPresentation vkQueueSubmit failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
 
 }
 
 void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source)
 {
-	mResult = commandBuffer.begin(&mCommandBufferBeginInfo);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StartPresentation vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
-
 	mResult = mDevice.acquireNextImageKHR(mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, nullptr, &mCurrentIndex);
 	if (mResult != vk::Result::eSuccess)
 	{
@@ -536,6 +483,13 @@ void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk
 	mImageMemoryBarrier.image = mImages[mCurrentIndex];
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
+	mResult = commandBuffer.begin(&mCommandBufferBeginInfo);
+	if (mResult != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StartPresentation vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)mResult);
+		return;
+	}
+
 	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
 	ReallySetImageLayout(commandBuffer, source, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
@@ -545,8 +499,34 @@ void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk
 
 	ReallySetImageLayout(commandBuffer, mDepthImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1, 0, 1);
 
-	StartPresentation(commandBuffer);
-	StopPresentation(commandBuffer, queue);
+	mPipeStageFlags = vk::PipelineStageFlagBits::eBottomOfPipe;
+
+	mPrePresentBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+	mPrePresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+	mPrePresentBarrier.oldLayout = vk::ImageLayout::ePresentSrcKHR;
+	mPrePresentBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+	mPrePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	mPrePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	mPrePresentBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	mPrePresentBarrier.image = mImages[mCurrentIndex];
+
+	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mPrePresentBarrier);
+	commandBuffer.end();
+
+	mSubmitInfo.waitSemaphoreCount = 1;
+	mSubmitInfo.pWaitSemaphores = &mPresentCompleteSemaphore;
+	mSubmitInfo.pWaitDstStageMask = &mPipeStageFlags;
+	mSubmitInfo.commandBufferCount = 1;
+	mSubmitInfo.pCommandBuffers = &commandBuffer;
+	mSubmitInfo.signalSemaphoreCount = 0;
+	mSubmitInfo.pSignalSemaphores = nullptr;
+
+	mResult = queue.submit(1, &mSubmitInfo, mNullFence);
+	if (mResult != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StopPresentation vkQueueSubmit failed with return code of " << GetResultString((VkResult)mResult);
+		return;
+	}
 
 	mPresentInfo.pImageIndices = &mCurrentIndex;
 

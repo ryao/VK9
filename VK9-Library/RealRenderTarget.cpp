@@ -156,6 +156,7 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
 
 	if (clear)
 	{
+		mClearValues[0].color = mClearColorValue;
 		mRenderPassBeginInfo.renderPass = mClearRenderPass;
 	}
 	else
