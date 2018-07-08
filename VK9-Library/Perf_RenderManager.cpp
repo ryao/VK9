@@ -1138,6 +1138,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 
 	realDevice->mGraphicsPipelineCreateInfo.layout = context->PipelineLayout;
+	realDevice->mGraphicsPipelineCreateInfo.renderPass = realDevice->mRenderTarget->mStoreRenderPass;
 
 	result = device.createGraphicsPipelines(realDevice->mPipelineCache, 1, &realDevice->mGraphicsPipelineCreateInfo, nullptr, &context->Pipeline);
 	//result = vkCreateGraphicsPipelines(mDevice->mDevice, VK_NULL_HANDLE, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);
