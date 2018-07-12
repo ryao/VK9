@@ -87,7 +87,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, 
 		BOOST_LOG_TRIVIAL(error) << "Location: " << location;
 		BOOST_LOG_TRIVIAL(error) << "MessageCode: " << messageCode;
 		BOOST_LOG_TRIVIAL(error) << "LayerPrefix: " << layerPrefix;
-		BOOST_LOG_TRIVIAL(error) << "Message: " << message;		
+		BOOST_LOG_TRIVIAL(error) << "Message: " << message;
 		BOOST_LOG_TRIVIAL(error) << "------------------------------";
 		break;
 	case VK_DEBUG_REPORT_DEBUG_BIT_EXT:
@@ -207,6 +207,11 @@ void StateManager::CreateDevice(size_t id, void* argument1)
 	auto instance = mInstances[id];
 	auto physicalDevice = instance->mPhysicalDevices[device9->mAdapter];
 	auto device = std::make_shared<RealDevice>(instance->mInstance, physicalDevice, device9->mPresentationParameters.BackBufferWidth, device9->mPresentationParameters.BackBufferHeight);
+
+	if (pfn_vkCmdPushDescriptorSetKHR == nullptr)
+	{
+		pfn_vkCmdPushDescriptorSetKHR = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(device->mDevice.getProcAddr("vkCmdPushDescriptorSetKHR"));
+	}
 
 	mDevices.push_back(device);
 }

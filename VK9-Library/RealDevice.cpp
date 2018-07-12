@@ -494,6 +494,8 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	Light light = {};
 	mDeviceState.mLights.push_back(light);
 
+	mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
 	//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
 	CreateBuffer(sizeof(Light) * 4, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mLightBuffer, mLightBufferMemory);
 	CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mMaterialBuffer, mMaterialBufferMemory);

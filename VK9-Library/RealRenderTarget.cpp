@@ -29,6 +29,8 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 
 	vk::Result result;
 
+	mCommandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
 	vk::AttachmentReference colorReference;
 	colorReference.attachment = 0;
 	colorReference.layout = vk::ImageLayout::eColorAttachmentOptimal;
@@ -54,8 +56,8 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
 	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
 	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[0].initialLayout = vk::ImageLayout::ePresentSrcKHR;
-	mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
+	mRenderAttachments[0].initialLayout = vk::ImageLayout::eUndefined;
+	mRenderAttachments[0].finalLayout = vk::ImageLayout::eTransferSrcOptimal;
 
 	mRenderAttachments[1].format = mDepthSurface->mRealFormat;
 	mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
@@ -63,7 +65,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
 	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
 	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+	mRenderAttachments[1].initialLayout = vk::ImageLayout::eUndefined;
 	mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;
@@ -176,17 +178,6 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
 
 	command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 
-	//mImageMemoryBarrier.srcAccessMask = 0;
-	//mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead; //VK_ACCESS_MEMORY_READ_BIT;
-	//mImageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-	//mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	//mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	//mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	//mImageMemoryBarrier.image = this->mColorSurface->mStagingImage;
-	//mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-	//command.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
-
 	//Set the pass back to store so draw calls won't be lost if they require stop/start of render pass.
 	mRenderPassBeginInfo.renderPass = mStoreRenderPass;
 }
@@ -197,38 +188,7 @@ void RealRenderTarget::StopScene(vk::CommandBuffer command, vk::Queue queue)
 
 	command.endRenderPass();
 
-	mPrePresentBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mPrePresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mPrePresentBarrier.oldLayout = vk::ImageLayout::eUndefined;  //vk::ImageLayout::ePresentSrcKHR; 
-	mPrePresentBarrier.newLayout = vk::ImageLayout::eTransferSrcOptimal; //vk::ImageLayout::ePresentSrcKHR;
-	mPrePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mPrePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mPrePresentBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	mPrePresentBarrier.image = mColorSurface->mStagingImage;
-	vk::ImageMemoryBarrier* memoryBarrier = &mPrePresentBarrier;
-
-	command.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, memoryBarrier);
-	command.end();
-
-	mPipeStageFlags = vk::PipelineStageFlagBits::eBottomOfPipe; //VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	mSubmitInfo.waitSemaphoreCount = 0;
-	mSubmitInfo.pWaitSemaphores = nullptr; //&mPresentCompleteSemaphore;
-	mSubmitInfo.pWaitDstStageMask = &mPipeStageFlags;
-	mSubmitInfo.commandBufferCount = 1;
-	mSubmitInfo.pCommandBuffers = &command;
-	mSubmitInfo.signalSemaphoreCount = 0;
-	mSubmitInfo.pSignalSemaphores = nullptr;
-
-	vk::Result result = queue.submit(1, &mSubmitInfo, mCommandFence);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::StopScene vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	mDevice.waitForFences(1, &mCommandFence, true, 100000000); //timeout 1 second.
-	mDevice.resetFences(1, &mCommandFence);
-
+	mPipeStageFlags = vk::PipelineStageFlagBits::eAllCommands; //VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 }
 
 void RealRenderTarget::Clear(vk::CommandBuffer command, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)

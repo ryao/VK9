@@ -62,19 +62,9 @@ struct RealSwapChain
 	vk::DeviceMemory mDepthDeviceMemory;
 	vk::Format mDepthFormat = vk::Format::eD16Unorm;
 
-	//Render Pass
-	vk::AttachmentDescription mRenderAttachments[2];
-	vk::RenderPass mRenderPass;
-	vk::RenderPassBeginInfo mRenderPassBeginInfo;
-	vk::ImageMemoryBarrier mImageMemoryBarrier;
-	vk::ClearValue mClearValues[2];
-
-	//Framebuffer
-	vk::Framebuffer* mFramebuffers;
+	//Presentation
 	vk::SemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo;
 	vk::Semaphore mPresentCompleteSemaphore;
-
-	//Presentation
 	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
 	vk::PipelineStageFlags mPipeStageFlags;
 	vk::SubmitInfo mSubmitInfo;
@@ -95,13 +85,7 @@ struct RealSwapChain
 	void DestroySwapChain();
 	void InitDepthBuffer();
 	void DestroyDepthBuffer();
-	void InitRenderPass();
-	void DestroyRenderPass();
-	void InitFramebuffer();
-	void DestroyFramebuffer();
 
-	void StartPresentation(vk::CommandBuffer commandBuffer);
-	void StopPresentation(vk::CommandBuffer commandBuffer, vk::Queue queue);
 	void Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source);
 
 };

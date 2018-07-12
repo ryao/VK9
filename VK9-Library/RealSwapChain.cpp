@@ -29,22 +29,30 @@ RealSwapChain::RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalD
 	mHeight(height)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealSwapChain::RealSwapChain";
+
+	mCommandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
+	mResult = mDevice.createSemaphore(&mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
+	if (mResult != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::InitFramebuffer vkCreateSemaphore failed with return code of " << GetResultString((VkResult)mResult);
+		return;
+	}
+
 	InitSurface();
 	InitSwapChain();
 	InitDepthBuffer(); //Might not need will revisit later.
-	InitRenderPass();
-	InitFramebuffer();
 }
 
 RealSwapChain::~RealSwapChain()
 {
 	BOOST_LOG_TRIVIAL(info) << "RealSwapChain::~RealSwapChain";
 
-	DestroyFramebuffer();
-	DestroyRenderPass();
 	DestroyDepthBuffer(); //Might not need will revisit later.
 	DestroySwapChain();
 	DestroySurface();
+
+	mDevice.destroySemaphore(mPresentCompleteSemaphore, nullptr);
 }
 
 void RealSwapChain::InitSurface()
@@ -344,127 +352,6 @@ void RealSwapChain::DestroyDepthBuffer()
 	mDevice.freeMemory(mDepthDeviceMemory, nullptr);
 }
 
-void RealSwapChain::InitRenderPass()
-{
-	vk::AttachmentReference colorReference;
-	colorReference.attachment = 0;
-	colorReference.layout = vk::ImageLayout::eColorAttachmentOptimal;
-
-	vk::AttachmentReference depthReference;
-	depthReference.attachment = 1;
-	depthReference.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-	vk::SubpassDescription subpass;
-	subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-	subpass.inputAttachmentCount = 0;
-	subpass.pInputAttachments = nullptr;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorReference;
-	subpass.pResolveAttachments = nullptr;
-	subpass.pDepthStencilAttachment = &depthReference;
-	subpass.preserveAttachmentCount = 0;
-	subpass.pPreserveAttachments = nullptr;
-
-	mRenderAttachments[0].format = mSurfaceFormat;
-	mRenderAttachments[0].samples = vk::SampleCountFlagBits::e1;
-	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
-	mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
-	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[0].initialLayout = vk::ImageLayout::ePresentSrcKHR;
-	mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
-
-	mRenderAttachments[1].format = mDepthFormat;
-	mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
-	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
-	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-	mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-	vk::RenderPassCreateInfo renderPassCreateInfo;
-	renderPassCreateInfo.attachmentCount = 2; //revisit
-	renderPassCreateInfo.pAttachments = mRenderAttachments;
-	renderPassCreateInfo.subpassCount = 1;
-	renderPassCreateInfo.pSubpasses = &subpass;
-	renderPassCreateInfo.dependencyCount = 0;
-	renderPassCreateInfo.pDependencies = nullptr;
-	
-	mResult = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mRenderPass);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::InitRenderPass vkCreateRenderPass failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
-}
-
-void RealSwapChain::DestroyRenderPass()
-{
-	mDevice.destroyRenderPass(mRenderPass, nullptr);
-}
-
-void RealSwapChain::InitFramebuffer()
-{
-	vk::ImageView attachments[2];
-	attachments[1] = mDepthView;
-
-	vk::FramebufferCreateInfo framebufferCreateInfo;
-	framebufferCreateInfo.renderPass = mRenderPass;
-	framebufferCreateInfo.attachmentCount = 2; //revisit
-	framebufferCreateInfo.pAttachments = attachments;
-	framebufferCreateInfo.width = mSwapchainExtent.width; //revisit
-	framebufferCreateInfo.height = mSwapchainExtent.height; //revisit
-	framebufferCreateInfo.layers = 1;
-
-	mFramebuffers = new vk::Framebuffer[mSwapchainImageCount];
-
-	for (size_t i = 0; i < mSwapchainImageCount; i++)
-	{
-		attachments[0] = mViews[i];
-		mResult = mDevice.createFramebuffer(&framebufferCreateInfo, nullptr, &mFramebuffers[i]);
-		if (mResult != vk::Result::eSuccess)
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::InitFramebuffer vkCreateFramebuffer failed with return code of " << GetResultString((VkResult)mResult);
-			return;
-		}
-	}
-
-	mResult = mDevice.createSemaphore(&mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::InitFramebuffer vkCreateSemaphore failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
-}
-
-void RealSwapChain::DestroyFramebuffer()
-{
-	mDevice.destroySemaphore(mPresentCompleteSemaphore, nullptr);
-
-	if (mFramebuffers != nullptr)
-	{
-		for (size_t i = 0; i < mSwapchainImageCount; i++)
-		{
-			if (mFramebuffers[i] != vk::Framebuffer())
-			{
-				mDevice.destroyFramebuffer(mFramebuffers[i], nullptr);
-			}
-		}
-		delete[] mFramebuffers;
-	}
-}
-
-void RealSwapChain::StartPresentation(vk::CommandBuffer commandBuffer)
-{
-
-}
-
-void RealSwapChain::StopPresentation(vk::CommandBuffer commandBuffer, vk::Queue queue)
-{
-
-}
-
 void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source)
 {
 	mResult = mDevice.acquireNextImageKHR(mSwapchain, UINT64_MAX, mPresentCompleteSemaphore, nullptr, &mCurrentIndex);
@@ -474,43 +361,11 @@ void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk
 		return;
 	}
 
-	//mImageMemoryBarrier.srcAccessMask = 0;
-	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
-	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mImageMemoryBarrier.image = mImages[mCurrentIndex];
-	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-	mResult = commandBuffer.begin(&mCommandBufferBeginInfo);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::StartPresentation vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
-
-	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
-
-	ReallySetImageLayout(commandBuffer, source, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
 	ReallySetImageLayout(commandBuffer, mImages[mCurrentIndex], vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
 	ReallyCopyImage(commandBuffer, source, mImages[mCurrentIndex], 0, 0, mSwapchainExtent.width, mSwapchainExtent.height, 1, 0, 0, 0, 0);
-	ReallySetImageLayout(commandBuffer, mImages[mCurrentIndex], vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
 
-	ReallySetImageLayout(commandBuffer, mDepthImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1, 0, 1);
+	mPipeStageFlags = vk::PipelineStageFlagBits::eAllCommands;
 
-	mPipeStageFlags = vk::PipelineStageFlagBits::eBottomOfPipe;
-
-	mPrePresentBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mPrePresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mPrePresentBarrier.oldLayout = vk::ImageLayout::ePresentSrcKHR;
-	mPrePresentBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
-	mPrePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mPrePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mPrePresentBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	mPrePresentBarrier.image = mImages[mCurrentIndex];
-
-	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mPrePresentBarrier);
 	commandBuffer.end();
 
 	mSubmitInfo.waitSemaphoreCount = 1;
