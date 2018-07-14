@@ -67,6 +67,11 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
+	if (!realDevice->mRenderTarget->mIsSceneStarted)
+	{
+		this->StartScene(realDevice);
+	}
+
 	//The dirty flag for lights can be set by enable light or set light.
 	if (deviceState.mAreLightsDirty)
 	{
@@ -167,7 +172,14 @@ void RenderManager::Clear(std::shared_ptr<RealDevice> realDevice, DWORD Count, c
 {
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	realDevice->mRenderTarget->Clear(currentBuffer, Count, pRects, Flags, Color, Z, Stencil);
+	if (!realDevice->mRenderTarget->mIsSceneStarted)
+	{
+		this->StartScene(realDevice,true);
+	}
+	else
+	{
+		realDevice->mRenderTarget->Clear(currentBuffer, Count, pRects, Flags, Color, Z, Stencil);
+	}
 }
 
 void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
@@ -184,9 +196,6 @@ void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *
 	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride);
 
 	swapchain->Present(currentBuffer, realDevice->mQueue, realDevice->mRenderTarget->mColorSurface->mStagingImage);
-
-	//realDevice->mQueue.waitIdle();
-	//currentBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
 	realDevice->mCurrentCommandBuffer = !realDevice->mCurrentCommandBuffer;
 

@@ -74,13 +74,13 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 		if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
 		{
 			//imageCreateInfo.initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eDepthStencilAttachment;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eDepthStencilAttachment;
 			imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 		}
 		else
 		{
 			//imageCreateInfo.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
-			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eColorAttachment;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eColorAttachment;
 			imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 		}
 	}

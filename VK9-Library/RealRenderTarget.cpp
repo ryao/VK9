@@ -57,7 +57,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
 	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
 	mRenderAttachments[0].initialLayout = vk::ImageLayout::eUndefined;
-	mRenderAttachments[0].finalLayout = vk::ImageLayout::eTransferSrcOptimal;
+	mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
 	mRenderAttachments[1].format = mDepthSurface->mRealFormat;
 	mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
@@ -173,11 +173,11 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
 		return;
 	}
 
-	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
+	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
 	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1, 0, 1);
 
 	command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
-
+	
 	//Set the pass back to store so draw calls won't be lost if they require stop/start of render pass.
 	mRenderPassBeginInfo.renderPass = mStoreRenderPass;
 }
@@ -219,7 +219,9 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DWORD Count, const D3DRE
 	if (mIsSceneStarted)
 	{
 		command.endRenderPass();
+		ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
 		command.clearColorImage(mColorSurface->mStagingImage, vk::ImageLayout::eTransferDstOptimal, &mClearColorValue, 1, &subResourceRange);
+		ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
 		command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 	}
 	else
