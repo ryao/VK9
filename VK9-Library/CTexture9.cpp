@@ -50,6 +50,11 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 
 	//mLevels = 1; //workaround
 
+	if (mUsage == 0)
+	{
+		mUsage = D3DUSAGE_RENDERTARGET;
+	}
+
 	mSurfaces.reserve(mLevels);
 	UINT width = mWidth, height = mHeight;
 	for (size_t i = 0; i < mLevels; i++)

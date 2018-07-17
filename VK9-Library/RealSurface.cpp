@@ -147,36 +147,32 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 
 	mSubresource.mipLevel = 0;
 
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+
 	if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
 	{
 		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 	}
 	else
 	{
 		mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
 	}
 
 	mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
 
 	if (imageCreateInfo.tiling == vk::ImageTiling::eLinear)
 	{
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
 		realDevice->mDevice.getImageSubresourceLayout(mStagingImage, &mSubresource, &mLayouts[0]);
 	}
 
-	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = mStagingImage;
 	//imageViewCreateInfo.viewType = vk::ImageViewType::e3D;
 	imageViewCreateInfo.viewType = vk::ImageViewType::e2D;
 	imageViewCreateInfo.format = mRealFormat;
-
-	if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
-	{
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
-	}
-	else
-	{
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-	}
 
 	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
 	imageViewCreateInfo.subresourceRange.levelCount = 1;
@@ -212,13 +208,14 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 		imageViewCreateInfo.components.a = vk::ComponentSwizzle::eIdentity;
 	}
 
-
-
-	result = realDevice->mDevice.createImageView(&imageViewCreateInfo, nullptr, &mStagingImageView);
-	if (result != vk::Result::eSuccess)
+	if (surface9->mTexture == nullptr && surface9->mCubeTexture == nullptr)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
-		return;
+		result = realDevice->mDevice.createImageView(&imageViewCreateInfo, nullptr, &mStagingImageView);
+		if (result != vk::Result::eSuccess)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+			return;
+		}
 	}
 }
 

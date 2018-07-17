@@ -510,6 +510,9 @@ RealDevice::~RealDevice()
 		return;
 	}
 
+	mDrawBuffer.clear();
+	mSamplerRequests.clear();
+
 	mRenderTarget.reset();
 	
 	mDevice.destroyBuffer(mLightBuffer, nullptr);
