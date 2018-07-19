@@ -29,12 +29,6 @@ CQuery9::CQuery9(CDevice9* device, D3DQUERYTYPE Type)
 		mDevice(device),
 		mType(Type)
 {
-	mCommandStreamManager = mDevice->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
-	workItem->Id = mDevice->mId;
-	workItem->WorkItemType = WorkItemType::Query_Create;
-	workItem->Argument1 = this;
-	mId = mCommandStreamManager->RequestWorkAndWait(workItem);
 
 }
 

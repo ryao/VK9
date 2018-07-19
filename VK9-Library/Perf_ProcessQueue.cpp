@@ -3013,7 +3013,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Flags = bit_cast<DWORD>(workItem->Argument2);
 				D3DADAPTER_IDENTIFIER9* pIdentifier = bit_cast<D3DADAPTER_IDENTIFIER9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				vk::PhysicalDeviceProperties properties; // = instance->mPhysicalDeviceProperties[Adapter]; //TODO: Fix device properties.
+				auto device = commandStreamManager->mRenderManager.mStateManager.mDevices[0];
+				vk::PhysicalDeviceProperties properties = device->mPhysicalDeviceProperties;
 
 				(*pIdentifier) = {}; //zero it out.
 

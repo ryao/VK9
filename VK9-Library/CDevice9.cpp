@@ -317,6 +317,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateQuery(D3DQUERYTYPE Type, IDirect3DQuer
 
 		(*ppQuery) = (IDirect3DQuery9*)obj;
 
+		obj->mCommandStreamManager = mCommandStreamManager;
+		WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+		workItem->Id = mId;
+		workItem->WorkItemType = WorkItemType::Query_Create;
+		workItem->Argument1 = this;
+		obj->mId = obj->mCommandStreamManager->RequestWorkAndWait(workItem);
+
 		return result;
 	}
 	else
@@ -389,7 +396,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length, DWORD Usage,
 	workItem->Id = this->mId;
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Create;
 	workItem->Argument1 = (void*)obj;
-	obj->mId = mCommandStreamManager->RequestWork(workItem);
+	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	(*ppVertexBuffer) = (IDirect3DVertexBuffer9*)obj;
 
