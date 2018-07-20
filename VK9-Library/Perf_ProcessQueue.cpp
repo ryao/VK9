@@ -3037,8 +3037,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DDEVTYPE DeviceType = bit_cast<D3DDEVTYPE>(workItem->Argument2);
 				D3DCAPS9* pCaps = bit_cast<D3DCAPS9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				vk::PhysicalDeviceProperties properties; //= instance->mDevices[Adapter]->mPhysicalDeviceProperties;
-				vk::PhysicalDeviceFeatures features; //= instance->mDevices[Adapter]->mPhysicalDeviceFeatures;
+				auto device = commandStreamManager->mRenderManager.mStateManager.mDevices[0];
+				vk::PhysicalDeviceProperties properties = device->mPhysicalDeviceProperties;
+				vk::PhysicalDeviceFeatures features = device->mPhysicalDeviceFeatures;
 
 				/*
 				https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#VkPhysicalDeviceProperties

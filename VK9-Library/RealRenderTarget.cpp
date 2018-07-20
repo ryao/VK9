@@ -56,7 +56,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
 	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
 	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[0].initialLayout = vk::ImageLayout::eUndefined;
+	mRenderAttachments[0].initialLayout = vk::ImageLayout::ePresentSrcKHR; // vk::ImageLayout::eUndefined;
 	mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
 	mRenderAttachments[1].format = mDepthSurface->mRealFormat;
@@ -65,7 +65,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
 	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
 	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].initialLayout = vk::ImageLayout::eUndefined;
+	mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal; //vk::ImageLayout::eUndefined;
 	mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;

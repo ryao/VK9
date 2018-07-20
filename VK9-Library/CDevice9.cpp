@@ -838,6 +838,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetRenderState(D3DRENDERSTATETYPE State, DWO
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9** ppRenderTarget)
 {
+	mRenderTargets[RenderTargetIndex]->AddRef();
 	(*ppRenderTarget) = mRenderTargets[RenderTargetIndex];
 
 	return S_OK;
