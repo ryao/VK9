@@ -3013,8 +3013,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Flags = bit_cast<DWORD>(workItem->Argument2);
 				D3DADAPTER_IDENTIFIER9* pIdentifier = bit_cast<D3DADAPTER_IDENTIFIER9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				auto device = commandStreamManager->mRenderManager.mStateManager.mDevices[0];
-				vk::PhysicalDeviceProperties properties = device->mPhysicalDeviceProperties;
+				auto device = instance->mPhysicalDevices[Adapter];
+
+				vk::PhysicalDeviceProperties properties;
+
+				device.getProperties(&properties);
 
 				(*pIdentifier) = {}; //zero it out.
 
@@ -3037,9 +3040,13 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DDEVTYPE DeviceType = bit_cast<D3DDEVTYPE>(workItem->Argument2);
 				D3DCAPS9* pCaps = bit_cast<D3DCAPS9*>(workItem->Argument3);
 				auto instance = commandStreamManager->mRenderManager.mStateManager.mInstances[workItem->Id];
-				auto device = commandStreamManager->mRenderManager.mStateManager.mDevices[0];
-				vk::PhysicalDeviceProperties properties = device->mPhysicalDeviceProperties;
-				vk::PhysicalDeviceFeatures features = device->mPhysicalDeviceFeatures;
+				auto device = instance->mPhysicalDevices[Adapter];
+
+				vk::PhysicalDeviceProperties properties;
+				vk::PhysicalDeviceFeatures features;
+
+				device.getProperties(&properties);
+				device.getFeatures(&features);
 
 				/*
 				https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html#VkPhysicalDeviceProperties
