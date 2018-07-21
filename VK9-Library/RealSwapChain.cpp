@@ -405,7 +405,7 @@ void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk
 
 	mImageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
 	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mImageMemoryBarrier.oldLayout = vk::ImageLayout::ePresentSrcKHR;
+	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eGeneral;
 	mImageMemoryBarrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -445,7 +445,7 @@ void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk
 	region.extent.depth = 1;
 
 	commandBuffer.copyImage(
-		source, vk::ImageLayout::eTransferSrcOptimal,
+		source, vk::ImageLayout::eTransferSrcOptimal, /*eTransferSrcOptimal*/
 		mImages[mCurrentIndex], vk::ImageLayout::eTransferDstOptimal,
 		1, &region);
 

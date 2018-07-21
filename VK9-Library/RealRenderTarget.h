@@ -58,9 +58,9 @@ struct RealRenderTarget
 	vk::Fence mCommandFence;
 	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
 
-	void StartScene(vk::CommandBuffer command, bool clear);
+	void StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clear);
 	void StopScene(vk::CommandBuffer command, vk::Queue queue);
-	void Clear(vk::CommandBuffer command, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
+	void Clear(vk::CommandBuffer command, DeviceState& deviceState, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 };
 
 #endif // REALRENDERTARGET_H

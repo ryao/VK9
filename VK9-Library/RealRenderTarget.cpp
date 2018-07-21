@@ -56,8 +56,8 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
 	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
 	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[0].initialLayout = vk::ImageLayout::ePresentSrcKHR; // vk::ImageLayout::eUndefined;
-	mRenderAttachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
+	mRenderAttachments[0].initialLayout = vk::ImageLayout::eGeneral; // vk::ImageLayout::eUndefined;  ePresentSrcKHR
+	mRenderAttachments[0].finalLayout = vk::ImageLayout::eGeneral;
 
 	mRenderAttachments[1].format = mDepthSurface->mRealFormat;
 	mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
@@ -65,8 +65,8 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
 	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
 	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal; //vk::ImageLayout::eUndefined;
-	mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+	mRenderAttachments[1].initialLayout = vk::ImageLayout::eGeneral; //vk::ImageLayout::eUndefined; eDepthStencilAttachmentOptimal
+	mRenderAttachments[1].finalLayout = vk::ImageLayout::eGeneral;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = 2; //revisit
@@ -118,13 +118,13 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderPassBeginInfo.renderArea.offset.y = 0;
 	mRenderPassBeginInfo.renderArea.extent.width = mColorSurface->mExtent.width;
 	mRenderPassBeginInfo.renderArea.extent.height = mColorSurface->mExtent.height;
-	mRenderPassBeginInfo.clearValueCount = 2;
+	mRenderPassBeginInfo.clearValueCount = 2; //2
 	mRenderPassBeginInfo.pClearValues = mClearValues;
 
 	//realWindow.mImageMemoryBarrier.srcAccessMask = 0;
 	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
-	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eGeneral; //eUndefined
+	mImageMemoryBarrier.newLayout = vk::ImageLayout::eGeneral; //ePresentSrcKHR
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.image = mColorSurface->mStagingImage;
@@ -152,7 +152,7 @@ RealRenderTarget::~RealRenderTarget()
 	mDevice.destroyRenderPass(mClearRenderPass, nullptr);
 }
 
-void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
+void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clear)
 {
 	mIsSceneStarted = true;
 
@@ -173,8 +173,11 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, bool clear)
 		return;
 	}
 
-	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR, 1, 0, 1);
-	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1, 0, 1);
+	command.setViewport(0, 1, &deviceState.mViewport);
+	command.setScissor(0, 1, &deviceState.mScissor);
+
+	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral, 1, 0, 1); //ePresentSrcKHR
+	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral, 1, 0, 1); //eDepthStencilAttachmentOptimal
 
 	command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 	
@@ -191,7 +194,7 @@ void RealRenderTarget::StopScene(vk::CommandBuffer command, vk::Queue queue)
 	mPipeStageFlags = vk::PipelineStageFlagBits::eAllCommands; //VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 }
 
-void RealRenderTarget::Clear(vk::CommandBuffer command, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
+void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
 	if ((Flags & D3DCLEAR_TARGET) == D3DCLEAR_TARGET)
 	{
@@ -226,6 +229,6 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DWORD Count, const D3DRE
 	}
 	else
 	{
-		this->StartScene(command, true);
+		this->StartScene(command, deviceState, true);
 	}
 }

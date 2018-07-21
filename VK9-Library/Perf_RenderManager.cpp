@@ -92,10 +92,7 @@ void RenderManager::StartScene(std::shared_ptr<RealDevice> realDevice, bool clea
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	realDevice->mRenderTarget->StartScene(currentBuffer, clear);
-	
-	currentBuffer.setViewport(0, 1, &deviceState.mViewport);
-	currentBuffer.setScissor(0, 1, &deviceState.mScissor);
+	realDevice->mRenderTarget->StartScene(currentBuffer, deviceState, clear);
 }
 
 void RenderManager::StopScene(std::shared_ptr<RealDevice> realDevice)
@@ -171,15 +168,9 @@ void RenderManager::CopyImage(std::shared_ptr<RealDevice> realDevice, vk::Image 
 void RenderManager::Clear(std::shared_ptr<RealDevice> realDevice, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
+	auto& deviceState = realDevice->mDeviceState;
 
-	if (!realDevice->mRenderTarget->mIsSceneStarted)
-	{
-		this->StartScene(realDevice,true);
-	}
-	else
-	{
-		realDevice->mRenderTarget->Clear(currentBuffer, Count, pRects, Flags, Color, Z, Stencil);
-	}
+	realDevice->mRenderTarget->Clear(currentBuffer, deviceState, Count, pRects, Flags, Color, Z, Stencil);
 }
 
 void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
