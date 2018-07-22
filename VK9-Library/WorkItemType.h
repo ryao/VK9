@@ -38,6 +38,7 @@ enum WorkItemType
 	, Device_EndStateBlock
 	, Device_GetDisplayMode
 	, Device_GetFVF
+	, Device_GetIndices
 	, Device_GetLight
 	, Device_GetLightEnable
 	, Device_GetMaterial

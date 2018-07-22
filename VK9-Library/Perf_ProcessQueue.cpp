@@ -1547,13 +1547,23 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto realIndex = commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[((CIndexBuffer9*)pIndexData)->mId];
 
 					state->mIndexBuffer = realIndex.get();
+					state->mOriginalIndexBuffer = (CIndexBuffer9*)pIndexData;
 					state->mHasIndexBuffer = true;
 				}
 				else
 				{
 					state->mIndexBuffer = nullptr;
+					state->mOriginalIndexBuffer = nullptr;
 					state->mHasIndexBuffer = false;
 				}
+			}
+			break;
+			case Device_GetIndices:
+			{
+				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
+				IDirect3DIndexBuffer9** pIndexData = bit_cast<IDirect3DIndexBuffer9**>(workItem->Argument1);
+
+				(*pIndexData) = realDevice->mDeviceState.mOriginalIndexBuffer;
 			}
 			break;
 			case Device_SetLight:

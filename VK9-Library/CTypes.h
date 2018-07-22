@@ -396,7 +396,7 @@ struct DeviceState
 	BOOL mHasFVF = 0;
 
 	//IDirect3DDevice9::SetIndices
-	//CIndexBuffer9* mIndexBuffer = nullptr;
+	CIndexBuffer9* mOriginalIndexBuffer = nullptr;
 	RealIndexBuffer* mIndexBuffer = nullptr;
 	BOOL mHasIndexBuffer = 0;
 

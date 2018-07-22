@@ -72,6 +72,9 @@ public:
 	boost::container::small_vector<CSwapChain9*, 2> mSwapChains;
 	CSurface9* mRenderTargets[4] = {};
 
+	std::vector<CVertexBuffer9*> mVertexBuffers;
+	std::vector<CIndexBuffer9*> mIndexBuffers;
+
 	BOOL mIsDirty = true;
 	
 	PAINTSTRUCT* mPaintInformation = {};

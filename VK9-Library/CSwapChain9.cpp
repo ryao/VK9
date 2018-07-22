@@ -103,6 +103,7 @@ HRESULT STDMETHODCALLTYPE CSwapChain9::GetBackBuffer(UINT BackBuffer, D3DBACKBUF
 	{
 	case D3DBACKBUFFER_TYPE_MONO:
 		(*ppBackBuffer) = mBackBuffer;
+		mBackBuffer->AddRef();
 		return S_OK;
 		break;
 	case D3DBACKBUFFER_TYPE_LEFT:

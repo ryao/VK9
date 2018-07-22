@@ -65,6 +65,16 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 
 CDevice9::~CDevice9()
 {
+	//Delete any temp buffers used to handle the UP draw calls.
+	for (auto buffer : mVertexBuffers)
+	{
+		delete buffer;
+	}
+	for (auto buffer : mIndexBuffers)
+	{
+		delete buffer;
+	}
+
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
 	workItem->WorkItemType = WorkItemType::Device_Destroy;
 	workItem->Id = mId;
@@ -123,6 +133,22 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	workItem->Argument3 = bit_cast<void*>(hDestWindowOverride);
 	workItem->Argument4 = bit_cast<void*>(pDirtyRegion);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	/*
+	This might be a good spot for a co-routine so that the buffers can be freed after the render target is filled but before the swap chain present finishes.
+	Whether or not the present has to wait long enough depends on what presentation methods are available so this may or may not improve performance.
+	Ultimately someone will have to tinker with this to see what the effect is on performance.
+	*/
+
+	//Delete any temp buffers used to handle the UP draw calls.
+	for (auto buffer : mVertexBuffers)
+	{
+		delete buffer;
+	}
+	for (auto buffer : mIndexBuffers)
+	{
+		delete buffer;
+	}
 
 	return D3D_OK;
 }
@@ -484,14 +510,61 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, 
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinVertexIndex, UINT NumVertices, UINT PrimitiveCount, const void *pIndexData, D3DFORMAT IndexDataFormat, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride)
 {
-	//if (!mIsSceneStarted)
-	//{
-	//	this->StartScene();
-	//}
+	//Figure out the current buffer setup.
+	IDirect3DIndexBuffer9* oldIndexBuffer = nullptr;
 
-	//TODO: Implement.
+	GetIndices(&oldIndexBuffer);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitiveUP is not implemented!";
+	IDirect3DVertexBuffer9* oldVertexBuffer = nullptr;
+	UINT oldOffsetInBytes = 0;
+	UINT oldStride = 0;
+
+	GetStreamSource(0, &oldVertexBuffer, &oldOffsetInBytes, &oldStride);
+
+	//Setup temp buffers
+	UINT indexLength = 0;
+	UINT vertexLength = NumVertices * VertexStreamZeroStride;
+	DWORD Usage = 0;
+
+	switch (PrimitiveType)
+	{
+	case D3DPT_POINTLIST:     
+		indexLength = (PrimitiveCount) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+	case D3DPT_LINELIST:      
+		indexLength = (PrimitiveCount * 2) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+	case D3DPT_LINESTRIP:     
+		indexLength = (PrimitiveCount + 1) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+	case D3DPT_TRIANGLELIST:  
+		indexLength = (PrimitiveCount * 3) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+	case D3DPT_TRIANGLESTRIP: 
+		indexLength = (PrimitiveCount + 2) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+	case D3DPT_TRIANGLEFAN:   
+		indexLength = (PrimitiveCount + 2) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+	}
+
+	CIndexBuffer9* indexBuffer = nullptr;
+	CVertexBuffer9* vertexBuffer = nullptr;
+
+	CreateIndexBuffer(indexLength, Usage, IndexDataFormat, D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)&indexBuffer, nullptr);
+	CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+
+	if (VertexStreamZeroStride != 12)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitiveUP unhandled stride " << VertexStreamZeroStride;
+	}
+
+	mIndexBuffers.push_back(indexBuffer);
+	mVertexBuffers.push_back(vertexBuffer);
+
+	SetIndices(indexBuffer);
+	SetStreamSource(0, vertexBuffer, 0, VertexStreamZeroStride);
+
+	//Queue draw command
+	DrawIndexedPrimitive(PrimitiveType, 0, MinVertexIndex, NumVertices, 0, PrimitiveCount);
+
+	//Switch the buffers back.
+	SetIndices(oldIndexBuffer);
+	SetStreamSource(0, oldVertexBuffer, oldOffsetInBytes, oldStride);
 
 	return S_OK;
 }
@@ -511,14 +584,51 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride)
 {
-	//if (!mIsSceneStarted)
-	//{
-	//	this->StartScene();
-	//}
+	//Figure out the current buffer setup.
+	IDirect3DVertexBuffer9* oldVertexBuffer = nullptr;
+	UINT oldOffsetInBytes = 0;
+	UINT oldStride = 0;
 
-	//TODO: Implement.
+	GetStreamSource(0, &oldVertexBuffer, &oldOffsetInBytes, &oldStride);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitiveUP is not implemented!";
+	//Setup temp buffers
+	UINT vertexLength = 0;
+	DWORD Usage = 0;
+
+	switch (PrimitiveType)
+	{
+	case D3DPT_POINTLIST:
+		vertexLength = (PrimitiveCount) * VertexStreamZeroStride;
+	case D3DPT_LINELIST:
+		vertexLength = (PrimitiveCount * 2) * VertexStreamZeroStride;
+	case D3DPT_LINESTRIP:
+		vertexLength = (PrimitiveCount + 1) * VertexStreamZeroStride;
+	case D3DPT_TRIANGLELIST:
+		vertexLength = (PrimitiveCount * 3) * VertexStreamZeroStride;
+	case D3DPT_TRIANGLESTRIP:
+		vertexLength = (PrimitiveCount + 2) * VertexStreamZeroStride;
+	case D3DPT_TRIANGLEFAN:
+		vertexLength = (PrimitiveCount + 2) * VertexStreamZeroStride;
+	}
+
+	CVertexBuffer9* vertexBuffer = nullptr;
+
+	CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+
+	if (VertexStreamZeroStride != 12)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitiveUP unhandled stride " << VertexStreamZeroStride;
+	}
+
+	mVertexBuffers.push_back(vertexBuffer);
+
+	SetStreamSource(0, vertexBuffer, 0, VertexStreamZeroStride);
+
+	//Queue draw command
+	DrawPrimitive(PrimitiveType, 0, PrimitiveCount);
+
+	//Switch the buffers back.
+	SetStreamSource(0, oldVertexBuffer, oldOffsetInBytes, oldStride);
 
 	return S_OK;
 }
@@ -696,11 +806,13 @@ void STDMETHODCALLTYPE CDevice9::GetGammaRamp(UINT  iSwapChain, D3DGAMMARAMP *pR
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexData) //,UINT *pBaseVertexIndex ?
 {
-	//TODO: Implement.
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->WorkItemType = WorkItemType::Device_GetIndices;
+	workItem->Id = mId;
+	workItem->Argument1 = bit_cast<void*>(ppIndexData);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetIndices is not implemented!";
-
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetLight(DWORD Index, D3DLIGHT9 *pLight)
