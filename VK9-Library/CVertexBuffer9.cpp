@@ -36,6 +36,7 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mIsDirty(true),
 	mLockCount(0)
 {
+	mSize = mLength / sizeof(float);
 	BOOST_LOG_TRIVIAL(info) << "CVertexBuffer9::CVertexBuffer9";
 }
 

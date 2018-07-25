@@ -169,18 +169,52 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
 				auto& realDevice = stateManager.mDevices[workItem->Id];
 				RealSurface* colorSurface = nullptr;
+				RealTexture* colorTexture = nullptr;
 				RealSurface* depthSurface = nullptr;
 
-				if (device9->mRenderTargets[RenderTargetIndex] != nullptr)
+				if (pRenderTarget != nullptr)
 				{
-					colorSurface = stateManager.mSurfaces[device9->mRenderTargets[RenderTargetIndex]->mId].get();
-				}	
-				if (device9->mDepthStencilSurface != nullptr)
-				{
-					depthSurface = stateManager.mSurfaces[device9->mDepthStencilSurface->mId].get();
-				}
+					colorSurface = stateManager.mSurfaces[pRenderTarget->mId].get();
 
-				realDevice->mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+					if (pRenderTarget->mTexture != nullptr)
+					{
+						colorTexture = stateManager.mTextures[pRenderTarget->mTexture->mId].get();
+
+						if (realDevice->mCurrentStateRecording != nullptr)
+						{
+							depthSurface = realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget->mDepthSurface;
+							realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+						}
+						else
+						{
+							depthSurface = realDevice->mDeviceState.mRenderTarget->mDepthSurface;
+							realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+						}
+					}
+					else if (pRenderTarget->mCubeTexture != nullptr)
+					{
+						BOOST_LOG_TRIVIAL(fatal) << "Cube texture not supported for render target!";
+					}
+					else
+					{
+						if (realDevice->mCurrentStateRecording != nullptr)
+						{
+							if (realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget != nullptr)
+							{
+								depthSurface = realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget->mDepthSurface;
+							}
+							realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+						}
+						else
+						{
+							if (realDevice->mDeviceState.mRenderTarget != nullptr)
+							{
+								depthSurface = realDevice->mDeviceState.mRenderTarget->mDepthSurface;
+							}
+							realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+						}
+					}
+				}	
 			}
 			break;
 			case Device_SetDepthStencilSurface:
@@ -191,18 +225,48 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
 				auto& realDevice = stateManager.mDevices[workItem->Id];
 				RealSurface* colorSurface = nullptr;
+				RealTexture* colorTexture = nullptr;
 				RealSurface* depthSurface = nullptr;
 
-				if (device9->mRenderTargets[0] != nullptr)
+				if (pNewZStencil != nullptr)
 				{
-					colorSurface = stateManager.mSurfaces[device9->mRenderTargets[0]->mId].get();
-				}
-				if (device9->mDepthStencilSurface != nullptr)
-				{
-					depthSurface = stateManager.mSurfaces[device9->mDepthStencilSurface->mId].get();
+					depthSurface = stateManager.mSurfaces[pNewZStencil->mId].get();
 				}
 
-				realDevice->mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);  //new RealRenderTarget(realDevice->mDevice, colorSurface, depthSurface);
+				if (realDevice->mCurrentStateRecording != nullptr)
+				{
+					if (realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget != nullptr)
+					{
+						colorSurface = realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget->mColorSurface;
+						colorTexture = realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget->mColorTexture;
+					}
+
+					if (colorTexture != nullptr)
+					{
+						realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+					}
+					else
+					{
+						realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+					}		
+				}
+				else
+				{
+					if (realDevice->mDeviceState.mRenderTarget != nullptr)
+					{
+						colorSurface = realDevice->mDeviceState.mRenderTarget->mColorSurface;
+						colorTexture = realDevice->mDeviceState.mRenderTarget->mColorTexture;
+					}
+
+					if (colorTexture != nullptr)
+					{
+						realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+					}
+					else
+					{
+						realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+					}			
+				}
 			}
 			break;
 			case Device_Clear:
@@ -223,7 +287,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			{
 				auto& renderManager = commandStreamManager->mRenderManager;
 				auto& realDevice = renderManager.mStateManager.mDevices[workItem->Id];
-				if (!realDevice->mRenderTarget->mIsSceneStarted)
+				if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 				{
 					renderManager.StartScene(realDevice);
 				}
@@ -299,10 +363,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 				else
 				{
-					pMode->Height = realDevice->mRenderTarget->mColorSurface->mExtent.height;
-					pMode->Width = realDevice->mRenderTarget->mColorSurface->mExtent.width;
+					pMode->Height = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.height;
+					pMode->Width = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.width;
 					pMode->RefreshRate = 60; //fake it till you make it.
-					pMode->Format = ConvertFormat(realDevice->mRenderTarget->mColorSurface->mRealFormat);
+					pMode->Format = ConvertFormat(realDevice->mDeviceState.mRenderTarget->mColorSurface->mRealFormat);
 				}
 			}
 			break;

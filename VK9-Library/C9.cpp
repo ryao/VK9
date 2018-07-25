@@ -211,8 +211,8 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	obj->mSwapChains.push_back(ptr);
 	
 	//Add implicit render target
-	obj->mRenderTargets[0] = ptr->mBackBuffer;
-	//obj->SetRenderTarget(0, ptr->mBackBuffer);
+	//obj->mRenderTargets[0] = ptr->mBackBuffer;
+	obj->SetRenderTarget(0, ptr->mBackBuffer);
 
 	//Add implicit stencil buffer surface.
 	auto depth = new CSurface9(obj, &obj->mPresentationParameters, D3DFMT_D16);

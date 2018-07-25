@@ -22,7 +22,7 @@ misrepresented as being the original software.
 #include "CSurface9.h"
 #include "CVolume9.h"
 
-RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
+RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image* parentImage)
 	: mRealDevice(realDevice)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface";
@@ -64,24 +64,22 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
 	{
 		imageCreateInfo.tiling = vk::ImageTiling::eLinear;
-		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
 		imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
+
+		imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst;
 	}
 	else
 	{
 		imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
+		imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized; //ePreinitialized
 
 		if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
 		{
-			//imageCreateInfo.initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eDepthStencilAttachment;
-			imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized; //ePreinitialized
 		}
 		else
 		{
-			//imageCreateInfo.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
 			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eColorAttachment;
-			imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized; //ePreinitialized
 		}
 	}
 
@@ -217,6 +215,17 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9)
 			return;
 		}
 	}
+	else if (parentImage != nullptr)
+	{
+		imageViewCreateInfo.image = (*parentImage);
+
+		result = realDevice->mDevice.createImageView(&imageViewCreateInfo, nullptr, &mStagingImageView);
+		if (result != vk::Result::eSuccess)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
+			return;
+		}
+	}
 }
 
 RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
@@ -258,7 +267,7 @@ RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
 	imageCreateInfo.tiling = vk::ImageTiling::eLinear;
-	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst;
 	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 
 	//if (Volume9->mCubeTexture != nullptr)
@@ -278,7 +287,7 @@ RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
 		return;
 	}
 
-	BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface vkCreateImage: " << static_cast<uint64_t>( mStagingImage);
+	BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface vkCreateImage: " << static_cast<uint64_t>(mStagingImage);
 
 	vk::MemoryRequirements memoryRequirements;
 	realDevice->mDevice.getImageMemoryRequirements(mStagingImage, &memoryRequirements);

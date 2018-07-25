@@ -67,7 +67,7 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	if (!realDevice->mRenderTarget->mIsSceneStarted)
+	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
 		this->StartScene(realDevice);
 	}
@@ -92,14 +92,14 @@ void RenderManager::StartScene(std::shared_ptr<RealDevice> realDevice, bool clea
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	realDevice->mRenderTarget->StartScene(currentBuffer, deviceState, clear);
+	realDevice->mDeviceState.mRenderTarget->StartScene(currentBuffer, deviceState, clear);
 }
 
 void RenderManager::StopScene(std::shared_ptr<RealDevice> realDevice)
 {
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	realDevice->mRenderTarget->StopScene(currentBuffer, realDevice->mQueue);
+	realDevice->mDeviceState.mRenderTarget->StopScene(currentBuffer, realDevice->mQueue);
 }
 
 void RenderManager::CopyImage(std::shared_ptr<RealDevice> realDevice, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t depth, uint32_t srcMip, uint32_t dstMip)
@@ -170,12 +170,12 @@ void RenderManager::Clear(std::shared_ptr<RealDevice> realDevice, DWORD Count, c
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 	auto& deviceState = realDevice->mDeviceState;
 
-	realDevice->mRenderTarget->Clear(currentBuffer, deviceState, Count, pRects, Flags, Color, Z, Stencil);
+	realDevice->mDeviceState.mRenderTarget->Clear(currentBuffer, deviceState, Count, pRects, Flags, Color, Z, Stencil);
 }
 
 void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
-	if (!realDevice->mRenderTarget->mIsSceneStarted)
+	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
 		this->StartScene(realDevice);
 	}
@@ -186,7 +186,7 @@ void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride);
 
-	swapchain->Present(currentBuffer, realDevice->mQueue, realDevice->mRenderTarget->mColorSurface->mStagingImage);
+	swapchain->Present(currentBuffer, realDevice->mQueue, realDevice->mDeviceState.mRenderTarget->mColorSurface->mStagingImage);
 
 	realDevice->mCurrentCommandBuffer = !realDevice->mCurrentCommandBuffer;
 
@@ -211,7 +211,7 @@ void RenderManager::DrawIndexedPrimitive(std::shared_ptr<RealDevice> realDevice,
 		return;
 	}
 
-	if (!realDevice->mRenderTarget->mIsSceneStarted)
+	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
 		this->StartScene(realDevice);
 	}
@@ -234,7 +234,7 @@ void RenderManager::DrawPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRI
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	if (!realDevice->mRenderTarget->mIsSceneStarted)
+	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
 		this->StartScene(realDevice);
 	}
@@ -387,7 +387,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	{
 		currentBuffer.endRenderPass();
 		UpdateBuffer(realDevice);
-		currentBuffer.beginRenderPass(&realDevice->mRenderTarget->mRenderPassBeginInfo, vk::SubpassContents::eInline);
+		currentBuffer.beginRenderPass(&realDevice->mDeviceState.mRenderTarget->mRenderPassBeginInfo, vk::SubpassContents::eInline);
 	}
 
 	/**********************************************
@@ -1142,7 +1142,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 
 	realDevice->mGraphicsPipelineCreateInfo.layout = context->PipelineLayout;
-	realDevice->mGraphicsPipelineCreateInfo.renderPass = realDevice->mRenderTarget->mStoreRenderPass;
+	realDevice->mGraphicsPipelineCreateInfo.renderPass = realDevice->mDeviceState.mRenderTarget->mStoreRenderPass;
 
 	result = device.createGraphicsPipelines(realDevice->mPipelineCache, 1, &realDevice->mGraphicsPipelineCreateInfo, nullptr, &context->Pipeline);
 	//result = vkCreateGraphicsPipelines(mDevice->mDevice, VK_NULL_HANDLE, 1, &mGraphicsPipelineCreateInfo, nullptr, &context.Pipeline);

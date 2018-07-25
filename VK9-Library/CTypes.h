@@ -385,6 +385,7 @@ struct SpecializationConstants
 };
 
 struct RealIndexBuffer;
+struct RealRenderTarget;
 
 struct DeviceState
 {
@@ -399,6 +400,7 @@ struct DeviceState
 	CIndexBuffer9* mOriginalIndexBuffer = nullptr;
 	RealIndexBuffer* mIndexBuffer = nullptr;
 	BOOL mHasIndexBuffer = 0;
+	std::shared_ptr<RealRenderTarget> mRenderTarget;
 
 	//IDirect3DDevice9::SetLight
 	//boost::container::small_vector<Light, 4> mLights;

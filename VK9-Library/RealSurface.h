@@ -50,7 +50,7 @@ struct RealSurface
 	vk::ImageSubresource mSubresource;
 
 	RealDevice* mRealDevice = nullptr; //null if not owner.
-	RealSurface(RealDevice* realDevice, CSurface9* surface9);
+	RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image* parentImage);
 	RealSurface(RealDevice* realDevice, CVolume9* volume9);
 	~RealSurface();
 };

@@ -1198,9 +1198,6 @@ struct RealDevice
 	vk::CommandBufferBeginInfo mBeginInfo;
 	vk::SubmitInfo mSubmitInfo;
 
-	//Render Target Stuff
-	std::shared_ptr<RealRenderTarget> mRenderTarget;
-
 	RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,int32_t width, int32_t height);
 	~RealDevice();
 

@@ -333,7 +333,7 @@ void RealSwapChain::InitDepthBuffer()
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
 	imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
-	imageCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferDst;
 
 	mResult = mDevice.createImage(&imageCreateInfo, nullptr, &mDepthImage);
 	if (mResult != vk::Result::eSuccess)

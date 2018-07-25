@@ -34,6 +34,12 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	All https://msdn.microsoft.com/en-us/library/windows/desktop/bb147350(v=vs.85).aspx
 	*/
 
+	//I don't see in render target nor depth buffer in docs but applications use them as if they are included in state blocks so I guess I'll roll with it.
+	if (sourceState.mRenderTarget != nullptr && (!onlyIfExists || targetState.mRenderTarget != nullptr) && (type == D3DSBT_ALL))
+	{
+		targetState.mRenderTarget = sourceState.mRenderTarget;
+	}
+
 	//IDirect3DDevice9::LightEnable
 	//if ((type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	//{

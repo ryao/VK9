@@ -546,7 +546,9 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 	CVertexBuffer9* vertexBuffer = nullptr;
 
 	CreateIndexBuffer(indexLength, Usage, IndexDataFormat, D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)&indexBuffer, nullptr);
-	CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+	CreateVertexBuffer(vertexLength, Usage, 0, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+
+	vertexBuffer->mSize = NumVertices; 
 
 	if (VertexStreamZeroStride != 12)
 	{
@@ -594,26 +596,35 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveTy
 	//Setup temp buffers
 	UINT vertexLength = 0;
 	DWORD Usage = 0;
+	UINT NumVertices;
 
 	switch (PrimitiveType)
 	{
 	case D3DPT_POINTLIST:
-		vertexLength = (PrimitiveCount) * VertexStreamZeroStride;
+		NumVertices = (PrimitiveCount);
+		vertexLength = NumVertices * VertexStreamZeroStride;
 	case D3DPT_LINELIST:
-		vertexLength = (PrimitiveCount * 2) * VertexStreamZeroStride;
+		NumVertices = (PrimitiveCount * 2);
+		vertexLength = NumVertices * VertexStreamZeroStride;
 	case D3DPT_LINESTRIP:
-		vertexLength = (PrimitiveCount + 1) * VertexStreamZeroStride;
+		NumVertices = (PrimitiveCount + 1);
+		vertexLength = NumVertices * VertexStreamZeroStride;
 	case D3DPT_TRIANGLELIST:
-		vertexLength = (PrimitiveCount * 3) * VertexStreamZeroStride;
+		NumVertices = (PrimitiveCount * 3);
+		vertexLength = NumVertices * VertexStreamZeroStride;
 	case D3DPT_TRIANGLESTRIP:
-		vertexLength = (PrimitiveCount + 2) * VertexStreamZeroStride;
+		NumVertices = (PrimitiveCount + 2);
+		vertexLength = NumVertices * VertexStreamZeroStride;
 	case D3DPT_TRIANGLEFAN:
-		vertexLength = (PrimitiveCount + 2) * VertexStreamZeroStride;
+		NumVertices = (PrimitiveCount + 2);
+		vertexLength = NumVertices * VertexStreamZeroStride;
 	}
 
 	CVertexBuffer9* vertexBuffer = nullptr;
 
-	CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+	CreateVertexBuffer(vertexLength, Usage, 0, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+
+	vertexBuffer->mSize = NumVertices;
 
 	if (VertexStreamZeroStride != 12)
 	{
@@ -735,11 +746,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetCurrentTexturePalette(UINT *pPaletteNumbe
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface)
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetDepthStencilSurface is not implemented!";
-
 	(*ppZStencilSurface) = mDepthStencilSurface;
+
+	if (mDepthStencilSurface != nullptr)
+	{
+		mDepthStencilSurface->AddRef();
+	}
 
 	return S_OK;
 }
@@ -811,6 +823,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexDa
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(ppIndexData);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	(*ppIndexData)->AddRef();
 
 	return S_OK;
 }
@@ -888,6 +902,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppSha
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(ppShader);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	(*ppShader)->AddRef();
 
 	return S_OK;
 }
@@ -1025,6 +1041,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetSwapChain(UINT iSwapChain, IDirect3DSwapC
 {
 	(*ppSwapChain) = (IDirect3DSwapChain9*)mSwapChains[iSwapChain];
 
+	(*ppSwapChain)->AddRef();
+
 	return S_OK;
 }
 
@@ -1073,6 +1091,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclarat
 	workItem->Argument1 = bit_cast<void*>(ppDecl);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
+	(*ppDecl)->AddRef();
+
 	return S_OK;
 }
 
@@ -1083,6 +1103,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9** ppS
 	workItem->Id = mId;
 	workItem->Argument1 = bit_cast<void*>(ppShader);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	(*ppShader)->AddRef();
 
 	return S_OK;
 }
@@ -1223,6 +1245,13 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetCursorProperties(UINT XHotSpot, UINT YHot
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetDepthStencilSurface(IDirect3DSurface9* pNewZStencil)
 {
+	if (pNewZStencil == nullptr)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetDepthStencilSurface passing null should disable the stencil operation but this isn't supported yet.";
+		return S_OK;
+	}
+
+
 	if (mDepthStencilSurface != nullptr)
 	{
 		mDepthStencilSurface->Release();

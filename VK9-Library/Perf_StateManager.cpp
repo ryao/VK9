@@ -420,7 +420,7 @@ void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 	}
 	else
 	{
-		ptr->mSize = vertexBuffer9->mLength / sizeof(float); //For now assume one float. There should be at least 4 bytes.
+		//ptr->mSize = vertexBuffer9->mLength / sizeof(float); //For now assume one float. There should be at least 4 bytes.
 	}
 
 	vertexBuffer9->mSize = ptr->mSize;
@@ -511,15 +511,17 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture unknown format: " << texture9->mFormat;
 	}
 
+	ptr->mExtent = vk::Extent3D(texture9->mWidth, texture9->mHeight, 1);
+
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
-	imageCreateInfo.extent = vk::Extent3D(texture9->mWidth, texture9->mHeight, 1);
+	imageCreateInfo.extent = ptr->mExtent;
 	imageCreateInfo.mipLevels = texture9->mLevels;
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = vk::SampleCountFlagBits::e1;
 	imageCreateInfo.tiling = vk::ImageTiling::eOptimal;
-	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eColorAttachment;
 	//imageCreateInfo.flags = 0;
 	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
 
@@ -825,7 +827,14 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 {
 	auto device = mDevices[id];
 	CSurface9* surface9 = bit_cast<CSurface9*>(argument1);
-	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(device.get(), surface9);
+	vk::Image* parentImage = nullptr;
+
+	if (surface9->mTexture != nullptr)
+	{
+		parentImage = &mTextures[surface9->mTexture->mId]->mImage;
+	}
+
+	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(device.get(), surface9, parentImage);
 	mSurfaces.push_back(ptr);
 }
 
@@ -969,8 +978,8 @@ std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealDe
 		vk::PhysicalDevice physicalDevice = realDevice->mPhysicalDevice;
 		vk::Device device = realDevice->mDevice;
 		HWND windowHandle = handle;
-		uint32_t width = realDevice->mRenderTarget->mColorSurface->mExtent.width;
-		uint32_t height = realDevice->mRenderTarget->mColorSurface->mExtent.height;
+		uint32_t width = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.width;
+		uint32_t height = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.height;
 		auto output = std::make_shared<RealSwapChain>(instance, physicalDevice, device, windowHandle, width, height);
 		mSwapChains[handle] = output;
 

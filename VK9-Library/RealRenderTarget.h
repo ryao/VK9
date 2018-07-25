@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "CTypes.h"
 
 #include "RealSurface.h"
+#include "RealTexture.h"
 
 #ifndef REALRENDERTARGET_H
 #define REALRENDERTARGET_H
@@ -33,10 +34,12 @@ misrepresented as being the original software.
 struct RealRenderTarget
 {
 	vk::Device mDevice;
+	RealTexture* mColorTexture = nullptr;
 	RealSurface* mColorSurface = nullptr;
 	RealSurface* mDepthSurface = nullptr;
 
-	RealRenderTarget(vk::Device device,RealSurface* colorSurface, RealSurface* depthSurface);
+	RealRenderTarget(vk::Device device, RealTexture* colorTexture, RealSurface* colorSurface, RealSurface* depthSurface);
+	RealRenderTarget(vk::Device device, RealSurface* colorSurface, RealSurface* depthSurface);
 	~RealRenderTarget();
 
 	bool mIsSceneStarted = false;

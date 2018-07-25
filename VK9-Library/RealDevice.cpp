@@ -347,7 +347,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	imageCreateInfo2.arrayLayers = 1;
 	imageCreateInfo2.samples = vk::SampleCountFlagBits::e1;
 	imageCreateInfo2.tiling = vk::ImageTiling::eLinear;
-	imageCreateInfo2.usage = vk::ImageUsageFlagBits::eSampled;
+	imageCreateInfo2.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
 	//imageCreateInfo2.flags = 0;
 	imageCreateInfo2.initialLayout = vk::ImageLayout::ePreinitialized;
 
@@ -513,7 +513,7 @@ RealDevice::~RealDevice()
 	mDrawBuffer.clear();
 	mSamplerRequests.clear();
 
-	mRenderTarget.reset();
+	mDeviceState.mRenderTarget.reset();
 	
 	mDevice.destroyBuffer(mLightBuffer, nullptr);
 	mDevice.freeMemory(mLightBufferMemory, nullptr);

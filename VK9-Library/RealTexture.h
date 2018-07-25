@@ -37,6 +37,7 @@ struct RealTexture
 	void* mData = nullptr;
 	int32_t mSize;
 
+	vk::Extent3D mExtent;
 	vk::Format mRealFormat;
 	vk::MemoryAllocateInfo mMemoryAllocateInfo;
 	vk::Image mImage;
