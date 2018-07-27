@@ -35,7 +35,9 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	*/
 
 	//I don't see in render target nor depth buffer in docs but applications use them as if they are included in state blocks so I guess I'll roll with it.
-	if (sourceState.mRenderTarget != nullptr && (!onlyIfExists || targetState.mRenderTarget != nullptr) && (type == D3DSBT_ALL))
+	
+	//&& (!onlyIfExists || targetState.mRenderTarget != nullptr)
+	if (sourceState.mRenderTarget != nullptr  && (type == D3DSBT_ALL))
 	{
 		targetState.mRenderTarget = sourceState.mRenderTarget;
 	}

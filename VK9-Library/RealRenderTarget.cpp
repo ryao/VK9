@@ -73,13 +73,17 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	mRenderAttachments[1].initialLayout = vk::ImageLayout::eGeneral; //vk::ImageLayout::eUndefined; eDepthStencilAttachmentOptimal
 	mRenderAttachments[1].finalLayout = vk::ImageLayout::eGeneral;
 
+	vk::SubpassDependency dependency;
+	dependency.srcStageMask = vk::PipelineStageFlagBits::eAllGraphics;
+	dependency.dstStageMask = vk::PipelineStageFlagBits::eAllGraphics;
+
 	vk::RenderPassCreateInfo renderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = 2; //revisit
 	renderPassCreateInfo.pAttachments = mRenderAttachments;
 	renderPassCreateInfo.subpassCount = 1;
 	renderPassCreateInfo.pSubpasses = &subpass;
-	renderPassCreateInfo.dependencyCount = 0;
-	renderPassCreateInfo.pDependencies = nullptr;
+	renderPassCreateInfo.dependencyCount = 1;
+	renderPassCreateInfo.pDependencies = &dependency;
 
 	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mStoreRenderPass);
 	if (result != vk::Result::eSuccess)
@@ -156,6 +160,11 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	{
 		return;
 	}
+	if (mDepthSurface->mExtent.width != mColorSurface->mExtent.width)
+	{
+		return;
+	}
+
 	BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::RealRenderTarget";
 
 	vk::Result result;
