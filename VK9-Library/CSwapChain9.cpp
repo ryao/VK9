@@ -159,7 +159,7 @@ HRESULT STDMETHODCALLTYPE CSwapChain9::GetRasterStatus(D3DRASTER_STATUS *pRaster
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion, DWORD dwFlags)
 {
-	BOOST_LOG_TRIVIAL(warning) << "CSurface9::Present is not implemented!";
+	mDevice->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 
-	return E_NOTIMPL; //TODO: Implement.
+	return S_OK;
 }
