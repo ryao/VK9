@@ -69,7 +69,7 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice);
+		this->StartScene(realDevice,false);
 	}
 
 	//The dirty flag for lights can be set by enable light or set light.
@@ -92,7 +92,8 @@ void RenderManager::StartScene(std::shared_ptr<RealDevice> realDevice, bool clea
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	realDevice->mDeviceState.mRenderTarget->StartScene(currentBuffer, deviceState, clear);
+	realDevice->mDeviceState.mRenderTarget->StartScene(currentBuffer, deviceState, clear, deviceState.hasPresented);
+	deviceState.hasPresented = false;
 }
 
 void RenderManager::StopScene(std::shared_ptr<RealDevice> realDevice)
@@ -177,17 +178,18 @@ void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *
 {
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice);
+		this->StartScene(realDevice,false);
 	}
 	this->StopScene(realDevice);
 
 	//vk::Result result;
 	auto& device = realDevice->mDevice;
+	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride);
 
-	swapchain->Present(currentBuffer, realDevice->mQueue, realDevice->mDeviceState.mRenderTarget->mColorSurface->mStagingImage);
-
+	swapchain->Present(currentBuffer, realDevice->mQueue, deviceState.mRenderTarget->mColorSurface->mStagingImage);
+	deviceState.hasPresented = true;
 	realDevice->mCurrentCommandBuffer = !realDevice->mCurrentCommandBuffer;
 
 	//Clean up pipes.
@@ -213,7 +215,7 @@ void RenderManager::DrawIndexedPrimitive(std::shared_ptr<RealDevice> realDevice,
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice);
+		this->StartScene(realDevice,false);
 	}
 
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(realDevice.get());
@@ -236,7 +238,7 @@ void RenderManager::DrawPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRI
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice);
+		this->StartScene(realDevice, false);
 	}
 
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(realDevice.get());
@@ -1300,6 +1302,8 @@ void RenderManager::FlushDrawBufffer(std::shared_ptr<RealDevice> realDevice)
 	*/
 	realDevice->mDrawBuffer.erase(std::remove_if(realDevice->mDrawBuffer.begin(), realDevice->mDrawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), realDevice->mDrawBuffer.end());
 	realDevice->mSamplerRequests.erase(std::remove_if(realDevice->mSamplerRequests.begin(), realDevice->mSamplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), realDevice->mSamplerRequests.end());
+
+	realDevice->mRenderTargets.clear();
 
 	realDevice->mIsDirty = true;
 }

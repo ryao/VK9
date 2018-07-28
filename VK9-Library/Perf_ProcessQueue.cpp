@@ -168,6 +168,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
 				auto& realDevice = stateManager.mDevices[workItem->Id];
+				auto& renderManager = commandStreamManager->mRenderManager;
+
 				RealSurface* colorSurface = nullptr;
 				RealTexture* colorTexture = nullptr;
 				RealSurface* depthSurface = nullptr;
@@ -186,9 +188,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 							realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
 						}
 						else
-						{
+						{			
+							if (realDevice->mDeviceState.mRenderTarget != nullptr && realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+							{
+								renderManager.StopScene(realDevice);
+							}
+
 							depthSurface = realDevice->mDeviceState.mRenderTarget->mDepthSurface;
 							realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+							realDevice->mRenderTargets.push_back(realDevice->mDeviceState.mRenderTarget);
 						}
 					}
 					else if (pRenderTarget->mCubeTexture != nullptr)
@@ -209,9 +217,14 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						{
 							if (realDevice->mDeviceState.mRenderTarget != nullptr)
 							{
+								if (realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+								{
+									renderManager.StopScene(realDevice);
+								}
 								depthSurface = realDevice->mDeviceState.mRenderTarget->mDepthSurface;
 							}
 							realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+							realDevice->mRenderTargets.push_back(realDevice->mDeviceState.mRenderTarget);
 						}
 					}
 				}	
@@ -224,6 +237,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
 				auto& realDevice = stateManager.mDevices[workItem->Id];
+				auto& renderManager = commandStreamManager->mRenderManager;
+
 				RealSurface* colorSurface = nullptr;
 				RealTexture* colorTexture = nullptr;
 				RealSurface* depthSurface = nullptr;
@@ -254,6 +269,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					if (realDevice->mDeviceState.mRenderTarget != nullptr)
 					{
+						if (realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+						{
+							renderManager.StopScene(realDevice);
+						}
+
 						colorSurface = realDevice->mDeviceState.mRenderTarget->mColorSurface;
 						colorTexture = realDevice->mDeviceState.mRenderTarget->mColorTexture;
 					}
@@ -265,7 +285,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					else
 					{
 						realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
-					}			
+					}	
+					realDevice->mRenderTargets.push_back(realDevice->mDeviceState.mRenderTarget);
 				}
 			}
 			break;
@@ -289,7 +310,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realDevice = renderManager.mStateManager.mDevices[workItem->Id];
 				if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 				{
-					renderManager.StartScene(realDevice);
+					renderManager.StartScene(realDevice,false);
 				}
 			}
 			break;

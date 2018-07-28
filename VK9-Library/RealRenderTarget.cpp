@@ -30,7 +30,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	{
 		return;
 	}
-	BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::RealRenderTarget";
+	//BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::RealRenderTarget";
 
 	vk::Result result;
 
@@ -165,7 +165,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 		return;
 	}
 
-	BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::RealRenderTarget";
+	//BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::RealRenderTarget";
 
 	vk::Result result;
 
@@ -284,7 +284,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 
 RealRenderTarget::~RealRenderTarget()
 {
-	BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::~RealRenderTarget";
+	//BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::~RealRenderTarget";
 	mDevice.destroyFence(mCommandFence,nullptr);
 	mDevice.destroySemaphore(mPresentCompleteSemaphore, nullptr);
 	mDevice.destroyFramebuffer(mFramebuffer, nullptr);
@@ -292,7 +292,7 @@ RealRenderTarget::~RealRenderTarget()
 	mDevice.destroyRenderPass(mClearRenderPass, nullptr);
 }
 
-void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clear)
+void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clear,bool createNewCommand)
 {
 	mIsSceneStarted = true;
 
@@ -306,11 +306,14 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 		mRenderPassBeginInfo.renderPass = mStoreRenderPass;
 	}
 
-	vk::Result result = command.begin(&mCommandBufferBeginInfo);
-	if (result != vk::Result::eSuccess)
+	if (createNewCommand)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::StartScene vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
-		return;
+		vk::Result result = command.begin(&mCommandBufferBeginInfo);
+		if (result != vk::Result::eSuccess)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::StartScene vkBeginCommandBuffer failed with return code of " << GetResultString((VkResult)result);
+			return;
+		}
 	}
 
 	command.setViewport(0, 1, &deviceState.mViewport);
@@ -369,6 +372,6 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState
 	}
 	else
 	{
-		this->StartScene(command, deviceState, true);
+		this->StartScene(command, deviceState, true, deviceState.hasPresented);
 	}
 }

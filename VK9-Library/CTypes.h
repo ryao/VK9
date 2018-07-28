@@ -576,6 +576,7 @@ struct DeviceState
 	//ConvertedShader mConvertedVertexShader = {};
 	//ConvertedShader mConvertedPixelShader = {};
 
+	bool hasPresented = true;
 };
 
 struct color_A8R8G8B8
