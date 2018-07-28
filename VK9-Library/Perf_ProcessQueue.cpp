@@ -166,9 +166,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD RenderTargetIndex = bit_cast<DWORD>(workItem->Argument1);
 				CSurface9* pRenderTarget = bit_cast<CSurface9*>(workItem->Argument2);
 
-				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
-				auto& realDevice = stateManager.mDevices[workItem->Id];
 				auto& renderManager = commandStreamManager->mRenderManager;
+				auto& stateManager = renderManager.mStateManager;
+				auto& realDevice = stateManager.mDevices[workItem->Id];		
 
 				RealSurface* colorSurface = nullptr;
 				RealTexture* colorTexture = nullptr;
@@ -3059,29 +3059,37 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			break;
 			case Device_SetViewport:
 			{
-				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
+				auto& renderManager = commandStreamManager->mRenderManager;
+				auto& realDevice = renderManager.mStateManager.mDevices[workItem->Id];
+
 				D3DVIEWPORT9* pViewport = bit_cast<D3DVIEWPORT9*>(workItem->Argument1);
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realDevice->mCurrentStateRecording->mDeviceState.m9Viewport = (*pViewport);
+					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
-					//realDevice.mCurrentStateRecording->mDeviceState.mViewport.y = (float)mDeviceState.m9Viewport.Height;
-					realDevice->mCurrentStateRecording->mDeviceState.mViewport.width = (float)realDevice->mDeviceState.m9Viewport.Width;
-					//realDevice.mCurrentStateRecording->mDeviceState.mViewport.height = -(float)mDeviceState.m9Viewport.Height;
-					realDevice->mCurrentStateRecording->mDeviceState.mViewport.height = (float)realDevice->mDeviceState.m9Viewport.Height;
-					realDevice->mCurrentStateRecording->mDeviceState.mViewport.minDepth = realDevice->mDeviceState.m9Viewport.MinZ;
-					realDevice->mCurrentStateRecording->mDeviceState.mViewport.maxDepth = realDevice->mDeviceState.m9Viewport.MaxZ;
+					deviceState.m9Viewport = (*pViewport);
+
+					deviceState.mViewport.x = (float)deviceState.m9Viewport.X;
+					deviceState.mViewport.y = (float)deviceState.m9Viewport.Y;
+					deviceState.mViewport.width = (float)deviceState.m9Viewport.Width;
+					deviceState.mViewport.height = (float)deviceState.m9Viewport.Height;
+					deviceState.mViewport.minDepth = deviceState.m9Viewport.MinZ;
+					deviceState.mViewport.maxDepth = deviceState.m9Viewport.MaxZ;
 				}
 				else
 				{
-					realDevice->mDeviceState.m9Viewport = (*pViewport);
+					auto& deviceState = realDevice->mDeviceState;
 
-					realDevice->mDeviceState.mViewport.y = (float)realDevice->mDeviceState.m9Viewport.Height;
-					realDevice->mDeviceState.mViewport.width = (float)realDevice->mDeviceState.m9Viewport.Width;
-					realDevice->mDeviceState.mViewport.height = -(float)realDevice->mDeviceState.m9Viewport.Height;
-					realDevice->mDeviceState.mViewport.minDepth = realDevice->mDeviceState.m9Viewport.MinZ;
-					realDevice->mDeviceState.mViewport.maxDepth = realDevice->mDeviceState.m9Viewport.MaxZ;
+					deviceState.m9Viewport = (*pViewport);
+
+					deviceState.mViewport.x = (float)deviceState.m9Viewport.X;
+					deviceState.mViewport.y = (float)deviceState.m9Viewport.Y;
+					deviceState.mViewport.width = (float)deviceState.m9Viewport.Width;
+					deviceState.mViewport.height = (float)deviceState.m9Viewport.Height;
+					deviceState.mViewport.minDepth = deviceState.m9Viewport.MinZ;
+					deviceState.mViewport.maxDepth = deviceState.m9Viewport.MaxZ;
+
 				}
 			}
 			break;

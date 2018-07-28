@@ -216,7 +216,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mPipelineRasterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
 	mPipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eBack;
 	mPipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
-	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_TRUE; //VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
 	mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
