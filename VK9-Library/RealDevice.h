@@ -78,6 +78,10 @@ struct RealDevice
 	bool mIsDirty = true;
 
 	//Fixed Function Shaders
+	vk::ShaderModule mVertShaderModule_XYZRHW;
+	vk::ShaderModule mVertShaderModule_XYZ;
+	vk::ShaderModule mFragShaderModule_XYZ;
+
 	vk::ShaderModule mVertShaderModule_XYZRHW_DIFFUSE;
 	vk::ShaderModule mVertShaderModule_XYZ_DIFFUSE;
 	vk::ShaderModule mFragShaderModule_XYZ_DIFFUSE;

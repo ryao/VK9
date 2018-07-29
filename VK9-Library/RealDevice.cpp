@@ -161,6 +161,10 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	}
 
 	//Load fixed function shaders.
+	mVertShaderModule_XYZRHW = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW.vert.spv");
+	mVertShaderModule_XYZ = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ.vert.spv");
+	mFragShaderModule_XYZ = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ.frag.spv");
+
 	mVertShaderModule_XYZRHW_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_DIFFUSE.vert.spv");
 	mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
 	mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
@@ -529,6 +533,9 @@ RealDevice::~RealDevice()
 	mDevice.freeMemory(mDeviceMemory, nullptr);
 	mDevice.destroySampler(mSampler, nullptr);
 
+	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW, nullptr);
+	mDevice.destroyShaderModule(mVertShaderModule_XYZ, nullptr);
+	mDevice.destroyShaderModule(mFragShaderModule_XYZ, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW_DIFFUSE, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE, nullptr);

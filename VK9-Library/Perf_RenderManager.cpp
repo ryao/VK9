@@ -840,7 +840,16 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			switch (textureCount)
 			{
 			case 0:
-				//No textures. 
+				if (isTransformed)
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZRHW;
+				}
+				else
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ;
+				}
+
+				realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ;
 				break;
 			case 1:
 				if (isTransformed)
