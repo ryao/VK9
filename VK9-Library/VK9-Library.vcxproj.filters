@@ -308,6 +308,21 @@
     <None Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZRHW_TEX1.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZRHW_TEX2.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">

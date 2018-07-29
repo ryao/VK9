@@ -69,7 +69,7 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice,false);
+		this->StartScene(realDevice, false);
 	}
 
 	//The dirty flag for lights can be set by enable light or set light.
@@ -178,7 +178,7 @@ void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *
 {
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice,false);
+		this->StartScene(realDevice, false);
 	}
 	this->StopScene(realDevice);
 
@@ -215,13 +215,13 @@ void RenderManager::DrawIndexedPrimitive(std::shared_ptr<RealDevice> realDevice,
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice,false);
+		this->StartScene(realDevice, false);
 	}
 
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(realDevice.get());
 	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(realDevice.get());
 
-	BeginDraw(realDevice,context, resourceContext, Type);
+	BeginDraw(realDevice, context, resourceContext, Type);
 
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
@@ -244,7 +244,7 @@ void RenderManager::DrawPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRI
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(realDevice.get());
 	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(realDevice.get());
 
-	BeginDraw(realDevice,context, resourceContext, PrimitiveType);
+	BeginDraw(realDevice, context, resourceContext, PrimitiveType);
 
 	currentBuffer.draw(std::min(realDevice->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount)), 1, StartVertex, 0);
 }
@@ -340,16 +340,16 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 	}
 
 	if (pDestinationTexture->GetType() != D3DRTYPE_CUBETEXTURE)
-	{		
+	{
 		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 0, 1);
 	}
 	else
-	{				
+	{
 		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, 0, 6);
 	}
 
 	commandBuffer.end();
- 
+
 	vk::CommandBuffer commandBuffers[] = { commandBuffer };
 	vk::Fence nullFence;
 
@@ -368,7 +368,7 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::UpdateTexture vkQueueSubmit failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
- 
+
 	realDevice->mQueue.waitIdle();
 	device.freeCommandBuffers(realDevice->mCommandPool, 1, commandBuffers);
 }
@@ -578,7 +578,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 
 	if (context->Pipeline == vk::Pipeline())
 	{
-		CreatePipe(realDevice,context); //If we didn't find a matching pipeline then create a new one.	
+		CreatePipe(realDevice, context); //If we didn't find a matching pipeline then create a new one.	
 	}
 
 	/*
@@ -600,7 +600,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	**********************************************/
 	if (context->VertexShader == nullptr)
 	{
-		UpdatePushConstants(realDevice,context);
+		UpdatePushConstants(realDevice, context);
 	}
 	else
 	{
@@ -700,9 +700,11 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	uint32_t attributeCount = 0;
 	uint32_t textureCount = 0; //constants.textureCount
 	uint32_t lightCount = constants.lightCount;
+	uint32_t positionSize = 3;
 	BOOL hasColor = 0;
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
+	BOOL isTransformed = 0;
 	BOOL isLightingEnabled = constants.lighting;
 
 	if (context->VertexDeclaration != nullptr)
@@ -716,14 +718,29 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 	else if (context->FVF)
 	{
-		if ((context->FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+		if ((context->FVF & D3DFVF_XYZRHW) == D3DFVF_XYZRHW)
 		{
+			positionSize = 4;
 			hasPosition = true;
+			isTransformed = true;
 		}
-
-		if ((context->FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+		else
 		{
-			hasNormal = true;
+			if ((context->FVF & D3DFVF_XYZW) == D3DFVF_XYZW)
+			{
+				positionSize = 4;
+				hasPosition = true;
+			}
+			else if ((context->FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+			{
+				positionSize = 3;
+				hasPosition = true;
+			}
+
+			if ((context->FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+			{
+				hasNormal = true;
+			}
 		}
 
 		if ((context->FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
@@ -817,7 +834,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		realDevice->mPipelineShaderStageCreateInfo[1].module = mStateManager.mShaderConverters[context->PixelShader->mId]->mConvertedShader.ShaderModule;
 	}
 	else
-	{		
+	{
 		if (hasPosition && !hasColor && !hasNormal)
 		{
 			switch (textureCount)
@@ -826,11 +843,27 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				//No textures. 
 				break;
 			case 1:
-				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX1;
+				if (isTransformed)
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZRHW_TEX1;
+				}
+				else
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX1;
+				}
+		
 				realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_TEX1;
 				break;
 			case 2:
-				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX2;
+				if (isTransformed)
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZRHW_TEX2;
+				}
+				else
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX2;
+				}
+		
 				realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_TEX2;
 				break;
 			default:
@@ -843,7 +876,14 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			switch (textureCount)
 			{
 			case 0:
-				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE;
+				if (isTransformed)
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZRHW_DIFFUSE;
+				}
+				else
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE;
+				}		
 
 				if (deviceState.hasPointSpriteEnable)
 				{
@@ -854,14 +894,30 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				{
 					realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_DIFFUSE;
 				}
-				
+
 				break;
 			case 1:
-				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX1;
+				if (isTransformed)
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZRHW_DIFFUSE_TEX1;
+				}
+				else
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX1;
+				}
+
 				realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_DIFFUSE_TEX1;
 				break;
 			case 2:
-				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX2;
+				if (isTransformed)
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZRHW_DIFFUSE_TEX2;
+				}
+				else
+				{
+					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX2;
+				}
+				
 				realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_DIFFUSE_TEX2;
 				break;
 			default:
@@ -993,7 +1049,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				realDevice->mVertexInputAttributeDescription[attributeIndex].location = location;
 				realDevice->mVertexInputAttributeDescription[attributeIndex].format = vk::Format::eR32G32B32Sfloat;
 				realDevice->mVertexInputAttributeDescription[attributeIndex].offset = offset;
-				offset += (sizeof(float) * 3);
+				offset += (sizeof(float) * positionSize);
 				location += 1;
 				attributeIndex += 1;
 			}

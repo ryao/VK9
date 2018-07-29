@@ -161,19 +161,24 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	}
 
 	//Load fixed function shaders.
+	mVertShaderModule_XYZRHW_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_DIFFUSE.vert.spv");
 	mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
 	mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
 	mGeomShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.geom.spv");
 
+	mVertShaderModule_XYZRHW_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_TEX1.vert.spv");
 	mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
 	mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
 
+	mVertShaderModule_XYZRHW_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_TEX2.vert.spv");
 	mVertShaderModule_XYZ_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX2.vert.spv");
 	mFragShaderModule_XYZ_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX2.frag.spv");
 
+	mVertShaderModule_XYZRHW_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.spv");
 	mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
 	mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
 
+	mVertShaderModule_XYZRHW_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.spv");
 	mVertShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv");
 	mFragShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv");
 
@@ -524,15 +529,20 @@ RealDevice::~RealDevice()
 	mDevice.freeMemory(mDeviceMemory, nullptr);
 	mDevice.destroySampler(mSampler, nullptr);
 
+	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW_DIFFUSE, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE, nullptr);
 	mDevice.destroyShaderModule(mGeomShaderModule_XYZ_DIFFUSE, nullptr);
+	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW_TEX1, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_TEX1, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_TEX1, nullptr);
+	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW_TEX2, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_TEX2, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_TEX2, nullptr);
+	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW_DIFFUSE_TEX1, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE_TEX1, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE_TEX1, nullptr);
+	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW_DIFFUSE_TEX2, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_DIFFUSE_TEX2, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_DIFFUSE_TEX2, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_NORMAL, nullptr);

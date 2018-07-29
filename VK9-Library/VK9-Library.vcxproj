@@ -140,14 +140,19 @@
       <Profile>true</Profile>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
@@ -203,14 +208,19 @@
       <Profile>true</Profile>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
 "$(VK_SDK_PATH)\Bin32\glslc.exe" -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.spv" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
@@ -594,6 +604,11 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
     </CustomBuild>
+    <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert" />
+    <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert" />
+    <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert" />
+    <None Include="Shaders\VertexBuffer_XYZRHW_TEX1.vert" />
+    <None Include="Shaders\VertexBuffer_XYZRHW_TEX2.vert" />
     <None Include="Shaders\VertexBuffer_XYZ_DIFFUSE.geom" />
     <None Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag" />
     <None Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert" />

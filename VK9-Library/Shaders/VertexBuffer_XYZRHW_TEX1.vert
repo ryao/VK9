@@ -42,11 +42,12 @@ layout(push_constant) uniform UniformBufferObject {
 } ubo;
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in uvec4 attr;
+layout (location = 1) in vec2 attr;
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 ambientColor;
 layout (location = 2) out vec4 specularColor;
 layout (location = 3) out vec4 emissiveColor;
+layout (location = 4) out vec2 texcoord;
 
 out gl_PerVertex 
 {
@@ -58,6 +59,8 @@ void main()
 	gl_Position = vec4(position.xy,0.0,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 
+	texcoord = attr;
+
 	if(colorVertex)
 	{
 		switch(diffuseMaterialSource)
@@ -66,7 +69,7 @@ void main()
 				diffuseColor = material.Diffuse;
 			break;
 			case D3DMCS_COLOR1:
-				diffuseColor = Convert(attr);
+				diffuseColor = vec4(1.0);
 			break;
 			case D3DMCS_COLOR2:
 				diffuseColor = vec4(0);
