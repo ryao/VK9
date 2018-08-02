@@ -159,6 +159,50 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D 
 	return realResult;
 }
 
+vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
+{
+	vec4 realResult;
+	switch(argument & D3DTA_SELECTMASK)
+	{
+		case D3DTA_CONSTANT:
+			realResult = Convert(constant);
+		break;
+		case D3DTA_CURRENT:
+			realResult = result;
+		break;
+		case D3DTA_DIFFUSE:
+			realResult = diffuseColor;
+		break;
+		case D3DTA_SPECULAR:
+			realResult = specularColor;
+		break;
+		case D3DTA_TEMP:
+			realResult = temp;
+		break;
+		case D3DTA_TEXTURE:
+			realResult = vec4(0);
+		break;
+		case D3DTA_TFACTOR:
+			realResult = vec4(0);
+		break;
+		default:
+			realResult = vec4(0);
+		break;
+	}
+	
+	if((argument & D3DTA_ALPHAREPLICATE) != 0)
+	{
+		realResult.rgb = vec3(realResult.a,realResult.a,realResult.a);
+	}
+
+	if((argument & D3DTA_COMPLEMENT) != 0)
+	{
+		realResult = (1.0 - realResult);
+	}
+	
+	return realResult;
+}
+
 void processStage(sampler2D tex,int textureIndex, int constant, int resultArgument,
 vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
 int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
@@ -176,6 +220,55 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	vec4 alphaArg1 = getStageArgument(alphaArgument1,tempIn,constant,resultIn, tex, texcoord);
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn, tex, texcoord);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn, tex, texcoord);
+
+	if(alphaBlendEnable)
+	{
+		//TODO: review alpha factor logic.
+		tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+	}
+	else
+	{
+		tempResult.a = 1.0;
+	}
+
+	if(colorOperation != D3DTOP_DISABLE)
+	{
+		tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rgb;	
+	}
+
+	switch(resultArgument)
+	{
+		case D3DTA_CURRENT:
+			result = tempResult;
+		break;
+		case D3DTA_TEMP:
+			temp = tempResult;
+		break;
+		default:
+			result = tempResult;
+		break;
+	}
+
+	resultOut = result;
+	tempOut = temp;
+}
+
+void processStage(int constant, int resultArgument,
+vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
+int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
+int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
+{
+	vec4 temp = tempIn;
+	vec4 result = resultIn;
+	vec4 tempResult = resultIn; //This is the result regardless if selected target.
+
+	vec4 colorArg1 = getStageArgument(colorArgument1,tempIn,constant,resultIn);
+	vec4 colorArg2 = getStageArgument(colorArgument2,tempIn,constant,resultIn);
+	vec4 colorArg0 = getStageArgument(colorArgument0,tempIn,constant,resultIn);
+
+	vec4 alphaArg1 = getStageArgument(alphaArgument1,tempIn,constant,resultIn);
+	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn);
+	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn);
 
 	if(alphaBlendEnable)
 	{

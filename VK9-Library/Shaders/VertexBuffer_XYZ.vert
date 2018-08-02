@@ -65,13 +65,13 @@ void main()
 				diffuseColor = material.Diffuse;
 			break;
 			case D3DMCS_COLOR1:
-				diffuseColor = vec4(0);
+				diffuseColor = vec4(0,0,0,1);
 			break;
 			case D3DMCS_COLOR2:
-				diffuseColor = vec4(0);
+				diffuseColor = vec4(0,0,0,1);
 			break;
 			default:
-				diffuseColor = vec4(0);
+				diffuseColor = vec4(0,0,0,1);
 			break;
 		}
 	}

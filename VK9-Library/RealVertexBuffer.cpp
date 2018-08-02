@@ -23,12 +23,10 @@ misrepresented as being the original software.
 RealVertexBuffer::RealVertexBuffer(RealDevice* realDevice)
 	: mRealDevice(realDevice)
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealVertexBuffer::RealVertexBuffer";
 }
 
 RealVertexBuffer::~RealVertexBuffer()
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealVertexBuffer::~RealVertexBuffer";
 	if (mRealDevice != nullptr)
 	{
 		auto& device = mRealDevice->mDevice;
