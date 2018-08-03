@@ -601,7 +601,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 	SetIndices(oldIndexBuffer);
 	SetStreamSource(0, oldVertexBuffer, oldOffsetInBytes, oldStride);
 
-	return S_OK; 
+	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
@@ -1350,8 +1350,11 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain, DWORD Flags, con
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9* pIndexData)
 {
-	mIndexBuffers.push_back((CIndexBuffer9*)pIndexData);
-	pIndexData->AddRef();
+	if (pIndexData != nullptr)
+	{
+		mIndexBuffers.push_back((CIndexBuffer9*)pIndexData);
+		pIndexData->AddRef();
+	}
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetIndices;
@@ -1516,9 +1519,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride)
 {
-	mVertexBuffers.push_back((CVertexBuffer9*)pStreamData);
-
-	pStreamData->AddRef();
+	if (pStreamData != nullptr)
+	{
+		mVertexBuffers.push_back((CVertexBuffer9*)pStreamData);
+		pStreamData->AddRef();
+	}
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetStreamSource;

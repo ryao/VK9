@@ -180,7 +180,7 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 			realResult = temp;
 		break;
 		case D3DTA_TEXTURE:
-			realResult = vec4(0);
+			realResult = diffuseColor;
 		break;
 		case D3DTA_TFACTOR:
 			realResult = vec4(0);
