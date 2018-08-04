@@ -225,7 +225,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mPipelineRasterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
 	mPipelineRasterizationStateCreateInfo.cullMode = vk::CullModeFlagBits::eBack;
 	mPipelineRasterizationStateCreateInfo.frontFace = vk::FrontFace::eClockwise;
-	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_TRUE; //VK_FALSE;
+	mPipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	mPipelineRasterizationStateCreateInfo.depthBiasEnable = VK_TRUE;
 	mPipelineRasterizationStateCreateInfo.lineWidth = 1.0f;
@@ -330,6 +330,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	samplerCreateInfo.maxLod = 0.0f;
 	samplerCreateInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;
 	samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+	//samplerCreateInfo.compareEnable = true;
 
 	result = mDevice.createSampler(&samplerCreateInfo, nullptr, &mSampler);
 	if (result != vk::Result::eSuccess)

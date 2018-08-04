@@ -59,19 +59,19 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	mRenderAttachments[0].samples = vk::SampleCountFlagBits::e1;
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
 	mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
-	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[0].initialLayout = vk::ImageLayout::eGeneral; // vk::ImageLayout::eUndefined;  ePresentSrcKHR
-	mRenderAttachments[0].finalLayout = vk::ImageLayout::eGeneral;
+	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eStore;
+	mRenderAttachments[0].initialLayout = vk::ImageLayout::eColorAttachmentOptimal; // vk::ImageLayout::eUndefined;  ePresentSrcKHR
+	mRenderAttachments[0].finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
 
 	mRenderAttachments[1].format = mDepthSurface->mRealFormat;
 	mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
-	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
-	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].initialLayout = vk::ImageLayout::eGeneral; //vk::ImageLayout::eUndefined; eDepthStencilAttachmentOptimal
-	mRenderAttachments[1].finalLayout = vk::ImageLayout::eGeneral;
+	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eStore;
+	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eStore;
+	mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal; //vk::ImageLayout::eUndefined; eDepthStencilAttachmentOptimal
+	mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 	vk::SubpassDependency dependency;
 	dependency.srcStageMask = vk::PipelineStageFlagBits::eAllGraphics;
@@ -91,7 +91,9 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
+	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
 
 	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearRenderPass);
 	if (result != vk::Result::eSuccess)
@@ -132,8 +134,8 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 
 	//realWindow.mImageMemoryBarrier.srcAccessMask = 0;
 	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eGeneral; //eUndefined
-	mImageMemoryBarrier.newLayout = vk::ImageLayout::eGeneral; //ePresentSrcKHR
+	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eColorAttachmentOptimal; //eUndefined
+	mImageMemoryBarrier.newLayout = vk::ImageLayout::eColorAttachmentOptimal; //ePresentSrcKHR
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.image = mColorTexture->mImage;
@@ -194,27 +196,31 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[0].samples = vk::SampleCountFlagBits::e1;
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
 	mRenderAttachments[0].storeOp = vk::AttachmentStoreOp::eStore;
-	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[0].initialLayout = vk::ImageLayout::eGeneral; // vk::ImageLayout::eUndefined;  ePresentSrcKHR
-	mRenderAttachments[0].finalLayout = vk::ImageLayout::eGeneral;
+	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[0].stencilStoreOp = vk::AttachmentStoreOp::eStore;
+	mRenderAttachments[0].initialLayout = vk::ImageLayout::eColorAttachmentOptimal; // vk::ImageLayout::eUndefined;  ePresentSrcKHR
+	mRenderAttachments[0].finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
 
 	mRenderAttachments[1].format = mDepthSurface->mRealFormat;
 	mRenderAttachments[1].samples = vk::SampleCountFlagBits::e1;
-	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
-	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	mRenderAttachments[1].initialLayout = vk::ImageLayout::eGeneral; //vk::ImageLayout::eUndefined; eDepthStencilAttachmentOptimal
-	mRenderAttachments[1].finalLayout = vk::ImageLayout::eGeneral;
+	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[1].storeOp = vk::AttachmentStoreOp::eStore;
+	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[1].stencilStoreOp = vk::AttachmentStoreOp::eStore;
+	mRenderAttachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal; //vk::ImageLayout::eUndefined; eDepthStencilAttachmentOptimal
+	mRenderAttachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+	vk::SubpassDependency dependency;
+	dependency.srcStageMask = vk::PipelineStageFlagBits::eAllGraphics;
+	dependency.dstStageMask = vk::PipelineStageFlagBits::eAllGraphics;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = 2; //revisit
 	renderPassCreateInfo.pAttachments = mRenderAttachments;
 	renderPassCreateInfo.subpassCount = 1;
 	renderPassCreateInfo.pSubpasses = &subpass;
-	renderPassCreateInfo.dependencyCount = 0;
-	renderPassCreateInfo.pDependencies = nullptr;
+	renderPassCreateInfo.dependencyCount = 1;
+	renderPassCreateInfo.pDependencies = &dependency;
 
 	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mStoreRenderPass);
 	if (result != vk::Result::eSuccess)
@@ -222,7 +228,9 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
+	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
 
 	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearRenderPass);
 	if (result != vk::Result::eSuccess)
@@ -319,8 +327,8 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 	command.setViewport(0, 1, &deviceState.mViewport);
 	command.setScissor(0, 1, &deviceState.mScissor);
 
-	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral, 1, 0, 1); //ePresentSrcKHR
-	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral, 1, 0, 1); //eDepthStencilAttachmentOptimal
+	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1, 0, 1); //ePresentSrcKHR
+	ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1, 0, 1); //eDepthStencilAttachmentOptimal
 
 	command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 	
@@ -365,9 +373,9 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState
 	if (mIsSceneStarted)
 	{
 		command.endRenderPass();
-		ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eGeneral, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
+		ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
 		command.clearColorImage(mColorSurface->mStagingImage, vk::ImageLayout::eTransferDstOptimal, &mClearColorValue, 1, &subResourceRange);
-		ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
+		ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eColorAttachmentOptimal, 1, 0, 1);
 		command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 	}
 	else

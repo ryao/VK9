@@ -382,6 +382,8 @@ struct SpecializationConstants
 	int sourceBlendAlpha = D3DBLEND_ONE;
 	int destinationBlendAlpha = D3DBLEND_ZERO;
 	int blendOperationAlpha = D3DBLENDOP_ADD;
+	int screenWidth = 640;
+	int screenHeight = 480;
 };
 
 struct RealIndexBuffer;

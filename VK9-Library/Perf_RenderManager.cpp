@@ -796,8 +796,10 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	realDevice->mPipelineDepthStencilStateCreateInfo.depthTestEnable = constants.zEnable; //= VK_TRUE;
 	realDevice->mPipelineDepthStencilStateCreateInfo.depthWriteEnable = constants.zWriteEnable; //VK_TRUE;
 	realDevice->mPipelineDepthStencilStateCreateInfo.depthCompareOp = ConvertCompareOperation(constants.zFunction);  //VK_COMPARE_OP_LESS_OR_EQUAL;
-	//realDevice.mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = constants.bound
+	//realDevice->mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = true; //= constants.bound;
 	realDevice->mPipelineDepthStencilStateCreateInfo.stencilTestEnable = constants.stencilEnable; //VK_FALSE;
+
+	//twoSidedStencilMode
 
 	/*
 	uint32_t stencilMask = 0xFFFFFFFF;
@@ -1261,6 +1263,7 @@ void RenderManager::CreateSampler(std::shared_ptr<RealDevice> realDevice, std::s
 	samplerCreateInfo.addressModeW = ConvertTextureAddress(request->AddressModeW);
 	samplerCreateInfo.mipmapMode = ConvertMipmapMode(request->MipmapMode); //VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerCreateInfo.mipLodBias = request->MipLodBias;
+	//samplerCreateInfo.compareEnable = true;
 
 	/*
 	https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html

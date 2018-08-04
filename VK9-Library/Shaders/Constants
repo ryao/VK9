@@ -436,3 +436,5 @@ layout(constant_id = 247) const bool separateAlphaBlendEnable = false;
 layout(constant_id = 248) const int sourceBlendAlpha = D3DBLEND_ONE;
 layout(constant_id = 249) const int destinationBlendAlpha = D3DBLEND_ZERO;
 layout(constant_id = 250) const int blendOperationAlpha = D3DBLENDOP_ADD;
+layout(constant_id = 251) const int screenWidth = 640;
+layout(constant_id = 252) const int screenHeight = 480;

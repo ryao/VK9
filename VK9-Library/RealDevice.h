@@ -121,9 +121,9 @@ struct RealDevice
 	//Pipeline
 	vk::PushConstantRange mPushConstantRanges[2];
 
-	const vk::SpecializationMapEntry mSlotMapEntries[1024] =
+	const vk::SpecializationMapEntry mSlotMapEntries[1026] =
 	{
-		{ 0   , 0   , sizeof(uint32_t) },
+	{ 0   , 0   , sizeof(uint32_t) },
 	{ 1   , 1 * sizeof(uint32_t), sizeof(uint32_t) },
 	{ 2   , 2 * sizeof(uint32_t), sizeof(uint32_t) },
 	{ 3   , 3 * sizeof(uint32_t), sizeof(uint32_t) },
@@ -1146,12 +1146,14 @@ struct RealDevice
 	{ 1020, 1020 * sizeof(uint32_t), sizeof(uint32_t) },
 	{ 1021, 1021 * sizeof(uint32_t), sizeof(uint32_t) },
 	{ 1022, 1022 * sizeof(uint32_t), sizeof(uint32_t) },
-	{ 1023, 1023 * sizeof(uint32_t), sizeof(uint32_t) }
+	{ 1023, 1023 * sizeof(uint32_t), sizeof(uint32_t) },
+	{ 1024, 1024 * sizeof(uint32_t), sizeof(uint32_t) },
+	{ 1025, 1025 * sizeof(uint32_t), sizeof(uint32_t) }
 	};
 
 	vk::SpecializationInfo mVertexSpecializationInfo =
 	{
-		251,                                           // mapEntryCount
+		1026,                                           // mapEntryCount
 		mSlotMapEntries,							   // pMapEntries
 		sizeof(SpecializationConstants),               // dataSize
 		nullptr,// pData
@@ -1159,7 +1161,7 @@ struct RealDevice
 
 	vk::SpecializationInfo mPixelSpecializationInfo =
 	{
-		251,                                           // mapEntryCount
+		1026,                                           // mapEntryCount
 		mSlotMapEntries,                               // pMapEntries
 		sizeof(SpecializationConstants),               // dataSize
 		nullptr,// pData

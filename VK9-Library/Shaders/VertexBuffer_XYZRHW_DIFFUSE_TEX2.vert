@@ -41,7 +41,7 @@ layout(push_constant) uniform UniformBufferObject {
 	mat4 modelTransformation;
 } ubo;
 
-layout (location = 0) in vec3 position;
+layout (location = 0) in vec4 position;
 layout (location = 1) in uvec4 attr1;
 layout (location = 2) in vec2 attr2;
 layout (location = 3) in vec2 attr3;
@@ -60,8 +60,28 @@ out gl_PerVertex
 
 void main() 
 {	
-	gl_Position = vec4(position.xy,0.0,1.0);
-	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
+	float x = 0;
+	float y = 0;
+	
+	if(position.x > 0)
+	{
+		x = (position.x / (screenWidth/2));
+	}
+	else
+	{
+		x = (position.x);
+	}
+	
+	if(position.y > 0)
+	{
+		y = (position.y / (screenHeight/2));
+	}
+	else
+	{
+		y = (position.y);
+	}
+	
+	gl_Position = vec4((x-1),(y-1),0.0,1.0);
 
 	
 	texcoord1 = attr2;

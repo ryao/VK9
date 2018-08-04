@@ -176,6 +176,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (pRenderTarget != nullptr)
 				{
+					auto& constants = realDevice->mDeviceState.mSpecializationConstants;
+					constants.screenWidth = pRenderTarget->mWidth;
+					constants.screenHeight = pRenderTarget->mHeight;
+
 					colorSurface = stateManager.mSurfaces[pRenderTarget->mId].get();
 
 					if (pRenderTarget->mTexture != nullptr)
@@ -245,6 +249,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (pNewZStencil != nullptr)
 				{
+					auto& constants = realDevice->mDeviceState.mSpecializationConstants;
+					constants.screenWidth = pNewZStencil->mWidth;
+					constants.screenHeight = pNewZStencil->mHeight; 
+
 					depthSurface = stateManager.mSurfaces[pNewZStencil->mId].get();
 				}
 
