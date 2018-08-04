@@ -594,6 +594,8 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 		return;
 	}
 
+	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+
 	mTextures.push_back(ptr);
 }
 
@@ -702,6 +704,8 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
+	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 	mTextures.push_back(ptr);
 }
@@ -812,6 +816,8 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 		return;
 	}
 
+	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+
 	mTextures.push_back(ptr);
 }
 
@@ -835,6 +841,9 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 	}
 
 	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(device.get(), surface9, parentImage);
+
+	device->SetImageLayout(ptr->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+
 	mSurfaces.push_back(ptr);
 }
 
@@ -849,6 +858,9 @@ void StateManager::CreateVolume(size_t id, void* argument1)
 	auto device = mDevices[id];
 	CVolume9* volume9 = bit_cast<CVolume9*>(argument1);
 	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(device.get(), volume9);
+
+	device->SetImageLayout(ptr->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+
 	mSurfaces.push_back(ptr);
 }
 

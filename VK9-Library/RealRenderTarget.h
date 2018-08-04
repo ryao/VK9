@@ -49,6 +49,7 @@ struct RealRenderTarget
 	vk::ClearValue mClearValues[2];
 	vk::ColorSpaceKHR mColorSpace;
 	vk::ClearColorValue mClearColorValue;
+	vk::ClearDepthStencilValue mClearDepthValue;
 	vk::Framebuffer mFramebuffer;
 	vk::RenderPassBeginInfo mRenderPassBeginInfo;
 	vk::ImageMemoryBarrier mImageMemoryBarrier;

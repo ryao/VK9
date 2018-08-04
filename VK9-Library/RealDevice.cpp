@@ -417,7 +417,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 
 	mDevice.unmapMemory(mDeviceMemory);
 	mImageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-	SetImageLayout(mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::ePreinitialized, mImageLayout);
+	SetImageLayout(mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo2;
 	imageViewCreateInfo2.image = mImage;

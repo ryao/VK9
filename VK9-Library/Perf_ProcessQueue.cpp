@@ -3750,7 +3750,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					if (surface.mIsFlushed)
 					{
-						realDevice->SetImageLayout(surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+						realDevice->SetImageLayout(surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 					}
 
 					result = device.mapMemory(surface.mStagingDeviceMemory, 0, surface.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &surface.mData);
@@ -3850,10 +3850,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				}
 
-				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
-				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
+				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1); //eShaderReadOnlyOptimal
+				
 				ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight, 1, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
-				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
+				
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 
 				commandBuffer.end();
 
@@ -3899,7 +3901,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					if (volume.mIsFlushed)
 					{
-						realDevice->SetImageLayout(volume.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
+						realDevice->SetImageLayout(volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 					}
 
 					result = device.mapMemory(volume.mStagingDeviceMemory, 0, volume.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &volume.mData);
@@ -4001,10 +4003,14 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				}
 
-				ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
-				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
+				ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1); //eShaderReadOnlyOptimal
+				
 				ReallyCopyImage(commandBuffer, volume.mStagingImage, texture.mImage, 0, 0, volume9->mWidth, volume9->mHeight, volume9->mDepth, 0, volume9->mMipIndex, 0, volume9->mTargetLayer);
-				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
+				
+				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
+				//Transition happens on lock.
+				//ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
 
 				commandBuffer.end();
 

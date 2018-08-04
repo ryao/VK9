@@ -57,6 +57,7 @@ struct RealWindow
 	vk::ClearValue mClearValues[2];
 	vk::ColorSpaceKHR mColorSpace;
 	vk::ClearColorValue mClearColorValue;
+	vk::ClearDepthStencilValue mClearDepthValue;
 	vk::SubmitInfo mSubmitInfo;
 	vk::PushConstantRange mPushConstants[1];
 	vk::PipelineStageFlags mPipeStageFlags;
