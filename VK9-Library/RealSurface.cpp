@@ -75,11 +75,11 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 
 		if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
 		{
-			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eDepthStencilAttachment;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 		}
 		else
 		{
-			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eColorAttachment;
+			imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eColorAttachment; //vk::ImageUsageFlagBits::eTransferDst | 
 		}
 	}
 
@@ -149,8 +149,21 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 
 	if (surface9->mUsage == D3DUSAGE_DEPTHSTENCIL)
 	{
-		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+		if (mRealFormat == vk::Format::eD16UnormS8Uint || mRealFormat == vk::Format::eD24UnormS8Uint || mRealFormat == vk::Format::eD32SfloatS8Uint)
+		{
+			mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+			imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+		}
+		else if (mRealFormat == vk::Format::eS8Uint)
+		{
+			mSubresource.aspectMask = vk::ImageAspectFlagBits::eStencil;
+			imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eStencil;
+		}
+		else
+		{
+			mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
+			imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+		}
 	}
 	else
 	{
@@ -162,8 +175,8 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 
 	if (imageCreateInfo.tiling == vk::ImageTiling::eLinear)
 	{
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-		mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		//imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		//mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
 		realDevice->mDevice.getImageSubresourceLayout(mStagingImage, &mSubresource, &mLayouts[0]);
 	}
 

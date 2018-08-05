@@ -215,7 +215,7 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 	obj->SetRenderTarget(0, ptr->mBackBuffer);
 
 	//Add implicit stencil buffer surface.
-	auto depth = new CSurface9(obj, &obj->mPresentationParameters, D3DFMT_D16);
+	auto depth = new CSurface9(obj, &obj->mPresentationParameters, pPresentationParameters->AutoDepthStencilFormat);
 	depth->Init();
 	obj->SetDepthStencilSurface(depth);
 	depth->Release();

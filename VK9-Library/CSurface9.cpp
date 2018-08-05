@@ -34,7 +34,7 @@ CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParam
 	mMultiSample = pPresentationParameters->MultiSampleType;
 	mMultisampleQuality = pPresentationParameters->MultiSampleQuality;
 	
-	if (mFormat == D3DFMT_D16)
+	if (mFormat == D3DFMT_D16_LOCKABLE || mFormat == D3DFMT_D32 || mFormat == D3DFMT_D15S1 || mFormat == D3DFMT_D24S8 || mFormat == D3DFMT_D24X8 || mFormat == D3DFMT_D24X4S4 || mFormat == D3DFMT_D16)
 	{
 		mUsage = D3DUSAGE_DEPTHSTENCIL;
 	}
@@ -51,7 +51,7 @@ CSurface9::CSurface9(CDevice9* Device, D3DPRESENT_PARAMETERS* pPresentationParam
 	mMultiSample = pPresentationParameters->MultiSampleType;
 	mMultisampleQuality = pPresentationParameters->MultiSampleQuality;
 
-	if (mFormat == D3DFMT_D16)
+	if (mFormat == D3DFMT_D16_LOCKABLE || mFormat == D3DFMT_D32 || mFormat == D3DFMT_D15S1 || mFormat == D3DFMT_D24S8 || mFormat == D3DFMT_D24X8 || mFormat == D3DFMT_D24X4S4 || mFormat == D3DFMT_D16)
 	{
 		mUsage = D3DUSAGE_DEPTHSTENCIL;
 	}
@@ -72,7 +72,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 {
 	//Init();
 
-	if (mFormat == D3DFMT_D16)
+	if (mFormat == D3DFMT_D16_LOCKABLE || mFormat == D3DFMT_D32 || mFormat == D3DFMT_D15S1 || mFormat == D3DFMT_D24S8 || mFormat == D3DFMT_D24X8 || mFormat == D3DFMT_D24X4S4 || mFormat == D3DFMT_D16)
 	{
 		mUsage = D3DUSAGE_DEPTHSTENCIL;
 	}
@@ -92,7 +92,7 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 {
 	//Init();
 
-	if (mFormat == D3DFMT_D16)
+	if (mFormat == D3DFMT_D16_LOCKABLE || mFormat == D3DFMT_D32 || mFormat == D3DFMT_D15S1 || mFormat == D3DFMT_D24S8 || mFormat == D3DFMT_D24X8 || mFormat == D3DFMT_D24X4S4 || mFormat == D3DFMT_D16)
 	{
 		mUsage = D3DUSAGE_DEPTHSTENCIL;
 	}
@@ -112,7 +112,7 @@ CSurface9::CSurface9(CDevice9* Device, CTexture9* Texture, UINT Width, UINT Heig
 {
 	//Init();
 
-	if (mFormat == D3DFMT_D16)
+	if (mFormat == D3DFMT_D16_LOCKABLE || mFormat == D3DFMT_D32 || mFormat == D3DFMT_D15S1 || mFormat == D3DFMT_D24S8 || mFormat == D3DFMT_D24X8 || mFormat == D3DFMT_D24X4S4 || mFormat == D3DFMT_D16)
 	{
 		mUsage = D3DUSAGE_DEPTHSTENCIL;
 	}
@@ -132,7 +132,7 @@ CSurface9::CSurface9(CDevice9* Device, CCubeTexture9* Texture, UINT Width, UINT 
 {
 	//Init();
 
-	if (mFormat == D3DFMT_D16)
+	if (mFormat == D3DFMT_D16_LOCKABLE || mFormat == D3DFMT_D32 || mFormat == D3DFMT_D15S1 || mFormat == D3DFMT_D24S8 || mFormat == D3DFMT_D24X8 || mFormat == D3DFMT_D24X4S4 || mFormat == D3DFMT_D16)
 	{
 		mUsage = D3DUSAGE_DEPTHSTENCIL;
 	}

@@ -842,7 +842,23 @@ void StateManager::CreateSurface(size_t id, void* argument1)
 
 	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(device.get(), surface9, parentImage);
 
-	device->SetImageLayout(ptr->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+	auto& realFormat = ptr->mRealFormat;
+	if (realFormat == vk::Format::eD16UnormS8Uint || realFormat == vk::Format::eD24UnormS8Uint || realFormat == vk::Format::eD32SfloatS8Uint)
+	{
+		device->SetImageLayout(ptr->mStagingImage, vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+	}
+	else if (realFormat == vk::Format::eS8Uint)
+	{
+		device->SetImageLayout(ptr->mStagingImage, vk::ImageAspectFlagBits::eStencil, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+	}
+	else if (realFormat == vk::Format::eS8Uint)
+	{
+		device->SetImageLayout(ptr->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+	}
+	else
+	{
+		device->SetImageLayout(ptr->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
+	}
 
 	mSurfaces.push_back(ptr);
 }
