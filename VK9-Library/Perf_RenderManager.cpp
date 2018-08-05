@@ -811,37 +811,34 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	, writeMask( writeMask_ )
 	*/
 
-	if (constants.cullMode != D3DCULL_CCW)
+	realDevice->mPipelineDepthStencilStateCreateInfo.back.reference = constants.stencilReference;
+	realDevice->mPipelineDepthStencilStateCreateInfo.back.compareMask = constants.stencilMask;
+	realDevice->mPipelineDepthStencilStateCreateInfo.back.writeMask = constants.stencilWriteMask;
+
+	realDevice->mPipelineDepthStencilStateCreateInfo.front.reference = constants.stencilReference;
+	realDevice->mPipelineDepthStencilStateCreateInfo.front.compareMask = constants.stencilMask;
+	realDevice->mPipelineDepthStencilStateCreateInfo.front.writeMask = constants.stencilWriteMask;
+
+	if (constants.cullMode == D3DCULL_CCW)
 	{
 		realDevice->mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.ccwStencilFail);
 		realDevice->mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.ccwStencilPass);
 		realDevice->mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.reference = constants.stencilReference;
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.compareMask = constants.stencilMask;
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.writeMask = constants.stencilWriteMask;
+
 
 		realDevice->mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.stencilFail);
 		realDevice->mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.stencilPass);
 		realDevice->mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.stencilFunction);
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.reference = constants.stencilReference;
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.compareMask = constants.stencilMask;
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.writeMask = constants.stencilWriteMask;
 	}
 	else
 	{
 		realDevice->mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.stencilFail);
 		realDevice->mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.stencilPass);
 		realDevice->mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.stencilFunction);
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.reference = constants.stencilReference;
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.compareMask = constants.stencilMask;
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.writeMask = constants.stencilWriteMask;
 
 		realDevice->mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.ccwStencilFail);
 		realDevice->mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.ccwStencilPass);
 		realDevice->mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.reference = constants.stencilReference;
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.compareMask = constants.stencilMask;
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.writeMask = constants.stencilWriteMask;
 	}
 
 
