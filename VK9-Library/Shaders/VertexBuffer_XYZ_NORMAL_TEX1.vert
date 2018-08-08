@@ -76,13 +76,13 @@ void main()
 				diffuseColor = material.Diffuse;
 			break;
 			case D3DMCS_COLOR1:
-				diffuseColor = material.Diffuse;
+				diffuseColor = vec4(1.0);
 			break;
 			case D3DMCS_COLOR2:
-				diffuseColor = material.Diffuse;
+				diffuseColor = vec4(1.0);
 			break;
 			default:
-				diffuseColor = material.Diffuse;
+				diffuseColor = vec4(1.0);
 			break;
 		}
 	}
@@ -97,13 +97,13 @@ void main()
 			ambientColor = material.Ambient;
 		break;
 		case D3DMCS_COLOR1:
-			ambientColor = material.Ambient;
+			ambientColor = vec4(1.0);
 		break;
 		case D3DMCS_COLOR2:
-			ambientColor = material.Ambient;
+			ambientColor = vec4(1.0);
 		break;
 		default:
-			ambientColor = material.Ambient;
+			ambientColor = vec4(1.0);
 		break;
 	}
 
@@ -113,13 +113,13 @@ void main()
 			specularColor = material.Specular;
 		break;
 		case D3DMCS_COLOR1:
-			specularColor = material.Specular;
+			specularColor = vec4(1.0);
 		break;
 		case D3DMCS_COLOR2:
-			specularColor = material.Specular;
+			specularColor = vec4(1.0);
 		break;
 		default:
-			specularColor = material.Specular;
+			specularColor = vec4(1.0);
 		break;
 	}
 
@@ -129,13 +129,13 @@ void main()
 			emissiveColor = material.Emissive;
 		break;
 		case D3DMCS_COLOR1:
-			emissiveColor = material.Emissive;
+			emissiveColor = vec4(1.0);
 		break;
 		case D3DMCS_COLOR2:
-			emissiveColor = material.Emissive;
+			emissiveColor = vec4(1.0);
 		break;
 		default:
-			emissiveColor = material.Emissive;
+			emissiveColor = vec4(1.0);
 		break;
 	}
 
