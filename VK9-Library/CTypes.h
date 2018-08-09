@@ -412,11 +412,11 @@ struct DeviceState
 	//IDirect3DDevice9::SetMaterial
 	D3DMATERIAL9 mMaterial = 
 	{
+		/*1.0f,1.0f,1.0f,1.0f,
 		1.0f,1.0f,1.0f,1.0f,
 		1.0f,1.0f,1.0f,1.0f,
 		1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,
-		1.0f
+		1.0f*/
 	};
 	BOOL mIsMaterialDirty = true;
 

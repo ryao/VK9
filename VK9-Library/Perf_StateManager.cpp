@@ -594,7 +594,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 		return;
 	}
 
-	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
 
 	mTextures.push_back(ptr);
 }
@@ -705,7 +705,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 		return;
 	}
 
-	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
 
 	mTextures.push_back(ptr);
 }
@@ -816,7 +816,7 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 		return;
 	}
 
-	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+	device->SetImageLayout(ptr->mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
 
 	mTextures.push_back(ptr);
 }

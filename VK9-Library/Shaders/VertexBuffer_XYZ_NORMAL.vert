@@ -82,59 +82,64 @@ void main()
 				diffuseColor = vec4(1.0);
 			break;
 		}
+		
+		switch(ambientMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				ambientColor = material.Ambient;
+			break;
+			case D3DMCS_COLOR1:
+				ambientColor = vec4(1.0);
+			break;
+			case D3DMCS_COLOR2:
+				ambientColor = vec4(1.0);
+			break;
+			default:
+				ambientColor = vec4(1.0);
+			break;
+		}
+
+		switch(specularMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				specularColor = material.Specular;
+			break;
+			case D3DMCS_COLOR1:
+				specularColor = vec4(1.0);
+			break;
+			case D3DMCS_COLOR2:
+				specularColor = vec4(1.0);
+			break;
+			default:
+				specularColor = vec4(1.0);
+			break;
+		}
+
+		switch(emissiveMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				emissiveColor = material.Emissive;
+			break;
+			case D3DMCS_COLOR1:
+				emissiveColor = vec4(1.0);
+			break;
+			case D3DMCS_COLOR2:
+				emissiveColor = vec4(1.0);
+			break;
+			default:
+				emissiveColor = vec4(1.0);
+			break;
+		}		
 	}
 	else
 	{
 		diffuseColor = material.Diffuse;
+		ambientColor = material.Ambient;
+		specularColor = material.Specular;
+		emissiveColor = material.Emissive;
 	}
 
-	switch(ambientMaterialSource)
-	{
-		case D3DMCS_MATERIAL:
-			ambientColor = material.Ambient;
-		break;
-		case D3DMCS_COLOR1:
-			ambientColor = vec4(1.0);
-		break;
-		case D3DMCS_COLOR2:
-			ambientColor = vec4(1.0);
-		break;
-		default:
-			ambientColor = vec4(1.0);
-		break;
-	}
 
-	switch(specularMaterialSource)
-	{
-		case D3DMCS_MATERIAL:
-			specularColor = material.Specular;
-		break;
-		case D3DMCS_COLOR1:
-			specularColor = vec4(1.0);
-		break;
-		case D3DMCS_COLOR2:
-			specularColor = vec4(1.0);
-		break;
-		default:
-			specularColor = vec4(1.0);
-		break;
-	}
-
-	switch(emissiveMaterialSource)
-	{
-		case D3DMCS_MATERIAL:
-			emissiveColor = material.Emissive;
-		break;
-		case D3DMCS_COLOR1:
-			emissiveColor = vec4(1.0);
-		break;
-		case D3DMCS_COLOR2:
-			emissiveColor = vec4(1.0);
-		break;
-		default:
-			emissiveColor = vec4(1.0);
-		break;
-	}
 
 	normal = ubo.modelTransformation * vec4(attr,0);
 	normal *= vec4(1.0,-1.0,1.0,1.0);
