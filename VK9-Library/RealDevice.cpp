@@ -397,6 +397,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	int32_t x = 0;
 	int32_t y = 0;
 
+	//BOOST_LOG_TRIVIAL(info) << "RealDevice::RealDevice using format " << (VkFormat)textureFormat;
 	mDevice.getImageSubresourceLayout(mImage, &imageSubresource, &subresourceLayout);
 
 	data = mDevice.mapMemory(mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags()).value;
