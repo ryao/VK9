@@ -535,6 +535,9 @@ private:
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
+	void PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId);
+	void PushStore(uint32_t pointerId, uint32_t objectId);
+
 	void Push(spv::Op code);
 	void Push(spv::Op code, uint32_t argument1);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2);
