@@ -1537,7 +1537,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		{
 			if ((originalId == mColor1Id || originalId == mColor2Id))
 			{
-				auto& parentType = mIdTypePairs[modifiedId];
+				auto parentType = mIdTypePairs[modifiedId];
 
 				uint32_t r2Id = GetNextId();
 				uint32_t g2Id = GetNextId();
@@ -3306,9 +3306,16 @@ void ShaderConverter::Process_IFC()
 		BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
 		break;
 	}
+	mIdTypePairs[resultId] = typeDescription;
+
+	TypeDescription labelType;
+	labelType.PrimaryType = spv::OpLabel;
 
 	trueLabelId = GetNextId();
 	falseLabelId = GetNextId();
+
+	mIdTypePairs[trueLabelId] = labelType;
+	mIdTypePairs[falseLabelId] = labelType;
 
 	mFalseLabels.push(falseLabelId);
 	mFalseLabelCount++;
@@ -3353,8 +3360,15 @@ void ShaderConverter::Process_IF()
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1);
 	resultId = GetNextId();
+
+	TypeDescription labelType;
+	labelType.PrimaryType = spv::OpLabel;
+
 	trueLabelId = GetNextId();
 	falseLabelId = GetNextId();
+
+	mIdTypePairs[trueLabelId] = labelType;
+	mIdTypePairs[falseLabelId] = labelType;
 
 	mFalseLabels.push(falseLabelId);
 	mFalseLabelCount++;
@@ -3391,7 +3405,12 @@ void ShaderConverter::Process_ENDIF()
 	}
 	mFalseLabelCount--;
 
+	TypeDescription labelType;
+	labelType.PrimaryType = spv::OpLabel;
+
 	uint32_t endIfLabelId = GetNextId();
+
+	mIdTypePairs[endIfLabelId] = labelType;
 
 	Push(spv::OpBranch, endIfLabelId);
 	Push(spv::OpLabel, endIfLabelId);
@@ -3451,6 +3470,8 @@ void ShaderConverter::Process_NRM()
 		BOOST_LOG_TRIVIAL(warning) << "Process_NRM - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -3552,6 +3573,8 @@ void ShaderConverter::Process_MOVA()
 
 	Push(spv::OpConvertFToS, dataTypeId, resultId, argumentId1);
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("MOVA", resultToken, argumentToken1);
@@ -3609,6 +3632,8 @@ void ShaderConverter::Process_RSQ()
 		BOOST_LOG_TRIVIAL(warning) << "Process_RSQ - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -3674,6 +3699,8 @@ void ShaderConverter::Process_DST()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("DST", resultToken, argumentToken1, argumentToken2);
@@ -3736,6 +3763,8 @@ void ShaderConverter::Process_CRS()
 		BOOST_LOG_TRIVIAL(warning) << "Process_CRS - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -3800,6 +3829,8 @@ void ShaderConverter::Process_POW()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("POW", resultToken, argumentToken1, argumentToken2);
@@ -3863,6 +3894,8 @@ void ShaderConverter::Process_MUL()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("MUL", resultToken, argumentToken1, argumentToken2);
@@ -3920,6 +3953,8 @@ void ShaderConverter::Process_EXP()
 		BOOST_LOG_TRIVIAL(warning) << "Process_EXP - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -3979,6 +4014,8 @@ void ShaderConverter::Process_EXPP()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("EXPP", resultToken, argumentToken1);
@@ -4036,6 +4073,8 @@ void ShaderConverter::Process_LOG()
 		BOOST_LOG_TRIVIAL(warning) << "Process_LOG - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4095,6 +4134,8 @@ void ShaderConverter::Process_LOGP()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("LOGP", resultToken, argumentToken1);
@@ -4151,6 +4192,8 @@ void ShaderConverter::Process_FRC()
 		BOOST_LOG_TRIVIAL(warning) << "Process_FRC - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4216,6 +4259,8 @@ void ShaderConverter::Process_ABS()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("ABS", resultToken, argumentToken1, argumentToken2);
@@ -4278,6 +4323,8 @@ void ShaderConverter::Process_ADD()
 		BOOST_LOG_TRIVIAL(warning) << "Process_ADD - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4342,6 +4389,8 @@ void ShaderConverter::Process_SUB()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("SUB", resultToken, argumentToken1, argumentToken2);
@@ -4404,6 +4453,8 @@ void ShaderConverter::Process_MIN()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MIN - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4468,6 +4519,8 @@ void ShaderConverter::Process_MAX()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("MAX", resultToken, argumentToken1, argumentToken2);
@@ -4519,6 +4572,8 @@ void ShaderConverter::Process_DP3()
 
 	Push(spv::OpDot, dataTypeId, resultId, argumentId1, argumentId2);
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("DP3", resultToken, argumentToken1, argumentToken2);
@@ -4568,6 +4623,8 @@ void ShaderConverter::Process_DP4()
 	resultId = GetNextId();
 
 	Push(spv::OpDot, dataTypeId, resultId, argumentId1, argumentId2);
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4727,9 +4784,11 @@ void ShaderConverter::Process_TEX()
 	argumentId2_temp = argumentId2;
 	argumentId2 = GetNextId();
 	Push(spv::OpVectorShuffle, texcoordDataTypeId, argumentId2, argumentId2_temp, argumentId2_temp, 0, 1);
+	mIdTypePairs[argumentId2] = texcoordDataType;
 
 	//Sample image
 	Push(spv::OpImageSampleImplicitLod, dataTypeId, resultId, argumentId1, argumentId2);
+	mIdTypePairs[resultId] = dataType;
 
 	if (mMajorVersion == 1)
 	{
@@ -4875,6 +4934,8 @@ void ShaderConverter::Process_M4x4()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("M4x4", resultToken, argumentToken1, argumentToken2);
@@ -4937,6 +4998,8 @@ void ShaderConverter::Process_M4x3()
 		BOOST_LOG_TRIVIAL(warning) << "Process_M4x3 - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5001,6 +5064,8 @@ void ShaderConverter::Process_M3x4()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("M3x4", resultToken, argumentToken1, argumentToken2);
@@ -5064,6 +5129,8 @@ void ShaderConverter::Process_M3x3()
 		break;
 	}
 
+	mIdTypePairs[resultId] = typeDescription;
+
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("M3x3", resultToken, argumentToken1, argumentToken2);
@@ -5126,6 +5193,8 @@ void ShaderConverter::Process_M3x2()
 		BOOST_LOG_TRIVIAL(warning) << "Process_M3x2 - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5209,6 +5278,9 @@ void ShaderConverter::Process_MAD()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAD - Unsupported data type " << dataType;
 		break;
 	}
+
+	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId2] = typeDescription;
 
 	resultId2 = ApplyWriteMask(resultToken, resultId2);
 
