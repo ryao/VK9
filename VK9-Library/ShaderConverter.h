@@ -432,6 +432,15 @@ inline void PrintTokenInformation(const char* tokenName, Token result, Token arg
 		<< argument2.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument2.i) << ")";
 };
 
+inline void PrintTokenInformation(const char* tokenName, Token result, Token argument1, Token argument2, Token argument3)
+{
+	BOOST_LOG_TRIVIAL(info) << tokenName << " - "
+		<< result.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(result.i) << ") "
+		<< argument1.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument1.i) << ") "
+		<< argument2.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument2.i) << ") "
+		<< argument3.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument3.i) << ")";
+};
+
 class CDevice9;
 
 class ShaderConverter
@@ -455,9 +464,9 @@ private:
 	std::vector<uint32_t> mOutputRegisters;
 	boost::container::flat_map<_D3DDECLUSAGE, uint32_t> mOutputRegisterUsages;
 
-	//boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
+	boost::container::flat_map<uint32_t, uint32_t> mVectorMatrixPairs;
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -551,6 +560,7 @@ private:
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
+	void PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId);
 	void PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId);
 	void PushStore(uint32_t pointerId, uint32_t objectId);
 
@@ -602,6 +612,7 @@ private:
 	void Process_DP3();
 	void Process_DP4();
 	void Process_TEX();
+
 	void Process_TEXCOORD();
 
 	//matrix operators

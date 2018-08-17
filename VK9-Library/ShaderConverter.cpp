@@ -1048,7 +1048,6 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		id = GetNextId();
 		description.PrimaryType = spv::OpTypePointer;
 		description.SecondaryType = spv::OpTypeImage;
-		description.ComponentCount = 4; //Really this is probably 2 but everything is 1 or 4 so we can swizzle later to get xy.
 		description.StorageClass = spv::StorageClassInput;
 		typeId = GetSpirVTypeId(description);
 
@@ -1273,16 +1272,16 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 	//OpVectorShuffle must return a vector and vectors must have at least 2 elements so OpCompositeExtract must be used for a single component swizzle operation.
 	if
 		(
-		((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 2))) &&
-			((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 4))) &&
-			((swizzle >> D3DVS_SWIZZLE_SHIFT) == (swizzle >> (D3DVS_SWIZZLE_SHIFT + 6)))
+		((xSource >> D3DVS_SWIZZLE_SHIFT) == (ySource >> (D3DVS_SWIZZLE_SHIFT + 2))) &&
+			((xSource >> D3DVS_SWIZZLE_SHIFT) == (zSource >> (D3DVS_SWIZZLE_SHIFT + 4))) &&
+			((xSource >> D3DVS_SWIZZLE_SHIFT) == (wSource >> (D3DVS_SWIZZLE_SHIFT + 6)))
 			)
 	{
-		//vectorTypeId = GetSpirVTypeId(spv::OpTypeFloat); //Revisit may not be a float
 		TypeDescription outputType = mIdTypePairs[inputId];
 		outputType.PrimaryType = outputType.SecondaryType;
 		outputType.SecondaryType = outputType.TernaryType;
 		outputType.TernaryType = spv::OpTypeVoid;
+		outputType.ComponentCount = 0;
 		uint32_t outputTypeId = GetSpirVTypeId(outputType);
 
 		switch (xSource)
@@ -1527,6 +1526,28 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	floatType.PrimaryType = spv::OpTypeFloat;
 	uint32_t floatTypeId = GetSpirVTypeId(floatType);
 
+	outputComponentCount = 0;
+
+	if (token.i & D3DSP_WRITEMASK_0)
+	{
+		outputComponentCount++;
+	}
+
+	if (token.i & D3DSP_WRITEMASK_1)
+	{
+		outputComponentCount++;
+	}
+
+	if (token.i & D3DSP_WRITEMASK_2)
+	{
+		outputComponentCount++;
+	}
+
+	if (token.i & D3DSP_WRITEMASK_3)
+	{
+		outputComponentCount++;
+	}
+
 	if (typeDescription.PrimaryType == spv::OpTypePointer && (mMajorVersion > 1 || registerType != D3DSPR_TEXTURE || mIsVertexShader))
 	{
 		if (
@@ -1543,11 +1564,6 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 				uint32_t g2Id = GetNextId();
 				uint32_t b2Id = GetNextId();
 				uint32_t a2Id = GetNextId();
-
-				mIdTypePairs[r2Id] = floatType;
-				mIdTypePairs[g2Id] = floatType;
-				mIdTypePairs[b2Id] = floatType;
-				mIdTypePairs[a2Id] = floatType;
 
 				if (parentType.SecondaryType == spv::OpTypeInt)
 				{
@@ -1568,16 +1584,24 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					Push(spv::OpCompositeExtract, intTypeId, aId, modifiedId, 3);
 
 					Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
+					mIdTypePairs[r2Id] = floatType;
 					Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
+					mIdTypePairs[g2Id] = floatType;
 					Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
+					mIdTypePairs[b2Id] = floatType;
 					Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
+					mIdTypePairs[a2Id] = floatType;
 				}
 				else
 				{
 					Push(spv::OpCompositeExtract, floatTypeId, r2Id, modifiedId, 0);
+					mIdTypePairs[r2Id] = floatType;
 					Push(spv::OpCompositeExtract, floatTypeId, g2Id, modifiedId, 1);
+					mIdTypePairs[g2Id] = floatType;
 					Push(spv::OpCompositeExtract, floatTypeId, b2Id, modifiedId, 2);
+					mIdTypePairs[b2Id] = floatType;
 					Push(spv::OpCompositeExtract, floatTypeId, a2Id, modifiedId, 3);
+					mIdTypePairs[a2Id] = floatType;
 				}
 
 				uint32_t rDividedId = GetNextId();
@@ -1628,28 +1652,6 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 			TypeDescription originalType = mIdTypePairs[originalId];
 
 			pointerType.StorageClass = originalType.StorageClass;
-
-			outputComponentCount = 0;
-
-			if (token.i & D3DSP_WRITEMASK_0)
-			{
-				outputComponentCount++;
-			}
-
-			if (token.i & D3DSP_WRITEMASK_1)
-			{
-				outputComponentCount++;
-			}
-
-			if (token.i & D3DSP_WRITEMASK_2)
-			{
-				outputComponentCount++;
-			}
-
-			if (token.i & D3DSP_WRITEMASK_3)
-			{
-				outputComponentCount++;
-			}
 
 			if (outputComponentCount == 1)
 			{
@@ -1705,17 +1707,12 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 
 			if ((originalId == mColor1Id || originalId == mColor2Id))
 			{
-				auto& parentType = mIdTypePairs[modifiedId];
+				auto parentType = mIdTypePairs[modifiedId];
 
 				uint32_t r2Id = GetNextId();
 				uint32_t g2Id = GetNextId();
 				uint32_t b2Id = GetNextId();
 				uint32_t a2Id = GetNextId();
-
-				mIdTypePairs[r2Id] = floatType;
-				mIdTypePairs[g2Id] = floatType;
-				mIdTypePairs[b2Id] = floatType;
-				mIdTypePairs[a2Id] = floatType;
 
 				if (parentType.SecondaryType == spv::OpTypeInt)
 				{
@@ -1736,16 +1733,24 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					Push(spv::OpCompositeExtract, intTypeId, aId, modifiedId, 3);
 
 					Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
+					mIdTypePairs[r2Id] = floatType;
 					Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
+					mIdTypePairs[g2Id] = floatType;
 					Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
+					mIdTypePairs[b2Id] = floatType;
 					Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
+					mIdTypePairs[a2Id] = floatType;
 				}
 				else
 				{
 					Push(spv::OpCompositeExtract, floatTypeId, r2Id, modifiedId, 0);
+					mIdTypePairs[r2Id] = floatType;
 					Push(spv::OpCompositeExtract, floatTypeId, g2Id, modifiedId, 1);
+					mIdTypePairs[g2Id] = floatType;
 					Push(spv::OpCompositeExtract, floatTypeId, b2Id, modifiedId, 2);
+					mIdTypePairs[b2Id] = floatType;
 					Push(spv::OpCompositeExtract, floatTypeId, a2Id, modifiedId, 3);
+					mIdTypePairs[a2Id] = floatType;
 				}
 
 				uint32_t rDividedId = GetNextId();
@@ -1799,13 +1804,37 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		}
 		else
 		{
-			vectorTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, outputComponentCount); //Revisit may not be a float
+			TypeDescription vectorType;
+			TypeDescription originalType = mIdTypePairs[originalId];
+
+			vectorType.StorageClass = originalType.StorageClass;
+
+			if (outputComponentCount == 1)
+			{
+				vectorType.PrimaryType = spv::OpTypePointer;
+				vectorType.SecondaryType = typeDescription.TernaryType;
+
+				vectorTypeId = GetSpirVTypeId(vectorType);
+			}
+			else
+			{
+				vectorType.PrimaryType = spv::OpTypePointer;
+				vectorType.SecondaryType = spv::OpTypeVector;
+				vectorType.TernaryType = typeDescription.TernaryType;
+				vectorType.ComponentCount = outputComponentCount;
+
+				vectorTypeId = GetSpirVTypeId(vectorType);
+			}
+
 			swizzledId = GetNextId();
+			
 			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
 			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
 			mFunctionDefinitionInstructions.push_back(swizzledId); // Result (Id)
 			mFunctionDefinitionInstructions.push_back(originalId); //Vector1 (Id)
 			mFunctionDefinitionInstructions.push_back(modifiedId); //Vector2 (Id)
+
+			mIdTypePairs[swizzledId] = vectorType;
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::ApplyWriteMask " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << swizzledId << ", " << originalId << ", " << modifiedId;
 
@@ -1887,19 +1916,24 @@ void ShaderConverter::GenerateYFlip()
 		return;
 	}
 
-	uint32_t typeId = GetSpirVTypeId(spv::OpTypeFloat);
-
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
+	
 	uint32_t negativeId = GetNextId();
+	mIdTypePairs[negativeId] = floatType;
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
-	mTypeInstructions.push_back(typeId); //Result Type (Id)
+	mTypeInstructions.push_back(floatTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(negativeId); //Result (Id)
 	mTypeInstructions.push_back(bit_cast(-1.0f)); //Literal Value
 
 	uint32_t positionYId = GetNextId();
-	PushLoad(typeId, positionYId, mPositionYId);
+	mIdTypePairs[positionYId] = floatType;
+	PushLoad(floatTypeId, positionYId, mPositionYId);
 
 	uint32_t resultId = GetNextId();
-	Push(spv::OpFMul, typeId, resultId, positionYId, negativeId);
+	mIdTypePairs[resultId] = floatType;
+	Push(spv::OpFMul, floatTypeId, resultId, positionYId, negativeId);
 	PushStore(mPositionYId, resultId);
 }
 
@@ -2017,6 +2051,8 @@ void ShaderConverter::GeneratePushConstant()
 	uint32_t c0_loaded = GetNextId();
 	mIdTypePairs[c0_loaded] = vectorType;
 	PushLoad(vectorTypeId, c0_loaded, c0);
+
+	mVectorMatrixPairs[c0_loaded] = matrix_loaded;
 
 	uint32_t c1_loaded = GetNextId();
 	mIdTypePairs[c1_loaded] = vectorType;
@@ -2520,6 +2556,8 @@ void ShaderConverter::GenerateConstantBlock()
 	{
 		uint32_t id = GetNextId();
 
+		mVectorMatrixPairs[ mIdsByRegister[D3DSPR_CONST][i * 4] ] = id;
+
 		mTypeInstructions.push_back(Pack(3 + 4, spv::OpSpecConstantComposite)); //size,Type
 		mTypeInstructions.push_back(typeId); //Result Type (Id)
 		mTypeInstructions.push_back(id); //Result (Id)
@@ -2613,6 +2651,36 @@ void ShaderConverter::CreateSpirVModule()
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::CreateSpirVModule vkCreateShaderModule failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+}
+
+void ShaderConverter::PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId)
+{
+#ifdef _DEBUG
+	auto& argumentType = mIdTypePairs[argumentId];
+	auto& resultType = mIdTypePairs[resultTypeId];
+
+	if (resultType.PrimaryType != argumentType.PrimaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushInverseSqrt PrimaryType mismatch " << resultType.PrimaryType << " != " << argumentType.PrimaryType;
+	}
+
+	if (resultType.SecondaryType != argumentType.SecondaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushInverseSqrt SecondaryType mismatch " << resultType.SecondaryType << " != " << argumentType.SecondaryType;
+	}
+
+	if (resultType.TernaryType != argumentType.TernaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushInverseSqrt TernaryType mismatch " << resultType.TernaryType << " != " << argumentType.TernaryType;
+	}
+
+	if (resultType.ComponentCount != argumentType.ComponentCount)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushInverseSqrt ComponentCount mismatch " << resultType.ComponentCount << " != " << argumentType.ComponentCount;
+	}
+#endif
+
+	Push(spv::OpExtInst, resultTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId);
 }
 
 void ShaderConverter::PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId)
@@ -3420,22 +3488,17 @@ void ShaderConverter::Process_ENDIF()
 
 void ShaderConverter::Process_NRM()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3451,9 +3514,7 @@ void ShaderConverter::Process_NRM()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -3581,23 +3642,18 @@ void ShaderConverter::Process_MOVA()
 }
 
 void ShaderConverter::Process_RSQ()
-{
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t resultId;
-
+{	
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3613,20 +3669,17 @@ void ShaderConverter::Process_RSQ()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	/*
+	The operand x must be a scalar or vector whose component type is floating-point.
+
+	Result Type and the type of x must be the same type. Results are computed per component.
+	*/
 	switch (dataType)
 	{
-	case spv::OpTypeBool:
-		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId1);
-		break;
-	case spv::OpTypeInt:
-		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId1);
-		break;
 	case spv::OpTypeFloat:
-		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId1);
+		PushInverseSqrt(dataTypeId, resultId, argumentId1);
 		break;
 	default:
 		BOOST_LOG_TRIVIAL(warning) << "Process_RSQ - Unsupported data type " << dataType;
@@ -3643,26 +3696,21 @@ void ShaderConverter::Process_RSQ()
 
 void ShaderConverter::Process_DST()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3678,10 +3726,7 @@ void ShaderConverter::Process_DST()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -3708,26 +3753,21 @@ void ShaderConverter::Process_DST()
 
 void ShaderConverter::Process_CRS()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3743,10 +3783,7 @@ void ShaderConverter::Process_CRS()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -3773,26 +3810,21 @@ void ShaderConverter::Process_CRS()
 
 void ShaderConverter::Process_POW()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3808,10 +3840,7 @@ void ShaderConverter::Process_POW()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -3838,26 +3867,21 @@ void ShaderConverter::Process_POW()
 
 void ShaderConverter::Process_MUL()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3873,10 +3897,7 @@ void ShaderConverter::Process_MUL()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -3903,22 +3924,21 @@ void ShaderConverter::Process_MUL()
 
 void ShaderConverter::Process_EXP()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	dataType = typeDescription.PrimaryType;
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3934,9 +3954,7 @@ void ShaderConverter::Process_EXP()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -3963,22 +3981,21 @@ void ShaderConverter::Process_EXP()
 
 void ShaderConverter::Process_EXPP()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	dataType = typeDescription.PrimaryType;
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -3994,9 +4011,7 @@ void ShaderConverter::Process_EXPP()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4023,22 +4038,21 @@ void ShaderConverter::Process_EXPP()
 
 void ShaderConverter::Process_LOG()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	dataType = typeDescription.PrimaryType;
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4054,9 +4068,7 @@ void ShaderConverter::Process_LOG()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4083,22 +4095,21 @@ void ShaderConverter::Process_LOG()
 
 void ShaderConverter::Process_LOGP()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	dataType = typeDescription.PrimaryType;
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4114,9 +4125,7 @@ void ShaderConverter::Process_LOGP()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4203,26 +4212,21 @@ void ShaderConverter::Process_FRC()
 
 void ShaderConverter::Process_ABS()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4238,10 +4242,7 @@ void ShaderConverter::Process_ABS()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4268,26 +4269,21 @@ void ShaderConverter::Process_ABS()
 
 void ShaderConverter::Process_ADD()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4303,10 +4299,7 @@ void ShaderConverter::Process_ADD()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2); //, UINT_MAX, D3DSPR_INPUT
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4333,26 +4326,21 @@ void ShaderConverter::Process_ADD()
 
 void ShaderConverter::Process_SUB()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4368,10 +4356,7 @@ void ShaderConverter::Process_SUB()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4398,26 +4383,21 @@ void ShaderConverter::Process_SUB()
 
 void ShaderConverter::Process_MIN()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4433,10 +4413,7 @@ void ShaderConverter::Process_MIN()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4463,26 +4440,21 @@ void ShaderConverter::Process_MIN()
 
 void ShaderConverter::Process_MAX()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4498,10 +4470,7 @@ void ShaderConverter::Process_MAX()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -4528,28 +4497,25 @@ void ShaderConverter::Process_MAX()
 
 void ShaderConverter::Process_DP3()
 {
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	dataTypeId = GetSpirVTypeId(spv::OpTypeFloat);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeFloat;
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
-
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4565,14 +4531,11 @@ void ShaderConverter::Process_DP3()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	//DP output is float even though input is a vec.
 
-	Push(spv::OpDot, dataTypeId, resultId, argumentId1, argumentId2);
+	Push(spv::OpDot, floatTypeId, resultId, argumentId1, argumentId2);
 
-	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId] = floatType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4581,26 +4544,25 @@ void ShaderConverter::Process_DP3()
 
 void ShaderConverter::Process_DP4()
 {
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
-	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeFloat;
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -4614,17 +4576,13 @@ void ShaderConverter::Process_DP4()
 	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
 		dataType = typeDescription.SecondaryType;
-		//TODO: handle target swizzle
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	resultId = GetNextId();
+	//DP output is float even though input is a vec.
 
-	Push(spv::OpDot, dataTypeId, resultId, argumentId1, argumentId2);
+	Push(spv::OpDot, floatTypeId, resultId, argumentId1, argumentId2);
 
-	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId] = floatType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4640,13 +4598,13 @@ void ShaderConverter::Process_TEX()
 	uint32_t argumentId2 = 0;
 	uint32_t argumentId1_temp = 0;
 	uint32_t argumentId2_temp = 0;
-	uint32_t resultId = 0;
 	uint32_t resultTypeId = 0;
 	std::string registerName;
 	uint32_t stringWordSize = 0;
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1;
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
@@ -4674,15 +4632,14 @@ void ShaderConverter::Process_TEX()
 	{
 		argumentToken1 = GetNextToken();
 		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+		argumentId1 = GetNextId();
 
 		argumentToken2 = GetNextToken();
 		argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+		argumentId2 = GetNextId();
 
 		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
 		argumentId1_temp = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
-
-		argumentId1 = GetNextId();
-		argumentId2 = GetNextId();
 
 		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
 		{
@@ -4708,15 +4665,14 @@ void ShaderConverter::Process_TEX()
 	{
 		argumentToken1 = GetNextToken();
 		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+		argumentId1 = GetNextId();
 
 		argumentToken2 = argumentToken1;
 		argumentRegisterType2 = argumentRegisterType1;
+		argumentId2 = GetNextId();
 
 		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE);
 		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
-
-		argumentId1 = GetNextId();
-		argumentId2 = GetNextId();
 
 		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
 		{
@@ -4742,15 +4698,14 @@ void ShaderConverter::Process_TEX()
 	{
 		argumentToken1 = resultToken;
 		argumentRegisterType1 = GetRegisterType(resultToken.i);
+		argumentId1 = GetNextId();
 
 		argumentToken2 = argumentToken1;
 		argumentRegisterType2 = argumentRegisterType1;
+		argumentId2 = GetNextId();
 
 		argumentId2_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
 		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
-
-		argumentId1 = GetNextId();
-		argumentId2 = GetNextId();
 
 		/*
 		Before PS 1.4 this is a single result register which means the image will always be a binding and the texcoord will always an input.
@@ -4778,7 +4733,7 @@ void ShaderConverter::Process_TEX()
 		}
 	}
 
-	resultId = GetNextId();
+
 
 	//I don't know what swizzle will be done but it will likely be a vec4 output so I need to use a shuffle to get a vec2.
 	argumentId2_temp = argumentId2;
@@ -4878,325 +4833,195 @@ void ShaderConverter::Process_TEXCOORD()
 
 void ShaderConverter::Process_M4x4()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
 
-	dataType = typeDescription.PrimaryType;
-
-	//Type could be pointer and matrix so checks are run separately.
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
+	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
+	if (matrixId)
 	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
+		argumentId2 = matrixId;
 	}
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
-	}
+	argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
-	resultId = GetNextId();
+	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
 
-	switch (dataType)
-	{
-	case spv::OpTypeBool:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeInt:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeFloat:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_M4x4 - Unsupported data type " << dataType;
-		break;
-	}
-
-	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId] = vectorType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M4x4", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_M4x3()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
 
-	dataType = typeDescription.PrimaryType;
-
-	//Type could be pointer and matrix so checks are run separately.
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
+	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
+	if (matrixId)
 	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
+		argumentId2 = matrixId;
 	}
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
-	}
+	argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
-	resultId = GetNextId();
+	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
 
-	switch (dataType)
-	{
-	case spv::OpTypeBool:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeInt:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeFloat:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_M4x3 - Unsupported data type " << dataType;
-		break;
-	}
-
-	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId] = vectorType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M4x3", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_M3x4()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
 
-	dataType = typeDescription.PrimaryType;
-
-	//Type could be pointer and matrix so checks are run separately.
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
+	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
+	if (matrixId)
 	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
+		argumentId2 = matrixId;
 	}
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
-	}
+	argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
-	resultId = GetNextId();
+	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
 
-	switch (dataType)
-	{
-	case spv::OpTypeBool:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeInt:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeFloat:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_M3x4 - Unsupported data type " << dataType;
-		break;
-	}
-
-	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId] = vectorType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M3x4", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_M3x3()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
 
-	dataType = typeDescription.PrimaryType;
-
-	//Type could be pointer and matrix so checks are run separately.
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
+	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
+	if (matrixId)
 	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
+		argumentId2 = matrixId;
 	}
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
-	}
+	argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
-	resultId = GetNextId();
+	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
 
-	switch (dataType)
-	{
-	case spv::OpTypeBool:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeInt:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeFloat:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_M3x3 - Unsupported data type " << dataType;
-		break;
-	}
-
-	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId] = vectorType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M3x3", resultToken, argumentToken1, argumentToken2);
 }
 
 void ShaderConverter::Process_M3x2()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t resultId;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
 
-	dataType = typeDescription.PrimaryType;
-
-	//Type could be pointer and matrix so checks are run separately.
-	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
+	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
+	if (matrixId)
 	{
-		//Shift the result type so we get a register instead of a pointer as the output type.
-		typeDescription.PrimaryType = typeDescription.SecondaryType;
-		typeDescription.SecondaryType = typeDescription.TernaryType;
-		typeDescription.TernaryType = spv::OpTypeVoid;
+		argumentId2 = matrixId;
 	}
 
-	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
-	{
-		dataType = typeDescription.SecondaryType;
-	}
+	argumentId2 = GetSwizzledId(argumentToken2, argumentId2);
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2, UINT_MAX, (_D3DSHADER_PARAM_REGISTER_TYPE)1337);
-	resultId = GetNextId();
+	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
 
-	switch (dataType)
-	{
-	case spv::OpTypeBool:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeInt:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	case spv::OpTypeFloat:
-		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_M3x2 - Unsupported data type " << dataType;
-		break;
-	}
-
-	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId] = vectorType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
+	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M3x2", resultToken, argumentToken1, argumentToken2);
 }
@@ -5206,31 +5031,26 @@ I don't know why SPIR-V doesn't have a MAD instruction.
 */
 void ShaderConverter::Process_MAD()
 {
-	TypeDescription typeDescription;
-	spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t argumentId1;
-	uint32_t argumentId2;
-	uint32_t argumentId3;
-	uint32_t resultId;
-	uint32_t resultId2;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
+	uint32_t resultId2 = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
 
 	Token argumentToken3 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType3 = GetRegisterType(argumentToken3.i);
+	uint32_t argumentId3 = GetSwizzledId(argumentToken3);
 
-	typeDescription = GetTypeByRegister(argumentToken1); //use argument type because result type may not be known.
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	dataType = typeDescription.PrimaryType;
+	spv::Op dataType = typeDescription.PrimaryType;
 
 	//Type could be pointer and matrix so checks are run separately.
 	if (typeDescription.PrimaryType == spv::OpTypePointer)
@@ -5246,13 +5066,7 @@ void ShaderConverter::Process_MAD()
 		dataType = typeDescription.SecondaryType;
 	}
 
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2);
-	argumentId3 = GetSwizzledId(argumentToken3);
-
-	resultId = GetNextId();
-	resultId2 = GetNextId();
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
 	switch (dataType)
 	{
@@ -5284,6 +5098,7 @@ void ShaderConverter::Process_MAD()
 
 	resultId2 = ApplyWriteMask(resultToken, resultId2);
 
+	PrintTokenInformation("MAD", resultToken, argumentToken1, argumentToken2, argumentToken3);
 }
 
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)

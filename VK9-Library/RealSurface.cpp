@@ -149,8 +149,16 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 
+	vk::FormatProperties formatProperties;	
+	realDevice->mPhysicalDevice.getFormatProperties(mRealFormat,&formatProperties);
+	
 	if (mRealFormat == vk::Format::eD16UnormS8Uint || mRealFormat == vk::Format::eD24UnormS8Uint || mRealFormat == vk::Format::eD32SfloatS8Uint)
 	{
+		if(!formatProperties.linearTilingFeatures && !formatProperties.optimalTilingFeatures && !formatProperties.bufferFeatures)
+		{
+			mRealFormat = vk::Format::eD32SfloatS8Uint; //This is probably an AMD card.
+		}
+
 		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 	}
