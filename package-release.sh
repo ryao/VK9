@@ -87,6 +87,8 @@ function build_arch {
   # Some distributions use PKG_CONFIG_PATH_CUSTOM instead.
   export PKG_CONFIG_PATH_CUSTOM=./dep$1
 
+  source ./dep$1/boost.sh
+
   meson --cross-file "$VK9_SRC_DIR/build-win$1.txt"   \
         --buildtype $BUILD_TYPE                       \
         --prefix "$VK9_BUILD_DIR/install.$1"          \
