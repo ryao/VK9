@@ -1850,9 +1850,7 @@ uint32_t ShaderConverter::SwizzlePointer(const Token& token)
 
 	if (outputComponentCount > 1)
 	{
-		outputType = originalType;
-		outputType.ComponentCount = outputComponentCount;
-		outputTypeId = GetSpirVTypeId(outputType);
+		return originalId;
 	}
 	else
 	{
@@ -1868,34 +1866,21 @@ uint32_t ShaderConverter::SwizzlePointer(const Token& token)
 
 	outputId = GetNextId();
 
-	if (outputComponentCount > originalType.ComponentCount)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::SwizzlePointer " << outputComponentCount << " > " << originalType.ComponentCount;
-	}
-
-	mFunctionDefinitionInstructions.push_back(Pack(4 + outputComponentCount, spv::OpAccessChain)); //size,Type
-	mFunctionDefinitionInstructions.push_back(outputTypeId); //Result Type (Id)
-	mFunctionDefinitionInstructions.push_back(outputId); //Result (Id)
-	mFunctionDefinitionInstructions.push_back(originalId); //Base (Id)
-
 	if (token.i & D3DSP_WRITEMASK_0)
 	{
-		mFunctionDefinitionInstructions.push_back(m0Id); //Indexes (Id)
+		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m0Id);
 	}
-
-	if (token.i & D3DSP_WRITEMASK_1)
+	else if (token.i & D3DSP_WRITEMASK_1)
 	{
-		mFunctionDefinitionInstructions.push_back(m1Id); //Indexes (Id)
+		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m1Id);
 	}
-
-	if (token.i & D3DSP_WRITEMASK_2)
+	else if (token.i & D3DSP_WRITEMASK_2)
 	{
-		mFunctionDefinitionInstructions.push_back(m2Id); //Indexes (Id)
+		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m2Id);
 	}
-
-	if (token.i & D3DSP_WRITEMASK_3)
+	else if (token.i & D3DSP_WRITEMASK_3)
 	{
-		mFunctionDefinitionInstructions.push_back(m3Id); //Indexes (Id)
+		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m3Id);
 	}
 
 	mIdTypePairs[outputId] = outputType;
@@ -2236,6 +2221,24 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	uint32_t inputId = 0;
 	uint32_t outputId = 0;
 
+	//TypeDescription intType;
+	//intType.PrimaryType = spv::OpTypeInt;
+	//uint32_t intTypeId = GetSpirVTypeId(intType);
+
+	//TypeDescription intPointerType;
+	//intPointerType.PrimaryType = spv::OpTypePointer;
+	//intPointerType.SecondaryType = spv::OpTypeInt;
+	//uint32_t intPointerTypeId = GetSpirVTypeId(intPointerType);
+
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
+
+	TypeDescription floatPointerType;
+	floatPointerType.PrimaryType = spv::OpTypePointer;
+	floatPointerType.SecondaryType = spv::OpTypeFloat;
+	uint32_t floatPointerTypeId = GetSpirVTypeId(floatPointerType);
+
 	//If the input is a pointer go ahead and load it. Otherwise we'll just roll with what was passed in.
 	if (modifiedType.PrimaryType == spv::OpTypePointer)
 	{
@@ -2280,7 +2283,89 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		}
 		else
 		{
-			PushStore(outputId, inputId);
+			if ((token.i & D3DSP_WRITEMASK_ALL) == D3DSP_WRITEMASK_ALL)
+			{
+				PushStore(outputId, inputId);
+			}
+			else
+			{
+				TypeDescription swizzledType = mIdTypePairs[inputId];
+				if (swizzledType.PrimaryType == spv::OpTypeVector)
+				{
+					/*
+					Based on a glsl bug report doing a shuffle and then storing it like I used to do is some kind of race condition.
+					To avoid any UB I've switched to the recommended method of storing each compoenent.
+					https://github.com/KhronosGroup/glslang/issues/94
+					*/
+					if (token.i & D3DSP_WRITEMASK_0)
+					{
+						uint32_t objectId1 = GetNextId();
+						uint32_t pointerId1 = GetNextId();
+						Push(spv::OpCompositeExtract, floatTypeId, objectId1, inputId, 0);
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId1, originalId, m0Id);
+						PushStore(pointerId1, objectId1);
+					}
+
+					if (token.i & D3DSP_WRITEMASK_1)
+					{
+						uint32_t objectId2 = GetNextId();
+						uint32_t pointerId2 = GetNextId();
+						Push(spv::OpCompositeExtract, floatTypeId, objectId2, inputId, 1);
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId2, originalId, m1Id);
+						PushStore(pointerId2, objectId2);
+					}
+
+					if (token.i & D3DSP_WRITEMASK_2)
+					{
+						uint32_t objectId3 = GetNextId();
+						uint32_t pointerId3 = GetNextId();
+						Push(spv::OpCompositeExtract, floatTypeId, objectId3, inputId, 2);
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId3, originalId, m2Id);
+						PushStore(pointerId3, objectId3);
+					}
+
+					if (token.i & D3DSP_WRITEMASK_3)
+					{
+						uint32_t objectId4 = GetNextId();
+						uint32_t pointerId4 = GetNextId();
+						Push(spv::OpCompositeExtract, floatTypeId, objectId4, inputId, 3);
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId4, originalId, m3Id);
+						PushStore(pointerId4, objectId4);
+					}
+				}
+				else
+				{
+					uint32_t objectId1 = inputId;
+
+					if (token.i & D3DSP_WRITEMASK_0)
+					{
+						uint32_t pointerId1 = GetNextId();
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId1, originalId, m0Id);
+						PushStore(pointerId1, objectId1);
+					}
+
+					if (token.i & D3DSP_WRITEMASK_1)
+					{
+						uint32_t pointerId2 = GetNextId();
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId2, originalId, m1Id);
+						PushStore(pointerId2, objectId1);
+					}
+
+					if (token.i & D3DSP_WRITEMASK_2)
+					{
+						uint32_t pointerId3 = GetNextId();
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId3, originalId, m2Id);
+						PushStore(pointerId3, objectId1);
+					}
+
+					if (token.i & D3DSP_WRITEMASK_3)
+					{
+						uint32_t pointerId4 = GetNextId();
+						Push(spv::OpAccessChain, floatPointerTypeId, pointerId4, originalId, m3Id);
+						PushStore(pointerId4, objectId1);
+					}
+				}
+			}
 		}
 	}
 	else
@@ -2377,6 +2462,10 @@ void ShaderConverter::GeneratePushConstant()
 	mDecorateInstructions.push_back(matrixTypeId); //target (Id)
 	mDecorateInstructions.push_back(spv::DecorationMatrixStride); //Decoration Type (Id)
 	mDecorateInstructions.push_back(16); //stride
+
+	mDecorateInstructions.push_back(Pack(3, spv::OpDecorate)); //size,Type
+	mDecorateInstructions.push_back(matrixTypeId); //target (Id)
+	mDecorateInstructions.push_back(spv::DecorationColMajor); //Decoration Type (Id)
 
 	//Name Members
 	registerName = "c0";
