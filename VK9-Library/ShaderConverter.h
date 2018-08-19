@@ -441,6 +441,16 @@ inline void PrintTokenInformation(const char* tokenName, Token result, Token arg
 		<< argument3.DestinationParameterToken.RegisterNumber << "(" << GetRegisterTypeName(argument3.i) << ")";
 };
 
+/*
+DXBC allows you to use the register for the first vector in a matrix in matrix instructions.
+These enums will allow the requestor to let methods down the stack know which one we want.
+*/
+#define GIVE_ME_SCALAR 0
+#define GIVE_ME_VECTOR_4 1
+#define GIVE_ME_VECTOR_3 2
+#define GIVE_ME_MATRIX_4X4 3
+#define GIVE_ME_MATRIX_3X3 3
+
 class CDevice9;
 
 class ShaderConverter
@@ -466,7 +476,9 @@ private:
 
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
-	boost::container::flat_map<uint32_t, uint32_t> mVectorMatrixPairs;
+	boost::container::flat_map<uint32_t, uint32_t> mVector3Matrix3X3Pairs;
+	boost::container::flat_map<uint32_t, uint32_t> mVector4Matrix4X4Pairs;
+	boost::container::flat_map<uint32_t, std::string> mNameIdPairs;
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;
@@ -547,7 +559,7 @@ private:
 	uint32_t GetIdByRegister(const Token& token, _D3DSHADER_PARAM_REGISTER_TYPE type = D3DSPR_FORCE_DWORD, _D3DDECLUSAGE usage = D3DDECLUSAGE_TEXCOORD);
 	void SetIdByRegister(const Token& token, uint32_t id);
 	TypeDescription GetTypeByRegister(const Token& token, _D3DDECLUSAGE usage = D3DDECLUSAGE_TEXCOORD);
-	uint32_t GetSwizzledId(const Token& token);
+	uint32_t GetSwizzledId(const Token& token, uint32_t lookingFor);
 	uint32_t GetSwizzledId(const Token& token, uint32_t inputId, _D3DSHADER_PARAM_REGISTER_TYPE type, _D3DDECLUSAGE usage);
 	uint32_t SwizzlePointer(const Token& token);
 	uint32_t SwizzleValue(const Token& token, uint32_t inputId);
@@ -564,6 +576,10 @@ private:
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
+	void PushMemberName(uint32_t id, std::string& registerName, uint32_t index);
+	void PushName(uint32_t id, std::string& registerName);
+	void PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index);
+	void PushAccessChain(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t indexId);
 	void PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId);
 	void PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId);
 	void PushStore(uint32_t pointerId, uint32_t objectId);

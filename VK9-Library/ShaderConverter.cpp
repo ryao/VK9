@@ -724,7 +724,6 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 	uint32_t id = 0;
 	uint32_t typeId = 0;
 	std::string registerName;
-	size_t stringWordSize;
 
 	if (type == D3DSPR_FORCE_DWORD)
 	{
@@ -813,14 +812,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		if (this->mMajorVersion == 3)
 		{
 			registerName = "v" + std::to_string(registerNumber);
-			stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-			if (registerName.length() % 4 == 0)
-			{
-				stringWordSize++;
-			}
-			mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-			mNameInstructions.push_back(id); //target (Id)
-			PutStringInVector(registerName, mNameInstructions); //Literal
+			PushName(id, registerName);
 
 			GenerateDecoration(registerNumber, id, usage, true);
 		}
@@ -829,28 +821,14 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			if (registerType == D3DSPR_INPUT)
 			{
 				registerName = "oD" + std::to_string(registerNumber);
-				stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-				if (registerName.length() % 4 == 0)
-				{
-					stringWordSize++;
-				}
-				mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-				mNameInstructions.push_back(id); //target (Id)
-				PutStringInVector(registerName, mNameInstructions); //Literal
+				PushName(id, registerName);
 
 				GenerateDecoration(registerNumber, id, D3DDECLUSAGE_COLOR, true);
 			}
 			else
 			{
 				registerName = "oT" + std::to_string(registerNumber);
-				stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-				if (registerName.length() % 4 == 0)
-				{
-					stringWordSize++;
-				}
-				mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-				mNameInstructions.push_back(id); //target (Id)
-				PutStringInVector(registerName, mNameInstructions); //Literal
+				PushName(id, registerName);
 
 				GenerateDecoration(registerNumber, id, D3DDECLUSAGE_TEXCOORD, true);
 			}
@@ -938,19 +916,19 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 
 				mColor2XId = GetNextId();
 				mIdTypePairs[mColor2XId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2XId, mColor2Id, m0Id);
+				PushAccessChain(floatTypeId, mColor2XId, mColor2Id, m0Id);
 
 				mColor2YId = GetNextId();
 				mIdTypePairs[mColor2YId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2YId, mColor2Id, m1Id);
+				PushAccessChain(floatTypeId, mColor2YId, mColor2Id, m1Id);
 
 				mColor2ZId = GetNextId();
 				mIdTypePairs[mColor2ZId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2ZId, mColor2Id, m2Id);
+				PushAccessChain(floatTypeId, mColor2ZId, mColor2Id, m2Id);
 
 				mColor2WId = GetNextId();
 				mIdTypePairs[mColor2WId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2WId, mColor2Id, m3Id);
+				PushAccessChain(floatTypeId, mColor2WId, mColor2Id, m3Id);
 			}
 			else
 			{
@@ -964,19 +942,19 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 
 				mColor1XId = GetNextId();
 				mIdTypePairs[mColor1XId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1XId, mColor1Id, m0Id);
+				PushAccessChain(floatTypeId, mColor1XId, mColor1Id, m0Id);
 
 				mColor1YId = GetNextId();
 				mIdTypePairs[mColor1YId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1YId, mColor1Id, m1Id);
+				PushAccessChain(floatTypeId, mColor1YId, mColor1Id, m1Id);
 
 				mColor1ZId = GetNextId();
 				mIdTypePairs[mColor1ZId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1ZId, mColor1Id, m2Id);
+				PushAccessChain(floatTypeId, mColor1ZId, mColor1Id, m2Id);
 
 				mColor1WId = GetNextId();
 				mIdTypePairs[mColor1WId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1WId, mColor1Id, m3Id);
+				PushAccessChain(floatTypeId, mColor1WId, mColor1Id, m3Id);
 			}
 
 			registerName = "oD" + std::to_string(registerNumber);
@@ -995,14 +973,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 			break;
 		}
 
-		stringWordSize = 3 + (registerName.length() / 4);
-		//if (registerName.length() % 4 == 0)
-		//{
-		//	stringWordSize++;
-		//}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(id); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(id, registerName);
 
 		//mOutputRegisterUsages[(_D3DDECLUSAGE)GetUsage(token.i)] = id;
 		if (this->mIsVertexShader && registerType != D3DSPR_TEMP)
@@ -1071,15 +1042,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		mDecorateInstructions.push_back(0); //Location offset
 
 		registerName = "s" + std::to_string(registerNumber);
-
-		stringWordSize = 3 + (registerName.length() / 4);
-		//if (registerName.length() % 4 == 0)
-		//{
-		//	stringWordSize++;
-		//}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(id); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(id, registerName);
 
 		if (!this->mIsVertexShader)
 		{
@@ -1167,13 +1130,38 @@ This function gets the id for the token and if it's a pointer loads it.
 It this checks to see if there is a swizzle and if so shuffle or extract to get the right values out.
 The swizzle values for sources are different from the write mask on a result which is why we need a seperate function for each. :-(
 */
-uint32_t ShaderConverter::GetSwizzledId(const Token& token)
+uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 {
 	uint32_t originalId = GetIdByRegister(token);
 	TypeDescription originalType = GetTypeByRegister(token);
 	uint32_t loadedId = 0;
 	uint32_t outputComponentCount = 4;
 	TypeDescription loadedType;
+
+	if (lookingFor == GIVE_ME_MATRIX_4X4)
+	{
+		uint32_t matrixId = mVector4Matrix4X4Pairs[originalId];
+		if (matrixId)
+		{
+			originalId = matrixId;
+		}
+	}
+	else if (lookingFor == GIVE_ME_MATRIX_3X3)
+	{
+		uint32_t matrixId = mVector3Matrix3X3Pairs[originalId];
+		if (matrixId)
+		{
+			originalId = matrixId;
+		}
+	}
+	else if (lookingFor == GIVE_ME_VECTOR_3)
+	{
+		TypeDescription vectorType = mIdTypePairs[originalId - 1];
+		if (vectorType.ComponentCount == 3)
+		{
+			originalId--;
+		}
+	}
 
 	if (originalType.PrimaryType == spv::OpTypePointer)
 	{
@@ -1228,19 +1216,19 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token)
 			switch (xSource)
 			{
 			case D3DVS_X_X:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, loadedId, 0);
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 0);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			case D3DVS_X_Y:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, loadedId, 1);
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 1);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			case D3DVS_X_Z:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, loadedId, 2);
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 2);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			case D3DVS_X_W:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, loadedId, 3);
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 3);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			}
@@ -1252,6 +1240,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token)
 	}
 	else //vector
 	{
+		std::string registerName;
+
 		TypeDescription vectorType;
 		vectorType.PrimaryType = spv::OpTypeVector;
 		vectorType.SecondaryType = spv::OpTypeFloat;
@@ -1270,6 +1260,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token)
 			mFunctionDefinitionInstructions.push_back(loadedId); //Vector2 (Id)
 
 			mIdTypePairs[outputId] = vectorType;
+
+			registerName = mNameIdPairs[loadedId];
+			if (registerName.size())
+			{
+				//registerName += ".r";
+				PushName(outputId, registerName);
+			}
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << loadedId << ", " << loadedId;
 
@@ -1314,6 +1311,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token)
 			mFunctionDefinitionInstructions.push_back(loadedId); //Vector2 (Id)
 
 			mIdTypePairs[outputId] = vectorType;
+
+			registerName = mNameIdPairs[loadedId];
+			if (registerName.size())
+			{
+				//registerName += ".r";
+				PushName(outputId, registerName);
+			}
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << loadedId << ", " << loadedId;
 
@@ -1374,6 +1378,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token)
 			mFunctionDefinitionInstructions.push_back(loadedId); //Vector2 (Id)
 
 			mIdTypePairs[outputId] = vectorType;
+
+			registerName = mNameIdPairs[loadedId];
+			if (registerName.size())
+			{
+				//registerName += ".r";
+				PushName(outputId, registerName);
+			}
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << loadedId << ", " << loadedId;
 
@@ -1466,7 +1477,6 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 	D3DSHADER_PARAM_REGISTER_TYPE registerType;
 	uint32_t dataTypeId;
 	std::string registerName;
-	size_t stringWordSize;
 
 	registerType = GetRegisterType(token.i);
 	typeDescription = GetTypeByRegister(token, usage);
@@ -1490,58 +1500,6 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			uint32_t tokenId = GetIdByRegister(token);
 			PushLoad(dataTypeId, inputId, tokenId);
 			mIdTypePairs[inputId] = typeDescription;
-
-			if (this->mMajorVersion == 3)
-			{
-				registerName = "v" + std::to_string(registerNumber) + "_loaded";
-				stringWordSize = 3 + (registerName.length() / 4);
-				//if (registerName.length() % 4 == 0)
-				//{
-				//	stringWordSize++;
-				//}
-				mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-				mNameInstructions.push_back(inputId); //target (Id)
-				PutStringInVector(registerName, mNameInstructions); //Literal
-			}
-			else
-			{
-				if (registerType == D3DSPR_INPUT)
-				{
-					registerName = "oD" + std::to_string(registerNumber) + "_loaded";
-					stringWordSize = 3 + (registerName.length() / 4);
-					//if (registerName.length() % 4 == 0)
-					//{
-					//	stringWordSize++;
-					//}
-					mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-					mNameInstructions.push_back(inputId); //target (Id)
-					PutStringInVector(registerName, mNameInstructions); //Literal
-				}
-				else if (registerType == D3DSPR_TEMP)
-				{
-					registerName = "r" + std::to_string(registerNumber) + "_loaded";
-					stringWordSize = 3 + (registerName.length() / 4);
-					//if (registerName.length() % 4 == 0)
-					//{
-					//	stringWordSize++;
-					//}
-					mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-					mNameInstructions.push_back(inputId); //target (Id)
-					PutStringInVector(registerName, mNameInstructions); //Literal
-				}
-				else
-				{
-					registerName = "oT" + std::to_string(registerNumber) + "_loaded";
-					stringWordSize = 3 + (registerName.length() / 4);
-					//if (registerName.length() % 4 == 0)
-					//{
-					//	stringWordSize++;
-					//}
-					mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-					mNameInstructions.push_back(inputId); //target (Id)
-					PutStringInVector(registerName, mNameInstructions); //Literal
-				}
-			}
 
 			//inputId = GetSwizzledId(token, inputId);
 
@@ -1580,19 +1538,19 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			switch (xSource)
 			{
 			case D3DVS_X_X:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 0);
+				PushCompositeExtract(outputTypeId, outputId, inputId, 0);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			case D3DVS_X_Y:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 1);
+				PushCompositeExtract(outputTypeId, outputId, inputId, 1);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			case D3DVS_X_Z:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 2);
+				PushCompositeExtract(outputTypeId, outputId, inputId, 2);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			case D3DVS_X_W:
-				Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 3);
+				PushCompositeExtract(outputTypeId, outputId, inputId, 3);
 				mIdTypePairs[outputId] = outputType;
 				break;
 			}
@@ -1604,6 +1562,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 	}
 	else //vector
 	{
+		std::string registerName;
+
 		TypeDescription vectorType;
 		vectorType.PrimaryType = spv::OpTypeVector;
 		vectorType.SecondaryType = spv::OpTypeFloat;
@@ -1622,6 +1582,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
 
 			mIdTypePairs[outputId] = vectorType;
+
+			registerName = mNameIdPairs[inputId];
+			if (registerName.size())
+			{
+				//registerName += ".r";
+				PushName(outputId, registerName);
+			}
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
 
@@ -1666,6 +1633,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
 
 			mIdTypePairs[outputId] = vectorType;
+
+			registerName = mNameIdPairs[inputId];
+			if (registerName.size())
+			{
+				//registerName += ".r";
+				PushName(outputId, registerName);
+			}
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
 
@@ -1726,6 +1700,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D
 			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
 
 			mIdTypePairs[outputId] = vectorType;
+
+			registerName = mNameIdPairs[inputId];
+			if (registerName.size())
+			{
+				//registerName += ".r";
+				PushName(outputId, registerName);
+			}
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
 
@@ -1868,19 +1849,19 @@ uint32_t ShaderConverter::SwizzlePointer(const Token& token)
 
 	if (token.i & D3DSP_WRITEMASK_0)
 	{
-		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m0Id);
+		PushAccessChain(outputTypeId, outputId, originalId, m0Id);
 	}
 	else if (token.i & D3DSP_WRITEMASK_1)
 	{
-		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m1Id);
+		PushAccessChain(outputTypeId, outputId, originalId, m1Id);
 	}
 	else if (token.i & D3DSP_WRITEMASK_2)
 	{
-		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m2Id);
+		PushAccessChain(outputTypeId, outputId, originalId, m2Id);
 	}
 	else if (token.i & D3DSP_WRITEMASK_3)
 	{
-		Push(spv::OpAccessChain, outputTypeId, outputId, originalId, m3Id);
+		PushAccessChain(outputTypeId, outputId, originalId, m3Id);
 	}
 
 	mIdTypePairs[outputId] = outputType;
@@ -1940,6 +1921,13 @@ uint32_t ShaderConverter::SwizzleValue(const Token& token, uint32_t inputId)
 		mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
 		mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
 
+		std::string registerName = mNameIdPairs[inputId];
+		if (registerName.size())
+		{
+			//registerName += ".r";
+			PushName(outputId, registerName);
+		}
+
 		if (token.i & D3DSP_WRITEMASK_0)
 		{
 			mFunctionDefinitionInstructions.push_back(0); //Component Literal
@@ -1965,24 +1953,31 @@ uint32_t ShaderConverter::SwizzleValue(const Token& token, uint32_t inputId)
 		outputType.PrimaryType = inputType.SecondaryType;
 		outputTypeId = GetSpirVTypeId(outputType);
 
+		std::string registerName = mNameIdPairs[inputId];
+		if (registerName.size())
+		{
+			//registerName += ".r";
+			PushName(outputId, registerName);
+		}
+
 		if (token.i & D3DSP_WRITEMASK_0)
 		{
-			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 0);
+			PushCompositeExtract(outputTypeId, outputId, inputId, 0);
 		}
 
 		if (token.i & D3DSP_WRITEMASK_1)
 		{
-			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 1);
+			PushCompositeExtract(outputTypeId, outputId, inputId, 1);
 		}
 
 		if (token.i & D3DSP_WRITEMASK_2)
 		{
-			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 2);
+			PushCompositeExtract(outputTypeId, outputId, inputId, 2);
 		}
 
 		if (token.i & D3DSP_WRITEMASK_3)
 		{
-			Push(spv::OpCompositeExtract, outputTypeId, outputId, inputId, 3);
+			PushCompositeExtract(outputTypeId, outputId, inputId, 3);
 		}
 	}
 
@@ -2022,14 +2017,14 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 			{
 				uint32_t rId = GetNextId();
 				mIdTypePairs[rId] = intType;
-				Push(spv::OpCompositeExtract, intTypeId, rId, inputId, 0);
+				PushCompositeExtract(intTypeId, rId, inputId, 0);
 
 				Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
 				mIdTypePairs[r2Id] = floatType;
 			}
 			else
 			{
-				Push(spv::OpCompositeExtract, floatTypeId, r2Id, inputId, 0);
+				PushCompositeExtract(floatTypeId, r2Id, inputId, 0);
 				mIdTypePairs[r2Id] = floatType;
 			}
 
@@ -2053,14 +2048,14 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 			{
 				uint32_t gId = GetNextId();
 				mIdTypePairs[gId] = intType;
-				Push(spv::OpCompositeExtract, intTypeId, gId, inputId, 1);
+				PushCompositeExtract(intTypeId, gId, inputId, 1);
 
 				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
 				mIdTypePairs[g2Id] = floatType;
 			}
 			else
 			{
-				Push(spv::OpCompositeExtract, floatTypeId, g2Id, inputId, 1);
+				PushCompositeExtract(floatTypeId, g2Id, inputId, 1);
 				mIdTypePairs[g2Id] = floatType;
 			}
 
@@ -2084,14 +2079,14 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 			{
 				uint32_t bId = GetNextId();
 				mIdTypePairs[bId] = intType;
-				Push(spv::OpCompositeExtract, intTypeId, bId, inputId, 2);
+				PushCompositeExtract(intTypeId, bId, inputId, 2);
 
 				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
 				mIdTypePairs[b2Id] = floatType;
 			}
 			else
 			{
-				Push(spv::OpCompositeExtract, floatTypeId, b2Id, inputId, 2);
+				PushCompositeExtract(floatTypeId, b2Id, inputId, 2);
 				mIdTypePairs[b2Id] = floatType;
 			}
 
@@ -2115,14 +2110,14 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 			{
 				uint32_t aId = GetNextId();
 				mIdTypePairs[aId] = intType;
-				Push(spv::OpCompositeExtract, intTypeId, aId, inputId, 3);
+				PushCompositeExtract(intTypeId, aId, inputId, 3);
 
 				Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
 				mIdTypePairs[a2Id] = floatType;
 			}
 			else
 			{
-				Push(spv::OpCompositeExtract, floatTypeId, a2Id, inputId, 3);
+				PushCompositeExtract(floatTypeId, a2Id, inputId, 3);
 				mIdTypePairs[a2Id] = floatType;
 			}
 
@@ -2301,8 +2296,10 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId1 = GetNextId();
 						uint32_t pointerId1 = GetNextId();
-						Push(spv::OpCompositeExtract, floatTypeId, objectId1, inputId, 0);
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId1, originalId, m0Id);
+						PushCompositeExtract(floatTypeId, objectId1, inputId, 0);
+						mIdTypePairs[objectId1] = floatType;
+						PushAccessChain(floatPointerTypeId, pointerId1, originalId, m0Id);
+						mIdTypePairs[pointerId1] = floatPointerType;
 						PushStore(pointerId1, objectId1);
 					}
 
@@ -2310,8 +2307,10 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId2 = GetNextId();
 						uint32_t pointerId2 = GetNextId();
-						Push(spv::OpCompositeExtract, floatTypeId, objectId2, inputId, 1);
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId2, originalId, m1Id);
+						PushCompositeExtract(floatTypeId, objectId2, inputId, 1);
+						mIdTypePairs[objectId2] = floatType;
+						PushAccessChain(floatPointerTypeId, pointerId2, originalId, m1Id);
+						mIdTypePairs[pointerId2] = floatPointerType;
 						PushStore(pointerId2, objectId2);
 					}
 
@@ -2319,8 +2318,10 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId3 = GetNextId();
 						uint32_t pointerId3 = GetNextId();
-						Push(spv::OpCompositeExtract, floatTypeId, objectId3, inputId, 2);
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId3, originalId, m2Id);
+						PushCompositeExtract(floatTypeId, objectId3, inputId, 2);
+						mIdTypePairs[objectId3] = floatType;
+						PushAccessChain(floatPointerTypeId, pointerId3, originalId, m2Id);
+						mIdTypePairs[pointerId3] = floatPointerType;
 						PushStore(pointerId3, objectId3);
 					}
 
@@ -2328,8 +2329,10 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId4 = GetNextId();
 						uint32_t pointerId4 = GetNextId();
-						Push(spv::OpCompositeExtract, floatTypeId, objectId4, inputId, 3);
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId4, originalId, m3Id);
+						PushCompositeExtract(floatTypeId, objectId4, inputId, 3);
+						mIdTypePairs[objectId4] = floatType;
+						PushAccessChain(floatPointerTypeId, pointerId4, originalId, m3Id);
+						mIdTypePairs[pointerId4] = floatPointerType;
 						PushStore(pointerId4, objectId4);
 					}
 				}
@@ -2340,28 +2343,32 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					if (token.i & D3DSP_WRITEMASK_0)
 					{
 						uint32_t pointerId1 = GetNextId();
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId1, originalId, m0Id);
+						PushAccessChain(floatPointerTypeId, pointerId1, originalId, m0Id);
+						mIdTypePairs[pointerId1] = floatPointerType;
 						PushStore(pointerId1, objectId1);
 					}
 
 					if (token.i & D3DSP_WRITEMASK_1)
 					{
 						uint32_t pointerId2 = GetNextId();
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId2, originalId, m1Id);
+						PushAccessChain(floatPointerTypeId, pointerId2, originalId, m1Id);
+						mIdTypePairs[pointerId2] = floatPointerType;
 						PushStore(pointerId2, objectId1);
 					}
 
 					if (token.i & D3DSP_WRITEMASK_2)
 					{
 						uint32_t pointerId3 = GetNextId();
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId3, originalId, m2Id);
+						PushAccessChain(floatPointerTypeId, pointerId3, originalId, m2Id);
+						mIdTypePairs[pointerId3] = floatPointerType;
 						PushStore(pointerId3, objectId1);
 					}
 
 					if (token.i & D3DSP_WRITEMASK_3)
 					{
 						uint32_t pointerId4 = GetNextId();
-						Push(spv::OpAccessChain, floatPointerTypeId, pointerId4, originalId, m3Id);
+						PushAccessChain(floatPointerTypeId, pointerId4, originalId, m3Id);
+						mIdTypePairs[pointerId4] = floatPointerType;
 						PushStore(pointerId4, objectId1);
 					}
 				}
@@ -2449,10 +2456,7 @@ void ShaderConverter::GeneratePushConstant()
 
 	//Name and decorate push constant structure type.
 	registerName = "PushConstants";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
+	PushName(pushConstantTypeId, registerName);
 
 	mDecorateInstructions.push_back(Pack(3, spv::OpDecorate)); //size,Type
 	mDecorateInstructions.push_back(pushConstantTypeId); //target (Id)
@@ -2469,11 +2473,7 @@ void ShaderConverter::GeneratePushConstant()
 
 	//Name Members
 	registerName = "c0";
-	stringWordSize = 4 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
-	mNameInstructions.push_back(pushConstantTypeId); //target (Id)
-	mNameInstructions.push_back(0); //Member (Literal)
-	PutStringInVector(registerName, mNameInstructions); //Literal
+	PushMemberName(pushConstantTypeId, registerName, 0);
 
 	//Set member offsets
 	mDecorateInstructions.push_back(Pack(4 + 1, spv::OpMemberDecorate)); //size,Type
@@ -2494,31 +2494,28 @@ void ShaderConverter::GeneratePushConstant()
 	mTypeInstructions.push_back(spv::StorageClassPushConstant); //Storage Class
 
 	registerName = "PC";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(pushConstantPointerId); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
+	PushName(pushConstantPointerId, registerName);
 
 	//Create Access Chains
 	uint32_t matrixPointerId = GetNextId();
 	mIdTypePairs[matrixPointerId] = matrixPointerType;
-	Push(spv::OpAccessChain, matrixPointerTypeId, matrixPointerId, pushConstantPointerId, m0Id);
+	PushAccessChain(matrixPointerTypeId, matrixPointerId, pushConstantPointerId, m0Id);
 
 	uint32_t c0 = GetNextId();
 	mIdTypePairs[c0] = vectorPointerType;
-	Push(spv::OpAccessChain, vectorPointerTypeId, c0, matrixPointerId, m0Id);
+	PushAccessChain(vectorPointerTypeId, c0, matrixPointerId, m0Id);
 
 	uint32_t c1 = GetNextId();
 	mIdTypePairs[c1] = vectorPointerType;
-	Push(spv::OpAccessChain, vectorPointerTypeId, c1, matrixPointerId, m1Id);
+	PushAccessChain(vectorPointerTypeId, c1, matrixPointerId, m1Id);
 
 	uint32_t c2 = GetNextId();
 	mIdTypePairs[c2] = vectorPointerType;
-	Push(spv::OpAccessChain, vectorPointerTypeId, c2, matrixPointerId, m2Id);
+	PushAccessChain(vectorPointerTypeId, c2, matrixPointerId, m2Id);
 
 	uint32_t c3 = GetNextId();
 	mIdTypePairs[c3] = vectorPointerType;
-	Push(spv::OpAccessChain, vectorPointerTypeId, c3, matrixPointerId, m3Id);
+	PushAccessChain(vectorPointerTypeId, c3, matrixPointerId, m3Id);
 
 	//Load Access Chains
 	uint32_t matrix_loaded = GetNextId();
@@ -2529,7 +2526,7 @@ void ShaderConverter::GeneratePushConstant()
 	mIdTypePairs[c0_loaded] = vectorType;
 	PushLoad(vectorTypeId, c0_loaded, c0);
 
-	mVectorMatrixPairs[c0_loaded] = matrix_loaded;
+	mVector4Matrix4X4Pairs[c0_loaded] = matrix_loaded;
 
 	uint32_t c1_loaded = GetNextId();
 	mIdTypePairs[c1_loaded] = vectorType;
@@ -2578,11 +2575,7 @@ void ShaderConverter::GenerateConstantIndices()
 	mTypeInstructions.push_back(0); //Literal Value
 
 	registerName = "int_0";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m0Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
+	PushName(m0Id, registerName);
 
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
@@ -2590,10 +2583,7 @@ void ShaderConverter::GenerateConstantIndices()
 	mTypeInstructions.push_back(1); //Literal Value
 
 	registerName = "int_1";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m1Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
+	PushName(m1Id, registerName);
 
 
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
@@ -2602,10 +2592,7 @@ void ShaderConverter::GenerateConstantIndices()
 	mTypeInstructions.push_back(2); //Literal Value
 
 	registerName = "int_2";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m2Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
+	PushName(m2Id, registerName);
 
 
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
@@ -2614,10 +2601,7 @@ void ShaderConverter::GenerateConstantIndices()
 	mTypeInstructions.push_back(3); //Literal Value
 
 	registerName = "int_3";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(m3Id); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
+	PushName(m3Id, registerName);
 }
 
 void ShaderConverter::GeneratePostition()
@@ -2659,22 +2643,6 @@ void ShaderConverter::GeneratePostition()
 	mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 	mTypeInstructions.push_back(positionStructureTypeId); //type (Id)
 
-	registerName = "gl_PerVertex";
-	stringWordSize = 3 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(positionStructureTypeId); //target (Id)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
-	registerName = "gl_Position";
-	stringWordSize = 4 + (registerName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpMemberName));
-	mNameInstructions.push_back(positionStructureTypeId); //target (Id)
-	mNameInstructions.push_back(0); //Member (Literal)
-	PutStringInVector(registerName, mNameInstructions); //Literal
-
-	//mNameInstructions.push_back(Pack(2, spv::OpName));
-	//mNameInstructions.push_back(positionStructurePointerId); //target (Id)
-
 	mDecorateInstructions.push_back(Pack(3, spv::OpDecorate)); //size,Type
 	mDecorateInstructions.push_back(positionStructureTypeId); //target (Id)
 	mDecorateInstructions.push_back(spv::DecorationBlock); //Decoration Type (Id)
@@ -2690,8 +2658,11 @@ void ShaderConverter::GeneratePostition()
 	mTypeInstructions.push_back(positionStructurePointerId); //Result (Id)
 	mTypeInstructions.push_back(spv::StorageClassOutput); //Storage Class
 
+	registerName = "gl_PerVertex";
+	PushName(positionStructurePointerId, registerName);
+
 	mIdTypePairs[positionPointerId] = positionPointerType;
-	Push(spv::OpAccessChain, positionPointerTypeId, positionPointerId, positionStructurePointerId, m0Id);
+	PushAccessChain(positionPointerTypeId, positionPointerId, positionStructurePointerId, m0Id);
 
 	//Updated tracking structures
 	mPositionId = positionPointerId;
@@ -2702,10 +2673,13 @@ void ShaderConverter::GeneratePostition()
 	mOutputRegisters.push_back(positionStructurePointerId);
 	mOutputRegisterUsages[D3DDECLUSAGE_POSITION] = positionPointerId;
 
+	registerName = "gl_Position";
+	PushName(positionPointerId, registerName);
+
 	//Add an access chain for later flipping.
 	mPositionYId = GetNextId();
 	mIdTypePairs[mPositionYId] = floatPointerType;
-	Push(spv::OpAccessChain, floatPointerTypeId, mPositionYId, positionPointerId, m1Id);
+	PushAccessChain(floatPointerTypeId, mPositionYId, positionPointerId, m1Id);
 }
 
 void ShaderConverter::GenerateStore(const Token& token, uint32_t inputId)
@@ -2919,14 +2893,9 @@ void ShaderConverter::GenerateConstantBlock()
 		}
 
 		std::string registerName = "i" + std::to_string(i);
-		size_t stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(id); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(id, registerName);
+
+		mIdTypePairs[id] = componentTypeDescription;
 
 		mIdsByRegister[D3DSPR_CONSTINT][i] = id;
 		mRegistersById[D3DSPR_CONSTINT][id] = i;
@@ -2945,24 +2914,20 @@ void ShaderConverter::GenerateConstantBlock()
 		id = GetNextId();
 
 		mTypeInstructions.push_back(Pack(3 + 1, spv::OpSpecConstant)); //size,Type
-		mTypeInstructions.push_back(componentTypeId); //Result Type (Id)
+		//This is setup as a int because Spir-V doesn't like Bool for some reason.
+		mTypeInstructions.push_back(componentTypeId); //Result Type (Id) 
 		mTypeInstructions.push_back(id); //Result (Id)
 		mTypeInstructions.push_back(0); //Literal Value
 
 		std::string registerName = "b" + std::to_string(i);
-		size_t stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(id); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(id, registerName);
 
 		mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 		mDecorateInstructions.push_back(id); //target (Id)
 		mDecorateInstructions.push_back(spv::DecorationSpecId); //Decoration Type (Id)
 		mDecorateInstructions.push_back(specId++);
+
+		mIdTypePairs[id] = componentTypeDescription;
 
 		mIdsByRegister[D3DSPR_CONSTBOOL][i] = id;
 		mRegistersById[D3DSPR_CONSTBOOL][id] = i;
@@ -2971,8 +2936,14 @@ void ShaderConverter::GenerateConstantBlock()
 	//--------------Float-----------------------------
 	typeDescription.PrimaryType = spv::OpTypeVector;
 	typeDescription.SecondaryType = spv::OpTypeFloat;
+	
+	typeDescription.ComponentCount = 3;
+	TypeDescription vector3Type = typeDescription;
+	uint32_t vector3TypeId = GetSpirVTypeId(vector3Type);
+	
 	typeDescription.ComponentCount = 4;
-	typeId = GetSpirVTypeId(typeDescription);
+	TypeDescription vector4Type = typeDescription;
+	uint32_t vector4TypeId = GetSpirVTypeId(vector4Type);
 
 	componentTypeDescription.PrimaryType = spv::OpTypeFloat;
 	componentTypeDescription.SecondaryType = spv::OpTypeVoid;
@@ -2983,8 +2954,8 @@ void ShaderConverter::GenerateConstantBlock()
 	{
 		uint32_t id;
 		uint32_t ids[4];
+		std::string registerName;
 
-		id = GetNextId();
 		for (size_t j = 0; j < 4; j++)
 		{
 			ids[j] = GetNextId();
@@ -3000,48 +2971,94 @@ void ShaderConverter::GenerateConstantBlock()
 			mDecorateInstructions.push_back(specId++);
 		}
 
+		//vec3
+		uint32_t vector3Id = GetNextId();
+		mTypeInstructions.push_back(Pack(3 + 3, spv::OpSpecConstantComposite)); //size,Type
+		mTypeInstructions.push_back(vector3TypeId); //Result Type (Id)
+		mTypeInstructions.push_back(vector3Id); //Result (Id)
+		for (size_t j = 0; j < 3; j++)
+		{
+			mTypeInstructions.push_back(ids[j]); //Constituents
+		}
+
+		registerName = "c_vec3_" + std::to_string(i);
+		PushName(vector3Id, registerName);
+
+		//vec4
+		uint32_t vector4Id = GetNextId();	
 		mTypeInstructions.push_back(Pack(3 + 4, spv::OpSpecConstantComposite)); //size,Type
-		mTypeInstructions.push_back(typeId); //Result Type (Id)
-		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(vector4TypeId); //Result Type (Id)
+		mTypeInstructions.push_back(vector4Id); //Result (Id)
 		for (size_t j = 0; j < 4; j++)
 		{
 			mTypeInstructions.push_back(ids[j]); //Constituents
 		}
 
-		std::string registerName = "c" + std::to_string(i);
-		size_t stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(id); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		registerName = "c_vec4_" + std::to_string(i);
+		PushName(vector4Id, registerName);
+
+		id = vector4Id;
+
+		mIdTypePairs[vector3Id] = vector3Type;
+		mIdTypePairs[vector4Id] = vector4Type;
 
 		mIdsByRegister[D3DSPR_CONST][i] = id;
 		mRegistersById[D3DSPR_CONST][id] = i;
 	}
 
-	//Make matrices
 	typeDescription.PrimaryType = spv::OpTypeMatrix;
 	typeDescription.SecondaryType = spv::OpTypeVector;
 	typeDescription.TernaryType = spv::OpTypeFloat;
+
+	//mat3
+	typeDescription.ComponentCount = 3;
+	TypeDescription matrix3Type = typeDescription;
+	uint32_t matrix3TypeId = GetSpirVTypeId(matrix3Type);
+
+	//mat4
 	typeDescription.ComponentCount = 4;
-	typeId = GetSpirVTypeId(typeDescription);
+	TypeDescription matrix4Type = typeDescription;
+	uint32_t matrix4TypeId = GetSpirVTypeId(matrix4Type);
 
 	for (size_t i = 0; i < 64; i++)
 	{
-		uint32_t id = GetNextId();
+		std::string registerName;
 
-		mVectorMatrixPairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = id;
+		uint32_t matrix3Id = GetNextId();
+		uint32_t matrix4Id = GetNextId();
+		uint32_t id = matrix4Id;
 
+		mVector3Matrix3X3Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]-1] = matrix3Id; //vec3 is one id below vec4
+		mVector4Matrix4X4Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = matrix4Id;
+
+		//mat3
+		mTypeInstructions.push_back(Pack(3 + 3, spv::OpSpecConstantComposite)); //size,Type
+		mTypeInstructions.push_back(matrix3TypeId); //Result Type (Id)
+		mTypeInstructions.push_back(matrix3Id); //Result (Id)
+		for (size_t j = 0; j < 3; j++)
+		{
+			//keep * 4 because vectors are still laid out the same.
+			//vec3 is one id below vec4
+			mTypeInstructions.push_back(mIdsByRegister[D3DSPR_CONST][i * 4 + j]-1); //Constituents
+		}
+
+		registerName = "c_mat3_" + std::to_string(i);
+		PushName(matrix3Id, registerName);
+
+		//mat4
 		mTypeInstructions.push_back(Pack(3 + 4, spv::OpSpecConstantComposite)); //size,Type
-		mTypeInstructions.push_back(typeId); //Result Type (Id)
-		mTypeInstructions.push_back(id); //Result (Id)
+		mTypeInstructions.push_back(matrix4TypeId); //Result Type (Id)
+		mTypeInstructions.push_back(matrix4Id); //Result (Id)
 		for (size_t j = 0; j < 4; j++)
 		{
 			mTypeInstructions.push_back(mIdsByRegister[D3DSPR_CONST][i * 4 + j]); //Constituents
 		}
+
+		registerName = "c_mat4_" + std::to_string(i);
+		PushName(matrix4Id, registerName);
+
+		mIdTypePairs[matrix3Id] = matrix3Type;
+		mIdTypePairs[matrix4Id] = matrix4Type;
 
 		mIdsByRegister[(_D3DSHADER_PARAM_REGISTER_TYPE)1337][i * 4] = id;
 		mRegistersById[(_D3DSHADER_PARAM_REGISTER_TYPE)1337][id] = i * 4;
@@ -3130,6 +3147,109 @@ void ShaderConverter::CreateSpirVModule()
 	}
 }
 
+void ShaderConverter::PushMemberName(uint32_t id, std::string& registerName, uint32_t index)
+{
+	std::vector<uint32_t> nameInstructions;
+	PutStringInVector(registerName, nameInstructions); //Literal
+
+	mNameInstructions.push_back(Pack(nameInstructions.size() + 3, spv::OpMemberName));
+	mNameInstructions.push_back(id); //target (Id)
+	mNameInstructions.push_back(index);
+	mNameInstructions.insert(mNameInstructions.end(), nameInstructions.begin(), nameInstructions.end());
+
+	mNameIdPairs[id] = registerName;
+}
+
+void ShaderConverter::PushName(uint32_t id, std::string& registerName)
+{
+	std::vector<uint32_t> nameInstructions;
+	PutStringInVector(registerName, nameInstructions); //Literal
+
+	mNameInstructions.push_back(Pack(nameInstructions.size() + 2, spv::OpName));
+	mNameInstructions.push_back(id); //target (Id)
+	mNameInstructions.insert(mNameInstructions.end(), nameInstructions.begin(), nameInstructions.end());	
+
+	mNameIdPairs[id] = registerName;
+}
+
+void ShaderConverter::PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index)
+{
+	std::string registerName = mNameIdPairs[baseId];
+	if (registerName.size())
+	{
+		if (index == 0)
+		{
+			registerName += ".x";
+		}
+		else if (index == 1)
+		{
+			registerName += ".y";
+		}
+		else if (index == 2)
+		{
+			registerName += ".z";
+		}
+		else if (index == 3)
+		{
+			registerName += ".w";
+		}
+
+		PushName(resultId, registerName);
+	}
+
+	Push(spv::OpCompositeExtract, resultTypeId, resultId, baseId, index);
+}
+
+void ShaderConverter::PushAccessChain(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t indexId)
+{
+	std::string registerName = mNameIdPairs[baseId];
+	if (registerName.size())
+	{
+		if (baseId == mColor1Id || baseId == mColor2Id)
+		{
+			if (indexId == m0Id)
+			{
+				registerName += ".r";
+			}
+			else if (indexId == m1Id)
+			{
+				registerName += ".g";
+			}
+			else if (indexId == m2Id)
+			{
+				registerName += ".b";
+			}
+			else if (indexId == m3Id)
+			{
+				registerName += ".a";
+			}
+		}
+		else
+		{
+			if (indexId == m0Id)
+			{
+				registerName += "[0]";
+			}
+			else if (indexId == m1Id)
+			{
+				registerName += "[1]";
+			}
+			else if (indexId == m2Id)
+			{
+				registerName += "[2]";
+			}
+			else if (indexId == m3Id)
+			{
+				registerName += "[3]";
+			}
+		}
+		
+		PushName(resultId, registerName);
+	}
+
+	Push(spv::OpAccessChain, resultTypeId, resultId, baseId, indexId);
+}
+
 void ShaderConverter::PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId)
 {
 #ifdef _DEBUG
@@ -3186,6 +3306,13 @@ void ShaderConverter::PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushLoad ComponentCount mismatch " << pointerType.ComponentCount << " != " << resultType.ComponentCount;
 	}
 #endif
+
+	std::string registerName = mNameIdPairs[pointerId];
+	if (registerName.size())
+	{
+		registerName += "_loaded";
+		PushName(resultId, registerName);
+	}
 
 	Push(spv::OpLoad, resultTypeId, resultId, pointerId);
 }
@@ -3343,7 +3470,6 @@ void ShaderConverter::Process_DCL_Pixel()
 	uint32_t resultTypeId;
 	uint32_t textureType;
 	std::string registerName;
-	uint32_t stringWordSize;
 
 	typeDescription.PrimaryType = spv::OpTypePointer;
 	typeDescription.SecondaryType = spv::OpTypeVector;
@@ -3391,14 +3517,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mInputRegisters.push_back(tokenId);
 
 		registerName = "v" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(tokenId); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(tokenId, registerName);
 
 		GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage, true);
 		break;
@@ -3415,14 +3534,7 @@ void ShaderConverter::Process_DCL_Pixel()
 		mInputRegisters.push_back(tokenId);
 
 		registerName = "T" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(tokenId); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(tokenId, registerName);
 
 		GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage, true);
 		break;
@@ -3584,14 +3696,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		mInputRegisters.push_back(tokenId);
 
 		registerName = "v" + std::to_string(registerNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(tokenId); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(tokenId, registerName);
 
 		GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage, true);
 		break;
@@ -3635,19 +3740,19 @@ void ShaderConverter::Process_DCL_Vertex()
 
 				mColor2XId = GetNextId();
 				mIdTypePairs[mColor2XId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2XId, mColor2Id, m0Id);
+				PushAccessChain(floatTypeId, mColor2XId, mColor2Id, m0Id);
 
 				mColor2YId = GetNextId();
 				mIdTypePairs[mColor2YId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2YId, mColor2Id, m1Id);
+				PushAccessChain(floatTypeId, mColor2YId, mColor2Id, m1Id);
 
 				mColor2ZId = GetNextId();
 				mIdTypePairs[mColor2ZId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2ZId, mColor2Id, m2Id);
+				PushAccessChain(floatTypeId, mColor2ZId, mColor2Id, m2Id);
 
 				mColor2WId = GetNextId();
 				mIdTypePairs[mColor2WId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor2WId, mColor2Id, m3Id);
+				PushAccessChain(floatTypeId, mColor2WId, mColor2Id, m3Id);
 			}
 			else
 			{
@@ -3661,19 +3766,19 @@ void ShaderConverter::Process_DCL_Vertex()
 
 				mColor1XId = GetNextId();
 				mIdTypePairs[mColor1XId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1XId, mColor1Id, m0Id);
+				PushAccessChain(floatTypeId, mColor1XId, mColor1Id, m0Id);
 
 				mColor1YId = GetNextId();
 				mIdTypePairs[mColor1YId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1YId, mColor1Id, m1Id);
+				PushAccessChain(floatTypeId, mColor1YId, mColor1Id, m1Id);
 
 				mColor1ZId = GetNextId();
 				mIdTypePairs[mColor1ZId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1ZId, mColor1Id, m2Id);
+				PushAccessChain(floatTypeId, mColor1ZId, mColor1Id, m2Id);
 
 				mColor1WId = GetNextId();
 				mIdTypePairs[mColor1WId] = pointerFloatType;
-				Push(spv::OpAccessChain, floatTypeId, mColor1WId, mColor1Id, m3Id);
+				PushAccessChain(floatTypeId, mColor1WId, mColor1Id, m3Id);
 			}
 
 			registerName = "oD" + std::to_string(registerNumber);
@@ -3687,13 +3792,7 @@ void ShaderConverter::Process_DCL_Vertex()
 		}
 
 		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(tokenId); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		PushName(tokenId, registerName);
 
 		mOutputRegisters.push_back(tokenId);
 		mOutputRegisterUsages[(_D3DDECLUSAGE)usage] = tokenId;
@@ -3835,8 +3934,8 @@ void ShaderConverter::Process_IFC()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
-	argumentId2 = GetSwizzledId(argumentToken2); //, UINT_MAX, D3DSPR_INPUT
+	argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+	argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4); //, UINT_MAX, D3DSPR_INPUT
 	resultId = GetNextId();
 
 	switch (dataType)
@@ -3903,7 +4002,7 @@ void ShaderConverter::Process_IF()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 	resultId = GetNextId();
 
 	TypeDescription labelType;
@@ -3971,7 +4070,7 @@ void ShaderConverter::Process_NRM()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4041,7 +4140,7 @@ void ShaderConverter::Process_MOV()
 	}
 	else
 	{
-		argumentId1 = GetSwizzledId(argumentToken1);
+		argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 	}
 
 	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
@@ -4106,7 +4205,7 @@ void ShaderConverter::Process_MOVA()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 	resultId = GetNextId();
 
 	Push(spv::OpConvertFToS, dataTypeId, resultId, argumentId1);
@@ -4126,7 +4225,7 @@ void ShaderConverter::Process_RSQ()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4179,11 +4278,11 @@ void ShaderConverter::Process_DST()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4241,11 +4340,11 @@ void ShaderConverter::Process_CRS()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4303,11 +4402,11 @@ void ShaderConverter::Process_POW()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4365,11 +4464,11 @@ void ShaderConverter::Process_MUL()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	//Grab type info if there is any.
 	TypeDescription argumentType1 = mIdTypePairs[argumentId1];
@@ -4461,11 +4560,11 @@ void ShaderConverter::Process_EXP()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4523,11 +4622,11 @@ void ShaderConverter::Process_EXPP()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4585,11 +4684,11 @@ void ShaderConverter::Process_LOG()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4647,11 +4746,11 @@ void ShaderConverter::Process_LOGP()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4736,7 +4835,7 @@ void ShaderConverter::Process_FRC()
 	}
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
-	argumentId1 = GetSwizzledId(argumentToken1);
+	argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	//TODO: create a integer pointer to store the whole part.
 	BOOST_LOG_TRIVIAL(warning) << "Process_FRC - Not currently handling integer pointer argument.";
@@ -4769,11 +4868,11 @@ void ShaderConverter::Process_ABS()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4831,11 +4930,11 @@ void ShaderConverter::Process_ADD()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4893,11 +4992,11 @@ void ShaderConverter::Process_SUB()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -4955,11 +5054,11 @@ void ShaderConverter::Process_MIN()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -5017,11 +5116,11 @@ void ShaderConverter::Process_MAX()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -5083,11 +5182,11 @@ void ShaderConverter::Process_DP3()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -5135,11 +5234,11 @@ void ShaderConverter::Process_DP4()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -5327,21 +5426,21 @@ void ShaderConverter::Process_TEX()
 	Push(spv::OpVectorShuffle, texcoordDataTypeId, argumentId2, argumentId2_temp, argumentId2_temp, 0, 1);
 	mIdTypePairs[argumentId2] = texcoordDataType;
 
+	registerName = mNameIdPairs[argumentId2_temp];
+	if (registerName.size())
+	{
+		//registerName += ".r";
+		PushName(argumentId2, registerName);
+	}
+
 	//Sample image
 	Push(spv::OpImageSampleImplicitLod, dataTypeId, resultId, argumentId1, argumentId2);
 	mIdTypePairs[resultId] = dataType;
 
 	if (mMajorVersion == 1)
 	{
-		registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
-		stringWordSize = 2 + std::max(registerName.length() / 4, (size_t)1);
-		if (registerName.length() % 4 == 0)
-		{
-			stringWordSize++;
-		}
-		mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-		mNameInstructions.push_back(resultId); //target (Id)
-		PutStringInVector(registerName, mNameInstructions); //Literal
+		//registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
+		//PushName(tokenId, registerName);
 
 		mTextures[resultToken.DestinationParameterToken.RegisterNumber] = resultId;
 	}
@@ -5425,33 +5524,50 @@ void ShaderConverter::Process_M4x4()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_MATRIX_4X4);
 
-	TypeDescription vectorType;
-	vectorType.PrimaryType = spv::OpTypeVector;
-	vectorType.SecondaryType = spv::OpTypeFloat;
-	vectorType.ComponentCount = 4;
-	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
-	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
-	if (matrixId)
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
 	{
-		argumentId2 = matrixId;
+		typeDescription = mIdTypePairs[argumentId2];
 	}
 
-	argumentId2 = GetSwizzledId(argumentToken2, argumentId2, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_TEXCOORD);
+	spv::Op dataType = typeDescription.PrimaryType;
 
-	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
 
-	mIdTypePairs[resultId] = vectorType;
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M4x4 - Unsupported data type " << dataType;
+		break;
+	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
-	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M4x4", resultToken, argumentToken1, argumentToken2);
 }
@@ -5464,33 +5580,50 @@ void ShaderConverter::Process_M4x3()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_MATRIX_4X4);
 
-	TypeDescription vectorType;
-	vectorType.PrimaryType = spv::OpTypeVector;
-	vectorType.SecondaryType = spv::OpTypeFloat;
-	vectorType.ComponentCount = 4;
-	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
-	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
-	if (matrixId)
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
 	{
-		argumentId2 = matrixId;
+		typeDescription = mIdTypePairs[argumentId2];
 	}
 
-	argumentId2 = GetSwizzledId(argumentToken2, argumentId2, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_TEXCOORD);
+	spv::Op dataType = typeDescription.PrimaryType;
 
-	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
 
-	mIdTypePairs[resultId] = vectorType;
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M4x3 - Unsupported data type " << dataType;
+		break;
+	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
-	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M4x3", resultToken, argumentToken1, argumentToken2);
 }
@@ -5503,33 +5636,50 @@ void ShaderConverter::Process_M3x4()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_3);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_MATRIX_3X3);
 
-	TypeDescription vectorType;
-	vectorType.PrimaryType = spv::OpTypeVector;
-	vectorType.SecondaryType = spv::OpTypeFloat;
-	vectorType.ComponentCount = 4;
-	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
-	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
-	if (matrixId)
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
 	{
-		argumentId2 = matrixId;
+		typeDescription = mIdTypePairs[argumentId2];
 	}
 
-	argumentId2 = GetSwizzledId(argumentToken2, argumentId2, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_TEXCOORD);
+	spv::Op dataType = typeDescription.PrimaryType;
 
-	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
 
-	mIdTypePairs[resultId] = vectorType;
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M3x4 - Unsupported data type " << dataType;
+		break;
+	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
-	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M3x4", resultToken, argumentToken1, argumentToken2);
 }
@@ -5542,33 +5692,50 @@ void ShaderConverter::Process_M3x3()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_3);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_MATRIX_3X3);
 
-	TypeDescription vectorType;
-	vectorType.PrimaryType = spv::OpTypeVector;
-	vectorType.SecondaryType = spv::OpTypeFloat;
-	vectorType.ComponentCount = 4;
-	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
-	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
-	if (matrixId)
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
 	{
-		argumentId2 = matrixId;
+		typeDescription = mIdTypePairs[argumentId2];
 	}
 
-	argumentId2 = GetSwizzledId(argumentToken2, argumentId2, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_TEXCOORD);
+	spv::Op dataType = typeDescription.PrimaryType;
 
-	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
 
-	mIdTypePairs[resultId] = vectorType;
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M3x3 - Unsupported data type " << dataType;
+		break;
+	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
-	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M3x3", resultToken, argumentToken1, argumentToken2);
 }
@@ -5581,33 +5748,50 @@ void ShaderConverter::Process_M3x2()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_3);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetIdByRegister(argumentToken2, argumentRegisterType2);  //GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_MATRIX_3X3);
 
-	TypeDescription vectorType;
-	vectorType.PrimaryType = spv::OpTypeVector;
-	vectorType.SecondaryType = spv::OpTypeFloat;
-	vectorType.ComponentCount = 4;
-	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	//If the "matrix" id is pointing to the first vector in the push constant than switch the id to the push constant matrix id.
-	uint32_t matrixId = mVectorMatrixPairs[argumentId2];
-	if (matrixId)
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
 	{
-		argumentId2 = matrixId;
+		typeDescription = mIdTypePairs[argumentId2];
 	}
 
-	argumentId2 = GetSwizzledId(argumentToken2, argumentId2, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_TEXCOORD);
+	spv::Op dataType = typeDescription.PrimaryType;
 
-	Push(spv::OpVectorTimesMatrix, vectorTypeId, resultId, argumentId1, argumentId2);
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
 
-	mIdTypePairs[resultId] = vectorType;
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		Push(spv::OpVectorTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_M3x2 - Unsupported data type " << dataType;
+		break;
+	}
+
+	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
-	//SetIdByRegister(resultToken, resultId);
 
 	PrintTokenInformation("M3x2", resultToken, argumentToken1, argumentToken2);
 }
@@ -5624,15 +5808,15 @@ void ShaderConverter::Process_MAD()
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
 	Token argumentToken2 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
 
 	Token argumentToken3 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType3 = GetRegisterType(argumentToken3.i);
-	uint32_t argumentId3 = GetSwizzledId(argumentToken3);
+	uint32_t argumentId3 = GetSwizzledId(argumentToken3, GIVE_ME_VECTOR_4);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -6164,10 +6348,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	mEntryPointInstructions.insert(std::end(mEntryPointInstructions), std::begin(interfaceIds), std::end(interfaceIds)); //Interfaces
 
 	//Write entry point name.
-	stringWordSize = 3 + (entryPointName.length() / 4);
-	mNameInstructions.push_back(Pack(stringWordSize, spv::OpName));
-	mNameInstructions.push_back(mEntryPointId); //target (Id)
-	PutStringInVector(entryPointName, mNameInstructions); //Literal
+	PushName(mEntryPointId, entryPointName);
 
 	//ExecutionMode
 	if (!mIsVertexShader)
