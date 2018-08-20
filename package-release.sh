@@ -17,7 +17,9 @@ if [ -z "$1" ] || [ -z "$2" ]; then
   exit -1
 fi
 
-export WINEPREFIX=~/.wine/VK9-build
+if [ -z $(export -p | grep WINEPREFIX\=) ]; then
+  export WINEPREFIX=~/.wine/VK9-build
+fi
 
 # Get positional arguments and remove them from argument list
 VK9_VERSION="$1"
@@ -83,9 +85,15 @@ echo "    precompiled header: $USE_PCH"
 function build_arch {
   cd "$VK9_SRC_DIR"
 
-  export PKG_CONFIG_PATH=./dep$1
-  # Some distributions use PKG_CONFIG_PATH_CUSTOM instead.
-  export PKG_CONFIG_PATH_CUSTOM=./dep$1
+  if [ -z $(export -p | grep PKG_CONFIG_PATH\=) ]; then
+    export PKG_CONFIG_PATH=./dep$1
+  fi
+  if [ -z $(export -p | grep PKG_CONFIG_PATH_CUSTOM\=) ]; then
+    # Some distributions use PKG_CONFIG_PATH_CUSTOM instead.
+    export PKG_CONFIG_PATH_CUSTOM=./dep$1
+  fi
+
+  source ./dep$1/boost.sh
 
   meson --cross-file "$VK9_SRC_DIR/build-win$1.txt"   \
         --buildtype $BUILD_TYPE                       \
