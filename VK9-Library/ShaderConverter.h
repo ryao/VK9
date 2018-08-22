@@ -449,7 +449,9 @@ These enums will allow the requestor to let methods down the stack know which on
 #define GIVE_ME_VECTOR_4 1
 #define GIVE_ME_VECTOR_3 2
 #define GIVE_ME_MATRIX_4X4 3
-#define GIVE_ME_MATRIX_3X3 3
+#define GIVE_ME_MATRIX_3X3 4
+#define GIVE_ME_SAMPLER 5
+#define GIVE_ME_VECTOR_2 6
 
 class CDevice9;
 

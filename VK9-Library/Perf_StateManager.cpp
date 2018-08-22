@@ -874,7 +874,6 @@ void StateManager::DestroyVolume(size_t id)
 
 void StateManager::CreateVolume(size_t id, void* argument1)
 {
-	vk::Result result;
 	auto device = mDevices[id];
 	CVolume9* volume9 = bit_cast<CVolume9*>(argument1);
 	std::shared_ptr<RealSurface> ptr = std::make_shared<RealSurface>(device.get(), volume9);

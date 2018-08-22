@@ -1132,14 +1132,22 @@ The swizzle values for sources are different from the write mask on a result whi
 */
 uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 {
-	uint32_t originalId = GetIdByRegister(token);
-	TypeDescription originalType = GetTypeByRegister(token);
-	uint32_t loadedId = 0;
+	uint32_t originalId = 0;	
 	uint32_t outputComponentCount = 4;
-	TypeDescription loadedType;
 
-	if (lookingFor == GIVE_ME_MATRIX_4X4)
+	if (lookingFor == GIVE_ME_SAMPLER)
 	{
+		originalId = GetIdByRegister(token, D3DSPR_SAMPLER);
+	}
+	else if (lookingFor == GIVE_ME_VECTOR_2)
+	{
+		originalId = GetIdByRegister(token, D3DSPR_TEXTURE, D3DDECLUSAGE_TEXCOORD);
+		outputComponentCount = 2;
+	}	
+	else if (lookingFor == GIVE_ME_MATRIX_4X4)
+	{
+		originalId = GetIdByRegister(token);
+
 		uint32_t matrixId = mVector4Matrix4X4Pairs[originalId];
 		if (matrixId)
 		{
@@ -1148,6 +1156,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	}
 	else if (lookingFor == GIVE_ME_MATRIX_3X3)
 	{
+		originalId = GetIdByRegister(token);
+
 		uint32_t matrixId = mVector3Matrix3X3Pairs[originalId];
 		if (matrixId)
 		{
@@ -1156,12 +1166,23 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	}
 	else if (lookingFor == GIVE_ME_VECTOR_3)
 	{
+		originalId = GetIdByRegister(token);
+
 		TypeDescription vectorType = mIdTypePairs[originalId - 1];
 		if (vectorType.ComponentCount == 3)
 		{
 			originalId--;
 		}
+		outputComponentCount = 3;
 	}
+	else
+	{
+		originalId = GetIdByRegister(token);
+	}
+
+	TypeDescription originalType = mIdTypePairs[originalId]; //GetTypeByRegister(token);
+	uint32_t loadedId = 0;
+	TypeDescription loadedType;
 
 	if (originalType.PrimaryType == spv::OpTypePointer)
 	{
@@ -1184,8 +1205,14 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 
 	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
 
-	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0)
+	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0 || lookingFor == GIVE_ME_SAMPLER)
 	{
+		return loadedId; //No swizzle no op.
+	}
+
+	if (lookingFor == GIVE_ME_MATRIX_4X4 || lookingFor == GIVE_ME_MATRIX_3X3)
+	{
+		//TODO: figure out what to do if we need a 3x3 but have a 4x4 or the other way around.
 		return loadedId; //No swizzle no op.
 	}
 
@@ -1194,6 +1221,13 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	uint32_t zSource = swizzle & D3DVS_Z_W;
 	uint32_t wSource = swizzle & D3DVS_W_W;
 	uint32_t outputId = GetNextId();
+
+	//For some reason the mask comes through as WW for text even though it needs to be XY.
+	if (lookingFor == GIVE_ME_VECTOR_2 && mMajorVersion == 1)
+	{
+		xSource = D3DVS_X_X;
+		ySource = D3DVS_Y_Y;
+	}
 
 	//OpVectorShuffle must return a vector and vectors must have at least 2 elements so OpCompositeExtract must be used for a single component swizzle operation.
 	if
@@ -5276,179 +5310,233 @@ void ShaderConverter::Process_DP4()
 
 void ShaderConverter::Process_TEX()
 {
-	//spv::Op dataType = spv::OpNop;
-	uint32_t dataTypeId = 0;
-	uint32_t texcoordDataTypeId = 0;
-	uint32_t argumentId1 = 0;
-	uint32_t argumentId2 = 0;
-	uint32_t argumentId1_temp = 0;
-	uint32_t argumentId2_temp = 0;
-	uint32_t resultTypeId = 0;
-	std::string registerName;
-	uint32_t stringWordSize = 0;
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
 
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
 	uint32_t resultId = GetNextId();
 
-	Token argumentToken1;
-	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
+	Token argumentToken1 = (mMajorVersion > 1 || mMinorVersion >= 4) ? GetNextToken() : resultToken;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_SAMPLER);
 
-	Token argumentToken2;
-	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2;
+	Token argumentToken2 = (mMajorVersion > 1) ? GetNextToken() : argumentToken1;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_2);
 
-	TypeDescription dataType;
-	dataType.PrimaryType = spv::OpTypeVector;
-	dataType.SecondaryType = spv::OpTypeFloat;
-	dataType.ComponentCount = 4;
-	mIdTypePairs[mNextId] = dataType; //snag next id before increment.
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	resultTypeId = GetSpirVTypeId(spv::OpTypeImage);
-
-	dataTypeId = GetSpirVTypeId(dataType);
-
-	TypeDescription texcoordDataType;
-	texcoordDataType.PrimaryType = spv::OpTypeVector;
-	texcoordDataType.SecondaryType = spv::OpTypeFloat;
-	texcoordDataType.ComponentCount = 2;
-	texcoordDataTypeId = GetSpirVTypeId(texcoordDataType);
-
-	if (mMajorVersion > 1)
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
 	{
-		argumentToken1 = GetNextToken();
-		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-		argumentId1 = GetNextId();
-
-		argumentToken2 = GetNextToken();
-		argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-		argumentId2 = GetNextId();
-
-		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE, D3DDECLUSAGE_TEXCOORD);
-		argumentId1_temp = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
-
-		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
-		{
-			mIdTypePairs[argumentId1] = dataType;
-			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
-		}
-		else
-		{
-			argumentId1 = argumentId1_temp;
-		}
-
-		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
-		{
-			mIdTypePairs[argumentId2] = dataType;
-			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
-		}
-		else
-		{
-			argumentId2 = argumentId2_temp;
-		}
-	}
-	else if (mMajorVersion == 1 && mMinorVersion >= 4)
-	{
-		argumentToken1 = GetNextToken();
-		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-		argumentId1 = GetNextId();
-
-		argumentToken2 = argumentToken1;
-		argumentRegisterType2 = argumentRegisterType1;
-		argumentId2 = GetNextId();
-
-		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE, D3DDECLUSAGE_TEXCOORD);
-		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
-
-		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
-		{
-			mIdTypePairs[argumentId1] = dataType;
-			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
-		}
-		else
-		{
-			argumentId1 = argumentId1_temp;
-		}
-
-		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
-		{
-			mIdTypePairs[argumentId2] = dataType;
-			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
-		}
-		else
-		{
-			argumentId2 = argumentId2_temp;
-		}
-	}
-	else
-	{
-		argumentToken1 = resultToken;
-		argumentRegisterType1 = GetRegisterType(resultToken.i);
-		argumentId1 = GetNextId();
-
-		argumentToken2 = argumentToken1;
-		argumentRegisterType2 = argumentRegisterType1;
-		argumentId2 = GetNextId();
-
-		argumentId2_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
-		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
-
-		/*
-		Before PS 1.4 this is a single result register which means the image will always be a binding and the texcoord will always an input.
-		That means we'll always need to load before doing a OpImageFetch on ps 1.0 through 1.3.
-		*/
-
-		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
-		{
-			mIdTypePairs[argumentId1] = dataType;
-			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
-		}
-		else
-		{
-			argumentId1 = argumentId1_temp;
-		}
-
-		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
-		{
-			mIdTypePairs[argumentId2] = dataType;
-			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
-		}
-		else
-		{
-			argumentId2 = argumentId2_temp;
-		}
+		typeDescription = mIdTypePairs[argumentId2];
 	}
 
+	spv::Op dataType = typeDescription.PrimaryType;
 
-
-	//I don't know what swizzle will be done but it will likely be a vec4 output so I need to use a shuffle to get a vec2.
-	argumentId2_temp = argumentId2;
-	argumentId2 = GetNextId();
-	Push(spv::OpVectorShuffle, texcoordDataTypeId, argumentId2, argumentId2_temp, argumentId2_temp, 0, 1);
-	mIdTypePairs[argumentId2] = texcoordDataType;
-
-	registerName = mNameIdPairs[argumentId2_temp];
-	if (registerName.size())
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
 	{
-		//registerName += ".r";
-		PushName(argumentId2, registerName);
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
 	}
 
-	//Sample image
-	Push(spv::OpImageSampleImplicitLod, dataTypeId, resultId, argumentId1, argumentId2);
-	mIdTypePairs[resultId] = dataType;
-
-	if (mMajorVersion == 1)
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
-		//registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
-		//PushName(tokenId, registerName);
-
-		mTextures[resultToken.DestinationParameterToken.RegisterNumber] = resultId;
+		dataType = typeDescription.SecondaryType;
 	}
+
+	//TEX output is vec4 even though input is a vec2 and sampler.
+
+	Push(spv::OpImageSampleImplicitLod, vectorTypeId, resultId, argumentId1, argumentId2);
+
+	mIdTypePairs[resultId] = vectorType;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("TEX", resultToken, argumentToken1, argumentToken2);
 }
+
+//void ShaderConverter::Process_TEX()
+//{
+//	//spv::Op dataType = spv::OpNop;
+//	uint32_t dataTypeId = 0;
+//	uint32_t texcoordDataTypeId = 0;
+//	uint32_t argumentId1 = 0;
+//	uint32_t argumentId2 = 0;
+//	uint32_t argumentId1_temp = 0;
+//	uint32_t argumentId2_temp = 0;
+//	uint32_t resultTypeId = 0;
+//	std::string registerName;
+//	uint32_t stringWordSize = 0;
+//
+//	Token resultToken = GetNextToken();
+//	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+//	uint32_t resultId = GetNextId();
+//
+//	Token argumentToken1;
+//	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
+//
+//	Token argumentToken2;
+//	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2;
+//
+//	TypeDescription dataType;
+//	dataType.PrimaryType = spv::OpTypeVector;
+//	dataType.SecondaryType = spv::OpTypeFloat;
+//	dataType.ComponentCount = 4;
+//	mIdTypePairs[mNextId] = dataType; //snag next id before increment.
+//
+//	resultTypeId = GetSpirVTypeId(spv::OpTypeImage);
+//
+//	dataTypeId = GetSpirVTypeId(dataType);
+//
+//	TypeDescription texcoordDataType;
+//	texcoordDataType.PrimaryType = spv::OpTypeVector;
+//	texcoordDataType.SecondaryType = spv::OpTypeFloat;
+//	texcoordDataType.ComponentCount = 2;
+//	texcoordDataTypeId = GetSpirVTypeId(texcoordDataType);
+//
+//	if (mMajorVersion > 1)
+//	{
+//		argumentToken1 = GetNextToken();
+//		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+//		argumentId1 = GetNextId();
+//
+//		argumentToken2 = GetNextToken();
+//		argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+//		argumentId2 = GetNextId();
+//
+//		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE, D3DDECLUSAGE_TEXCOORD);
+//		argumentId1_temp = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
+//
+//		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
+//		{
+//			mIdTypePairs[argumentId1] = dataType;
+//			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
+//		}
+//		else
+//		{
+//			argumentId1 = argumentId1_temp;
+//		}
+//
+//		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
+//		{
+//			mIdTypePairs[argumentId2] = dataType;
+//			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
+//		}
+//		else
+//		{
+//			argumentId2 = argumentId2_temp;
+//		}
+//	}
+//	else if (mMajorVersion == 1 && mMinorVersion >= 4)
+//	{
+//		argumentToken1 = GetNextToken();
+//		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+//		argumentId1 = GetNextId();
+//
+//		argumentToken2 = argumentToken1;
+//		argumentRegisterType2 = argumentRegisterType1;
+//		argumentId2 = GetNextId();
+//
+//		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE, D3DDECLUSAGE_TEXCOORD);
+//		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
+//
+//		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
+//		{
+//			mIdTypePairs[argumentId1] = dataType;
+//			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
+//		}
+//		else
+//		{
+//			argumentId1 = argumentId1_temp;
+//		}
+//
+//		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
+//		{
+//			mIdTypePairs[argumentId2] = dataType;
+//			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
+//		}
+//		else
+//		{
+//			argumentId2 = argumentId2_temp;
+//		}
+//	}
+//	else
+//	{
+//		argumentToken1 = resultToken;
+//		argumentRegisterType1 = GetRegisterType(resultToken.i);
+//		argumentId1 = GetNextId();
+//
+//		argumentToken2 = argumentToken1;
+//		argumentRegisterType2 = argumentRegisterType1;
+//		argumentId2 = GetNextId();
+//
+//		argumentId2_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
+//		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
+//
+//		/*
+//		Before PS 1.4 this is a single result register which means the image will always be a binding and the texcoord will always an input.
+//		That means we'll always need to load before doing a OpImageFetch on ps 1.0 through 1.3.
+//		*/
+//
+//		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
+//		{
+//			mIdTypePairs[argumentId1] = dataType;
+//			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
+//		}
+//		else
+//		{
+//			argumentId1 = argumentId1_temp;
+//		}
+//
+//		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
+//		{
+//			mIdTypePairs[argumentId2] = dataType;
+//			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
+//		}
+//		else
+//		{
+//			argumentId2 = argumentId2_temp;
+//		}
+//	}
+//
+//
+//
+//	//I don't know what swizzle will be done but it will likely be a vec4 output so I need to use a shuffle to get a vec2.
+//	argumentId2_temp = argumentId2;
+//	argumentId2 = GetNextId();
+//	Push(spv::OpVectorShuffle, texcoordDataTypeId, argumentId2, argumentId2_temp, argumentId2_temp, 0, 1);
+//	mIdTypePairs[argumentId2] = texcoordDataType;
+//
+//	registerName = mNameIdPairs[argumentId2_temp];
+//	if (registerName.size())
+//	{
+//		//registerName += ".r";
+//		PushName(argumentId2, registerName);
+//	}
+//
+//	//Sample image
+//	Push(spv::OpImageSampleImplicitLod, dataTypeId, resultId, argumentId1, argumentId2);
+//	mIdTypePairs[resultId] = dataType;
+//
+//	if (mMajorVersion == 1)
+//	{
+//		//registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
+//		//PushName(tokenId, registerName);
+//
+//		mTextures[resultToken.DestinationParameterToken.RegisterNumber] = resultId;
+//	}
+//
+//	resultId = ApplyWriteMask(resultToken, resultId);
+//
+//	PrintTokenInformation("TEX", resultToken, argumentToken1, argumentToken2);
+//}
 
 void ShaderConverter::Process_TEXCOORD()
 {
