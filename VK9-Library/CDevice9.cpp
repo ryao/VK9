@@ -43,6 +43,8 @@ misrepresented as being the original software.
 
 #include "Utilities.h"
 
+#include <wingdi.h> //used for gamma ramp
+
 CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters)
 	:
 	mInstance(Instance),
@@ -866,12 +868,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetFVF(DWORD *pFVF)
 
 void STDMETHODCALLTYPE CDevice9::GetGammaRamp(UINT  iSwapChain, D3DGAMMARAMP *pRamp)
 {
-	//TODO: Implement.
-	(*pRamp) = {};
+	auto& swapChain = mSwapChains[iSwapChain];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::GetGammaRamp is not implemented!";
+	HDC windowHdc = GetDC(swapChain->mPresentationParameters->hDeviceWindow);
 
-	return;
+	if (!GetDeviceGammaRamp(windowHdc, (LPVOID)pRamp))
+	{
+		(*pRamp) = {};
+	}
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexData) //,UINT *pBaseVertexIndex ?
@@ -1351,9 +1355,16 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetFVF(DWORD FVF)
 
 void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain, DWORD Flags, const D3DGAMMARAMP *pRamp)
 {
-	//TODO: Implement.
+	auto& swapChain = mSwapChains[iSwapChain];
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetGammaRamp is not implemented!";
+	HDC windowHdc = GetDC(swapChain->mPresentationParameters->hDeviceWindow);
+	SetDeviceGammaRamp(windowHdc, (LPVOID)pRamp);
+
+	if (Flags != D3DSGR_NO_CALIBRATION)
+	{
+		//TODO: Implement.
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetGammaRamp D3DSGR_CALIBRATE is not implemented!";
+	}	
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9* pIndexData)
@@ -1683,9 +1694,12 @@ HRESULT STDMETHODCALLTYPE CDevice9::StretchRect(IDirect3DSurface9 *pSourceSurfac
 
 HRESULT STDMETHODCALLTYPE CDevice9::TestCooperativeLevel()
 {
-	//TODO: Implement.
-
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::TestCooperativeLevel is not implemented!";
+	//https://docs.microsoft.com/en-us/windows/desktop/api/d3d9helper/nf-d3d9helper-idirect3ddevice9-testcooperativelevel
+	
+	/*
+	For vulkan the device lost would be more like render target lost and I can't tell which render target we care about until present.
+	Present is also supposed to return an error if the present target is in error so I'm going to consider this function implemented.
+	*/
 
 	return S_OK;
 }
