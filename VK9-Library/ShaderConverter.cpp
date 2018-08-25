@@ -477,6 +477,50 @@ boost::log::BOOST_LOG_VERSION_NAMESPACE::basic_record_ostream<char>& operator<< 
 	return os << static_cast<std::uint32_t>(code);
 }
 
+boost::log::BOOST_LOG_VERSION_NAMESPACE::basic_record_ostream<char>& operator<< (boost::log::BOOST_LOG_VERSION_NAMESPACE::basic_record_ostream<char>& os, TypeDescription& typeDescription)
+{
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		switch (typeDescription.SecondaryType)
+		{
+		case spv::OpTypeVector:
+			return os << "*vec" << typeDescription.ComponentCount;
+		case spv::OpTypeMatrix:
+			return os << "*mat" << typeDescription.ComponentCount;
+		case spv::OpTypeFloat:
+			return os << "*float";
+		case spv::OpTypeInt:
+			return os << "*int";
+		case spv::OpTypeBool:
+			return os << "*bool";
+		case spv::OpTypeImage:
+			return os << "*image";
+		default:
+			return os << "*void";
+		}
+	}
+	else
+	{
+		switch (typeDescription.PrimaryType)
+		{
+		case spv::OpTypeVector:
+			return os << "vec" << typeDescription.ComponentCount;
+		case spv::OpTypeMatrix:
+			return os << "mat" << typeDescription.ComponentCount;
+		case spv::OpTypeFloat:
+			return os << "float";
+		case spv::OpTypeInt:
+			return os << "int";
+		case spv::OpTypeBool:
+			return os << "bool";
+		case spv::OpTypeImage:
+			return os << "image";
+		default:
+			return os << "void";
+		}
+	}
+}
+
 /*
 Generator's magic number. It is associated with the tool that generated
 the module. Its value does not affect any semantics, and is allowed to be 0.
@@ -1194,8 +1238,8 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		uint32_t loadedTypeId = GetSpirVTypeId(loadedType);
 
 		loadedId = GetNextId();
-		PushLoad(loadedTypeId, loadedId, originalId);
 		mIdTypePairs[loadedId] = loadedType;
+		PushLoad(loadedTypeId, loadedId, originalId);	
 	}
 	else
 	{
@@ -1421,328 +1465,6 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 			}
 
 			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << loadedId << ", " << loadedId;
-
-			switch (xSource)
-			{
-			case D3DVS_X_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_X_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_X_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_X_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (ySource)
-			{
-			case D3DVS_Y_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Y_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Y_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Y_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (zSource)
-			{
-			case D3DVS_Z_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Z_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Z_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Z_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (wSource)
-			{
-			case D3DVS_W_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_W_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_W_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_W_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			break;
-		default:
-			BOOST_LOG_TRIVIAL(warning) << "GetSwizzledId - Unsupported component count  " << outputComponentCount;
-			break;
-		}
-
-	}
-
-	return outputId;
-}
-
-/*
-This function assumes a source register.
-As such it can write out the conversion instructions and then return the new Id for the caller to use instead of the original source register.
-*/
-uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t inputId, _D3DSHADER_PARAM_REGISTER_TYPE type, _D3DDECLUSAGE usage)
-{
-	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
-	uint32_t outputComponentCount = 4; //TODO: figure out how to determine this.
-	uint32_t vectorTypeId = 0;
-	uint32_t registerNumber = 0;
-	TypeDescription typeDescription;
-	D3DSHADER_PARAM_REGISTER_TYPE registerType;
-	uint32_t dataTypeId;
-	std::string registerName;
-
-	registerType = GetRegisterType(token.i);
-	typeDescription = GetTypeByRegister(token, usage);
-
-	if (inputId == UINT_MAX)
-	{
-		inputId = GetIdByRegister(token, type, usage);
-
-		typeDescription = mIdTypePairs[inputId]; //double check type description.
-
-		if (typeDescription.PrimaryType == spv::OpTypePointer && (mMajorVersion > 1 || registerType != D3DSPR_TEXTURE || mIsVertexShader))
-		{
-			//Shift the result type so we get a register instead of a pointer as the output type.
-			typeDescription.PrimaryType = typeDescription.SecondaryType;
-			typeDescription.SecondaryType = typeDescription.TernaryType;
-			typeDescription.TernaryType = spv::OpTypeVoid;
-			dataTypeId = GetSpirVTypeId(typeDescription);
-
-			//deference pointer into a register.
-			inputId = GetNextId();
-			uint32_t tokenId = GetIdByRegister(token);
-			PushLoad(dataTypeId, inputId, tokenId);
-			mIdTypePairs[inputId] = typeDescription;
-
-			//inputId = GetSwizzledId(token, inputId);
-
-		}
-	}
-
-	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0)
-	{
-		return inputId; //No swizzle no op.
-	}
-
-	uint32_t xSource = swizzle & D3DVS_X_W;
-	uint32_t ySource = swizzle & D3DVS_Y_W;
-	uint32_t zSource = swizzle & D3DVS_Z_W;
-	uint32_t wSource = swizzle & D3DVS_W_W;
-	uint32_t outputId = GetNextId();
-
-	//OpVectorShuffle must return a vector and vectors must have at least 2 elements so OpCompositeExtract must be used for a single component swizzle operation.
-	if
-		(
-		((xSource >> D3DVS_SWIZZLE_SHIFT) == (ySource >> (D3DVS_SWIZZLE_SHIFT + 2))) &&
-			((xSource >> D3DVS_SWIZZLE_SHIFT) == (zSource >> (D3DVS_SWIZZLE_SHIFT + 4))) &&
-			((xSource >> D3DVS_SWIZZLE_SHIFT) == (wSource >> (D3DVS_SWIZZLE_SHIFT + 6)))
-			)
-	{
-		TypeDescription outputType = mIdTypePairs[inputId];
-		outputType.PrimaryType = outputType.SecondaryType;
-		outputType.SecondaryType = outputType.TernaryType;
-		outputType.TernaryType = spv::OpTypeVoid;
-		outputType.ComponentCount = 0;
-
-		if (typeDescription.PrimaryType != spv::OpTypeVoid)
-		{
-			uint32_t outputTypeId = GetSpirVTypeId(outputType);
-
-			switch (xSource)
-			{
-			case D3DVS_X_X:
-				PushCompositeExtract(outputTypeId, outputId, inputId, 0);
-				mIdTypePairs[outputId] = outputType;
-				break;
-			case D3DVS_X_Y:
-				PushCompositeExtract(outputTypeId, outputId, inputId, 1);
-				mIdTypePairs[outputId] = outputType;
-				break;
-			case D3DVS_X_Z:
-				PushCompositeExtract(outputTypeId, outputId, inputId, 2);
-				mIdTypePairs[outputId] = outputType;
-				break;
-			case D3DVS_X_W:
-				PushCompositeExtract(outputTypeId, outputId, inputId, 3);
-				mIdTypePairs[outputId] = outputType;
-				break;
-			}
-		}
-		else
-		{
-			outputId = inputId;
-		}
-	}
-	else //vector
-	{
-		std::string registerName;
-
-		TypeDescription vectorType;
-		vectorType.PrimaryType = spv::OpTypeVector;
-		vectorType.SecondaryType = spv::OpTypeFloat;
-		vectorType.ComponentCount = outputComponentCount;
-		vectorType.StorageClass = spv::StorageClassInput;
-
-		vectorTypeId = GetSpirVTypeId(vectorType); //Revisit may not be a float
-
-		switch (outputComponentCount)
-		{ //1 should be covered by the other branch.
-		case 2:
-			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
-			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
-
-			mIdTypePairs[outputId] = vectorType;
-
-			registerName = mNameIdPairs[inputId];
-			if (registerName.size())
-			{
-				//registerName += ".r";
-				PushName(outputId, registerName);
-			}
-
-			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
-
-			switch (xSource)
-			{
-			case D3DVS_X_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_X_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_X_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_X_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (ySource)
-			{
-			case D3DVS_Y_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Y_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Y_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Y_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			break;
-		case 3:
-			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
-			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
-
-			mIdTypePairs[outputId] = vectorType;
-
-			registerName = mNameIdPairs[inputId];
-			if (registerName.size())
-			{
-				//registerName += ".r";
-				PushName(outputId, registerName);
-			}
-
-			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
-
-			switch (xSource)
-			{
-			case D3DVS_X_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_X_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_X_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_X_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (ySource)
-			{
-			case D3DVS_Y_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Y_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Y_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Y_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (zSource)
-			{
-			case D3DVS_Z_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Z_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Z_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Z_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			break;
-		case 4:
-			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-			mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
-			mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
-
-			mIdTypePairs[outputId] = vectorType;
-
-			registerName = mNameIdPairs[inputId];
-			if (registerName.size())
-			{
-				//registerName += ".r";
-				PushName(outputId, registerName);
-			}
-
-			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << inputId << ", " << inputId;
 
 			switch (xSource)
 			{
@@ -2053,8 +1775,8 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 				mIdTypePairs[rId] = intType;
 				PushCompositeExtract(intTypeId, rId, inputId, 0);
 
-				Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);
 				mIdTypePairs[r2Id] = floatType;
+				Push(spv::OpConvertUToF, floatTypeId, r2Id, rId);			
 			}
 			else
 			{
@@ -2084,13 +1806,13 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 				mIdTypePairs[gId] = intType;
 				PushCompositeExtract(intTypeId, gId, inputId, 1);
 
-				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);
 				mIdTypePairs[g2Id] = floatType;
+				Push(spv::OpConvertUToF, floatTypeId, g2Id, gId);			
 			}
 			else
 			{
-				PushCompositeExtract(floatTypeId, g2Id, inputId, 1);
 				mIdTypePairs[g2Id] = floatType;
+				PushCompositeExtract(floatTypeId, g2Id, inputId, 1);		
 			}
 
 			uint32_t gDividedId = GetNextId();
@@ -2115,13 +1837,13 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 				mIdTypePairs[bId] = intType;
 				PushCompositeExtract(intTypeId, bId, inputId, 2);
 
-				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);
 				mIdTypePairs[b2Id] = floatType;
+				Push(spv::OpConvertUToF, floatTypeId, b2Id, bId);			
 			}
 			else
 			{
-				PushCompositeExtract(floatTypeId, b2Id, inputId, 2);
 				mIdTypePairs[b2Id] = floatType;
+				PushCompositeExtract(floatTypeId, b2Id, inputId, 2);
 			}
 
 			uint32_t bDividedId = GetNextId();
@@ -2146,13 +1868,13 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 				mIdTypePairs[aId] = intType;
 				PushCompositeExtract(intTypeId, aId, inputId, 3);
 
-				Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
 				mIdTypePairs[a2Id] = floatType;
+				Push(spv::OpConvertUToF, floatTypeId, a2Id, aId);
 			}
 			else
 			{
-				PushCompositeExtract(floatTypeId, a2Id, inputId, 3);
 				mIdTypePairs[a2Id] = floatType;
+				PushCompositeExtract(floatTypeId, a2Id, inputId, 3);
 			}
 
 			uint32_t aDividedId = GetNextId();
@@ -2176,8 +1898,8 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 		if (inputType.PrimaryType == spv::OpTypeInt)
 		{
 			r2Id = GetNextId();
-			Push(spv::OpConvertUToF, floatTypeId, r2Id, inputId);
 			mIdTypePairs[r2Id] = floatType;
+			Push(spv::OpConvertUToF, floatTypeId, r2Id, inputId);	
 		}
 		else
 		{
@@ -2312,7 +2034,7 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		}
 		else
 		{
-			if ((token.i & D3DSP_WRITEMASK_ALL) == D3DSP_WRITEMASK_ALL)
+			if (((token.i & D3DSP_WRITEMASK_ALL) == D3DSP_WRITEMASK_ALL) && (originalType.ComponentCount == modifiedType.ComponentCount))
 			{
 				PushStore(outputId, inputId);
 			}
@@ -2596,44 +2318,44 @@ void ShaderConverter::GenerateConstantIndices()
 	std::string registerName;
 	uint32_t stringWordSize = 0;
 
-	uint32_t intTypeId = GetSpirVTypeId(spv::OpTypeInt);
+	TypeDescription intType;
+	intType.PrimaryType = spv::OpTypeInt;
+
+	uint32_t intTypeId = GetSpirVTypeId(intType);
 
 	m0Id = GetNextId();
-	m1Id = GetNextId();
-	m2Id = GetNextId();
-	m3Id = GetNextId();
-
+	mIdTypePairs[m0Id] = intType;
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(m0Id); //Result (Id)
 	mTypeInstructions.push_back(0); //Literal Value
-
 	registerName = "int_0";
 	PushName(m0Id, registerName);
 
+	m1Id = GetNextId();
+	mIdTypePairs[m1Id] = intType;
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(m1Id); //Result (Id)
 	mTypeInstructions.push_back(1); //Literal Value
-
 	registerName = "int_1";
 	PushName(m1Id, registerName);
 
-
+	m2Id = GetNextId();
+	mIdTypePairs[m2Id] = intType;
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(m2Id); //Result (Id)
 	mTypeInstructions.push_back(2); //Literal Value
-
 	registerName = "int_2";
 	PushName(m2Id, registerName);
 
-
+	m3Id = GetNextId();
+	mIdTypePairs[m3Id] = intType;
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(intTypeId); //Result Type (Id)
 	mTypeInstructions.push_back(m3Id); //Result (Id)
 	mTypeInstructions.push_back(3); //Literal Value
-
 	registerName = "int_3";
 	PushName(m3Id, registerName);
 }
@@ -2853,19 +2575,27 @@ void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t input
 }
 
 void ShaderConverter::Generate255Constants()
-{
-	uint32_t compositeTypeId = 0;
-	uint32_t typeId = 0;
-	uint32_t compositeId = GetNextId();
+{	
 	uint32_t id = GetNextId();
+	TypeDescription type;
+	type.PrimaryType = spv::OpTypeFloat;
+	uint32_t typeId = GetSpirVTypeId(type);
 
-	compositeTypeId = GetSpirVTypeId(spv::OpTypeVector, spv::OpTypeFloat, 4);
-	typeId = GetSpirVTypeId(spv::OpTypeFloat);
+	mIdTypePairs[id] = type;
 
 	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
 	mTypeInstructions.push_back(typeId); //Result Type (Id)
 	mTypeInstructions.push_back(id); //Result (Id)
 	mTypeInstructions.push_back(bit_cast(255.0f)); //Literal Value
+
+	uint32_t compositeId = GetNextId();
+	TypeDescription compositeType;
+	compositeType.PrimaryType = spv::OpTypeVector;
+	compositeType.SecondaryType = spv::OpTypeFloat;
+	compositeType.ComponentCount = 4;
+	uint32_t compositeTypeId = GetSpirVTypeId(compositeType);
+
+	mIdTypePairs[compositeId] = compositeType;
 
 	mTypeInstructions.push_back(Pack(3 + 4, spv::OpConstantComposite)); //size,Type
 	mTypeInstructions.push_back(compositeTypeId); //Result Type (Id)
@@ -3062,7 +2792,7 @@ void ShaderConverter::GenerateConstantBlock()
 		uint32_t matrix4Id = GetNextId();
 		uint32_t id = matrix4Id;
 
-		mVector3Matrix3X3Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]-1] = matrix3Id; //vec3 is one id below vec4
+		mVector3Matrix3X3Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = matrix3Id;
 		mVector4Matrix4X4Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = matrix4Id;
 
 		//mat3
@@ -3393,7 +3123,11 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1)
 	mFunctionDefinitionInstructions.push_back(Pack(2, code)); //size,Type
 	mFunctionDefinitionInstructions.push_back(argument1);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")";
+#endif
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2)
@@ -3402,7 +3136,12 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2)
 	mFunctionDefinitionInstructions.push_back(argument1);
 	mFunctionDefinitionInstructions.push_back(argument2);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")";
+#endif	
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3)
@@ -3412,7 +3151,13 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument2);
 	mFunctionDefinitionInstructions.push_back(argument3);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")";
+#endif	
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4)
@@ -3423,7 +3168,14 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument3);
 	mFunctionDefinitionInstructions.push_back(argument4);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")";
+#endif
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5)
@@ -3435,7 +3187,15 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument4);
 	mFunctionDefinitionInstructions.push_back(argument5);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")";
+#endif
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, GLSLstd450 argument4, uint32_t argument5)
@@ -3447,7 +3207,15 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument4);
 	mFunctionDefinitionInstructions.push_back(argument5);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")";
+#endif
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6)
@@ -3460,7 +3228,16 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument5);
 	mFunctionDefinitionInstructions.push_back(argument6);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5 << ", " << argument6;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+	auto& argumentType6 = mIdTypePairs[argument6];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")";
+#endif
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, GLSLstd450 argument4, uint32_t argument5, uint32_t argument6)
@@ -3473,7 +3250,16 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument5);
 	mFunctionDefinitionInstructions.push_back(argument6);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5 << ", " << argument6;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+	auto& argumentType6 = mIdTypePairs[argument6];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")";
+#endif
 }
 
 void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7)
@@ -3487,7 +3273,17 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument6);
 	mFunctionDefinitionInstructions.push_back(argument7);
 
-	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << ", " << argument2 << ", " << argument3 << ", " << argument4 << ", " << argument5 << ", " << argument6 << ", " << argument7;
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+	auto& argumentType6 = mIdTypePairs[argument6];
+	auto& argumentType7 = mIdTypePairs[argument7];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")" << ", " << argument7 << "(" << argumentType7 << ")";
+#endif
 }
 
 void ShaderConverter::Process_DCL_Pixel()
@@ -3972,6 +3768,7 @@ void ShaderConverter::Process_IFC()
 	argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4); //, UINT_MAX, D3DSPR_INPUT
 	resultId = GetNextId();
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -3984,7 +3781,6 @@ void ShaderConverter::Process_IFC()
 		BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
 		break;
 	}
-	mIdTypePairs[resultId] = typeDescription;
 
 	TypeDescription labelType;
 	labelType.PrimaryType = spv::OpLabel;
@@ -4051,6 +3847,7 @@ void ShaderConverter::Process_IF()
 	mFalseLabels.push(falseLabelId);
 	mFalseLabelCount++;
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4126,6 +3923,7 @@ void ShaderConverter::Process_NRM()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4142,8 +3940,6 @@ void ShaderConverter::Process_NRM()
 		break;
 	}
 
-	mIdTypePairs[resultId] = typeDescription;
-
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("NRM", resultToken, argumentToken1);
@@ -4151,51 +3947,41 @@ void ShaderConverter::Process_NRM()
 
 void ShaderConverter::Process_MOV()
 {
-	TypeDescription typeDescription;
-	//spv::Op dataType;
-	uint32_t dataTypeId;
-	uint32_t resultId;
-	uint32_t argumentId1;
-	//uint32_t argumentId2;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
-	//resultId = GetNextVersionId(resultToken);	
-	resultId = GetIdByRegister(resultToken);
-	typeDescription = GetTypeByRegister(resultToken);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	if (resultId == mColor1Id || resultId == mColor2Id)
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
 	{
-		argumentId1 = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_FORCE_DWORD, D3DDECLUSAGE_COLOR);
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
 	}
-	else
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
-		argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+		dataType = typeDescription.SecondaryType;
 	}
 
-	//mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
-	resultId = ApplyWriteMask(resultToken, argumentId1);
+	//Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
 
-	switch (resultRegisterType)
-	{
-	case D3DSPR_RASTOUT:
-	case D3DSPR_ATTROUT:
-	case D3DSPR_COLOROUT:
-	case D3DSPR_DEPTHOUT:
-	case D3DSPR_OUTPUT:
-		//Handled by ApplyWriteMask
-		break;
-	default:
-		dataTypeId = GetSpirVTypeId(typeDescription);
-		//resultId = GetNextId();
-		//Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
-		break;
-	}
+	resultId = argumentId1;
+
+	mIdTypePairs[resultId] = typeDescription;
+
+	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("MOV", resultToken, resultId, argumentToken1, argumentId1);
 }
@@ -4286,6 +4072,7 @@ void ShaderConverter::Process_RSQ()
 
 	Result Type and the type of x must be the same type. Results are computed per component.
 	*/
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
@@ -4295,8 +4082,6 @@ void ShaderConverter::Process_RSQ()
 		BOOST_LOG_TRIVIAL(warning) << "Process_RSQ - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4343,6 +4128,7 @@ void ShaderConverter::Process_DST()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4358,8 +4144,6 @@ void ShaderConverter::Process_DST()
 		BOOST_LOG_TRIVIAL(warning) << "Process_DST - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4405,6 +4189,7 @@ void ShaderConverter::Process_CRS()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4420,8 +4205,6 @@ void ShaderConverter::Process_CRS()
 		BOOST_LOG_TRIVIAL(warning) << "Process_CRS - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4467,6 +4250,7 @@ void ShaderConverter::Process_POW()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4482,8 +4266,6 @@ void ShaderConverter::Process_POW()
 		BOOST_LOG_TRIVIAL(warning) << "Process_POW - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4531,6 +4313,7 @@ void ShaderConverter::Process_MUL()
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpFMul, dataTypeId, resultId, argumentId1, argumentId2);
 	}
 	else if (argumentType1.PrimaryType == spv::OpTypeVector && argumentType2.PrimaryType == spv::OpTypeVector
@@ -4538,48 +4321,53 @@ void ShaderConverter::Process_MUL()
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpFMul, dataTypeId, resultId, argumentId1, argumentId2);
 	}
 	else if (argumentType1.PrimaryType == spv::OpTypeMatrix && argumentType2.PrimaryType == spv::OpTypeMatrix)
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpMatrixTimesMatrix, dataTypeId, resultId, argumentId1, argumentId2);
 	}
 	else if (argumentType1.PrimaryType == spv::OpTypeVector && argumentType2.PrimaryType == spv::OpTypeFloat)
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpVectorTimesScalar, dataTypeId, resultId, argumentId1, argumentId2);
 	}
 	else if (argumentType1.PrimaryType == spv::OpTypeMatrix && argumentType2.PrimaryType == spv::OpTypeFloat)
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpMatrixTimesScalar, dataTypeId, resultId, argumentId1, argumentId2);
 	}
 	else if (argumentType1.PrimaryType == spv::OpTypeInt && argumentType2.PrimaryType == spv::OpTypeInt)
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpIMul, dataTypeId, resultId, argumentId1, argumentId2);
 	}
 	else if (argumentType1.PrimaryType == spv::OpTypeBool && argumentType2.PrimaryType == spv::OpTypeBool)
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpIMul, dataTypeId, resultId, argumentId1, argumentId2);
 	}
 	else
 	{
 		typeDescription = argumentType1;
 		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpFMul, dataTypeId, resultId, argumentId1, argumentId2);
 
 		BOOST_LOG_TRIVIAL(warning) << "Process_MUL - Unsupported data types " << argumentType1.PrimaryType << " " << argumentType2.PrimaryType;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4625,6 +4413,7 @@ void ShaderConverter::Process_EXP()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4640,8 +4429,6 @@ void ShaderConverter::Process_EXP()
 		BOOST_LOG_TRIVIAL(warning) << "Process_EXP - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4687,6 +4474,7 @@ void ShaderConverter::Process_EXPP()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4702,8 +4490,6 @@ void ShaderConverter::Process_EXPP()
 		BOOST_LOG_TRIVIAL(warning) << "Process_EXPP - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4749,6 +4535,7 @@ void ShaderConverter::Process_LOG()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4764,8 +4551,6 @@ void ShaderConverter::Process_LOG()
 		BOOST_LOG_TRIVIAL(warning) << "Process_LOG - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4811,6 +4596,7 @@ void ShaderConverter::Process_LOGP()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4826,8 +4612,6 @@ void ShaderConverter::Process_LOGP()
 		BOOST_LOG_TRIVIAL(warning) << "Process_LOGP - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4876,6 +4660,7 @@ void ShaderConverter::Process_FRC()
 
 	resultId = GetNextId();
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
@@ -4885,8 +4670,6 @@ void ShaderConverter::Process_FRC()
 		BOOST_LOG_TRIVIAL(warning) << "Process_FRC - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4933,6 +4716,7 @@ void ShaderConverter::Process_ABS()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -4948,8 +4732,6 @@ void ShaderConverter::Process_ABS()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAX - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -4995,6 +4777,7 @@ void ShaderConverter::Process_ADD()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -5010,8 +4793,6 @@ void ShaderConverter::Process_ADD()
 		BOOST_LOG_TRIVIAL(warning) << "Process_ADD - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5057,6 +4838,7 @@ void ShaderConverter::Process_SUB()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -5072,8 +4854,6 @@ void ShaderConverter::Process_SUB()
 		BOOST_LOG_TRIVIAL(warning) << "Process_SUB - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5119,6 +4899,7 @@ void ShaderConverter::Process_MIN()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -5134,8 +4915,6 @@ void ShaderConverter::Process_MIN()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MIN - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5181,6 +4960,7 @@ void ShaderConverter::Process_MAX()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -5196,8 +4976,6 @@ void ShaderConverter::Process_MAX()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAX - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5246,10 +5024,8 @@ void ShaderConverter::Process_DP3()
 	}
 
 	//DP output is float even though input is a vec.
-
-	Push(spv::OpDot, floatTypeId, resultId, argumentId1, argumentId2);
-
 	mIdTypePairs[resultId] = floatType;
+	Push(spv::OpDot, floatTypeId, resultId, argumentId1, argumentId2);
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5298,10 +5074,8 @@ void ShaderConverter::Process_DP4()
 	}
 
 	//DP output is float even though input is a vec.
-
-	Push(spv::OpDot, floatTypeId, resultId, argumentId1, argumentId2);
-
 	mIdTypePairs[resultId] = floatType;
+	Push(spv::OpDot, floatTypeId, resultId, argumentId1, argumentId2);
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5352,254 +5126,51 @@ void ShaderConverter::Process_TEX()
 	}
 
 	//TEX output is vec4 even though input is a vec2 and sampler.
-
-	Push(spv::OpImageSampleImplicitLod, vectorTypeId, resultId, argumentId1, argumentId2);
-
 	mIdTypePairs[resultId] = vectorType;
+	Push(spv::OpImageSampleImplicitLod, vectorTypeId, resultId, argumentId1, argumentId2);
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("TEX", resultToken, argumentToken1, argumentToken2);
 }
 
-//void ShaderConverter::Process_TEX()
-//{
-//	//spv::Op dataType = spv::OpNop;
-//	uint32_t dataTypeId = 0;
-//	uint32_t texcoordDataTypeId = 0;
-//	uint32_t argumentId1 = 0;
-//	uint32_t argumentId2 = 0;
-//	uint32_t argumentId1_temp = 0;
-//	uint32_t argumentId2_temp = 0;
-//	uint32_t resultTypeId = 0;
-//	std::string registerName;
-//	uint32_t stringWordSize = 0;
-//
-//	Token resultToken = GetNextToken();
-//	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
-//	uint32_t resultId = GetNextId();
-//
-//	Token argumentToken1;
-//	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
-//
-//	Token argumentToken2;
-//	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2;
-//
-//	TypeDescription dataType;
-//	dataType.PrimaryType = spv::OpTypeVector;
-//	dataType.SecondaryType = spv::OpTypeFloat;
-//	dataType.ComponentCount = 4;
-//	mIdTypePairs[mNextId] = dataType; //snag next id before increment.
-//
-//	resultTypeId = GetSpirVTypeId(spv::OpTypeImage);
-//
-//	dataTypeId = GetSpirVTypeId(dataType);
-//
-//	TypeDescription texcoordDataType;
-//	texcoordDataType.PrimaryType = spv::OpTypeVector;
-//	texcoordDataType.SecondaryType = spv::OpTypeFloat;
-//	texcoordDataType.ComponentCount = 2;
-//	texcoordDataTypeId = GetSpirVTypeId(texcoordDataType);
-//
-//	if (mMajorVersion > 1)
-//	{
-//		argumentToken1 = GetNextToken();
-//		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-//		argumentId1 = GetNextId();
-//
-//		argumentToken2 = GetNextToken();
-//		argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-//		argumentId2 = GetNextId();
-//
-//		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE, D3DDECLUSAGE_TEXCOORD);
-//		argumentId1_temp = GetIdByRegister(argumentToken2, D3DSPR_SAMPLER);
-//
-//		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
-//		{
-//			mIdTypePairs[argumentId1] = dataType;
-//			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
-//		}
-//		else
-//		{
-//			argumentId1 = argumentId1_temp;
-//		}
-//
-//		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
-//		{
-//			mIdTypePairs[argumentId2] = dataType;
-//			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
-//		}
-//		else
-//		{
-//			argumentId2 = argumentId2_temp;
-//		}
-//	}
-//	else if (mMajorVersion == 1 && mMinorVersion >= 4)
-//	{
-//		argumentToken1 = GetNextToken();
-//		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-//		argumentId1 = GetNextId();
-//
-//		argumentToken2 = argumentToken1;
-//		argumentRegisterType2 = argumentRegisterType1;
-//		argumentId2 = GetNextId();
-//
-//		argumentId2_temp = GetSwizzledId(argumentToken1, UINT_MAX, D3DSPR_TEXTURE, D3DDECLUSAGE_TEXCOORD);
-//		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_SAMPLER);
-//
-//		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
-//		{
-//			mIdTypePairs[argumentId1] = dataType;
-//			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
-//		}
-//		else
-//		{
-//			argumentId1 = argumentId1_temp;
-//		}
-//
-//		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
-//		{
-//			mIdTypePairs[argumentId2] = dataType;
-//			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
-//		}
-//		else
-//		{
-//			argumentId2 = argumentId2_temp;
-//		}
-//	}
-//	else
-//	{
-//		argumentToken1 = resultToken;
-//		argumentRegisterType1 = GetRegisterType(resultToken.i);
-//		argumentId1 = GetNextId();
-//
-//		argumentToken2 = argumentToken1;
-//		argumentRegisterType2 = argumentRegisterType1;
-//		argumentId2 = GetNextId();
-//
-//		argumentId2_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
-//		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_SAMPLER);
-//
-//		/*
-//		Before PS 1.4 this is a single result register which means the image will always be a binding and the texcoord will always an input.
-//		That means we'll always need to load before doing a OpImageFetch on ps 1.0 through 1.3.
-//		*/
-//
-//		if (mIdTypePairs[argumentId1_temp].PrimaryType == spv::OpTypePointer)
-//		{
-//			mIdTypePairs[argumentId1] = dataType;
-//			PushLoad(resultTypeId, argumentId1, argumentId1_temp);
-//		}
-//		else
-//		{
-//			argumentId1 = argumentId1_temp;
-//		}
-//
-//		if (mIdTypePairs[argumentId2_temp].PrimaryType == spv::OpTypePointer)
-//		{
-//			mIdTypePairs[argumentId2] = dataType;
-//			PushLoad(dataTypeId, argumentId2, argumentId2_temp);
-//		}
-//		else
-//		{
-//			argumentId2 = argumentId2_temp;
-//		}
-//	}
-//
-//
-//
-//	//I don't know what swizzle will be done but it will likely be a vec4 output so I need to use a shuffle to get a vec2.
-//	argumentId2_temp = argumentId2;
-//	argumentId2 = GetNextId();
-//	Push(spv::OpVectorShuffle, texcoordDataTypeId, argumentId2, argumentId2_temp, argumentId2_temp, 0, 1);
-//	mIdTypePairs[argumentId2] = texcoordDataType;
-//
-//	registerName = mNameIdPairs[argumentId2_temp];
-//	if (registerName.size())
-//	{
-//		//registerName += ".r";
-//		PushName(argumentId2, registerName);
-//	}
-//
-//	//Sample image
-//	Push(spv::OpImageSampleImplicitLod, dataTypeId, resultId, argumentId1, argumentId2);
-//	mIdTypePairs[resultId] = dataType;
-//
-//	if (mMajorVersion == 1)
-//	{
-//		//registerName = "T" + std::to_string(resultToken.DestinationParameterToken.RegisterNumber);
-//		//PushName(tokenId, registerName);
-//
-//		mTextures[resultToken.DestinationParameterToken.RegisterNumber] = resultId;
-//	}
-//
-//	resultId = ApplyWriteMask(resultToken, resultId);
-//
-//	PrintTokenInformation("TEX", resultToken, argumentToken1, argumentToken2);
-//}
-
 void ShaderConverter::Process_TEXCOORD()
 {
-	spv::Op dataType = spv::OpNop;
-	uint32_t dataTypeId = 0;
-	uint32_t texcoordDataTypeId = 0;
-	uint32_t argumentId1 = 0;
-	uint32_t argumentId1_temp = 0;
-	uint32_t resultId = 0;
-	uint32_t resultTypeId = 0;
-	std::string registerName;
-	uint32_t stringWordSize = 0;
-
 	Token resultToken = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
 
-	Token argumentToken1;
-	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1;
+	Token argumentToken1 = (mMajorVersion > 1 || mMinorVersion >= 4) ? GetNextToken() : resultToken;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
-	TypeDescription typeDescription;
-	typeDescription.PrimaryType = spv::OpTypeVector;
-	typeDescription.SecondaryType = spv::OpTypeFloat;
-	typeDescription.ComponentCount = 4;
-	mIdTypePairs[mNextId] = typeDescription; //snag next id before increment.
-	dataTypeId = GetSpirVTypeId(typeDescription);
-	resultTypeId = GetSpirVTypeId(typeDescription);
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
-	if (mMajorVersion > 1 || mMinorVersion >= 4)
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
 	{
-		argumentToken1 = GetNextToken();
-		argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-
-		argumentId1_temp = GetIdByRegister(argumentToken1, D3DSPR_TEXTURE);
-		argumentId1 = GetNextId();
-		PushLoad(resultTypeId, argumentId1, argumentId1_temp);
-	}
-	else
-	{
-		argumentToken1 = resultToken;
-		argumentRegisterType1 = resultRegisterType;
-
-		argumentId1_temp = GetIdByRegister(resultToken, D3DSPR_TEXTURE);
-		argumentId1 = GetNextId();
-		PushLoad(resultTypeId, argumentId1, argumentId1_temp);
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
 	}
 
-	resultId = ApplyWriteMask(resultToken, argumentId1);
-
-	switch (resultRegisterType)
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
 	{
-	case D3DSPR_RASTOUT:
-	case D3DSPR_ATTROUT:
-	case D3DSPR_COLOROUT:
-	case D3DSPR_DEPTHOUT:
-	case D3DSPR_OUTPUT:
-		//Handled by ApplyWriteMask
-		break;
-	default:
-		dataTypeId = GetSpirVTypeId(typeDescription);
-		//resultId = GetNextId();
-		//Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
-		break;
+		dataType = typeDescription.SecondaryType;
 	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	//Push(spv::OpCopyObject, dataTypeId, resultId, argumentId1);
+
+	resultId = argumentId1;
+
+	mIdTypePairs[resultId] = typeDescription;
+
+	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("TEXCOORD", resultToken, argumentToken1);
 }
@@ -5643,6 +5214,7 @@ void ShaderConverter::Process_M4x4()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
@@ -5652,8 +5224,6 @@ void ShaderConverter::Process_M4x4()
 		BOOST_LOG_TRIVIAL(warning) << "Process_M4x4 - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5699,6 +5269,7 @@ void ShaderConverter::Process_M4x3()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
@@ -5708,8 +5279,6 @@ void ShaderConverter::Process_M4x3()
 		BOOST_LOG_TRIVIAL(warning) << "Process_M4x3 - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5755,6 +5324,7 @@ void ShaderConverter::Process_M3x4()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
@@ -5764,8 +5334,6 @@ void ShaderConverter::Process_M3x4()
 		BOOST_LOG_TRIVIAL(warning) << "Process_M3x4 - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5811,6 +5379,7 @@ void ShaderConverter::Process_M3x3()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
@@ -5820,8 +5389,6 @@ void ShaderConverter::Process_M3x3()
 		BOOST_LOG_TRIVIAL(warning) << "Process_M3x3 - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5867,6 +5434,7 @@ void ShaderConverter::Process_M3x2()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeFloat:
@@ -5876,8 +5444,6 @@ void ShaderConverter::Process_M3x2()
 		BOOST_LOG_TRIVIAL(warning) << "Process_M3x2 - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
@@ -5931,6 +5497,8 @@ void ShaderConverter::Process_MAD()
 
 	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
 
+	mIdTypePairs[resultId] = typeDescription;
+	mIdTypePairs[resultId2] = typeDescription;
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -5955,9 +5523,6 @@ void ShaderConverter::Process_MAD()
 		BOOST_LOG_TRIVIAL(warning) << "Process_MAD - Unsupported data type " << dataType;
 		break;
 	}
-
-	mIdTypePairs[resultId] = typeDescription;
-	mIdTypePairs[resultId2] = typeDescription;
 
 	resultId2 = ApplyWriteMask(resultToken, resultId2);
 

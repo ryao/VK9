@@ -562,7 +562,6 @@ private:
 	void SetIdByRegister(const Token& token, uint32_t id);
 	TypeDescription GetTypeByRegister(const Token& token, _D3DDECLUSAGE usage = D3DDECLUSAGE_TEXCOORD);
 	uint32_t GetSwizzledId(const Token& token, uint32_t lookingFor);
-	uint32_t GetSwizzledId(const Token& token, uint32_t inputId, _D3DSHADER_PARAM_REGISTER_TYPE type, _D3DDECLUSAGE usage);
 	uint32_t SwizzlePointer(const Token& token);
 	uint32_t SwizzleValue(const Token& token, uint32_t inputId);
 	void HandleColor(const Token& token, uint32_t inputId, uint32_t outputId, uint32_t originalId);
