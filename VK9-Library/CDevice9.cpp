@@ -593,7 +593,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 	indexBuffer->Release();
 	SetStreamSource(0, vertexBuffer, 0, VertexStreamZeroStride);
 	vertexBuffer->Release();
-	
+
 	//Queue draw command
 	//DrawIndexedPrimitive(PrimitiveType, 0, MinVertexIndex, NumVertices, 0, PrimitiveCount);
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
@@ -886,7 +886,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetIndices(IDirect3DIndexBuffer9 **ppIndexDa
 	workItem->Argument1 = bit_cast<void*>(ppIndexData);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	(*ppIndexData)->AddRef();
+	if ((*ppIndexData) != nullptr)
+	{
+		(*ppIndexData)->AddRef();
+	}
 
 	return S_OK;
 }
@@ -1364,7 +1367,7 @@ void STDMETHODCALLTYPE CDevice9::SetGammaRamp(UINT  iSwapChain, DWORD Flags, con
 	{
 		//TODO: Implement.
 		BOOST_LOG_TRIVIAL(warning) << "CDevice9::SetGammaRamp D3DSGR_CALIBRATE is not implemented!";
-	}	
+	}
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9* pIndexData)
@@ -1695,7 +1698,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::StretchRect(IDirect3DSurface9 *pSourceSurfac
 HRESULT STDMETHODCALLTYPE CDevice9::TestCooperativeLevel()
 {
 	//https://docs.microsoft.com/en-us/windows/desktop/api/d3d9helper/nf-d3d9helper-idirect3ddevice9-testcooperativelevel
-	
+
 	/*
 	For vulkan the device lost would be more like render target lost and I can't tell which render target we care about until present.
 	Present is also supposed to return an error if the present target is in error so I'm going to consider this function implemented.

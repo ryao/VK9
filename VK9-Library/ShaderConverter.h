@@ -478,8 +478,9 @@ private:
 
 	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
 	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
-	boost::container::flat_map<uint32_t, uint32_t> mVector3Matrix3X3Pairs;
+	boost::container::flat_map<uint32_t, uint32_t> mVector4Matrix3X3Pairs;
 	boost::container::flat_map<uint32_t, uint32_t> mVector4Matrix4X4Pairs;
+	boost::container::flat_map<uint32_t, uint32_t> mVector4Vector3Pairs;
 	boost::container::flat_map<uint32_t, std::string> mNameIdPairs;
 
 	std::vector<uint32_t> mCapabilityInstructions;
@@ -577,9 +578,13 @@ private:
 	void CombineSpirVOpCodes();
 	void CreateSpirVModule();
 
+	uint32_t ConvertVec4ToVec3(uint32_t id);
+	uint32_t ConvertMat4ToMat3(uint32_t id);
+
 	void PushMemberName(uint32_t id, std::string& registerName, uint32_t index);
 	void PushName(uint32_t id, std::string& registerName);
 	void PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index);
+	void PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index1, uint32_t index2);
 	void PushAccessChain(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t indexId);
 	void PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId);
 	void PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId);
@@ -595,7 +600,12 @@ private:
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, GLSLstd450 argument4, uint32_t argument5, uint32_t argument6);
 	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7);
-	//declare
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8, uint32_t argument9);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8, uint32_t argument9, uint32_t argument10);
+	void Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8, uint32_t argument9, uint32_t argument10, uint32_t argument11);
+
+	//Declare
 	void Process_DCL_Pixel();
 	void Process_DCL_Vertex();
 	void Process_DCL();

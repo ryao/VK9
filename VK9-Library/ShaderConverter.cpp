@@ -1202,7 +1202,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	{
 		originalId = GetIdByRegister(token);
 
-		uint32_t matrixId = mVector3Matrix3X3Pairs[originalId];
+		uint32_t matrixId = mVector4Matrix3X3Pairs[originalId];
 		if (matrixId)
 		{
 			originalId = matrixId;
@@ -1212,11 +1212,17 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	{
 		originalId = GetIdByRegister(token);
 
-		TypeDescription vectorType = mIdTypePairs[originalId - 1];
-		if (vectorType.ComponentCount == 3)
+		uint32_t vectorId = mVector4Vector3Pairs[originalId];
+		if (vectorId)
 		{
-			originalId--;
+			originalId = vectorId;
 		}
+		else
+		{
+			//Couldn't find vec3 version so create one quick and return that instead.
+			originalId = ConvertVec4ToVec3(originalId);
+		}
+
 		outputComponentCount = 3;
 	}
 	else
@@ -1294,20 +1300,20 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 			switch (xSource)
 			{
 			case D3DVS_X_X:
-				PushCompositeExtract(outputTypeId, outputId, loadedId, 0);
 				mIdTypePairs[outputId] = outputType;
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 0);			
 				break;
 			case D3DVS_X_Y:
-				PushCompositeExtract(outputTypeId, outputId, loadedId, 1);
 				mIdTypePairs[outputId] = outputType;
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 1);		
 				break;
 			case D3DVS_X_Z:
-				PushCompositeExtract(outputTypeId, outputId, loadedId, 2);
 				mIdTypePairs[outputId] = outputType;
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 2);		
 				break;
 			case D3DVS_X_W:
-				PushCompositeExtract(outputTypeId, outputId, loadedId, 3);
 				mIdTypePairs[outputId] = outputType;
+				PushCompositeExtract(outputTypeId, outputId, loadedId, 3);		
 				break;
 			}
 		}
@@ -1328,214 +1334,99 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 
 		uint32_t vectorTypeId = GetSpirVTypeId(vectorType); //Revisit may not be a float
 
+		mIdTypePairs[outputId] = vectorType;
+
+		registerName = mNameIdPairs[loadedId];
+		if (registerName.size())
+		{
+			//registerName += ".r";
+			PushName(outputId, registerName);
+		}
+
+		uint32_t xIndex = 0;
+		uint32_t yIndex = 0;
+		uint32_t zIndex = 0;
+		uint32_t wIndex = 0;
+
+		switch (xSource)
+		{
+		case D3DVS_X_X:
+			(xIndex = 0); //Component Literal
+			break;
+		case D3DVS_X_Y:
+			(xIndex = 1); //Component Literal
+			break;
+		case D3DVS_X_Z:
+			(xIndex = 2); //Component Literal
+			break;
+		case D3DVS_X_W:
+			(xIndex = 3); //Component Literal
+			break;
+		}
+
+		switch (ySource)
+		{
+		case D3DVS_Y_X:
+			(yIndex = 0); //Component Literal
+			break;
+		case D3DVS_Y_Y:
+			(yIndex = 1); //Component Literal
+			break;
+		case D3DVS_Y_Z:
+			(yIndex = 2); //Component Literal
+			break;
+		case D3DVS_Y_W:
+			(yIndex = 3); //Component Literal
+			break;
+		}
+
+		switch (zSource)
+		{
+		case D3DVS_Z_X:
+			(zIndex = 0); //Component Literal
+			break;
+		case D3DVS_Z_Y:
+			(zIndex = 1); //Component Literal
+			break;
+		case D3DVS_Z_Z:
+			(zIndex = 2); //Component Literal
+			break;
+		case D3DVS_Z_W:
+			(zIndex = 3); //Component Literal
+			break;
+		}
+
+		switch (wSource)
+		{
+		case D3DVS_W_X:
+			(wIndex = 0); //Component Literal
+			break;
+		case D3DVS_W_Y:
+			(wIndex = 1); //Component Literal
+			break;
+		case D3DVS_W_Z:
+			(wIndex = 2); //Component Literal
+			break;
+		case D3DVS_W_W:
+			(wIndex = 3); //Component Literal
+			break;
+		}
+
 		switch (outputComponentCount)
 		{ //1 should be covered by the other branch.
 		case 2:
-			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-			mFunctionDefinitionInstructions.push_back(loadedId); //Vector1 (Id)
-			mFunctionDefinitionInstructions.push_back(loadedId); //Vector2 (Id)
-
-			mIdTypePairs[outputId] = vectorType;
-
-			registerName = mNameIdPairs[loadedId];
-			if (registerName.size())
-			{
-				//registerName += ".r";
-				PushName(outputId, registerName);
-			}
-
-			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << loadedId << ", " << loadedId;
-
-			switch (xSource)
-			{
-			case D3DVS_X_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_X_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_X_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_X_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (ySource)
-			{
-			case D3DVS_Y_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Y_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Y_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Y_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
+			Push(spv::OpVectorShuffle, vectorTypeId, outputId, loadedId, loadedId, xIndex, yIndex);
 			break;
 		case 3:
-			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-			mFunctionDefinitionInstructions.push_back(loadedId); //Vector1 (Id)
-			mFunctionDefinitionInstructions.push_back(loadedId); //Vector2 (Id)
-
-			mIdTypePairs[outputId] = vectorType;
-
-			registerName = mNameIdPairs[loadedId];
-			if (registerName.size())
-			{
-				//registerName += ".r";
-				PushName(outputId, registerName);
-			}
-
-			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << loadedId << ", " << loadedId;
-
-			switch (xSource)
-			{
-			case D3DVS_X_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_X_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_X_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_X_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (ySource)
-			{
-			case D3DVS_Y_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Y_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Y_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Y_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (zSource)
-			{
-			case D3DVS_Z_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Z_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Z_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Z_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
+			Push(spv::OpVectorShuffle, vectorTypeId, outputId, loadedId, loadedId, xIndex, yIndex, zIndex);
 			break;
 		case 4:
-			mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-			mFunctionDefinitionInstructions.push_back(vectorTypeId); //Result Type (Id)
-			mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-			mFunctionDefinitionInstructions.push_back(loadedId); //Vector1 (Id)
-			mFunctionDefinitionInstructions.push_back(loadedId); //Vector2 (Id)
-
-			mIdTypePairs[outputId] = vectorType;
-
-			registerName = mNameIdPairs[loadedId];
-			if (registerName.size())
-			{
-				//registerName += ".r";
-				PushName(outputId, registerName);
-			}
-
-			BOOST_LOG_TRIVIAL(info) << "ShaderConverter::GetSwizzledId " << spv::OpVectorShuffle << " " << vectorTypeId << ", " << outputId << ", " << loadedId << ", " << loadedId;
-
-			switch (xSource)
-			{
-			case D3DVS_X_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_X_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_X_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_X_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (ySource)
-			{
-			case D3DVS_Y_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Y_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Y_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Y_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (zSource)
-			{
-			case D3DVS_Z_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_Z_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_Z_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_Z_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
-			switch (wSource)
-			{
-			case D3DVS_W_X:
-				mFunctionDefinitionInstructions.push_back(0); //Component Literal
-				break;
-			case D3DVS_W_Y:
-				mFunctionDefinitionInstructions.push_back(1); //Component Literal
-				break;
-			case D3DVS_W_Z:
-				mFunctionDefinitionInstructions.push_back(2); //Component Literal
-				break;
-			case D3DVS_W_W:
-				mFunctionDefinitionInstructions.push_back(3); //Component Literal
-				break;
-			}
-
+			Push(spv::OpVectorShuffle, vectorTypeId, outputId, loadedId, loadedId, xIndex, yIndex, zIndex, wIndex);
 			break;
 		default:
 			BOOST_LOG_TRIVIAL(warning) << "GetSwizzledId - Unsupported component count  " << outputComponentCount;
 			break;
 		}
-
 	}
 
 	return outputId;
@@ -1639,27 +1530,41 @@ uint32_t ShaderConverter::SwizzleValue(const Token& token, uint32_t inputId)
 	}
 
 	TypeDescription outputType;
-	uint32_t outputTypeId;
+	uint32_t outputTypeId = 0;
 	uint32_t outputId = 0;
 	uint32_t outputComponentCount = 0;
+	uint32_t index[4] = {};
+	size_t indexIndex = 0;
 
 	if (token.i & D3DSP_WRITEMASK_0)
 	{
+		index[indexIndex] = 0;
+		indexIndex++;
+
 		outputComponentCount++;
 	}
 
 	if (token.i & D3DSP_WRITEMASK_1)
 	{
+		index[indexIndex] = 1;
+		indexIndex++;
+
 		outputComponentCount++;
 	}
 
 	if (token.i & D3DSP_WRITEMASK_2)
 	{
+		index[indexIndex] = 2;
+		indexIndex++;
+
 		outputComponentCount++;
 	}
 
 	if (token.i & D3DSP_WRITEMASK_3)
 	{
+		index[indexIndex] = 3;
+		indexIndex++;
+
 		outputComponentCount++;
 	}
 
@@ -1671,11 +1576,7 @@ uint32_t ShaderConverter::SwizzleValue(const Token& token, uint32_t inputId)
 		outputType.ComponentCount = outputComponentCount;
 		outputTypeId = GetSpirVTypeId(outputType);
 
-		mFunctionDefinitionInstructions.push_back(Pack(5 + outputComponentCount, spv::OpVectorShuffle)); //size,Type
-		mFunctionDefinitionInstructions.push_back(outputTypeId); //Result Type (Id)
-		mFunctionDefinitionInstructions.push_back(outputId); // Result (Id)
-		mFunctionDefinitionInstructions.push_back(inputId); //Vector1 (Id)
-		mFunctionDefinitionInstructions.push_back(inputId); //Vector2 (Id)
+		mIdTypePairs[outputId] = outputType;
 
 		std::string registerName = mNameIdPairs[inputId];
 		if (registerName.size())
@@ -1684,24 +1585,20 @@ uint32_t ShaderConverter::SwizzleValue(const Token& token, uint32_t inputId)
 			PushName(outputId, registerName);
 		}
 
-		if (token.i & D3DSP_WRITEMASK_0)
-		{
-			mFunctionDefinitionInstructions.push_back(0); //Component Literal
-		}
-
-		if (token.i & D3DSP_WRITEMASK_1)
-		{
-			mFunctionDefinitionInstructions.push_back(1); //Component Literal
-		}
-
-		if (token.i & D3DSP_WRITEMASK_2)
-		{
-			mFunctionDefinitionInstructions.push_back(2); //Component Literal
-		}
-
-		if (token.i & D3DSP_WRITEMASK_3)
-		{
-			mFunctionDefinitionInstructions.push_back(3); //Component Literal
+		switch (outputComponentCount)
+		{ //1 should be covered by the other branch.
+		case 2:
+			Push(spv::OpVectorShuffle, outputTypeId, outputId, inputId, inputId, index[0], index[1]);
+			break;
+		case 3:
+			Push(spv::OpVectorShuffle, outputTypeId, outputId, inputId, inputId, index[0], index[1], index[2]);
+			break;
+		case 4:
+			Push(spv::OpVectorShuffle, outputTypeId, outputId, inputId, inputId, index[0], index[1], index[2], index[3]);
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "GetSwizzledId - Unsupported component count  " << outputComponentCount;
+			break;
 		}
 	}
 	else
@@ -1715,6 +1612,8 @@ uint32_t ShaderConverter::SwizzleValue(const Token& token, uint32_t inputId)
 			//registerName += ".r";
 			PushName(outputId, registerName);
 		}
+
+		mIdTypePairs[outputId] = outputType;
 
 		if (token.i & D3DSP_WRITEMASK_0)
 		{
@@ -1736,8 +1635,6 @@ uint32_t ShaderConverter::SwizzleValue(const Token& token, uint32_t inputId)
 			PushCompositeExtract(outputTypeId, outputId, inputId, 3);
 		}
 	}
-
-	mIdTypePairs[outputId] = outputType;
 
 	return outputId;
 }
@@ -1780,8 +1677,9 @@ void ShaderConverter::HandleColor(const Token& token, uint32_t inputId, uint32_t
 			}
 			else
 			{
-				PushCompositeExtract(floatTypeId, r2Id, inputId, 0);
 				mIdTypePairs[r2Id] = floatType;
+				PushCompositeExtract(floatTypeId, r2Id, inputId, 0);
+				
 			}
 
 			uint32_t rDividedId = GetNextId();
@@ -2052,10 +1950,13 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId1 = GetNextId();
 						uint32_t pointerId1 = GetNextId();
-						PushCompositeExtract(floatTypeId, objectId1, inputId, 0);
+
 						mIdTypePairs[objectId1] = floatType;
-						PushAccessChain(floatPointerTypeId, pointerId1, originalId, m0Id);
+						PushCompositeExtract(floatTypeId, objectId1, inputId, 0);
+						
 						mIdTypePairs[pointerId1] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId1, originalId, m0Id);
+						
 						PushStore(pointerId1, objectId1);
 					}
 
@@ -2063,10 +1964,13 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId2 = GetNextId();
 						uint32_t pointerId2 = GetNextId();
-						PushCompositeExtract(floatTypeId, objectId2, inputId, 1);
+						
 						mIdTypePairs[objectId2] = floatType;
-						PushAccessChain(floatPointerTypeId, pointerId2, originalId, m1Id);
+						PushCompositeExtract(floatTypeId, objectId2, inputId, 1);
+						
 						mIdTypePairs[pointerId2] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId2, originalId, m1Id);
+						
 						PushStore(pointerId2, objectId2);
 					}
 
@@ -2074,10 +1978,13 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId3 = GetNextId();
 						uint32_t pointerId3 = GetNextId();
-						PushCompositeExtract(floatTypeId, objectId3, inputId, 2);
+
 						mIdTypePairs[objectId3] = floatType;
-						PushAccessChain(floatPointerTypeId, pointerId3, originalId, m2Id);
+						PushCompositeExtract(floatTypeId, objectId3, inputId, 2);
+						
 						mIdTypePairs[pointerId3] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId3, originalId, m2Id);
+						
 						PushStore(pointerId3, objectId3);
 					}
 
@@ -2085,10 +1992,13 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					{
 						uint32_t objectId4 = GetNextId();
 						uint32_t pointerId4 = GetNextId();
-						PushCompositeExtract(floatTypeId, objectId4, inputId, 3);
+						
 						mIdTypePairs[objectId4] = floatType;
-						PushAccessChain(floatPointerTypeId, pointerId4, originalId, m3Id);
+						PushCompositeExtract(floatTypeId, objectId4, inputId, 3);
+						
 						mIdTypePairs[pointerId4] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId4, originalId, m3Id);
+						
 						PushStore(pointerId4, objectId4);
 					}
 				}
@@ -2099,32 +2009,40 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 					if (token.i & D3DSP_WRITEMASK_0)
 					{
 						uint32_t pointerId1 = GetNextId();
-						PushAccessChain(floatPointerTypeId, pointerId1, originalId, m0Id);
+
 						mIdTypePairs[pointerId1] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId1, originalId, m0Id);
+						
 						PushStore(pointerId1, objectId1);
 					}
 
 					if (token.i & D3DSP_WRITEMASK_1)
 					{
 						uint32_t pointerId2 = GetNextId();
-						PushAccessChain(floatPointerTypeId, pointerId2, originalId, m1Id);
+
 						mIdTypePairs[pointerId2] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId2, originalId, m1Id);
+						
 						PushStore(pointerId2, objectId1);
 					}
 
 					if (token.i & D3DSP_WRITEMASK_2)
 					{
 						uint32_t pointerId3 = GetNextId();
-						PushAccessChain(floatPointerTypeId, pointerId3, originalId, m2Id);
+
 						mIdTypePairs[pointerId3] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId3, originalId, m2Id);
+						
 						PushStore(pointerId3, objectId1);
 					}
 
 					if (token.i & D3DSP_WRITEMASK_3)
 					{
 						uint32_t pointerId4 = GetNextId();
-						PushAccessChain(floatPointerTypeId, pointerId4, originalId, m3Id);
+
 						mIdTypePairs[pointerId4] = floatPointerType;
+						PushAccessChain(floatPointerTypeId, pointerId4, originalId, m3Id);
+						
 						PushStore(pointerId4, objectId1);
 					}
 				}
@@ -2281,20 +2199,25 @@ void ShaderConverter::GeneratePushConstant()
 	uint32_t c0_loaded = GetNextId();
 	mIdTypePairs[c0_loaded] = vectorType;
 	PushLoad(vectorTypeId, c0_loaded, c0);
-
-	mVector4Matrix4X4Pairs[c0_loaded] = matrix_loaded;
+	mVector4Vector3Pairs[c0_loaded] = ConvertVec4ToVec3(c0_loaded);
 
 	uint32_t c1_loaded = GetNextId();
 	mIdTypePairs[c1_loaded] = vectorType;
 	PushLoad(vectorTypeId, c1_loaded, c1);
+	mVector4Vector3Pairs[c1_loaded] = ConvertVec4ToVec3(c1_loaded);
 
 	uint32_t c2_loaded = GetNextId();
 	mIdTypePairs[c2_loaded] = vectorType;
 	PushLoad(vectorTypeId, c2_loaded, c2);
+	mVector4Vector3Pairs[c2_loaded] = ConvertVec4ToVec3(c2_loaded);
 
 	uint32_t c3_loaded = GetNextId();
 	mIdTypePairs[c3_loaded] = vectorType;
 	PushLoad(vectorTypeId, c3_loaded, c3);
+	mVector4Vector3Pairs[c3_loaded] = ConvertVec4ToVec3(c3_loaded);
+
+	mVector4Matrix4X4Pairs[c0_loaded] = matrix_loaded;
+	mVector4Matrix3X3Pairs[c0_loaded] = ConvertMat4ToMat3(matrix_loaded);
 
 	//Remap c0-c3 to push constant.
 	mIdsByRegister[(_D3DSHADER_PARAM_REGISTER_TYPE)1337][0] = matrix_loaded;
@@ -2768,6 +2691,8 @@ void ShaderConverter::GenerateConstantBlock()
 
 		mIdsByRegister[D3DSPR_CONST][i] = id;
 		mRegistersById[D3DSPR_CONST][id] = i;
+
+		mVector4Vector3Pairs[vector4Id] = vector3Id;
 	}
 
 	typeDescription.PrimaryType = spv::OpTypeMatrix;
@@ -2791,9 +2716,6 @@ void ShaderConverter::GenerateConstantBlock()
 		uint32_t matrix3Id = GetNextId();
 		uint32_t matrix4Id = GetNextId();
 		uint32_t id = matrix4Id;
-
-		mVector3Matrix3X3Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = matrix3Id;
-		mVector4Matrix4X4Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = matrix4Id;
 
 		//mat3
 		mTypeInstructions.push_back(Pack(3 + 3, spv::OpSpecConstantComposite)); //size,Type
@@ -2820,6 +2742,9 @@ void ShaderConverter::GenerateConstantBlock()
 
 		registerName = "c_mat4_" + std::to_string(i);
 		PushName(matrix4Id, registerName);
+
+		mVector4Matrix3X3Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = matrix3Id;
+		mVector4Matrix4X4Pairs[mIdsByRegister[D3DSPR_CONST][i * 4]] = matrix4Id;
 
 		mIdTypePairs[matrix3Id] = matrix3Type;
 		mIdTypePairs[matrix4Id] = matrix4Type;
@@ -2911,6 +2836,122 @@ void ShaderConverter::CreateSpirVModule()
 	}
 }
 
+/*
+To match GLSL behavior we will extract the components and construct a new composite from the pieces.
+*/
+
+uint32_t ShaderConverter::ConvertVec4ToVec3(uint32_t id)
+{
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
+
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 3;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+
+	//
+	uint32_t xId = GetNextId();
+	mIdTypePairs[xId] = floatType;
+	PushCompositeExtract(floatTypeId, xId, id, 0);
+
+	uint32_t yId = GetNextId();
+	mIdTypePairs[xId] = floatType;
+	PushCompositeExtract(floatTypeId, yId, id, 1);
+
+	uint32_t zId = GetNextId();
+	mIdTypePairs[xId] = floatType;
+	PushCompositeExtract(floatTypeId, zId, id, 1);
+
+
+
+	uint32_t resultId = GetNextId();
+	mIdTypePairs[resultId] = vectorType;
+	Push(spv::OpCompositeConstruct, vectorTypeId, resultId, xId, yId, zId);
+
+	return resultId;
+}
+
+uint32_t ShaderConverter::ConvertMat4ToMat3(uint32_t id)
+{
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
+
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 3;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+
+	TypeDescription matrixType;
+	matrixType.PrimaryType = spv::OpTypeMatrix;
+	matrixType.SecondaryType = spv::OpTypeVector;
+	matrixType.ComponentCount = 3;
+	uint32_t matrixTypeId = GetSpirVTypeId(matrixType);
+
+	//
+	uint32_t x1Id = GetNextId();
+	mIdTypePairs[x1Id] = floatType;
+	PushCompositeExtract(floatTypeId, x1Id, id, 0,0);
+
+	uint32_t y1Id = GetNextId();
+	mIdTypePairs[y1Id] = floatType;
+	PushCompositeExtract(floatTypeId, y1Id, id, 0,1);
+
+	uint32_t z1Id = GetNextId();
+	mIdTypePairs[z1Id] = floatType;
+	PushCompositeExtract(floatTypeId, z1Id, id, 0,2);
+
+	uint32_t v1Id = GetNextId();
+	mIdTypePairs[v1Id] = vectorType;
+	Push(spv::OpCompositeConstruct, vectorTypeId, v1Id, x1Id, y1Id, z1Id);
+
+	//
+	uint32_t x2Id = GetNextId();
+	mIdTypePairs[x2Id] = floatType;
+	PushCompositeExtract(floatTypeId, x2Id, id, 1, 0);
+
+	uint32_t y2Id = GetNextId();
+	mIdTypePairs[y2Id] = floatType;
+	PushCompositeExtract(floatTypeId, y2Id, id, 1, 1);
+
+	uint32_t z2Id = GetNextId();
+	mIdTypePairs[z2Id] = floatType;
+	PushCompositeExtract(floatTypeId, z2Id, id, 1, 2);
+
+	uint32_t v2Id = GetNextId();
+	mIdTypePairs[v2Id] = vectorType;
+	Push(spv::OpCompositeConstruct, vectorTypeId, v2Id, x2Id, y2Id, z2Id);
+
+	//
+	uint32_t x3Id = GetNextId();
+	mIdTypePairs[x3Id] = floatType;
+	PushCompositeExtract(floatTypeId, x3Id, id, 2, 0);
+
+	uint32_t y3Id = GetNextId();
+	mIdTypePairs[y3Id] = floatType;
+	PushCompositeExtract(floatTypeId, y3Id, id, 2, 1);
+
+	uint32_t z3Id = GetNextId();
+	mIdTypePairs[z3Id] = floatType;
+	PushCompositeExtract(floatTypeId, z3Id, id, 2, 2);
+
+	uint32_t v3Id = GetNextId();
+	mIdTypePairs[v3Id] = vectorType;
+	Push(spv::OpCompositeConstruct, vectorTypeId, v3Id, x3Id, y3Id, z3Id);
+
+
+
+	uint32_t resultId = GetNextId();
+	mIdTypePairs[resultId] = matrixType;
+	Push(spv::OpCompositeConstruct, matrixTypeId, resultId, v1Id, v2Id, v3Id);
+
+	return resultId;
+}
+
 void ShaderConverter::PushMemberName(uint32_t id, std::string& registerName, uint32_t index)
 {
 	std::vector<uint32_t> nameInstructions;
@@ -2962,6 +3003,19 @@ void ShaderConverter::PushCompositeExtract(uint32_t resultTypeId, uint32_t resul
 	}
 
 	Push(spv::OpCompositeExtract, resultTypeId, resultId, baseId, index);
+}
+
+void ShaderConverter::PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index1, uint32_t index2)
+{
+	std::string registerName = mNameIdPairs[baseId];
+	if (registerName.size())
+	{
+		registerName += "[" + std::to_string(index1) + "][" + std::to_string(index2) + "]";
+
+		PushName(resultId, registerName);
+	}
+
+	Push(spv::OpCompositeExtract, resultTypeId, resultId, baseId, index1, index2);
 }
 
 void ShaderConverter::PushAccessChain(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t indexId)
@@ -3283,6 +3337,122 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	auto& argumentType7 = mIdTypePairs[argument7];
 
 	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")" << ", " << argument7 << "(" << argumentType7 << ")";
+#endif
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(9, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+	mFunctionDefinitionInstructions.push_back(argument6);
+	mFunctionDefinitionInstructions.push_back(argument7);
+	mFunctionDefinitionInstructions.push_back(argument8);
+
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+	auto& argumentType6 = mIdTypePairs[argument6];
+	auto& argumentType7 = mIdTypePairs[argument7];
+	auto& argumentType8 = mIdTypePairs[argument8];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")" << ", " << argument7 << "(" << argumentType7 << ")" << ", " << argument8 << "(" << argumentType8 << ")";
+#endif
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8, uint32_t argument9)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(10, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+	mFunctionDefinitionInstructions.push_back(argument6);
+	mFunctionDefinitionInstructions.push_back(argument7);
+	mFunctionDefinitionInstructions.push_back(argument8);
+	mFunctionDefinitionInstructions.push_back(argument9);
+
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+	auto& argumentType6 = mIdTypePairs[argument6];
+	auto& argumentType7 = mIdTypePairs[argument7];
+	auto& argumentType8 = mIdTypePairs[argument8];
+	auto& argumentType9 = mIdTypePairs[argument9];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")" << ", " << argument7 << "(" << argumentType7 << ")" << ", " << argument8 << "(" << argumentType8 << ")" << ", " << argument9 << "(" << argumentType9 << ")";
+#endif
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8, uint32_t argument9, uint32_t argument10)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(11, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+	mFunctionDefinitionInstructions.push_back(argument6);
+	mFunctionDefinitionInstructions.push_back(argument7);
+	mFunctionDefinitionInstructions.push_back(argument8);
+	mFunctionDefinitionInstructions.push_back(argument9);
+	mFunctionDefinitionInstructions.push_back(argument10);
+
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+	auto& argumentType6 = mIdTypePairs[argument6];
+	auto& argumentType7 = mIdTypePairs[argument7];
+	auto& argumentType8 = mIdTypePairs[argument8];
+	auto& argumentType9 = mIdTypePairs[argument9];
+	auto& argumentType10 = mIdTypePairs[argument10];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")" << ", " << argument7 << "(" << argumentType7 << ")" << ", " << argument8 << "(" << argumentType8 << ")" << ", " << argument9 << "(" << argumentType9 << ")" << ", " << argument10 << "(" << argumentType10 << ")";
+#endif
+}
+
+void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2, uint32_t argument3, uint32_t argument4, uint32_t argument5, uint32_t argument6, uint32_t argument7, uint32_t argument8, uint32_t argument9, uint32_t argument10, uint32_t argument11)
+{
+	mFunctionDefinitionInstructions.push_back(Pack(12, code)); //size,Type
+	mFunctionDefinitionInstructions.push_back(argument1);
+	mFunctionDefinitionInstructions.push_back(argument2);
+	mFunctionDefinitionInstructions.push_back(argument3);
+	mFunctionDefinitionInstructions.push_back(argument4);
+	mFunctionDefinitionInstructions.push_back(argument5);
+	mFunctionDefinitionInstructions.push_back(argument6);
+	mFunctionDefinitionInstructions.push_back(argument7);
+	mFunctionDefinitionInstructions.push_back(argument8);
+	mFunctionDefinitionInstructions.push_back(argument9);
+	mFunctionDefinitionInstructions.push_back(argument10);
+	mFunctionDefinitionInstructions.push_back(argument11);
+
+#ifdef _DEBUG
+	auto& argumentType1 = mIdTypePairs[argument1];
+	auto& argumentType2 = mIdTypePairs[argument2];
+	auto& argumentType3 = mIdTypePairs[argument3];
+	auto& argumentType4 = mIdTypePairs[argument4];
+	auto& argumentType5 = mIdTypePairs[argument5];
+	auto& argumentType6 = mIdTypePairs[argument6];
+	auto& argumentType7 = mIdTypePairs[argument7];
+	auto& argumentType8 = mIdTypePairs[argument8];
+	auto& argumentType9 = mIdTypePairs[argument9];
+	auto& argumentType10 = mIdTypePairs[argument10];
+	auto& argumentType11 = mIdTypePairs[argument11];
+
+	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")" << ", " << argument2 << "(" << argumentType2 << ")" << ", " << argument3 << "(" << argumentType3 << ")" << ", " << argument4 << "(" << argumentType4 << ")" << ", " << argument5 << "(" << argumentType5 << ")" << ", " << argument6 << "(" << argumentType6 << ")" << ", " << argument7 << "(" << argumentType7 << ")" << ", " << argument8 << "(" << argumentType8 << ")" << ", " << argument9 << "(" << argumentType9 << ")" << ", " << argument10 << "(" << argumentType10 << ")" << ", " << argument11 << "(" << argumentType11 << ")";
 #endif
 }
 
@@ -5973,12 +6143,24 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	for (const auto& inputRegister : mInputRegisters)
 	{
 		interfaceIds.push_back(inputRegister);
-		BOOST_LOG_TRIVIAL(info) << inputRegister << " (Input)";
+
+#ifdef _DEBUG
+		auto& inputRegisterType = mIdTypePairs[inputRegister];
+		auto& inputRegisterName = mNameIdPairs[inputRegister];
+
+		BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert " << inputRegisterName << "(" << inputRegister << ") as " << inputRegisterType << "(Input)";
+#endif
 	}
 	for (const auto& outputRegister : mOutputRegisters)
 	{
 		interfaceIds.push_back(outputRegister);
-		BOOST_LOG_TRIVIAL(info) << outputRegister << " (Output)";
+
+#ifdef _DEBUG
+		auto& outputRegisterType = mIdTypePairs[outputRegister];
+		auto& outputRegisterName = mNameIdPairs[outputRegister];
+
+		BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Convert " << outputRegisterName << "(" << outputRegister << ") as " << outputRegisterType << "(Output)";
+#endif
 	}
 
 	//The spec says 4+variable but there are only 3 before the string literal.
