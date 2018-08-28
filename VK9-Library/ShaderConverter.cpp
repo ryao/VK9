@@ -2241,9 +2241,21 @@ void ShaderConverter::GenerateConstantIndices()
 	std::string registerName;
 	uint32_t stringWordSize = 0;
 
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
+
+	m0fId = GetNextId();
+	mIdTypePairs[m0fId] = floatType;
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(floatTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(m0fId); //Result (Id)
+	mTypeInstructions.push_back(0); //Literal Value
+	registerName = "float_0";
+	PushName(m0fId, registerName);
+
 	TypeDescription intType;
 	intType.PrimaryType = spv::OpTypeInt;
-
 	uint32_t intTypeId = GetSpirVTypeId(intType);
 
 	m0Id = GetNextId();
@@ -2858,11 +2870,11 @@ uint32_t ShaderConverter::ConvertVec4ToVec3(uint32_t id)
 	PushCompositeExtract(floatTypeId, xId, id, 0);
 
 	uint32_t yId = GetNextId();
-	mIdTypePairs[xId] = floatType;
+	mIdTypePairs[yId] = floatType;
 	PushCompositeExtract(floatTypeId, yId, id, 1);
 
 	uint32_t zId = GetNextId();
-	mIdTypePairs[xId] = floatType;
+	mIdTypePairs[zId] = floatType;
 	PushCompositeExtract(floatTypeId, zId, id, 1);
 
 
@@ -4021,7 +4033,7 @@ void ShaderConverter::Process_IF()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		Push(spv::OpBranchConditional, argumentId1, trueLabelId, falseLabelId);
+		Push(spv::OpSelectionMerge, argumentId1, trueLabelId, falseLabelId);
 		Push(spv::OpLabel, trueLabelId);
 		break;
 	default:
@@ -4258,6 +4270,76 @@ void ShaderConverter::Process_RSQ()
 	PrintTokenInformation("RSQ", resultToken, argumentToken1);
 }
 
+/*
+If x, y, or z are less than zero then kill the pixel.
+*/
+void ShaderConverter::Process_TEXKILL()
+{
+	TypeDescription floatType;
+	floatType.PrimaryType = spv::OpTypeFloat;
+	uint32_t floatTypeId = GetSpirVTypeId(floatType);
+
+	TypeDescription boolType;
+	boolType.PrimaryType = spv::OpTypeBool;
+	uint32_t boolTypeId = GetSpirVTypeId(boolType);
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	//X
+	uint32_t xId = GetNextId();
+	mIdTypePairs[xId] = floatType;
+	PushCompositeExtract(floatTypeId, xId, argumentId1, 0);
+
+	uint32_t xConditionalId = GetNextId();
+	mIdTypePairs[xConditionalId] = boolType;
+	Push(spv::OpFOrdLessThan, boolTypeId, xConditionalId, xId, m0fId);
+	uint32_t xMergeBlockId = GetNextId();
+	Push(spv::OpFOrdLessThan, xMergeBlockId, 0);
+	uint32_t xTrueLabelId = GetNextId();
+	uint32_t xFalseLabelId = GetNextId();
+	Push(spv::OpBranchConditional, xConditionalId, xTrueLabelId, xFalseLabelId);
+	Push(spv::OpLabel, xTrueLabelId);
+	Push(spv::OpKill);
+	Push(spv::OpLabel, xFalseLabelId);
+
+	//Y
+	uint32_t yId = GetNextId();
+	mIdTypePairs[yId] = floatType;
+	PushCompositeExtract(floatTypeId, yId, argumentId1, 1);
+
+	uint32_t yConditionalId = GetNextId();
+	mIdTypePairs[yConditionalId] = boolType;
+	Push(spv::OpFOrdLessThan, boolTypeId, yConditionalId, yId, m0fId);
+	uint32_t yMergeBlockId = GetNextId();
+	Push(spv::OpFOrdLessThan, yMergeBlockId, 0);
+	uint32_t yTrueLabelId = GetNextId();
+	uint32_t yFalseLabelId = GetNextId();
+	Push(spv::OpBranchConditional, yConditionalId, yTrueLabelId, yFalseLabelId);
+	Push(spv::OpLabel, yTrueLabelId);
+	Push(spv::OpKill);
+	Push(spv::OpLabel, yFalseLabelId);
+
+	//Z
+	uint32_t zId = GetNextId();
+	mIdTypePairs[zId] = floatType;
+	PushCompositeExtract(floatTypeId, zId, argumentId1, 1);
+
+	uint32_t zConditionalId = GetNextId();
+	mIdTypePairs[zConditionalId] = boolType;
+	Push(spv::OpFOrdLessThan, boolTypeId, zConditionalId, zId, m0fId);
+	uint32_t zMergeBlockId = GetNextId();
+	Push(spv::OpFOrdLessThan, zMergeBlockId, 0);
+	uint32_t zTrueLabelId = GetNextId();
+	uint32_t zFalseLabelId = GetNextId();
+	Push(spv::OpBranchConditional, zConditionalId, zTrueLabelId, zFalseLabelId);
+	Push(spv::OpLabel, zTrueLabelId);
+	Push(spv::OpKill);
+	Push(spv::OpLabel, zFalseLabelId);
+
+	PrintTokenInformation("TEXKILL", argumentToken1);
+}
 
 void ShaderConverter::Process_DST()
 {
@@ -5841,8 +5923,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			SkipTokens(1);
 			break;
 		case D3DSIO_TEXKILL:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXKILL.";
-			SkipTokens(1);
+			Process_TEXKILL();
 			break;
 		case D3DSIO_BEM:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_BEM.";

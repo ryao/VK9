@@ -542,6 +542,7 @@ private:
 	uint32_t m255VectorId = 0;
 
 	uint32_t m0Id = 0;
+	uint32_t m0fId = 0;
 	uint32_t m1Id = 0;
 	uint32_t m2Id = 0;
 	uint32_t m3Id = 0;
@@ -643,6 +644,7 @@ private:
 	void Process_DP3();
 	void Process_DP4();
 	void Process_TEX();
+	void Process_TEXKILL();
 
 	void Process_TEXCOORD();
 
