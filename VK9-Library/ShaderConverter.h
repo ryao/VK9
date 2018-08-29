@@ -657,6 +657,7 @@ private:
 
 	//ternary operators
 	void Process_MAD();
+	void Process_LRP();
 };
 
 #endif //SHADERCONVERTER_H

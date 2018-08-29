@@ -5781,6 +5781,67 @@ void ShaderConverter::Process_MAD()
 	PrintTokenInformation("MAD", resultToken, argumentToken1, argumentToken2, argumentToken3);
 }
 
+void ShaderConverter::Process_LRP()
+{
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
+
+	Token argumentToken3 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType3 = GetRegisterType(argumentToken3.i);
+	uint32_t argumentId3 = GetSwizzledId(argumentToken3, GIVE_ME_VECTOR_4);
+
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	mIdTypePairs[resultId] = typeDescription;
+
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450IMix, argumentId1, argumentId2, argumentId3);
+		break;
+	case spv::OpTypeInt:
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450IMix, argumentId1, argumentId2, argumentId3);
+		break;
+	case spv::OpTypeFloat:
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450FMix, argumentId1, argumentId2, argumentId3);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_MAD - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("LRP", resultToken, argumentToken1, argumentToken2, argumentToken3);
+}
+
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 {
 	//mConvertedShader = {};
@@ -6136,8 +6197,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			SkipTokens(4);
 			break;
 		case D3DSIO_LRP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LRP.";
-			SkipTokens(4);
+			Process_LRP();
 			break;
 		case D3DSIO_SGN:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SGN.";
