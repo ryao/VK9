@@ -4296,7 +4296,7 @@ void ShaderConverter::Process_TEXKILL()
 	mIdTypePairs[xConditionalId] = boolType;
 	Push(spv::OpFOrdLessThan, boolTypeId, xConditionalId, xId, m0fId);
 	uint32_t xMergeBlockId = GetNextId();
-	Push(spv::OpFOrdLessThan, xMergeBlockId, 0);
+	Push(spv::OpSelectionMerge, xMergeBlockId, 0);
 	uint32_t xTrueLabelId = GetNextId();
 	uint32_t xFalseLabelId = GetNextId();
 	Push(spv::OpBranchConditional, xConditionalId, xTrueLabelId, xFalseLabelId);
@@ -4313,7 +4313,7 @@ void ShaderConverter::Process_TEXKILL()
 	mIdTypePairs[yConditionalId] = boolType;
 	Push(spv::OpFOrdLessThan, boolTypeId, yConditionalId, yId, m0fId);
 	uint32_t yMergeBlockId = GetNextId();
-	Push(spv::OpFOrdLessThan, yMergeBlockId, 0);
+	Push(spv::OpSelectionMerge, yMergeBlockId, 0);
 	uint32_t yTrueLabelId = GetNextId();
 	uint32_t yFalseLabelId = GetNextId();
 	Push(spv::OpBranchConditional, yConditionalId, yTrueLabelId, yFalseLabelId);
@@ -4330,7 +4330,7 @@ void ShaderConverter::Process_TEXKILL()
 	mIdTypePairs[zConditionalId] = boolType;
 	Push(spv::OpFOrdLessThan, boolTypeId, zConditionalId, zId, m0fId);
 	uint32_t zMergeBlockId = GetNextId();
-	Push(spv::OpFOrdLessThan, zMergeBlockId, 0);
+	Push(spv::OpSelectionMerge, zMergeBlockId, 0);
 	uint32_t zTrueLabelId = GetNextId();
 	uint32_t zFalseLabelId = GetNextId();
 	Push(spv::OpBranchConditional, zConditionalId, zTrueLabelId, zFalseLabelId);
