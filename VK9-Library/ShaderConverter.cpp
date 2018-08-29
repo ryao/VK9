@@ -3919,6 +3919,7 @@ void ShaderConverter::Process_IFC(uint32_t extraInfo)
 	uint32_t resultId;
 	uint32_t trueLabelId;
 	uint32_t falseLabelId;
+	uint32_t endIfLabelId;
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
@@ -4048,13 +4049,18 @@ void ShaderConverter::Process_IFC(uint32_t extraInfo)
 
 	trueLabelId = GetNextId();
 	falseLabelId = GetNextId();
+	endIfLabelId = GetNextId();
 
 	mIdTypePairs[trueLabelId] = labelType;
 	mIdTypePairs[falseLabelId] = labelType;
+	mIdTypePairs[endIfLabelId] = labelType;
 
 	mFalseLabels.push(falseLabelId);
 	mFalseLabelCount++;
 
+	mEndIfLabels.push(endIfLabelId);
+
+	Push(spv::OpSelectionMerge, endIfLabelId, 0);
 	Push(spv::OpBranchConditional, resultId, trueLabelId, falseLabelId);
 	Push(spv::OpLabel, trueLabelId);
 	PrintTokenInformation("IFC", argumentToken1, argumentToken2);
@@ -4069,6 +4075,7 @@ void ShaderConverter::Process_IF()
 	uint32_t resultId;
 	uint32_t trueLabelId;
 	uint32_t falseLabelId;
+	uint32_t endIfLabelId;
 
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
@@ -4094,25 +4101,29 @@ void ShaderConverter::Process_IF()
 
 	dataTypeId = GetSpirVTypeId(typeDescription);
 	argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
-	resultId = GetNextId();
+	resultId = argumentId1;
 
 	TypeDescription labelType;
 	labelType.PrimaryType = spv::OpLabel;
 
 	trueLabelId = GetNextId();
 	falseLabelId = GetNextId();
+	endIfLabelId = GetNextId();
 
 	mIdTypePairs[trueLabelId] = labelType;
 	mIdTypePairs[falseLabelId] = labelType;
+	mIdTypePairs[endIfLabelId] = labelType;
 
 	mFalseLabels.push(falseLabelId);
 	mFalseLabelCount++;
 
-	mIdTypePairs[resultId] = typeDescription;
+	mEndIfLabels.push(endIfLabelId);
+
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		Push(spv::OpSelectionMerge, argumentId1, trueLabelId, falseLabelId);
+		Push(spv::OpSelectionMerge, endIfLabelId, 0);
+		Push(spv::OpBranchConditional, resultId, trueLabelId, falseLabelId);
 		Push(spv::OpLabel, trueLabelId);
 		break;
 	default:
@@ -4126,9 +4137,11 @@ void ShaderConverter::Process_IF()
 void ShaderConverter::Process_ELSE()
 {
 	uint32_t falseLabelId = mFalseLabels.top();
+	uint32_t endIfLabelId = mEndIfLabels.top();
 
 	mFalseLabels.pop();
 
+	Push(spv::OpBranch, endIfLabelId);
 	Push(spv::OpLabel, falseLabelId);
 	PrintTokenInformation("ELSE");
 }
@@ -4141,12 +4154,8 @@ void ShaderConverter::Process_ENDIF()
 	}
 	mFalseLabelCount--;
 
-	TypeDescription labelType;
-	labelType.PrimaryType = spv::OpLabel;
-
-	uint32_t endIfLabelId = GetNextId();
-
-	mIdTypePairs[endIfLabelId] = labelType;
+	uint32_t endIfLabelId = mEndIfLabels.top();
+	mEndIfLabels.pop();
 
 	Push(spv::OpBranch, endIfLabelId);
 	Push(spv::OpLabel, endIfLabelId);
@@ -6149,7 +6158,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			SkipTokens(2);
 			break;
 		case D3DSIO_IFC:
-			Process_IFC();
+			Process_IFC(extraInfo);
 			break;
 		case D3DSIO_IF:
 			Process_IF();

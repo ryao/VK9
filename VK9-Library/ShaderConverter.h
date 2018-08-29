@@ -509,6 +509,7 @@ private:
 
 	std::stack<uint32_t> mFalseLabels;
 	size_t mFalseLabelCount;
+	std::stack<uint32_t> mEndIfLabels;
 
 	uint32_t* mBaseToken = nullptr;
 	uint32_t* mPreviousToken = nullptr;
