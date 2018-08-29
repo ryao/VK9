@@ -3909,7 +3909,7 @@ void ShaderConverter::Process_DEFB()
 	PrintTokenInformation("DEFB", token, token, token);
 }
 
-void ShaderConverter::Process_IFC()
+void ShaderConverter::Process_IFC(uint32_t extraInfo)
 {
 	TypeDescription typeDescription;
 	spv::Op dataType;
@@ -3951,16 +3951,95 @@ void ShaderConverter::Process_IFC()
 	resultId = GetNextId();
 
 	mIdTypePairs[resultId] = typeDescription;
-	switch (dataType)
+
+	switch (extraInfo)
 	{
-	case spv::OpTypeBool:
-		Push(spv::OpIEqual, dataTypeId, resultId, argumentId1, argumentId2);
+	case 1:
+		switch (dataType)
+		{
+		case spv::OpTypeBool:
+			Push(spv::OpUGreaterThan, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		case spv::OpTypeInt:
+			Push(spv::OpUGreaterThan, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+			break;
+		}
 		break;
-	case spv::OpTypeInt:
-		Push(spv::OpIEqual, dataTypeId, resultId, argumentId1, argumentId2);
+	case 2:
+		switch (dataType)
+		{
+		case spv::OpTypeBool:
+			Push(spv::OpIEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		case spv::OpTypeInt:
+			Push(spv::OpIEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+			break;
+		}
+		break;
+	case 3:
+		switch (dataType)
+		{
+		case spv::OpTypeBool:
+			Push(spv::OpUGreaterThanEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		case spv::OpTypeInt:
+			Push(spv::OpUGreaterThanEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+			break;
+		}
+		break;
+	case 4:
+		switch (dataType)
+		{
+		case spv::OpTypeBool:
+			Push(spv::OpULessThan, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		case spv::OpTypeInt:
+			Push(spv::OpULessThan, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+			break;
+		}
+		break;
+	case 5:
+		switch (dataType)
+		{
+		case spv::OpTypeBool:
+			Push(spv::OpINotEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		case spv::OpTypeInt:
+			Push(spv::OpINotEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+			break;
+		}
+		break;
+	case 6:
+		switch (dataType)
+		{
+		case spv::OpTypeBool:
+			Push(spv::OpULessThanEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		case spv::OpTypeInt:
+			Push(spv::OpULessThanEqual, dataTypeId, resultId, argumentId1, argumentId2);
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+			break;
+		}
 		break;
 	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported data type " << dataType;
+		BOOST_LOG_TRIVIAL(warning) << "Process_IFC - Unsupported compare type " << extraInfo;
 		break;
 	}
 
@@ -5850,6 +5929,8 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	uint32_t stringWordSize = 0;
 	uint32_t token = 0;
 	uint32_t instruction = 0;
+	uint32_t extraInfo = 0;
+
 	mBaseToken = mNextToken = mPreviousToken = shader;
 
 	token = GetNextToken().i;
@@ -5961,6 +6042,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 		mTokenOffset = mNextToken - shader;
 		token = GetNextToken().i;
 		instruction = GetOpcode(token);
+		extraInfo = ((token & D3DSP_OPCODESPECIFICCONTROL_MASK) >> D3DSP_OPCODESPECIFICCONTROL_SHIFT);
 
 		switch (instruction)
 		{

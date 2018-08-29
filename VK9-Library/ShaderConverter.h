@@ -615,7 +615,7 @@ private:
 	void Process_DEFB();
 
 	//Flow Control Operators
-	void Process_IFC();
+	void Process_IFC(uint32_t extraInfo);
 	void Process_IF();
 	void Process_ELSE();
 	void Process_ENDIF();
