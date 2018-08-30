@@ -1230,9 +1230,12 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		originalId = GetIdByRegister(token);
 	}
 
-	TypeDescription originalType = mIdTypePairs[originalId]; //GetTypeByRegister(token);
+	TypeDescription originalType = mIdTypePairs[originalId];
+	uint32_t originalTypeId = GetSpirVTypeId(originalType);
+
 	uint32_t loadedId = 0;
 	TypeDescription loadedType;
+	uint32_t loadedTypeId = 0;
 
 	if (originalType.PrimaryType == spv::OpTypePointer)
 	{
@@ -1251,8 +1254,116 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	{
 		loadedType = originalType;
 		loadedId = originalId;
+		loadedTypeId = originalTypeId;
 	}
 
+	/*
+	Check for modifiers and if found apply them to the interim result.
+	*/
+	uint32_t modifier = token.i & D3DSP_SRCMOD_MASK;
+
+	switch (modifier)
+	{
+	case D3DSPSM_NONE:
+		//Nothing to do here.
+		break;
+	case D3DSPSM_NEG:
+		if (loadedType.PrimaryType == spv::OpTypeFloat || loadedType.SecondaryType == spv::OpTypeFloat)
+		{
+			uint32_t negatedId = GetNextId();
+			mIdTypePairs[negatedId] = loadedType;
+			Push(spv::OpFNegate,loadedTypeId, negatedId, loadedId);
+			loadedId = negatedId;
+		}
+		else
+		{
+			uint32_t negatedId = GetNextId();
+			mIdTypePairs[negatedId] = loadedType;
+			Push(spv::OpSNegate,loadedTypeId, negatedId, loadedId);
+			loadedId = negatedId;
+		}
+		break;
+	case D3DSPSM_BIAS:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_BIAS";
+		break;
+	case D3DSPSM_BIASNEG:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_BIASNEG";
+		break;
+	case D3DSPSM_SIGN:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_SIGN";
+		break;
+	case D3DSPSM_SIGNNEG:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_SIGNNEG";
+		break;
+	case D3DSPSM_COMP:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_COMP";
+		break;
+	case D3DSPSM_X2:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_X2";
+		break;
+	case D3DSPSM_X2NEG:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_X2NEG";
+		break;
+	case D3DSPSM_DZ:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_DZ";
+		break;
+	case D3DSPSM_DW:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_DW";
+		break;
+	case D3DSPSM_ABS:
+		if (loadedType.PrimaryType == spv::OpTypeFloat || loadedType.SecondaryType == spv::OpTypeFloat)
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			loadedId = absoluteId;
+		}
+		else
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			loadedId = absoluteId;
+		}
+		break;
+	case D3DSPSM_ABSNEG:
+		if (loadedType.PrimaryType == spv::OpTypeFloat || loadedType.SecondaryType == spv::OpTypeFloat)
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			loadedId = absoluteId;
+
+			uint32_t negatedId = GetNextId();
+			mIdTypePairs[negatedId] = loadedType;
+			Push(spv::OpFNegate, loadedTypeId, negatedId, loadedId);
+			loadedId = negatedId;
+		}
+		else
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			loadedId = absoluteId;
+
+			uint32_t negatedId = GetNextId();
+			mIdTypePairs[negatedId] = loadedType;
+			Push(spv::OpSNegate, loadedTypeId, negatedId, loadedId);
+			loadedId = negatedId;
+		}
+		break;
+	case D3DSPSM_NOT:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_NOT";
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type " << modifier;
+		break;
+	}
+
+	/*
+	Use either shuffle or extract to get the component(s) indicated by the swizzle mask.
+	There are some special cases where we need to ignore the mask such as texcoord.
+	*/
 	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
 
 	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0 || lookingFor == GIVE_ME_SAMPLER)
@@ -1933,6 +2044,16 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		}
 
 		inputId = saturatedInputId;
+	}
+
+	if (token.i & D3DSPDM_PARTIALPRECISION)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::ApplyWriteMask - D3DSPDM_PARTIALPRECISION is not supported!";
+	}
+
+	if (token.i & D3DSPDM_MSAMPCENTROID)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::ApplyWriteMask - D3DSPDM_MSAMPCENTROID is not supported!";
 	}
 
 	/*
@@ -5058,16 +5179,7 @@ void ShaderConverter::Process_ABS()
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
 	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
 
-	Token argumentToken2 = GetNextToken();
-	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
-
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
-
-	if (typeDescription.PrimaryType == spv::OpTypeVoid)
-	{
-		typeDescription = mIdTypePairs[argumentId2];
-	}
 
 	spv::Op dataType = typeDescription.PrimaryType;
 
@@ -5091,22 +5203,22 @@ void ShaderConverter::Process_ABS()
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
-		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, argumentId1, argumentId2);
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, argumentId1);
 		break;
 	case spv::OpTypeInt:
-		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, argumentId1, argumentId2);
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, argumentId1);
 		break;
 	case spv::OpTypeFloat:
-		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, argumentId1, argumentId2);
+		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, argumentId1);
 		break;
 	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_MAX - Unsupported data type " << dataType;
+		BOOST_LOG_TRIVIAL(warning) << "Process_ABS - Unsupported data type " << dataType;
 		break;
 	}
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
-	PrintTokenInformation("ABS", resultToken, argumentToken1, argumentToken2);
+	PrintTokenInformation("ABS", resultToken, argumentToken1);
 }
 
 void ShaderConverter::Process_ADD()
