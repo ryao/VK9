@@ -1899,8 +1899,8 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 		uint32_t loadedModifiedTypeId = GetSpirVTypeId(loadedModifiedType);
 
 		inputId = GetNextId();
-		PushLoad(loadedModifiedTypeId, inputId, modifiedId);
 		mIdTypePairs[inputId] = loadedModifiedType;
+		PushLoad(loadedModifiedTypeId, inputId, modifiedId);	
 	}
 	else
 	{
@@ -1913,6 +1913,28 @@ uint32_t ShaderConverter::ApplyWriteMask(const Token& token, uint32_t modifiedId
 	*/
 	inputId = SwizzleValue(token, inputId);
 	
+	/*
+	If this token has the _sat modifier then do a clamp before we store the result.
+	*/
+	if (token.i & D3DSPDM_SATURATE)
+	{
+		uint32_t saturatedInputId  = GetNextId();
+		TypeDescription saturatedInputType = mIdTypePairs[inputId];
+		uint32_t saturatedInputTypeId = GetSpirVTypeId(saturatedInputType);
+		mIdTypePairs[saturatedInputId] = saturatedInputType;
+
+		if (saturatedInputType.PrimaryType == spv::OpTypeFloat || saturatedInputType.SecondaryType == spv::OpTypeFloat)
+		{
+			Push(spv::OpExtInst, saturatedInputTypeId, saturatedInputId, mGlslExtensionId, GLSLstd450::GLSLstd450FClamp, inputId, m0fId, m1fId);
+		}
+		else
+		{
+			Push(spv::OpExtInst, saturatedInputTypeId, saturatedInputId, mGlslExtensionId, GLSLstd450::GLSLstd450UClamp, inputId, m0fId, m1fId);
+		}
+
+		inputId = saturatedInputId;
+	}
+
 	/*
 	For some reason you can write the result of TEX back to the texture register in DXBC.
 	This makes Spir-V angry because input registers are read-only. 
@@ -2253,6 +2275,15 @@ void ShaderConverter::GenerateConstantIndices()
 	mTypeInstructions.push_back(0); //Literal Value
 	registerName = "float_0";
 	PushName(m0fId, registerName);
+
+	m1fId = GetNextId();
+	mIdTypePairs[m1fId] = floatType;
+	mTypeInstructions.push_back(Pack(3 + 1, spv::OpConstant)); //size,Type
+	mTypeInstructions.push_back(floatTypeId); //Result Type (Id)
+	mTypeInstructions.push_back(m1fId); //Result (Id)
+	mTypeInstructions.push_back(1); //Literal Value
+	registerName = "float_1";
+	PushName(m1fId, registerName);
 
 	TypeDescription intType;
 	intType.PrimaryType = spv::OpTypeInt;
