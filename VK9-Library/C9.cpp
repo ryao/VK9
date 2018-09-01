@@ -106,13 +106,18 @@ ULONG STDMETHODCALLTYPE C9::Release(void)
 
 HRESULT STDMETHODCALLTYPE C9::CheckDepthStencilMatch(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,D3DFORMAT RenderTargetFormat,D3DFORMAT DepthStencilFormat)
 {
-	HRESULT result = S_OK;
-	
-	//TODO: Implement.
+	if (DepthStencilFormat == D3DFMT_UNKNOWN || (ConvertFormat(AdapterFormat) != vk::Format::eUndefined && ConvertFormat(DepthStencilFormat) != vk::Format::eUndefined))
+	{
+		BOOST_LOG_TRIVIAL(warning) << "C9::CheckDepthStencilMatch (D3D_OK) AdapterFormat: " << AdapterFormat << " CheckFormat: " << DepthStencilFormat;
 
-	BOOST_LOG_TRIVIAL(warning) << "C9::CheckDepthStencilMatch is not implemented!";
+		return D3D_OK;
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(warning) << "C9::CheckDepthStencilMatch (D3DERR_NOTAVAILABLE) AdapterFormat: " << AdapterFormat << " CheckFormat: " << DepthStencilFormat;
 
-	return result;	
+		return D3DERR_NOTAVAILABLE;
+	}
 }
 
 HRESULT STDMETHODCALLTYPE C9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,DWORD Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat)

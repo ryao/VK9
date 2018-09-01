@@ -22,9 +22,7 @@ misrepresented as being the original software.
 #include <vulkan/vk_sdk_platform.h>
 #include <boost/container/small_vector.hpp>
 
-#ifdef _DEBUG
 #include "renderdoc_app.h"
-#endif // _DEBUG
 
 #ifndef REALINSTANCE_H
 #define REALINSTANCE_H
@@ -36,10 +34,10 @@ struct RealInstance
 	uint32_t mPhysicalDeviceCount = 0;
 
 	//boost::container::small_vector<std::shared_ptr<RealDevice>, 1> mDevices;
-
-#ifdef _DEBUG
 	HMODULE mRenderDocDll = nullptr;
 	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
+
+#ifdef _DEBUG
 	vk::DebugReportCallbackEXT mCallback;
 #endif // _DEBUG
 

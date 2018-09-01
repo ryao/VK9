@@ -240,6 +240,7 @@ void StateManager::CreateInstance()
 	extensionNames.push_back("VK_EXT_debug_report");
 	//extensionNames.push_back("VK_EXT_debug_marker");
 	layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
+#endif
 
 	//This didn't work so I switched it back to what I had.
 	//BOOL res = GetModuleHandleEx(0, TEXT("renderdoc.dll"), &ptr->mRenderDocDll);
@@ -251,7 +252,7 @@ void StateManager::CreateInstance()
 		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(ptr->mRenderDocDll, "RENDERDOC_GetAPI");
 		if (RENDERDOC_GetAPI != nullptr)
 		{
-			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_1, (void **)&ptr->mRenderDocApi);
+			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&ptr->mRenderDocApi);
 			if (ret != 1)
 			{
 				BOOST_LOG_TRIVIAL(warning) << "StateManager::CreateInstance unable to find RENDERDOC_API_Version_1_1_ !";
@@ -271,10 +272,9 @@ void StateManager::CreateInstance()
 	{
 		BOOST_LOG_TRIVIAL(warning) << "StateManager::CreateInstance unable to find renderdoc.dll !";
 	}
-#endif
 
 	vk::Result result;
-	vk::ApplicationInfo applicationInfo("VK9", 1, "VK9", 1, 0);
+	vk::ApplicationInfo applicationInfo("VK9", 1, "VK9", 1, VK_MAKE_VERSION(1, 1, 0));
 	vk::InstanceCreateInfo createInfo({}, &applicationInfo, layerNames.size(), layerNames.data(), extensionNames.size(), extensionNames.data());
 
 	//Get an instance handle.
@@ -580,6 +580,9 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	case D3DFMT_L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
 		break;
+	case D3DFMT_L16:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+		break;
 	case D3DFMT_A8L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
 		break;
@@ -691,6 +694,9 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	case D3DFMT_L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
 		break;
+	case D3DFMT_L16:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+		break;
 	case D3DFMT_A8L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG);
 		break;
@@ -800,6 +806,9 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 	switch (texture9->mFormat)
 	{
 	case D3DFMT_L8:
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+		break;
+	case D3DFMT_L16:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
 		break;
 	case D3DFMT_A8L8:

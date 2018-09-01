@@ -81,5 +81,36 @@ void main()
 		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
 	}
 
+	if(alphaTestEnable)
+	{
+		float ref = alphaReference / 255.0f;
+		switch(alphaFunction)
+		{
+		    case D3DCMP_NEVER:
+			break;
+			case D3DCMP_LESS:
+			if(result.a < ref){}else{discard;}
+			break;
+			case D3DCMP_EQUAL:
+			if(result.a == ref){}else{discard;}
+			break;
+			case D3DCMP_LESSEQUAL:
+			if(result.a <= ref){}else{discard;}
+			break;
+			case D3DCMP_GREATER:
+			if(result.a > ref){}else{discard;}
+			break;
+			case D3DCMP_NOTEQUAL:
+			if(result.a != ref){}else{discard;}
+			break;
+			case D3DCMP_GREATEREQUAL:
+			if(result.a >= ref){}else{discard;}
+			break;
+			case D3DCMP_ALWAYS:
+				discard;
+			break;
+		}
+	}	
+	
 	uFragColor = result;
 }

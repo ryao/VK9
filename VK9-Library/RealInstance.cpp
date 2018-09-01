@@ -22,19 +22,21 @@ misrepresented as being the original software.
 
 RealInstance::RealInstance()
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealInstance::RealInstance";
+	BOOST_LOG_TRIVIAL(info) << "RealInstance::RealInstance";
 }
 
 RealInstance::~RealInstance()
 {
-	BOOST_LOG_TRIVIAL(warning) << "RealInstance::~RealInstance";
-	//mDevices.clear();
-#ifdef _DEBUG
-	mInstance.destroyDebugReportCallbackEXT(mCallback);
-	if ( mRenderDocDll != nullptr )
+	BOOST_LOG_TRIVIAL(info) << "RealInstance::~RealInstance";
+
+	if (mRenderDocDll != nullptr)
 	{
 		FreeLibrary(mRenderDocDll);
 	}
+
+#ifdef _DEBUG
+	mInstance.destroyDebugReportCallbackEXT(mCallback);
 #endif
+
 	mInstance.destroy();
 }

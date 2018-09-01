@@ -544,7 +544,7 @@ inline vk::Format ConvertFormat(D3DFORMAT format) noexcept
 	case D3DFMT_A8B8G8R8:
 		return (vk::Format)VK_FORMAT_R8G8B8A8_UNORM;
 	case D3DFMT_X8B8G8R8:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //R8G8B8X8_UNORM
+		return (vk::Format)VK_FORMAT_R8G8B8A8_UNORM; //R8G8B8X8_UNORM
 	case D3DFMT_G16R16:
 		return (vk::Format)VK_FORMAT_R16G16_UNORM;
 	case D3DFMT_A2R10G10B10:
@@ -582,17 +582,17 @@ inline vk::Format ConvertFormat(D3DFORMAT format) noexcept
 	case D3DFMT_G8R8_G8B8:
 		return (vk::Format)VK_FORMAT_UNDEFINED;
 	case D3DFMT_DXT1:
-		return (vk::Format)VK_FORMAT_UNDEFINED;
+		return (vk::Format)VK_FORMAT_BC1_RGB_UNORM_BLOCK;
 	case D3DFMT_DXT2:
-		return (vk::Format)VK_FORMAT_UNDEFINED;
+		return (vk::Format)VK_FORMAT_BC2_UNORM_BLOCK;
 	case D3DFMT_DXT3:
-		return (vk::Format)VK_FORMAT_UNDEFINED;
+		return (vk::Format)VK_FORMAT_BC3_UNORM_BLOCK;
 	case D3DFMT_DXT4:
-		return (vk::Format)VK_FORMAT_UNDEFINED;
+		return (vk::Format)VK_FORMAT_BC4_UNORM_BLOCK;
 	case D3DFMT_DXT5:
-		return (vk::Format)VK_FORMAT_UNDEFINED;
+		return (vk::Format)VK_FORMAT_BC5_UNORM_BLOCK;
 	case D3DFMT_D16_LOCKABLE:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //D16_LOCKABLE
+		return (vk::Format)VK_FORMAT_D16_UNORM; //D16_LOCKABLE
 	case D3DFMT_D32:
 		return (vk::Format)VK_FORMAT_UNDEFINED; //D32_UNORM
 	case D3DFMT_D15S1:
@@ -600,7 +600,7 @@ inline vk::Format ConvertFormat(D3DFORMAT format) noexcept
 	case D3DFMT_D24S8:
 		return (vk::Format)VK_FORMAT_D24_UNORM_S8_UINT;
 	case D3DFMT_D24X8:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //X8D24_UNORM
+		return (vk::Format)VK_FORMAT_D24_UNORM_S8_UINT; //X8D24_UNORM
 	case D3DFMT_D24X4S4:
 		return (vk::Format)VK_FORMAT_UNDEFINED; //S4X4_UINT_D24_UNORM
 	case D3DFMT_D16:
@@ -608,15 +608,15 @@ inline vk::Format ConvertFormat(D3DFORMAT format) noexcept
 	case D3DFMT_D32F_LOCKABLE:
 		return (vk::Format)VK_FORMAT_D32_SFLOAT;
 	case D3DFMT_D24FS8:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //S8_UINT_D24_SFLOAT
+		return (vk::Format)VK_FORMAT_D24_UNORM_S8_UINT; //S8_UINT_D24_SFLOAT
 #if !defined(D3D_DISABLE_9EX)
 	case D3DFMT_D32_LOCKABLE:
 		return (vk::Format)VK_FORMAT_UNDEFINED;
 	case D3DFMT_S8_LOCKABLE:
-		return (vk::Format)VK_FORMAT_UNDEFINED;
+		return (vk::Format)VK_FORMAT_S8_UINT;
 #endif // !D3D_DISABLE_9EX
 	case D3DFMT_L16:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //L16_UNORM
+		return (vk::Format)VK_FORMAT_R16_UNORM; //L16_UNORM
 	case D3DFMT_VERTEXDATA:
 		return (vk::Format)VK_FORMAT_UNDEFINED; //VERTEXDATA
 	case D3DFMT_INDEX16:
@@ -663,67 +663,6 @@ inline D3DFORMAT ConvertFormat(vk::Format format) noexcept
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172558(v=vs.85).aspx
 	*/
 	switch ((VkFormat)format)
-	{
-	case VK_FORMAT_UNDEFINED:
-		return D3DFMT_UNKNOWN;
-	case VK_FORMAT_R8G8B8_UNORM:
-		return D3DFMT_R8G8B8;
-	case VK_FORMAT_B8G8R8A8_UNORM:
-		return D3DFMT_A8R8G8B8;
-	case VK_FORMAT_B5G6R5_UNORM_PACK16:
-		return D3DFMT_R5G6B5;
-	case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
-		return D3DFMT_A1R5G5B5;
-	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
-		return D3DFMT_A4R4G4B4;
-	case VK_FORMAT_R8G8B8A8_UNORM:
-		return D3DFMT_A8B8G8R8;
-	case VK_FORMAT_R16G16_UNORM:
-		return D3DFMT_G16R16;
-	case VK_FORMAT_R16G16B16A16_UNORM:
-		return D3DFMT_A16B16G16R16;
-	case VK_FORMAT_R8G8_SNORM:
-		return D3DFMT_V8U8;
-	case VK_FORMAT_R8G8B8A8_SNORM:
-		return D3DFMT_Q8W8V8U8;
-	case VK_FORMAT_R16G16_SNORM:
-		return D3DFMT_V16U16;
-	case VK_FORMAT_D24_UNORM_S8_UINT:
-		return D3DFMT_D24S8;
-	case VK_FORMAT_D16_UNORM:
-		return D3DFMT_D16;
-	case VK_FORMAT_D32_SFLOAT:
-		return D3DFMT_D32F_LOCKABLE;
-	case VK_FORMAT_R16_UINT:
-		return D3DFMT_INDEX16;
-	case VK_FORMAT_R32_UINT:
-		return D3DFMT_INDEX32;
-	case VK_FORMAT_R16G16B16A16_SNORM:
-		return D3DFMT_Q16W16V16U16;
-	case VK_FORMAT_R16_SFLOAT:
-		return D3DFMT_R16F;
-	case VK_FORMAT_R16G16_SFLOAT:
-		return D3DFMT_G16R16F;
-	case VK_FORMAT_R16G16B16A16_SFLOAT:
-		return D3DFMT_A16B16G16R16F;
-	case VK_FORMAT_R32_SFLOAT:
-		return D3DFMT_R32F;
-	case VK_FORMAT_R32G32_SFLOAT:
-		return D3DFMT_G32R32F;
-	case VK_FORMAT_R32G32B32A32_SFLOAT:
-		return D3DFMT_A32B32G32R32F;
-	default:
-		return D3DFMT_UNKNOWN;
-	}
-}
-
-inline D3DFORMAT ConvertFormat(VkFormat format) noexcept
-{
-	/*
-	https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/xhtml/vkspec.html#VkFormat
-	https://msdn.microsoft.com/en-us/library/windows/desktop/bb172558(v=vs.85).aspx
-	*/
-	switch (format)
 	{
 	case VK_FORMAT_UNDEFINED:
 		return D3DFMT_UNKNOWN;

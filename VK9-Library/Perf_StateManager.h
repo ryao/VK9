@@ -29,9 +29,7 @@ misrepresented as being the original software.
 
 #include "ShaderConverter.h"
 
-#ifdef _DEBUG
 #include "renderdoc_app.h"
-#endif // _DEBUG
 
 #ifndef STATEMANAGER_H
 #define STATEMANAGER_H

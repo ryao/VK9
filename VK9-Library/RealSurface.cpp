@@ -167,7 +167,7 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 		mSubresource.aspectMask = vk::ImageAspectFlagBits::eStencil;
 		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eStencil;
 	}
-	else if (mRealFormat == vk::Format::eD16Unorm)
+	else if (mRealFormat == vk::Format::eD16Unorm || mRealFormat == vk::Format::eD32Sfloat)
 	{
 		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
 		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
@@ -205,6 +205,9 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 		switch (surface9->mFormat)
 		{
 		case D3DFMT_L8:
+			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
+			break;
+		case D3DFMT_L16:
 			imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
 			break;
 		case D3DFMT_A8L8:
