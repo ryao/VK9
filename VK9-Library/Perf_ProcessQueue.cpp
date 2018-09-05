@@ -339,7 +339,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
-				commandStreamManager->mRenderManager.Present(realDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+				commandStreamManager->mResult = commandStreamManager->mRenderManager.Present(realDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 			}
 			break;
 			case Device_BeginStateBlock:

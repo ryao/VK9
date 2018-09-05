@@ -392,13 +392,13 @@ void RealSwapChain::DestroyDepthBuffer()
 	mDevice.freeMemory(mDepthDeviceMemory, nullptr);
 }
 
-void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source)
+vk::Result RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source)
 {
 	mResult = mDevice.acquireNextImageKHR(mSwapchain, UINT64_MAX, nullptr, mSwapFence, &mCurrentIndex);
 	if (mResult != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Start vkAcquireNextImageKHR failed with return code of " << GetResultString((VkResult)mResult);
-		return;
+		return mResult;
 	}
 
 	mDevice.waitForFences(1, &mSwapFence, VK_TRUE, UINT64_MAX);
@@ -477,17 +477,27 @@ void RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk
 	if (mResult != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Present vkQueueSubmit failed with return code of " << GetResultString((VkResult)mResult);
-		return;
+		return mResult;
 	}
-	queue.waitIdle();
+
+	//Using C API because someone decided to do an assert here in the C++ API instead of returning an error code.
+	mResult = (vk::Result)vkQueueWaitIdle((VkQueue)queue);
+	if (mResult != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Present vkQueueWaitIdle failed with return code of " << GetResultString((VkResult)mResult);
+		return mResult;
+	}
+
 
 	mPresentInfo.pImageIndices = &mCurrentIndex;
 	mResult = queue.presentKHR(&mPresentInfo);
 	if (mResult != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Present vkQueuePresentKHR failed with return code of " << GetResultString((VkResult)mResult);
-		return;
+		return mResult;
 	}
 	queue.waitIdle();
 	commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+
+	return mResult;
 }

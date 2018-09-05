@@ -28,7 +28,9 @@ misrepresented as being the original software.
 #include "WorkItemType.h"
 #include "WorkItem.h"
 
-//#include "readerwriterqueue.h"
+#include <vulkan/vulkan.h>
+#include <vulkan/vk_sdk_platform.h>
+#include <vulkan/vulkan.hpp>
 
 #ifndef COMMANDSTREAMMANAGER_H
 #define COMMANDSTREAMMANAGER_H
@@ -56,6 +58,8 @@ struct CommandStreamManager
 
 	std::atomic_bool IsRunning = 1;
 	std::atomic_bool IsBusy = 0;
+
+	std::atomic<vk::Result> mResult = vk::Result::eSuccess;
 
 	CommandStreamManager();
 	~CommandStreamManager();

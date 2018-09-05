@@ -174,8 +174,10 @@ void RenderManager::Clear(std::shared_ptr<RealDevice> realDevice, DWORD Count, c
 	realDevice->mDeviceState.mRenderTarget->Clear(currentBuffer, deviceState, Count, pRects, Flags, Color, Z, Stencil);
 }
 
-void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
+vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
+	vk::Result result = vk::Result::eSuccess;
+
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
 		this->StartScene(realDevice, false);
@@ -188,7 +190,7 @@ void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride);
 
-	swapchain->Present(currentBuffer, realDevice->mQueue, deviceState.mRenderTarget->mColorSurface->mStagingImage);
+	result = swapchain->Present(currentBuffer, realDevice->mQueue, deviceState.mRenderTarget->mColorSurface->mStagingImage);
 	deviceState.hasPresented = true;
 	realDevice->mCurrentCommandBuffer = !realDevice->mCurrentCommandBuffer;
 
@@ -199,6 +201,8 @@ void RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *
 	//mGarbageManager.DestroyHandles();
 
 	//Print(mDeviceState.mTransforms);
+
+	return result;
 }
 
 void RenderManager::DrawIndexedPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)

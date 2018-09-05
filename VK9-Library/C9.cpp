@@ -191,39 +191,11 @@ HRESULT STDMETHODCALLTYPE C9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,HW
 {
 	HRESULT result = S_OK;
 
-	if (!pPresentationParameters->BackBufferWidth)
-	{
-		RECT  rect;
-		GetWindowRect(hFocusWindow, &rect);
-		pPresentationParameters->BackBufferWidth = rect.right;
-		pPresentationParameters->BackBufferHeight= rect.bottom;
-	}
-
 	CDevice9* obj = new CDevice9(this,Adapter,DeviceType,hFocusWindow,BehaviorFlags,pPresentationParameters);
 
 	(*ppReturnedDeviceInterface) = (IDirect3DDevice9*)obj;
 
-	WorkItem* workItem = obj->mCommandStreamManager->GetWorkItem(this);
-	//std::lock_guard<std::mutex> lock(workItem->Mutex);
-	workItem->Id = obj->mInstanceId;
-	workItem->WorkItemType = WorkItemType::Device_Create;
-	workItem->Argument1 = obj;
-	obj->mId = obj->mCommandStreamManager->RequestWorkAndWait(workItem);
-
-	//Add implicit swap chain.
-	CSwapChain9* ptr = nullptr; //= new CSwapChain9(this, pPresentationParameters);
-	obj->CreateAdditionalSwapChain(&obj->mPresentationParameters, (IDirect3DSwapChain9**)&ptr);
-	obj->mSwapChains.push_back(ptr);
-	
-	//Add implicit render target
-	//obj->mRenderTargets[0] = ptr->mBackBuffer;
-	obj->SetRenderTarget(0, ptr->mBackBuffer);
-
-	//Add implicit stencil buffer surface.
-	auto depth = new CSurface9(obj, &obj->mPresentationParameters, pPresentationParameters->AutoDepthStencilFormat);
-	depth->Init();
-	obj->SetDepthStencilSurface(depth);
-	depth->Release();
+	obj->Init();
 
 	return result;	
 }

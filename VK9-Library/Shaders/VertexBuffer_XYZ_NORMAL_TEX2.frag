@@ -92,38 +92,7 @@ void main()
 		colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
 		alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
 	}
-	
-	if(alphaTestEnable)
-	{
-		float ref = alphaReference / 255.0f;
-		switch(alphaFunction)
-		{
-		    case D3DCMP_NEVER:
-			break;
-			case D3DCMP_LESS:
-			if(result.a < ref){}else{discard;}
-			break;
-			case D3DCMP_EQUAL:
-			if(result.a == ref){}else{discard;}
-			break;
-			case D3DCMP_LESSEQUAL:
-			if(result.a <= ref){}else{discard;}
-			break;
-			case D3DCMP_GREATER:
-			if(result.a > ref){}else{discard;}
-			break;
-			case D3DCMP_NOTEQUAL:
-			if(result.a != ref){}else{discard;}
-			break;
-			case D3DCMP_GREATEREQUAL:
-			if(result.a >= ref){}else{discard;}
-			break;
-			case D3DCMP_ALWAYS:
-				discard;
-			break;
-		}
-	}	
-	
+		
 	uFragColor = result;
 	
 	if(lighting)

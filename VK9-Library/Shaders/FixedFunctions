@@ -221,12 +221,41 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn, tex, texcoord);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn, tex, texcoord);
 
-	if(alphaBlendEnable)
+	//TODO: review alpha factor logic.
+	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+	
+	if(alphaTestEnable)
 	{
-		//TODO: review alpha factor logic.
-		tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
-	}
-	else
+		float ref = alphaReference / 255.0f;
+		switch(alphaFunction)
+		{
+		    case D3DCMP_NEVER:
+			break;
+			case D3DCMP_LESS:
+			if(tempResult.a < ref){}else{discard;}
+			break;
+			case D3DCMP_EQUAL:
+			if(tempResult.a == ref){}else{discard;}
+			break;
+			case D3DCMP_LESSEQUAL:
+			if(tempResult.a <= ref){}else{discard;}
+			break;
+			case D3DCMP_GREATER:
+			if(tempResult.a > ref){}else{discard;}
+			break;
+			case D3DCMP_NOTEQUAL:
+			if(tempResult.a != ref){}else{discard;}
+			break;
+			case D3DCMP_GREATEREQUAL:
+			if(tempResult.a >= ref){}else{discard;}
+			break;
+			case D3DCMP_ALWAYS:
+				discard;
+			break;
+		}
+	}	
+	
+	if(!alphaBlendEnable)
 	{
 		tempResult.a = 1.0;
 	}

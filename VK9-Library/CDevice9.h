@@ -35,6 +35,8 @@ class CDevice9 : public IDirect3DDevice9
 public:
 	CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters);
 	~CDevice9();
+	void Init();
+	void Destroy();
 
 	//CSMT
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;

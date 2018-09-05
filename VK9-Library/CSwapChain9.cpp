@@ -161,7 +161,5 @@ HRESULT STDMETHODCALLTYPE CSwapChain9::GetRasterStatus(D3DRASTER_STATUS *pRaster
 
 HRESULT STDMETHODCALLTYPE CSwapChain9::Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion, DWORD dwFlags)
 {
-	mDevice->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
-
-	return S_OK;
+	return mDevice->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }

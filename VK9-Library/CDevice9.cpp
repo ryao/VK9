@@ -58,6 +58,24 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 	mCommandStreamManager = mInstance->mCommandStreamManager;
 	mInstanceId = mInstance->mId;
+}
+
+CDevice9::~CDevice9()
+{
+	Destroy();
+	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
+}
+
+void CDevice9::Init()
+{
+	//Setup Windows window
+	if (!mPresentationParameters.BackBufferWidth)
+	{
+		RECT  rect;
+		GetWindowRect(mFocusWindow, &rect);
+		mPresentationParameters.BackBufferWidth = rect.right;
+		mPresentationParameters.BackBufferHeight = rect.bottom;
+	}
 
 	if (!mPresentationParameters.Windowed)
 	{
@@ -68,12 +86,33 @@ CDevice9::CDevice9(C9* Instance, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocu
 		newSettings.dmBitsPerPel = 32;
 		newSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 		ChangeDisplaySettings(&newSettings, CDS_FULLSCREEN);
-		SetWindowPos(hFocusWindow, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		InvalidateRect(hFocusWindow, 0, true);
+		SetWindowPos(mFocusWindow, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		InvalidateRect(mFocusWindow, 0, true);
 	}
+
+	//Create real device
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->Id = mInstanceId;
+	workItem->WorkItemType = WorkItemType::Device_Create;
+	workItem->Argument1 = this;
+	mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	//Add implicit swap chain.
+	CSwapChain9* ptr = nullptr;
+	CreateAdditionalSwapChain(&mPresentationParameters, (IDirect3DSwapChain9**)&ptr);
+	mSwapChains.push_back(ptr);
+
+	//Add implicit render target
+	SetRenderTarget(0, ptr->mBackBuffer);
+
+	//Add implicit stencil buffer surface.
+	auto depth = new CSurface9(this, &mPresentationParameters, mPresentationParameters.AutoDepthStencilFormat);
+	depth->Init();
+	SetDepthStencilSurface(depth);
+	depth->Release();
 }
 
-CDevice9::~CDevice9()
+void CDevice9::Destroy()
 {
 	//Delete any temp buffers used to handle the UP draw calls.
 	for (auto buffer : mVertexBuffers)
@@ -89,8 +128,6 @@ CDevice9::~CDevice9()
 	workItem->WorkItemType = WorkItemType::Device_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
-
-	BOOST_LOG_TRIVIAL(info) << "CDevice9::~CDevice9";
 
 	for (size_t i = 0; i < mSwapChains.size(); i++)
 	{
@@ -168,6 +205,8 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 		}
 	}
 	mIndexBuffers.clear();
+
+	if (mCommandStreamManager->mResult == vk::Result::eErrorDeviceLost) { return D3DERR_DEVICELOST; }
 
 	return D3D_OK;
 }
@@ -1256,9 +1295,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::ProcessVertices(UINT SrcStartIndex, UINT Des
 
 HRESULT STDMETHODCALLTYPE CDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters)
 {
-	//TODO: Implement.
+	/*
+	All of the the d3d9 "device state" is attached to the RealDevice object so just destroy the current one and make a new one.
+	The application is responsible for destroying any handles it has before calling Reset but I doubt games really do that.
+	*/
+	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
-	BOOST_LOG_TRIVIAL(warning) << "CDevice9::Reset is not implemented!";
+	Destroy();
+	Init();
 
 	return S_OK;
 }
@@ -1697,12 +1741,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::StretchRect(IDirect3DSurface9 *pSourceSurfac
 
 HRESULT STDMETHODCALLTYPE CDevice9::TestCooperativeLevel()
 {
-	//https://docs.microsoft.com/en-us/windows/desktop/api/d3d9helper/nf-d3d9helper-idirect3ddevice9-testcooperativelevel
-
-	/*
-	For vulkan the device lost would be more like render target lost and I can't tell which render target we care about until present.
-	Present is also supposed to return an error if the present target is in error so I'm going to consider this function implemented.
-	*/
+	if (mCommandStreamManager->mResult == vk::Result::eErrorDeviceLost) { return D3DERR_DEVICELOST; }
 
 	return S_OK;
 }

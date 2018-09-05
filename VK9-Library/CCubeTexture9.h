@@ -45,7 +45,7 @@ public:
 	HANDLE* mSharedHandle = nullptr;
 
 	ULONG mReferenceCount = 1;
-	VkResult mResult = VK_SUCCESS;
+	vk::Result mResult = vk::Result::eSuccess;
 	D3DTEXTUREFILTERTYPE mMipFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;

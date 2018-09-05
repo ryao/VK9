@@ -88,7 +88,7 @@ struct RealSwapChain
 	void InitDepthBuffer();
 	void DestroyDepthBuffer();
 
-	void Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source);
+	vk::Result Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source);
 
 };
 
