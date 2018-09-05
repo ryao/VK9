@@ -86,6 +86,8 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 
 struct StateManager
 {
+	boost::program_options::variables_map& mOptions;
+
 	boost::container::small_vector< std::shared_ptr<RealInstance>, 1> mInstances;
 	std::atomic_size_t mInstanceKey = 0;
 
@@ -112,7 +114,7 @@ struct StateManager
 
 	boost::container::flat_map<HWND, std::shared_ptr<RealSwapChain> > mSwapChains;
 
-	StateManager();
+	StateManager(boost::program_options::variables_map& options);
 	~StateManager();
 
 	void DestroyDevice(size_t id);

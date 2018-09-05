@@ -38,11 +38,12 @@ misrepresented as being the original software.
 #include <winuser.h>
 
 CommandStreamManager::CommandStreamManager()
-	: mWorkerThread(ProcessQueue, this)
+	: mWorkerThread(ProcessQueue, this), mRenderManager(mOptions)
 {
 	//Setup configuration & logging.
 	mOptionDescriptions.add_options()
-		("LogFile", boost::program_options::value<std::string>(), "The location of the log file.");
+		("LogFile", boost::program_options::value<std::string>(), "The location of the log file.")
+		("EnableDebugLayers", boost::program_options::value<uint32_t>(), "Enable validation layers?");
 
 	boost::program_options::store(boost::program_options::parse_config_file<char>("VK9.conf", mOptionDescriptions), mOptions);
 	boost::program_options::notify(mOptions);

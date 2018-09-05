@@ -51,7 +51,8 @@ misrepresented as being the original software.
 #include "CPixelShader9.h"
 #include "CVertexShader9.h"
 
-RenderManager::RenderManager()
+RenderManager::RenderManager(boost::program_options::variables_map& options)
+	: mOptions(options), mStateManager(mOptions)
 {
 
 }

@@ -34,9 +34,7 @@ RealInstance::~RealInstance()
 		FreeLibrary(mRenderDocDll);
 	}
 
-#ifdef _DEBUG
 	mInstance.destroyDebugReportCallbackEXT(mCallback);
-#endif
 
 	mInstance.destroy();
 }

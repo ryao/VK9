@@ -27,11 +27,12 @@ misrepresented as being the original software.
 
 struct RenderManager
 {
+	boost::program_options::variables_map& mOptions;
 	StateManager mStateManager;
 
 	float mEpsilon = std::numeric_limits<float>::epsilon();
 
-	RenderManager();
+	RenderManager(boost::program_options::variables_map& options);
 	~RenderManager();
 
 	void UpdateBuffer(std::shared_ptr<RealDevice> realDevice);

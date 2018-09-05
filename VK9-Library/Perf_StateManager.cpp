@@ -185,7 +185,8 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 	);
 }
 
-StateManager::StateManager()
+StateManager::StateManager(boost::program_options::variables_map& options)
+	: mOptions(options)
 {
 
 }
@@ -237,10 +238,22 @@ void StateManager::CreateInstance()
 	extensionNames.push_back("VK_KHR_get_physical_device_properties2");
 
 #ifdef _DEBUG
-	extensionNames.push_back("VK_EXT_debug_report");
-	//extensionNames.push_back("VK_EXT_debug_marker");
-	layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	bool enableDebugLayers = true;
+#else
+	bool enableDebugLayers = false;
 #endif
+
+	if (mOptions.count("EnableDebugLayers"))
+	{
+		enableDebugLayers = mOptions["EnableDebugLayers"].as<uint32_t>();
+	}
+
+	if (enableDebugLayers)
+	{
+		extensionNames.push_back("VK_EXT_debug_report");
+		//extensionNames.push_back("VK_EXT_debug_marker");
+		layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	}
 
 	//This didn't work so I switched it back to what I had.
 	//BOOL res = GetModuleHandleEx(0, TEXT("renderdoc.dll"), &ptr->mRenderDocDll);
@@ -281,27 +294,28 @@ void StateManager::CreateInstance()
 	result = vk::createInstance(&createInfo, nullptr, &ptr->mInstance);
 	if (result == vk::Result::eSuccess)
 	{
-		pfn_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(ptr->mInstance.getProcAddr("vkCreateDebugReportCallbackEXT"));
-		pfn_vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(ptr->mInstance.getProcAddr("vkDebugReportMessageEXT"));
-		pfn_vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(ptr->mInstance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
-
-#ifdef _DEBUG
-		vk::DebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
-		callbackCreateInfo.flags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::ePerformanceWarning;
-		callbackCreateInfo.pfnCallback = &DebugReportCallback;
-		callbackCreateInfo.pUserData = this;
-
-		result = ptr->mInstance.createDebugReportCallbackEXT(&callbackCreateInfo, nullptr, &ptr->mCallback);
-		if (result == vk::Result::eSuccess)
+		if (enableDebugLayers)
 		{
-			BOOST_LOG_TRIVIAL(info) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT succeeded.";
+			pfn_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(ptr->mInstance.getProcAddr("vkCreateDebugReportCallbackEXT"));
+			pfn_vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(ptr->mInstance.getProcAddr("vkDebugReportMessageEXT"));
+			pfn_vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(ptr->mInstance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
+
+			vk::DebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+			callbackCreateInfo.flags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::ePerformanceWarning;
+			callbackCreateInfo.pfnCallback = &DebugReportCallback;
+			callbackCreateInfo.pUserData = this;
+
+			result = ptr->mInstance.createDebugReportCallbackEXT(&callbackCreateInfo, nullptr, &ptr->mCallback);
+			if (result == vk::Result::eSuccess)
+			{
+				BOOST_LOG_TRIVIAL(info) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT succeeded.";
+			}
+			else
+			{
+				BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT failed with return code of " << GetResultString((VkResult)result);
+				return;
+			}
 		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT failed with return code of " << GetResultString((VkResult)result);
-			return;
-		}
-#endif
 
 		//Fetch an array of available physical devices.
 		result = ptr->mInstance.enumeratePhysicalDevices(&ptr->mPhysicalDeviceCount, nullptr);

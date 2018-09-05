@@ -37,9 +37,7 @@ struct RealInstance
 	HMODULE mRenderDocDll = nullptr;
 	RENDERDOC_API_1_1_1* mRenderDocApi = nullptr;
 
-#ifdef _DEBUG
 	vk::DebugReportCallbackEXT mCallback;
-#endif // _DEBUG
 
 	RealInstance();
 	~RealInstance();
