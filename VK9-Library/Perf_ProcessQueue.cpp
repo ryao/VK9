@@ -3357,16 +3357,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				MergeState(stateBlock->mDeviceState, realDevice->mDeviceState, stateBlock->mType);
 
-				auto& renderTarget = realDevice->mRenderTargets[0];
-				if (renderTarget != nullptr)
-				{			
-					auto& constants = realDevice->mDeviceState.mSpecializationConstants;
-					auto surface = renderTarget->mColorSurface;
-					if (surface != nullptr)
+				if (realDevice->mRenderTargets.size())
+				{
+					auto& renderTarget = realDevice->mRenderTargets[0];
+					if (renderTarget != nullptr)
 					{
-						auto& extent = surface->mExtent;
-						constants.screenWidth = extent.width;
-						constants.screenHeight = extent.height;
+						auto& constants = realDevice->mDeviceState.mSpecializationConstants;
+						auto surface = renderTarget->mColorSurface;
+						if (surface != nullptr)
+						{
+							auto& extent = surface->mExtent;
+							constants.screenWidth = extent.width;
+							constants.screenHeight = extent.height;
+						}
 					}
 				}
 
@@ -3787,10 +3790,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					bytes += surface.mLayouts[0].offset;
 				}
 
+				size_t pixelSize = SizeOf(surface.mRealFormat);
 				if (pRect != nullptr)
 				{
 					bytes += (surface.mLayouts[0].rowPitch * pRect->top);
-					bytes += (4 * pRect->left);
+					bytes += (pixelSize * pRect->left);
 				}
 
 				pLockedRect->pBits = (void*)bytes;
@@ -3938,11 +3942,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					bytes += volume.mLayouts[0].offset;
 				}
 
+				size_t pixelSize = SizeOf(volume.mRealFormat);
 				if (pBox != nullptr)
 				{
 					bytes += (volume.mLayouts[0].rowPitch * pBox->Top);
 					bytes += (volume.mLayouts[0].depthPitch * pBox->Front);
-					bytes += (4 * pBox->Left);
+					bytes += (pixelSize * pBox->Left);
 				}
 
 				pLockedVolume->pBits = (void*)bytes;

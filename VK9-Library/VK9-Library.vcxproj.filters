@@ -105,9 +105,6 @@
     <ClCompile Include="RealInstance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RealWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RealTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -240,9 +237,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RealInstance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RealWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RealTexture.h">

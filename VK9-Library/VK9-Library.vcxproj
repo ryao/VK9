@@ -438,7 +438,6 @@
     <ClCompile Include="RealSwapChain.cpp" />
     <ClCompile Include="RealTexture.cpp" />
     <ClCompile Include="RealVertexBuffer.cpp" />
-    <ClCompile Include="RealWindow.cpp" />
     <ClCompile Include="ResourceContext.cpp" />
     <ClCompile Include="SamplerRequest.cpp" />
     <ClCompile Include="ShaderConverter.cpp" />
@@ -482,7 +481,6 @@
     <ClInclude Include="RealSwapChain.h" />
     <ClInclude Include="RealTexture.h" />
     <ClInclude Include="RealVertexBuffer.h" />
-    <ClInclude Include="RealWindow.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceContext.h" />
     <ClInclude Include="SamplerRequest.h" />

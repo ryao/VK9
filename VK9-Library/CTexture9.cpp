@@ -208,7 +208,7 @@ VOID STDMETHODCALLTYPE CTexture9::GenerateMipSubLevels()
 	workItem->WorkItemType = WorkItemType::Texture_GenerateMipSubLevels;
 	workItem->Id = mId;
 	workItem->Argument1 = this;
-	mCommandStreamManager->RequestWork(workItem);
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 D3DTEXTUREFILTERTYPE STDMETHODCALLTYPE CTexture9::GetAutoGenFilterType()
