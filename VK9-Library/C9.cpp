@@ -36,10 +36,6 @@ misrepresented as being the original software.
 
 #include "PrivateTypes.h"
 
-//#ifdef _DEBUG
-//	#include <vld.h>
-//#endif
-
 C9::C9()
 {
 	mCommandStreamManager = std::make_shared<CommandStreamManager>();

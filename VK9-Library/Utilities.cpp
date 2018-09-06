@@ -890,52 +890,30 @@ void ReallyCopyImage(vk::CommandBuffer commandBuffer, vk::Image srcImage, vk::Im
 	subResource2.mipLevel = dstMip;
 	subResource2.layerCount = 1;
 
-	vk::ImageCopy region;
+	//vk::ImageCopy region;
+	//region.srcSubresource = subResource1;
+	//region.dstSubresource = subResource2;
+	//region.srcOffset = vk::Offset3D(x, y, 0);
+	//region.dstOffset = vk::Offset3D(x, y, 0);
+	//region.extent.width = width;
+	//region.extent.height = height;
+	//region.extent.depth = depth;
+
+	//commandBuffer.copyImage(
+	//	srcImage, vk::ImageLayout::eTransferSrcOptimal,
+	//	dstImage, vk::ImageLayout::eTransferDstOptimal,
+	//	1, &region);
+
+	vk::ImageBlit region;
 	region.srcSubresource = subResource1;
 	region.dstSubresource = subResource2;
-	region.srcOffset = vk::Offset3D(x, y, 0);
-	region.dstOffset = vk::Offset3D(x, y, 0);
-	region.extent.width = width;
-	region.extent.height = height;
-	region.extent.depth = depth;
+	region.srcOffsets[1] = vk::Offset3D(width, height, depth);
+	region.dstOffsets[1] = vk::Offset3D(width, height, depth);
 
-	commandBuffer.copyImage(
+	commandBuffer.blitImage(
 		srcImage, vk::ImageLayout::eTransferSrcOptimal,
 		dstImage, vk::ImageLayout::eTransferDstOptimal,
-		1, &region);
-}
-
-void ReallyCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImage dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t srcMip, uint32_t dstMip, uint32_t srcLayer, uint32_t dstLayer)
-{
-	VkResult result = VK_SUCCESS;
-
-	VkImageSubresourceLayers subResource1 = {};
-	subResource1.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subResource1.baseArrayLayer = srcLayer;
-	subResource1.mipLevel = srcMip;
-	subResource1.layerCount = 1;
-
-	VkImageSubresourceLayers subResource2 = {};
-	subResource2.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subResource2.baseArrayLayer = dstLayer;
-	subResource2.mipLevel = dstMip;
-	subResource2.layerCount = 1;
-
-	VkImageCopy region = {};
-	region.srcSubresource = subResource1;
-	region.dstSubresource = subResource2;
-	region.srcOffset = { x, y, 0 };
-	region.dstOffset = { x, y, 0 };
-	region.extent.width = width;
-	region.extent.height = height;
-	region.extent.depth = 1;
-
-	vkCmdCopyImage(
-		commandBuffer,
-		srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		1, &region
-	);
+		1, &region, vk::Filter::eLinear);
 }
 
 void ReallySetImageLayout(vk::CommandBuffer commandBuffer, vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount, uint32_t mipIndex, uint32_t layerCount)

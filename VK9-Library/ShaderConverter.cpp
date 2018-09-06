@@ -2971,19 +2971,17 @@ void ShaderConverter::CombineSpirVOpCodes()
 
 void ShaderConverter::CreateSpirVModule()
 {
-#ifdef _DEBUG
-	//Start Debug Code
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	if (!mIsVertexShader)
 	{
-		std::ofstream outFile("fragment.spv", std::ios::out | std::ios::binary);
+		std::ofstream outFile("fragment_" + std::to_string((uint32_t)mInstructions.data()) + ".spv", std::ios::out | std::ios::binary);
 		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
 	}
 	else
 	{
-		std::ofstream outFile("vertex.spv", std::ios::out | std::ios::binary);
+		std::ofstream outFile("vertex_" + std::to_string((uint32_t)mInstructions.data()) + ".spv", std::ios::out | std::ios::binary);
 		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
 	}
-	//End Debug Code
 #endif
 
 	vk::Result result;
@@ -3234,7 +3232,7 @@ void ShaderConverter::PushAccessChain(uint32_t resultTypeId, uint32_t resultId, 
 
 void ShaderConverter::PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId)
 {
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType = mIdTypePairs[argumentId];
 	auto& resultType = mIdTypePairs[resultTypeId];
 
@@ -3264,7 +3262,7 @@ void ShaderConverter::PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, 
 
 void ShaderConverter::PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId)
 {
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& resultType = mIdTypePairs[resultTypeId];
 	auto& pointerType = mIdTypePairs[pointerId];
 
@@ -3301,7 +3299,7 @@ void ShaderConverter::PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_
 
 void ShaderConverter::PushStore(uint32_t pointerId, uint32_t objectId)
 {
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& objectType = mIdTypePairs[objectId];
 	auto& pointerType = mIdTypePairs[pointerId];
 
@@ -3341,7 +3339,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1)
 	mFunctionDefinitionInstructions.push_back(Pack(2, code)); //size,Type
 	mFunctionDefinitionInstructions.push_back(argument1);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 
 	BOOST_LOG_TRIVIAL(info) << "ShaderConverter::Push " << code << " " << argument1 << "(" << argumentType1 << ")";
@@ -3354,7 +3352,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2)
 	mFunctionDefinitionInstructions.push_back(argument1);
 	mFunctionDefinitionInstructions.push_back(argument2);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 
@@ -3369,7 +3367,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument2);
 	mFunctionDefinitionInstructions.push_back(argument3);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3386,7 +3384,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument3);
 	mFunctionDefinitionInstructions.push_back(argument4);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3405,7 +3403,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument4);
 	mFunctionDefinitionInstructions.push_back(argument5);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3425,7 +3423,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument4);
 	mFunctionDefinitionInstructions.push_back(argument5);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3446,7 +3444,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument5);
 	mFunctionDefinitionInstructions.push_back(argument6);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3468,7 +3466,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument5);
 	mFunctionDefinitionInstructions.push_back(argument6);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3491,7 +3489,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument6);
 	mFunctionDefinitionInstructions.push_back(argument7);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3516,7 +3514,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument7);
 	mFunctionDefinitionInstructions.push_back(argument8);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3543,7 +3541,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument8);
 	mFunctionDefinitionInstructions.push_back(argument9);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3572,7 +3570,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument9);
 	mFunctionDefinitionInstructions.push_back(argument10);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -3603,7 +3601,7 @@ void ShaderConverter::Push(spv::Op code, uint32_t argument1, uint32_t argument2,
 	mFunctionDefinitionInstructions.push_back(argument10);
 	mFunctionDefinitionInstructions.push_back(argument11);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 	auto& argumentType1 = mIdTypePairs[argument1];
 	auto& argumentType2 = mIdTypePairs[argument2];
 	auto& argumentType3 = mIdTypePairs[argument3];
@@ -6519,7 +6517,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	{
 		interfaceIds.push_back(inputRegister);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 		auto& inputRegisterType = mIdTypePairs[inputRegister];
 		auto& inputRegisterName = mNameIdPairs[inputRegister];
 
@@ -6530,7 +6528,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	{
 		interfaceIds.push_back(outputRegister);
 
-#ifdef _DEBUG
+#ifdef _EXTRA_SHADER_DEBUG_INFO
 		auto& outputRegisterType = mIdTypePairs[outputRegister];
 		auto& outputRegisterName = mNameIdPairs[outputRegister];
 

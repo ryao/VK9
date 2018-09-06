@@ -66,6 +66,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case Device_Create:
 			{
 				commandStreamManager->mRenderManager.mStateManager.CreateDevice(workItem->Id, workItem->Argument1);
+
+				//TODO: revisit
+				commandStreamManager->mResult = vk::Result::eSuccess;
 			}
 			break;
 			case Device_Destroy:
@@ -3353,6 +3356,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
 				MergeState(stateBlock->mDeviceState, realDevice->mDeviceState, stateBlock->mType);
+
+				auto& renderTarget = realDevice->mRenderTargets[0];
+				if (renderTarget != nullptr)
+				{			
+					auto& constants = realDevice->mDeviceState.mSpecializationConstants;
+					auto surface = renderTarget->mColorSurface;
+					if (surface != nullptr)
+					{
+						auto& extent = surface->mExtent;
+						constants.screenWidth = extent.width;
+						constants.screenHeight = extent.height;
+					}
+				}
 
 				if (stateBlock->mType == D3DSBT_ALL)
 				{

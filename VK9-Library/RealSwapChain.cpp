@@ -436,19 +436,30 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue que
 	subResource2.mipLevel = 0;
 	subResource2.layerCount = 1;
 
-	vk::ImageCopy region;
+	vk::ImageBlit region;
 	region.srcSubresource = subResource1;
 	region.dstSubresource = subResource2;
-	region.srcOffset = vk::Offset3D(0, 0, 0);
-	region.dstOffset = vk::Offset3D(0, 0, 0);
-	region.extent.width = mSwapchainExtent.width;
-	region.extent.height = mSwapchainExtent.height;
-	region.extent.depth = 1;
+	region.srcOffsets[1] = vk::Offset3D(mSwapchainExtent.width, mSwapchainExtent.height, 1);
+	region.dstOffsets[1] = vk::Offset3D(mSwapchainExtent.width, mSwapchainExtent.height, 1);
 
-	commandBuffer.copyImage(
-		source, vk::ImageLayout::eTransferSrcOptimal, /*eTransferSrcOptimal*/
+	commandBuffer.blitImage(
+		source, vk::ImageLayout::eTransferSrcOptimal,
 		mImages[mCurrentIndex], vk::ImageLayout::eTransferDstOptimal,
-		1, &region);
+		1, &region, vk::Filter::eLinear);
+
+	//vk::ImageCopy region;
+	//region.srcSubresource = subResource1;
+	//region.dstSubresource = subResource2;
+	//region.srcOffset = vk::Offset3D(0, 0, 0);
+	//region.dstOffset = vk::Offset3D(0, 0, 0);
+	//region.extent.width = mSwapchainExtent.width;
+	//region.extent.height = mSwapchainExtent.height;
+	//region.extent.depth = 1;
+
+	//commandBuffer.copyImage(
+	//	source, vk::ImageLayout::eTransferSrcOptimal, /*eTransferSrcOptimal*/
+	//	mImages[mCurrentIndex], vk::ImageLayout::eTransferDstOptimal,
+	//	1, &region);
 
 	//realWindow.mImageMemoryBarrier.srcAccessMask = 0;
 	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead; //VK_ACCESS_MEMORY_READ_BIT;

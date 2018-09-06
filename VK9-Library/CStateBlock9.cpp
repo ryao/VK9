@@ -28,7 +28,9 @@ CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 	: mDevice(device),
 	mType(Type)
 {
-
+	//We want at least one light so the UBO won't be messed up for fixed function.
+	Light light = {};
+	mDeviceState.mLights.push_back(light);
 }
 
 CStateBlock9::CStateBlock9(CDevice9* device)

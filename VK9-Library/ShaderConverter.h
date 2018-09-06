@@ -41,6 +41,10 @@ https://msdn.microsoft.com/en-us/library/windows/hardware/ff552891(v=vs.85).aspx
 https://github.com/ValveSoftware/ToGL
 */
 
+#ifdef _DEBUG
+#define _EXTRA_SHADER_DEBUG_INFO
+#endif
+
 #define PACK(c0, c1, c2, c3) \
     (((uint32_t)(uint8_t)(c0) << 24) | \
     ((uint32_t)(uint8_t)(c1) << 16) | \

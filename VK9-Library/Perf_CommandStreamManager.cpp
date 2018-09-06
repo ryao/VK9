@@ -43,6 +43,7 @@ CommandStreamManager::CommandStreamManager()
 	//Setup configuration & logging.
 	mOptionDescriptions.add_options()
 		("LogFile", boost::program_options::value<std::string>(), "The location of the log file.")
+		("LogLevel", boost::program_options::value<uint32_t>(), "The level of the log file.")
 		("EnableDebugLayers", boost::program_options::value<uint32_t>(), "Enable validation layers?");
 
 	boost::program_options::store(boost::program_options::parse_config_file<char>("VK9.conf", mOptionDescriptions), mOptions);
@@ -91,9 +92,26 @@ CommandStreamManager::CommandStreamManager()
 		);
 	}
 
+	/*
+	trace,
+	debug,
+	info,
+	warning,
+	error,
+	fatal
+	*/
 #ifndef _DEBUG
-	boost::log::core::get()->set_filter(boost::log::trivial::severity > boost::log::trivial::info);
+	boost::log::trivial::severity_level logLevel = boost::log::trivial::trace;
+#else
+	boost::log::trivial::severity_level logLevel = boost::log::trivial::warning;
 #endif
+
+	if (mOptions.count("LogLevel"))
+	{
+		logLevel = (boost::log::trivial::severity_level)mOptions["LogLevel"].as<uint32_t>();
+	}
+
+	boost::log::core::get()->set_filter(boost::log::trivial::severity >= logLevel);
 
 	BOOST_LOG_TRIVIAL(info) << "CommandStreamManager::CommandStreamManager";
 }
