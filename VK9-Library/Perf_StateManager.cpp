@@ -127,6 +127,11 @@ VKAPI_ATTR void VKAPI_CALL vkCmdPushDescriptorSetKHR(
 	uint32_t                                    descriptorWriteCount,
 	const VkWriteDescriptorSet*                 pDescriptorWrites)
 {
+	if (pfn_vkCmdPushDescriptorSetKHR == nullptr)
+	{
+		return;
+	}
+
 	pfn_vkCmdPushDescriptorSetKHR(
 		commandBuffer,
 		pipelineBindPoint,
@@ -143,6 +148,11 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
 	const VkAllocationCallbacks*                pAllocator,
 	VkDebugReportCallbackEXT*                   pCallback)
 {
+	if (pfn_vkCreateDebugReportCallbackEXT == nullptr)
+	{
+		return VK_NOT_READY;
+	}
+
 	return pfn_vkCreateDebugReportCallbackEXT(
 		instance,
 		pCreateInfo,
@@ -156,6 +166,11 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 	VkDebugReportCallbackEXT                    callback,
 	const VkAllocationCallbacks*                pAllocator)
 {
+	if (pfn_vkDestroyDebugReportCallbackEXT == nullptr)
+	{
+		return;
+	}
+
 	pfn_vkDestroyDebugReportCallbackEXT(
 		instance,
 		callback,
@@ -173,6 +188,11 @@ VKAPI_ATTR void VKAPI_CALL vkDebugReportMessageEXT(
 	const char*                                 pLayerPrefix,
 	const char*                                 pMessage)
 {
+	if (pfn_vkDebugReportMessageEXT == nullptr)
+	{
+		return;
+	}
+
 	pfn_vkDebugReportMessageEXT(
 		instance,
 		flags,

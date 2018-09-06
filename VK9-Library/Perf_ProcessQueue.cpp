@@ -3790,17 +3790,44 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					bytes += surface.mLayouts[0].offset;
 				}
 
+				std::array<vk::Offset3D, 2> dirtyRect;
 				size_t pixelSize = SizeOf(surface.mRealFormat);
+
 				if (pRect != nullptr)
 				{
 					bytes += (surface.mLayouts[0].rowPitch * pRect->top);
 					bytes += (pixelSize * pRect->left);
+
+					dirtyRect[0].x = pRect->left;
+					dirtyRect[0].y = pRect->top;
+					dirtyRect[0].z = 0;
+
+					dirtyRect[1].x = pRect->right;
+					dirtyRect[1].y = pRect->bottom;
+					dirtyRect[1].z = 1;
+				}
+				else
+				{
+					dirtyRect[0] = vk::Offset3D(0, 0, 0);
+					dirtyRect[1] = vk::Offset3D(surface.mExtent.width, surface.mExtent.height, 1);
 				}
 
 				pLockedRect->pBits = (void*)bytes;
 				pLockedRect->Pitch = surface.mLayouts[0].rowPitch;
 
-				surface.mIsFlushed = false;
+				if ((Flags & D3DLOCK_NO_DIRTY_UPDATE) == D3DLOCK_NO_DIRTY_UPDATE)
+				{
+					//TODO: revisit
+				}
+				else if ((Flags & D3DLOCK_READONLY) == D3DLOCK_READONLY)
+				{
+					//TODO: revisit
+				}
+				else
+				{ 
+					surface.mDirtyRects.push_back(dirtyRect);
+					surface.mIsFlushed = false;
+				}		
 			}
 			break;
 			case Surface_UnlockRect:
@@ -3876,8 +3903,41 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 				
-				ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight, 1, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
-				
+				//ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight, 1, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
+
+				vk::ImageSubresourceLayers subResource1;
+				subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource1.baseArrayLayer = 0;
+				subResource1.mipLevel = surface9->mMipIndex;
+				subResource1.layerCount = 1;
+
+				vk::ImageSubresourceLayers subResource2;
+				subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource2.baseArrayLayer = 0;
+				subResource2.mipLevel = surface9->mTargetLayer;
+				subResource2.layerCount = 1;
+
+				vk::ImageBlit region;
+				region.srcSubresource = subResource1;
+				region.dstSubresource = subResource2;
+
+				std::vector<vk::ImageBlit> regions(surface.mDirtyRects.size());
+				for (auto& dirtyRect : surface.mDirtyRects)
+				{
+					region.srcOffsets[0] = dirtyRect[0];
+					region.srcOffsets[1] = dirtyRect[1];
+					region.dstOffsets[0] = dirtyRect[0];
+					region.dstOffsets[1] = dirtyRect[1];
+
+					regions.push_back(region);
+
+					commandBuffer.blitImage(
+						surface.mStagingImage, vk::ImageLayout::eTransferSrcOptimal,
+						texture.mImage, vk::ImageLayout::eTransferDstOptimal,
+						1, &regions[regions.size() - 1], vk::Filter::eLinear);
+				}
+				//surface.mDirtyRects.clear();
+
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 
 				commandBuffer.end();
@@ -3942,19 +4002,47 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					bytes += volume.mLayouts[0].offset;
 				}
 
+				std::array<vk::Offset3D, 2> dirtyRect;
 				size_t pixelSize = SizeOf(volume.mRealFormat);
+
 				if (pBox != nullptr)
 				{
 					bytes += (volume.mLayouts[0].rowPitch * pBox->Top);
 					bytes += (volume.mLayouts[0].depthPitch * pBox->Front);
 					bytes += (pixelSize * pBox->Left);
+
+					dirtyRect[0].x = pBox->Left;
+					dirtyRect[0].y = pBox->Top;
+					dirtyRect[0].z = pBox->Front;
+
+					dirtyRect[1].x = pBox->Right;
+					dirtyRect[1].y = pBox->Bottom;
+					dirtyRect[1].z = pBox->Back;
 				}
+				else
+				{
+					dirtyRect[0] = vk::Offset3D(0, 0, 0);
+					dirtyRect[1] = vk::Offset3D(volume.mExtent.width, volume.mExtent.height, volume.mExtent.depth);
+				}
+	
 
 				pLockedVolume->pBits = (void*)bytes;
 				pLockedVolume->RowPitch = volume.mLayouts[0].rowPitch;
 				pLockedVolume->SlicePitch = volume.mLayouts[0].depthPitch;
 
-				volume.mIsFlushed = false;
+				if ((Flags & D3DLOCK_NO_DIRTY_UPDATE) == D3DLOCK_NO_DIRTY_UPDATE)
+				{
+					//TODO: revisit
+				}
+				else if ((Flags & D3DLOCK_READONLY) == D3DLOCK_READONLY)
+				{
+					//TODO: revisit
+				}
+				else
+				{
+					volume.mDirtyRects.push_back(dirtyRect);
+					volume.mIsFlushed = false;
+				}
 			}
 			break;
 			case Volume_UnlockRect:
@@ -4030,11 +4118,42 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
 				
-				ReallyCopyImage(commandBuffer, volume.mStagingImage, texture.mImage, 0, 0, volume9->mWidth, volume9->mHeight, volume9->mDepth, 0, volume9->mMipIndex, 0, volume9->mTargetLayer);
+				//ReallyCopyImage(commandBuffer, volume.mStagingImage, texture.mImage, 0, 0, volume9->mWidth, volume9->mHeight, volume9->mDepth, 0, volume9->mMipIndex, 0, volume9->mTargetLayer);
 				
+				vk::ImageSubresourceLayers subResource1;
+				subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource1.baseArrayLayer = 0;
+				subResource1.mipLevel = volume9->mMipIndex;
+				subResource1.layerCount = 1;
+
+				vk::ImageSubresourceLayers subResource2;
+				subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource2.baseArrayLayer = 0;
+				subResource2.mipLevel = volume9->mTargetLayer;
+				subResource2.layerCount = 1;
+
+				vk::ImageBlit region;
+				region.srcSubresource = subResource1;
+				region.dstSubresource = subResource2;
+
+				std::vector<vk::ImageBlit> regions(volume.mDirtyRects.size());
+				for (auto& dirtyRect : volume.mDirtyRects)
+				{
+					region.srcOffsets[0] = dirtyRect[0];
+					region.srcOffsets[1] = dirtyRect[1];
+					region.dstOffsets[0] = dirtyRect[0];
+					region.dstOffsets[1] = dirtyRect[1];
+
+					regions.push_back(region);
+
+					commandBuffer.blitImage(
+						volume.mStagingImage, vk::ImageLayout::eTransferSrcOptimal,
+						texture.mImage, vk::ImageLayout::eTransferDstOptimal,
+						1, &regions[regions.size()-1], vk::Filter::eLinear);
+				}
+				volume.mDirtyRects.clear();
+
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
-				//Transition happens on lock.
-				//ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
 
 				commandBuffer.end();
 

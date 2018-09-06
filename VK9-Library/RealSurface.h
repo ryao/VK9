@@ -38,6 +38,8 @@ struct RealSurface
 	vk::DeviceMemory mStagingDeviceMemory;
 	vk::ImageView mStagingImageView;
 
+	std::vector< std::array<vk::Offset3D, 2> > mDirtyRects;
+
 	vk::Extent3D mExtent;
 	vk::Format mRealFormat = vk::Format::eR8G8B8A8Unorm;
 	vk::MemoryAllocateInfo mMemoryAllocateInfo;
