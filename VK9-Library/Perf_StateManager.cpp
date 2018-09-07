@@ -460,13 +460,12 @@ void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 
 		//mSize = mLength / (sizeof(float)*3 + sizeof(DWORD));
 		ptr->mSize = vertexBuffer9->mLength / attributeStride;
+		vertexBuffer9->mSize = ptr->mSize;
 	}
 	else
 	{
-		//ptr->mSize = vertexBuffer9->mLength / sizeof(float); //For now assume one float. There should be at least 4 bytes.
+		ptr->mSize = vertexBuffer9->mSize;
 	}
-
-	vertexBuffer9->mSize = ptr->mSize;
 
 	mVertexBuffers.push_back(ptr);
 }

@@ -687,7 +687,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		currentBuffer.bindIndexBuffer(deviceState.mIndexBuffer->mBuffer, 0, deviceState.mIndexBuffer->mIndexType);
 	}
 
-	BOOST_FOREACH(auto& source, deviceState.mStreamSources)
+	for(auto& source : deviceState.mStreamSources)
 	{
 		auto& buffer = mStateManager.mVertexBuffers[source.second.StreamData->mId];
 		currentBuffer.bindVertexBuffers(source.first, 1, &buffer->mBuffer, &source.second.OffsetInBytes);
