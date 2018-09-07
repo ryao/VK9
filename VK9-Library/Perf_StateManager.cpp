@@ -52,7 +52,7 @@ misrepresented as being the original software.
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/format.hpp>
 
-typedef boost::container::flat_map<UINT, StreamSource> map_type;
+typedef std::unordered_map<UINT, StreamSource> map_type;
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData)
 {

@@ -385,7 +385,7 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
-	boost::container::flat_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
+	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
 
 	auto& device = realDevice->mDevice;
 	auto& deviceState = realDevice->mDeviceState;

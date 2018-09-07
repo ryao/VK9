@@ -803,10 +803,10 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 	}
 
 	//If a register has already be declared just return the id.
-	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> >::iterator it1 = mIdsByRegister.find(registerType);
+	std::unordered_map<D3DSHADER_PARAM_REGISTER_TYPE, std::unordered_map<uint32_t, uint32_t> >::iterator it1 = mIdsByRegister.find(registerType);
 	if (it1 != mIdsByRegister.end())
 	{
-		boost::container::flat_map<uint32_t, uint32_t>::iterator it2 = it1->second.find(registerNumber);
+		std::unordered_map<uint32_t, uint32_t>::iterator it2 = it1->second.find(registerNumber);
 		if (it2 != it1->second.end())
 		{
 			return it2->second;
@@ -1146,7 +1146,7 @@ TypeDescription ShaderConverter::GetTypeByRegister(const Token& token, _D3DDECLU
 
 	uint32_t id = GetIdByRegister(token, D3DSPR_FORCE_DWORD, usage);
 
-	boost::container::flat_map<uint32_t, TypeDescription>::iterator it2 = mIdTypePairs.find(id);
+	std::unordered_map<uint32_t, TypeDescription>::iterator it2 = mIdTypePairs.find(id);
 	if (it2 != mIdTypePairs.end())
 	{
 		dataType = it2->second;
@@ -6511,7 +6511,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 	//EntryPoint
 	std::string entryPointName = "main";
 	std::vector<uint32_t> interfaceIds;
-	typedef boost::container::flat_map<uint32_t, uint32_t> maptype2;
+	typedef std::unordered_map<uint32_t, uint32_t> maptype2;
 	for (const auto& inputRegister : mInputRegisters)
 	{
 		interfaceIds.push_back(inputRegister);

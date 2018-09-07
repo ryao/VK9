@@ -49,6 +49,8 @@ misrepresented as being the original software.
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <unordered_map>
+#include <map>
 
 // C headers
 #include <stdint.h>
@@ -59,9 +61,6 @@ misrepresented as being the original software.
 #include <Eigen/Dense>
 
 // Boost headers
-#include <boost/any.hpp>
-#include <boost/container/flat_map.hpp>
-
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/lockfree/queue.hpp>

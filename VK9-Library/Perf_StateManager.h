@@ -21,8 +21,8 @@ misrepresented as being the original software.
 #include <atomic>
 #include <memory>
 #include <vector>
+#include <unordered_map>
 #include <chrono>
-#include <boost/container/flat_map.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vk_sdk_platform.h>
 
@@ -111,7 +111,7 @@ struct StateManager
 	std::vector< std::shared_ptr<RealQuery> > mQueries;
 	std::atomic_size_t mQueryKey = 0;
 
-	boost::container::flat_map<HWND, std::shared_ptr<RealSwapChain> > mSwapChains;
+	std::unordered_map<HWND, std::shared_ptr<RealSwapChain> > mSwapChains;
 
 	StateManager(boost::program_options::variables_map& options);
 	~StateManager();

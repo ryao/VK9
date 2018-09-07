@@ -28,7 +28,7 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.hpp>
 
 #include <vector>
-#include <boost/container/flat_map.hpp>
+#include <unordered_map>
 
 #include <Eigen/Dense>
 
@@ -524,26 +524,26 @@ struct DeviceState
 	bool hasBlendOperationAlpha = false;
 
 	//IDirect3DDevice9::SetSamplerState
-	boost::container::flat_map<DWORD, boost::container::flat_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
+	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
 
 	//IDirect3DDevice9::SetScissorRect
 	RECT m9Scissor = {};
 	vk::Rect2D mScissor;
 
 	//IDirect3DDevice9::SetStreamSource
-	boost::container::flat_map<UINT, StreamSource> mStreamSources;
+	std::unordered_map<UINT, StreamSource> mStreamSources;
 
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
 	vk::DescriptorImageInfo mDescriptorImageInfo[16];
-	//boost::container::flat_map<DWORD, IDirect3DBaseTexture9*> mTextures;
+	//std::unordered_map<DWORD, IDirect3DBaseTexture9*> mTextures;
 	IDirect3DBaseTexture9* mTextures[16] = {};
 
 	//IDirect3DDevice9::SetTextureStageState
-	//boost::container::flat_map<DWORD, boost::container::flat_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;
+	//std::unordered_map<DWORD, std::unordered_map<D3DTEXTURESTAGESTATETYPE, DWORD> > mTextureStageStates;
 
 	//IDirect3DDevice9::SetTransform
-	boost::container::flat_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
+	std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX> mTransforms;
 	BOOL mHasTransformsChanged = true;
 
 	//IDirect3DDevice9::SetViewport

@@ -25,10 +25,10 @@ misrepresented as being the original software.
 //#include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 #include <vector>
+#include <unordered_map>
 #include <map>
 #include <stack>
 #include <boost/log/trivial.hpp>
-#include <boost/container/flat_map.hpp>
 #include <spirv.hpp>
 #include <GLSL.std.450.h>
 #include "CTypes.h"
@@ -473,19 +473,19 @@ public:
 private:
 	std::vector<uint32_t> mInstructions; //used to store the combined instructions for creating a module.
 
-	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mRegistersById;
-	boost::container::flat_map<D3DSHADER_PARAM_REGISTER_TYPE, boost::container::flat_map<uint32_t, uint32_t> > mIdsByRegister;
+	std::unordered_map<D3DSHADER_PARAM_REGISTER_TYPE, std::unordered_map<uint32_t, uint32_t> > mRegistersById;
+	std::unordered_map<D3DSHADER_PARAM_REGISTER_TYPE, std::unordered_map<uint32_t, uint32_t> > mIdsByRegister;
 
 	std::vector<uint32_t> mInputRegisters;
 	std::vector<uint32_t> mOutputRegisters;
-	boost::container::flat_map<_D3DDECLUSAGE, uint32_t> mOutputRegisterUsages;
+	std::unordered_map<_D3DDECLUSAGE, uint32_t> mOutputRegisterUsages;
 
-	boost::container::flat_map<TypeDescription, uint32_t> mTypeIdPairs;
-	boost::container::flat_map<uint32_t, TypeDescription> mIdTypePairs;
-	boost::container::flat_map<uint32_t, uint32_t> mVector4Matrix3X3Pairs;
-	boost::container::flat_map<uint32_t, uint32_t> mVector4Matrix4X4Pairs;
-	boost::container::flat_map<uint32_t, uint32_t> mVector4Vector3Pairs;
-	boost::container::flat_map<uint32_t, std::string> mNameIdPairs;
+	std::map<TypeDescription, uint32_t> mTypeIdPairs; //Using map because TypeDescription isn't supported by std::hash
+	std::unordered_map<uint32_t, TypeDescription> mIdTypePairs;
+	std::unordered_map<uint32_t, uint32_t> mVector4Matrix3X3Pairs;
+	std::unordered_map<uint32_t, uint32_t> mVector4Matrix4X4Pairs;
+	std::unordered_map<uint32_t, uint32_t> mVector4Vector3Pairs;
+	std::unordered_map<uint32_t, std::string> mNameIdPairs;
 
 	std::vector<uint32_t> mCapabilityInstructions;
 	std::vector<uint32_t> mExtensionInstructions;

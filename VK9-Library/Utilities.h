@@ -1363,7 +1363,7 @@ inline uint32_t ConvertFormat(DWORD fvf) noexcept
 	return 0;
 }
 
-inline void Print(boost::container::flat_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& transforms)
+inline void Print(std::unordered_map<D3DTRANSFORMSTATETYPE, D3DMATRIX>& transforms)
 {
 	for (const auto& pair1 : transforms)
 	{
