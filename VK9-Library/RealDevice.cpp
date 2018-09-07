@@ -48,8 +48,8 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mQueueFamilyProperties = new vk::QueueFamilyProperties[mQueueFamilyPropertyCount];
 	physicalDevice.getQueueFamilyProperties(&mQueueFamilyPropertyCount, mQueueFamilyProperties);
 
-	boost::container::small_vector<char*, 16> extensionNames;
-	boost::container::small_vector<char*, 16> layerNames;
+	std::vector<char*> extensionNames;
+	std::vector<char*> layerNames;
 
 	extensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 	//extensionNames.push_back("VK_KHR_maintenance1");

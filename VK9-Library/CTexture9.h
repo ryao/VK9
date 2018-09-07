@@ -21,7 +21,6 @@ misrepresented as being the original software.
 #ifndef CTEXTURE9_H
 #define CTEXTURE9_H
 
-#include <boost/container/small_vector.hpp>
 #include "d3d9.h" // Base class: IDirect3DTexture9
 #include "Perf_CommandStreamManager.h"
 
@@ -51,7 +50,7 @@ public:
 	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
 
-	boost::container::small_vector<CSurface9*,5> mSurfaces;
+	std::vector<CSurface9*> mSurfaces;
 
 	void Flush();
 

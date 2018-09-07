@@ -22,7 +22,6 @@ misrepresented as being the original software.
 #define CVERTEXDECLARATION9_H
 
 #include "d3d9.h" // Base class: IDirect3DVertexDeclaration9
-#include <boost/container/small_vector.hpp>
 #include "Perf_CommandStreamManager.h"
 
 class CDevice9;
@@ -35,7 +34,7 @@ public:
 	CVertexDeclaration9(CDevice9* device,const D3DVERTEXELEMENT9* pVertexElements);
 	~CVertexDeclaration9();
 
-	boost::container::small_vector<D3DVERTEXELEMENT9,16> mVertexElements;
+	std::vector<D3DVERTEXELEMENT9> mVertexElements;
 	BOOL mHasPosition=0;
 	BOOL mHasColor=0;
 	BOOL mHasNormal=0;

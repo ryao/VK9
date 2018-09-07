@@ -254,8 +254,8 @@ void StateManager::CreateInstance()
 {
 	auto ptr = std::make_shared<RealInstance>();
 
-	boost::container::small_vector<char*, 16> extensionNames;
-	boost::container::small_vector<char*, 16> layerNames;
+	std::vector<char*> extensionNames;
+	std::vector<char*> layerNames;
 
 	extensionNames.push_back("VK_KHR_surface");
 	extensionNames.push_back("VK_KHR_win32_surface");

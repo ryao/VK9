@@ -23,7 +23,6 @@ misrepresented as being the original software.
 #include "d3d11shader.h"
 #include "ShaderConverter.h"
 #include <boost/log/trivial.hpp>
-#include <boost/foreach.hpp>
 #include <fstream>
 
 #include "CDevice9.h"

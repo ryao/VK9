@@ -23,7 +23,6 @@ misrepresented as being the original software.
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
-#include <boost/container/small_vector.hpp>
 
 /*
 D3d9 will hold unto references to resources while they are in use and free them after if there are no other references. 
@@ -42,10 +41,10 @@ class GarbageManager
 		VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 
 		//Handles to destroy	
-		boost::container::small_vector<VkImage,16> mImages;
-		boost::container::small_vector<VkDeviceMemory,16> mMemories;
-		boost::container::small_vector<VkSampler,16> mSamplers;
-		boost::container::small_vector<VkDescriptorSet,16> mDescriptorSets;
+		std::vector<VkImage> mImages;
+		std::vector<VkDeviceMemory> mMemories;
+		std::vector<VkSampler> mSamplers;
+		std::vector<VkDescriptorSet> mDescriptorSets;
 
 };
 

@@ -23,7 +23,6 @@ misrepresented as being the original software.
 #include <vector>
 #include <chrono>
 #include <boost/container/flat_map.hpp>
-#include <boost/container/small_vector.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vk_sdk_platform.h>
 
@@ -88,10 +87,10 @@ struct StateManager
 {
 	boost::program_options::variables_map& mOptions;
 
-	boost::container::small_vector< std::shared_ptr<RealInstance>, 1> mInstances;
+	std::vector< std::shared_ptr<RealInstance> > mInstances;
 	std::atomic_size_t mInstanceKey = 0;
 
-	boost::container::small_vector< std::shared_ptr<RealDevice>, 1> mDevices;
+	std::vector< std::shared_ptr<RealDevice> > mDevices;
 	std::atomic_size_t mDeviceKey = 0;
 
 	std::vector< std::shared_ptr<RealVertexBuffer> > mVertexBuffers;

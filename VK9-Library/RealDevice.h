@@ -70,8 +70,8 @@ struct RealDevice
 	vk::DeviceSize mEstimatedMemory = 2147483648;
 	DeviceState mDeviceState = {};
 	CStateBlock9* mCurrentStateRecording = nullptr;
-	boost::container::small_vector< std::shared_ptr<SamplerRequest>, 16> mSamplerRequests;
-	boost::container::small_vector< std::shared_ptr<DrawContext>, 16> mDrawBuffer;
+	std::vector< std::shared_ptr<SamplerRequest> > mSamplerRequests;
+	std::vector< std::shared_ptr<DrawContext> > mDrawBuffer;
 	std::vector< std::shared_ptr<RealRenderTarget> > mRenderTargets;
 	int32_t mVertexCount = 0;
 	Transformations mTransformations;

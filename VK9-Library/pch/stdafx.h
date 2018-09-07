@@ -60,9 +60,6 @@ misrepresented as being the original software.
 
 // Boost headers
 #include <boost/any.hpp>
-#include <boost/foreach.hpp>
-
-#include <boost/container/small_vector.hpp>
 #include <boost/container/flat_map.hpp>
 
 #include <boost/program_options.hpp>

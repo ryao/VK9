@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include <vulkan/vulkan.hpp>
 
 #include <vector>
-#include <boost/container/small_vector.hpp>
 #include <boost/container/flat_map.hpp>
 
 #include <Eigen/Dense>
@@ -393,7 +392,7 @@ struct DeviceState
 	std::shared_ptr<RealRenderTarget> mRenderTarget;
 
 	//IDirect3DDevice9::SetLight
-	//boost::container::small_vector<Light, 4> mLights;
+	//std::vector<Light, 4> mLights;
 	std::vector<Light> mLights;
 	BOOL mAreLightsDirty = true;
 

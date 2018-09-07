@@ -54,7 +54,7 @@ CCubeTexture9::CCubeTexture9(CDevice9* device, UINT EdgeLength, UINT Levels, DWO
 	{
 		UINT width = mEdgeLength;
 		UINT height = mEdgeLength;
-		boost::container::small_vector<CSurface9*, 5> surfaces;
+		std::vector<CSurface9*> surfaces;
 		for (size_t j = 0; j < mLevels; j++)
 		{
 			CSurface9* ptr = new CSurface9(mDevice, this, width, height, mLevels, mUsage, mFormat, mPool, mSharedHandle);

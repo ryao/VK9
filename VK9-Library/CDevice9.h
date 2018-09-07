@@ -22,7 +22,7 @@ misrepresented as being the original software.
 #define CDEVICE9_H
 
 #include "d3d9.h" // Base class: IDirect3DDevice9
-#include <boost/container/small_vector.hpp>
+//#include <boost/container/small_vector.hpp>
 #include "Perf_CommandStreamManager.h"
 
 class C9;
@@ -54,7 +54,7 @@ public:
 	//Misc
 	ULONG mReferenceCount = 1;
 	uint32_t mDisplayCount = 0;	
-	boost::container::small_vector<CSwapChain9*, 2> mSwapChains;
+	std::vector<CSwapChain9*> mSwapChains;
 	CSurface9* mRenderTargets[4] = {};
 
 	std::vector<CVertexBuffer9*> mVertexBuffers;
