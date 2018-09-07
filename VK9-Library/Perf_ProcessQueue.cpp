@@ -2314,21 +2314,25 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realDevice->mCurrentStateRecording->mDeviceState.m9Scissor = (*pRect);
+					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
-					realDevice->mCurrentStateRecording->mDeviceState.mScissor.extent.width = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.right;
-					realDevice->mCurrentStateRecording->mDeviceState.mScissor.extent.height = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.bottom;
-					realDevice->mCurrentStateRecording->mDeviceState.mScissor.offset.x = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.left;
-					realDevice->mCurrentStateRecording->mDeviceState.mScissor.offset.y = realDevice->mCurrentStateRecording->mDeviceState.m9Scissor.top;
+					deviceState.m9Scissor = (*pRect);
+
+					deviceState.mScissor.extent.width = deviceState.m9Scissor.right;
+					deviceState.mScissor.extent.height = deviceState.m9Scissor.bottom;
+					deviceState.mScissor.offset.x = deviceState.m9Scissor.left;
+					deviceState.mScissor.offset.y = deviceState.m9Scissor.top;
 				}
 				else
 				{
-					realDevice->mDeviceState.m9Scissor = (*pRect);
+					auto& deviceState = realDevice->mDeviceState;
 
-					realDevice->mDeviceState.mScissor.extent.width = realDevice->mDeviceState.m9Scissor.right;
-					realDevice->mDeviceState.mScissor.extent.height = realDevice->mDeviceState.m9Scissor.bottom;
-					realDevice->mDeviceState.mScissor.offset.x = realDevice->mDeviceState.m9Scissor.left;
-					realDevice->mDeviceState.mScissor.offset.y = realDevice->mDeviceState.m9Scissor.top;
+					deviceState.m9Scissor = (*pRect);
+
+					deviceState.mScissor.extent.width = deviceState.m9Scissor.right;
+					deviceState.mScissor.extent.height = deviceState.m9Scissor.bottom;
+					deviceState.mScissor.offset.x = deviceState.m9Scissor.left;
+					deviceState.mScissor.offset.y = deviceState.m9Scissor.top;
 				}
 			}
 			break;

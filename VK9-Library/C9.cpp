@@ -314,8 +314,10 @@ HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 	{
 		return mMonitors[0].hMonitor;
 	}
-
-	return mMonitors[Adapter].hMonitor;
+	else
+	{
+		return mMonitors[Adapter].hMonitor;
+	}
 }
 
 

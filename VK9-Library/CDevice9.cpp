@@ -685,7 +685,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveTy
 	//Setup temp buffers
 	UINT vertexLength = 0;
 	DWORD Usage = 0;
-	UINT NumVertices;
+	UINT NumVertices = 0;
 
 	switch (PrimitiveType)
 	{
@@ -1371,16 +1371,14 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetDepthStencilSurface(IDirect3DSurface9* pN
 		return S_OK;
 	}
 
+	pNewZStencil->AddRef();
 
 	if (mDepthStencilSurface != nullptr)
 	{
 		mDepthStencilSurface->Release();
 	}
+
 	mDepthStencilSurface = (CSurface9*)pNewZStencil;
-	if (mDepthStencilSurface != nullptr)
-	{
-		mDepthStencilSurface->AddRef();
-	}
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_SetDepthStencilSurface;

@@ -385,7 +385,7 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type)
 {
 	VkResult result = VK_SUCCESS;
-	std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
+	//std::unordered_map<D3DRENDERSTATETYPE, DWORD>::const_iterator searchResult;
 
 	auto& device = realDevice->mDevice;
 	auto& deviceState = realDevice->mDeviceState;
@@ -1408,19 +1408,21 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 	//	return;
 	//}
 
-	realDevice->mTransformations.mModel <<
+	auto& transformations = realDevice->mTransformations;
+
+	transformations.mModel <<
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1;
 
-	realDevice->mTransformations.mView <<
+	transformations.mView <<
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1;
 
-	realDevice->mTransformations.mProjection <<
+	transformations.mProjection <<
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
@@ -1432,7 +1434,7 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 		{
 		case D3DTS_WORLD:
 
-			realDevice->mTransformations.mModel <<
+			transformations.mModel <<
 				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
 				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
 				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
@@ -1441,7 +1443,7 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 			break;
 		case D3DTS_VIEW:
 
-			realDevice->mTransformations.mView <<
+			transformations.mView <<
 				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
 				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
 				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
@@ -1450,7 +1452,7 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 			break;
 		case D3DTS_PROJECTION:
 
-			realDevice->mTransformations.mProjection <<
+			transformations.mProjection <<
 				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
 				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
 				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
@@ -1463,10 +1465,10 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 		}
 	}
 
-	realDevice->mTransformations.mTotalTransformation = realDevice->mTransformations.mProjection * realDevice->mTransformations.mView * realDevice->mTransformations.mModel;
+	transformations.mTotalTransformation = transformations.mProjection * transformations.mView * transformations.mModel;
 	//mTotalTransformation = mModel * mView * mProjection;
 
-	currentSwapChainBuffer.pushConstants(context->PipelineLayout, vk::ShaderStageFlagBits::eAllGraphics, 0, UBO_SIZE * 2, &realDevice->mTransformations);
+	currentSwapChainBuffer.pushConstants(context->PipelineLayout, vk::ShaderStageFlagBits::eAllGraphics, 0, UBO_SIZE * 2, &transformations);
 }
 
 void RenderManager::FlushDrawBufffer(std::shared_ptr<RealDevice> realDevice)
