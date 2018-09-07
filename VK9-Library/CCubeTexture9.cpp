@@ -49,7 +49,7 @@ CCubeTexture9::CCubeTexture9(CDevice9* device, UINT EdgeLength, UINT Levels, DWO
 
 	//mLevels = 1; //workaround
 
-	mSurfaces.reserve(6);
+	//mSurfaces.reserve(6);
 	for (size_t i = 0; i < 6; i++)
 	{
 		UINT width = mEdgeLength;
@@ -67,7 +67,8 @@ CCubeTexture9::CCubeTexture9(CDevice9* device, UINT EdgeLength, UINT Levels, DWO
 			width /= 2;
 			height /= 2;
 		}
-		mSurfaces.push_back(surfaces);
+		//mSurfaces.push_back(surfaces);
+		mSurfaces[i] = surfaces;
 	}
 }
 

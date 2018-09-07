@@ -411,28 +411,18 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState
 		{
 			subResourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
 
-			//ReallySetImageLayout(command, mColorSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
-			command.clearColorImage(mColorSurface->mStagingImage, vk::ImageLayout::eGeneral, &mClearColorValue, 1, &subResourceRange);
-			//ReallySetImageLayout(command, mColorSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
+			ReallySetImageLayout(command, mColorSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eGeneral, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
+			command.clearColorImage(mColorSurface->mStagingImage, vk::ImageLayout::eTransferDstOptimal, &mClearColorValue, 1, &subResourceRange);
+			ReallySetImageLayout(command, mColorSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
 		}
 
 		if ((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL || (Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER)
 		{
-			subResourceRange.aspectMask = vk::ImageAspectFlags();
+			subResourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 
-			if ((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL)
-			{
-				subResourceRange.aspectMask |= vk::ImageAspectFlagBits::eStencil;
-			}
-
-			if ((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER)
-			{
-				subResourceRange.aspectMask |= vk::ImageAspectFlagBits::eDepth;
-			}
-
-			//ReallySetImageLayout(command, mDepthSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
-			command.clearDepthStencilImage(mDepthSurface->mStagingImage, vk::ImageLayout::eGeneral, &mClearDepthValue, 1, &subResourceRange);
-			//ReallySetImageLayout(command, mDepthSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
+			ReallySetImageLayout(command, mDepthSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eGeneral, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
+			command.clearDepthStencilImage(mDepthSurface->mStagingImage, vk::ImageLayout::eTransferDstOptimal, &mClearDepthValue, 1, &subResourceRange);
+			ReallySetImageLayout(command, mDepthSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
 		}
 
 		command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);

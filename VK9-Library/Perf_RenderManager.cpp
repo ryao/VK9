@@ -205,6 +205,16 @@ vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const 
 	//Clean up unreferenced resources.
 	//mGarbageManager.DestroyHandles();
 
+	if (pSourceRect != nullptr || pDestRect != nullptr)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::Present RECT not supported.";
+	}
+
+	if (pDirtyRegion != nullptr)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::Present RGNDATA not supported.";
+	}
+
 	//Print(mDeviceState.mTransforms);
 
 	return result;

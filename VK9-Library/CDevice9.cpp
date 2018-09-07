@@ -158,10 +158,11 @@ HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DW
 HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 {
 	//According to a tip from the Nine team games don't always use the begin/end scene functions correctly.
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
-	workItem->WorkItemType = WorkItemType::Device_BeginScene;
-	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+
+	//WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	//workItem->WorkItemType = WorkItemType::Device_BeginScene;
+	//workItem->Id = mId;
+	//mCommandStreamManager->RequestWork(workItem);
 
 	return D3D_OK;
 }

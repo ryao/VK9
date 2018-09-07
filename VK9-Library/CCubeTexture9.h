@@ -49,7 +49,7 @@ public:
 	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
 
-	std::vector<std::vector<CSurface9*>> mSurfaces;
+	std::array<std::vector<CSurface9*>, 6> mSurfaces;
 
 	void Flush();
 public:
