@@ -181,8 +181,6 @@ void RenderManager::Clear(std::shared_ptr<RealDevice> realDevice, DWORD Count, c
 
 vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)
 {
-	vk::Result result = vk::Result::eSuccess;
-
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
 		this->StartScene(realDevice, false);
@@ -195,7 +193,7 @@ vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const 
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride);
 
-	result = swapchain->Present(currentBuffer, realDevice->mQueue, deviceState.mRenderTarget->mColorSurface->mStagingImage);
+	vk::Result result = swapchain->Present(currentBuffer, realDevice->mQueue, deviceState.mRenderTarget->mColorSurface->mStagingImage);
 	deviceState.hasPresented = true;
 	realDevice->mCurrentCommandBuffer = !realDevice->mCurrentCommandBuffer;
 
@@ -810,13 +808,16 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 
 	SetCulling(realDevice->mPipelineRasterizationStateCreateInfo, (D3DCULL)constants.cullMode);
 	realDevice->mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)constants.fillMode);
+
 	realDevice->mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context->PrimitiveType);
 
-	realDevice->mPipelineDepthStencilStateCreateInfo.depthTestEnable = constants.zEnable; //= VK_TRUE;
-	realDevice->mPipelineDepthStencilStateCreateInfo.depthWriteEnable = constants.zWriteEnable; //VK_TRUE;
-	realDevice->mPipelineDepthStencilStateCreateInfo.depthCompareOp = ConvertCompareOperation(constants.zFunction);  //VK_COMPARE_OP_LESS_OR_EQUAL;
-	//realDevice->mPipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = true; //= constants.bound;
-	realDevice->mPipelineDepthStencilStateCreateInfo.stencilTestEnable = constants.stencilEnable; //VK_FALSE;
+	auto& pipelineDepthStencilStateCreateInfo = realDevice->mPipelineDepthStencilStateCreateInfo;
+
+	pipelineDepthStencilStateCreateInfo.depthTestEnable = constants.zEnable; //= VK_TRUE;
+	pipelineDepthStencilStateCreateInfo.depthWriteEnable = constants.zWriteEnable; //VK_TRUE;
+	pipelineDepthStencilStateCreateInfo.depthCompareOp = ConvertCompareOperation(constants.zFunction);  //VK_COMPARE_OP_LESS_OR_EQUAL;
+	//pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = true; //= constants.bound;
+	pipelineDepthStencilStateCreateInfo.stencilTestEnable = constants.stencilEnable; //VK_FALSE;
 
 	//twoSidedStencilMode
 
@@ -829,7 +830,6 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	compareMask( compareMask_ )
 	, writeMask( writeMask_ )
 	*/
-	auto& pipelineDepthStencilStateCreateInfo = realDevice->mPipelineDepthStencilStateCreateInfo;
 
 	auto& pipelineDepthStencilStateCreateInfoBack = pipelineDepthStencilStateCreateInfo.back;
 	pipelineDepthStencilStateCreateInfoBack.reference = constants.stencilReference;
@@ -848,9 +848,9 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		pipelineDepthStencilStateCreateInfoBack.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
 
 
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.stencilFail);
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.stencilPass);
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.stencilFunction);
+		pipelineDepthStencilStateCreateInfoFront.failOp = ConvertStencilOperation(constants.stencilFail);
+		pipelineDepthStencilStateCreateInfoFront.passOp = ConvertStencilOperation(constants.stencilPass);
+		pipelineDepthStencilStateCreateInfoFront.compareOp = ConvertCompareOperation(constants.stencilFunction);
 	}
 	else
 	{

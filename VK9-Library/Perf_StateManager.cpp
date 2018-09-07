@@ -382,27 +382,29 @@ void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 	memoryAllocateInfo.allocationSize = 0;
 	memoryAllocateInfo.memoryTypeIndex = 0;
 
-	result = device->mDevice.createBuffer(&bufferCreateInfo, nullptr, &ptr->mBuffer);
+	auto& vulkanDevice = device->mDevice;
+
+	result = vulkanDevice.createBuffer(&bufferCreateInfo, nullptr, &ptr->mBuffer);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVertexBuffer vkCreateBuffer failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	ptr->mMemoryRequirements = device->mDevice.getBufferMemoryRequirements(ptr->mBuffer);
+	ptr->mMemoryRequirements = vulkanDevice.getBufferMemoryRequirements(ptr->mBuffer);
 
 	memoryAllocateInfo.allocationSize = ptr->mMemoryRequirements.size;
 
 	GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, ptr->mMemoryRequirements.memoryTypeBits, (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent), &memoryAllocateInfo.memoryTypeIndex);
 
-	result = device->mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mMemory);
+	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mMemory);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVertexBuffer vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	device->mDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
+	vulkanDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
 
 	uint32_t attributeStride = 0;
 
@@ -491,27 +493,29 @@ void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 	memoryAllocateInfo.allocationSize = 0;
 	memoryAllocateInfo.memoryTypeIndex = 0;
 
-	result = device->mDevice.createBuffer(&bufferCreateInfo, nullptr, &ptr->mBuffer);
+	auto& vulkanDevice = device->mDevice;
+
+	result = vulkanDevice.createBuffer(&bufferCreateInfo, nullptr, &ptr->mBuffer);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateIndexBuffer vkCreateBuffer failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	ptr->mMemoryRequirements = device->mDevice.getBufferMemoryRequirements(ptr->mBuffer);
+	ptr->mMemoryRequirements = vulkanDevice.getBufferMemoryRequirements(ptr->mBuffer);
 
 	memoryAllocateInfo.allocationSize = ptr->mMemoryRequirements.size;
 
 	GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, ptr->mMemoryRequirements.memoryTypeBits, (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent), &memoryAllocateInfo.memoryTypeIndex);
 
-	result = device->mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mMemory);
+	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mMemory);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateIndexBuffer vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	device->mDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
+	vulkanDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
 
 	switch (indexBuffer9->mFormat)
 	{
@@ -567,7 +571,9 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	//imageCreateInfo.flags = 0;
 	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
 
-	result = device->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	auto& vulkanDevice = device->mDevice;
+
+	result = vulkanDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
@@ -575,7 +581,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	}
 
 	vk::MemoryRequirements memoryRequirements;
-	device->mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
+	vulkanDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
 
 	auto& memoryAllocateInfo = ptr->mMemoryAllocateInfo;
 	//memoryAllocateInfo.allocationSize = 0;
@@ -590,14 +596,14 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 		return;
 	}
 
-	result = device->mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	device->mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+	vulkanDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;
@@ -633,7 +639,7 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 		break;
 	}
 
-	result = device->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+	result = vulkanDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
@@ -678,7 +684,9 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	imageCreateInfo.initialLayout = vk::ImageLayout::eUndefined; //VK_IMAGE_LAYOUT_PREINITIALIZED;
 	imageCreateInfo.sharingMode = vk::SharingMode::eExclusive;
 
-	result = device->mDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	auto& vulkanDevice = device->mDevice;
+
+	result = vulkanDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
@@ -691,7 +699,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	}
 
 	vk::MemoryRequirements memoryRequirements;
-	device->mDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
+	vulkanDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
 
 	auto& memoryAllocateInfo = ptr->mMemoryAllocateInfo;
 	//memoryAllocateInfo.allocationSize = 0;
@@ -706,14 +714,14 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 		return;
 	}
 
-	result = device->mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
-	device->mDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
+	vulkanDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;
@@ -748,7 +756,7 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 		break;
 	}
 
-	result = device->mDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
+	result = vulkanDevice.createImageView(&imageViewCreateInfo, nullptr, &ptr->mImageView);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImageView failed with return code of " << GetResultString((VkResult)result);
@@ -823,7 +831,7 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 		return;
 	}
 
-	result = device->mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
+	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);

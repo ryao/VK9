@@ -1030,3 +1030,11 @@ void ReallySetImageLayout(vk::CommandBuffer commandBuffer, vk::Image image, vk::
 
 	commandBuffer.pipelineBarrier(sourceStages, destinationStages, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 }
+
+void IUnknownDeleter(IUnknown* ptr) 
+{ 
+	if (ptr != nullptr) 
+	{ 
+		ptr->Release(); 
+	} 
+}

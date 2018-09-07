@@ -1550,4 +1550,13 @@ inline const std::string& GetResultString(VkResult result) noexcept
 	}
 }
 
+void IUnknownDeleter(IUnknown* ptr);
+
+template <class T>
+class com_ptr
+	: public std::unique_ptr<T, decltype(&IUnknownDeleter)>
+{
+
+};
+
 #endif // UTILITIES_H

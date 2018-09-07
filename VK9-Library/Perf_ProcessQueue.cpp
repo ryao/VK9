@@ -186,7 +186,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (pRenderTarget != nullptr)
 				{
-					auto& constants = realDevice->mDeviceState.mSpecializationConstants;
+					auto& deviceState = realDevice->mDeviceState;
+					auto& constants = deviceState.mSpecializationConstants;
 					constants.screenWidth = pRenderTarget->mWidth;
 					constants.screenHeight = pRenderTarget->mHeight;
 
@@ -203,14 +204,14 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						}
 						else
 						{			
-							if (realDevice->mDeviceState.mRenderTarget != nullptr && realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+							if (deviceState.mRenderTarget != nullptr && deviceState.mRenderTarget->mIsSceneStarted)
 							{
 								renderManager.StopScene(realDevice);
 							}
 
-							depthSurface = realDevice->mDeviceState.mRenderTarget->mDepthSurface;
-							realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
-							realDevice->mRenderTargets.push_back(realDevice->mDeviceState.mRenderTarget);
+							depthSurface = deviceState.mRenderTarget->mDepthSurface;
+							deviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+							realDevice->mRenderTargets.push_back(deviceState.mRenderTarget);
 						}
 					}
 					else if (pRenderTarget->mCubeTexture != nullptr)
@@ -229,16 +230,16 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						}
 						else
 						{
-							if (realDevice->mDeviceState.mRenderTarget != nullptr)
+							if (deviceState.mRenderTarget != nullptr)
 							{
-								if (realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+								if (deviceState.mRenderTarget->mIsSceneStarted)
 								{
 									renderManager.StopScene(realDevice);
 								}
-								depthSurface = realDevice->mDeviceState.mRenderTarget->mDepthSurface;
+								depthSurface = deviceState.mRenderTarget->mDepthSurface;
 							}
-							realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
-							realDevice->mRenderTargets.push_back(realDevice->mDeviceState.mRenderTarget);
+							deviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+							realDevice->mRenderTargets.push_back(deviceState.mRenderTarget);
 						}
 					}
 				}	
@@ -1597,10 +1598,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
-				Light light = {};
-
 				if (state->mLights.size() == LightIndex)
 				{
+					Light light = {};
+
 					light.IsEnabled = bEnable;
 					state->mLights.push_back(light);
 					state->mAreLightsDirty = true;
