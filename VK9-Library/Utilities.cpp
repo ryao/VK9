@@ -49,7 +49,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::LightEnable
 	//if ((type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE))
 	//{
-	//	BOOST_FOREACH(const auto& pair1, sourceState.mLightSettings)
+	//	for(const auto& pair1 : sourceState.mLightSettings)
 	//	{
 	//		if (!onlyIfExists || targetState.mLightSettings.count(pair1.first) > 0)
 	//		{
@@ -471,9 +471,9 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetSamplerState
 	if (sourceState.mSamplerStates.size())
 	{
-		BOOST_FOREACH(const auto& pair1, sourceState.mSamplerStates)
+		for(const auto& pair1 : sourceState.mSamplerStates)
 		{
-			BOOST_FOREACH(const auto& pair2, pair1.second)
+			for(const auto& pair2 : pair1.second)
 			{
 				if (!onlyIfExists || (targetState.mSamplerStates.count(pair1.first) > 0 && targetState.mSamplerStates[pair1.first].count(pair2.first) > 0))
 				{
@@ -520,7 +520,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetStreamSource
 	if (sourceState.mStreamSources.size())
 	{
-		BOOST_FOREACH(const auto& pair1, sourceState.mStreamSources)
+		for(const auto& pair1 : sourceState.mStreamSources)
 		{
 			if (type == D3DSBT_ALL && (!onlyIfExists || targetState.mStreamSources.count(pair1.first) > 0))
 			{
@@ -531,7 +531,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
-	//BOOST_FOREACH(const auto& pair1, sourceState.mTextures)
+	//for(const auto& pair1 : sourceState.mTextures)
 	//{
 	//	if ((type == D3DSBT_ALL))
 	//	{
@@ -737,7 +737,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetTransform
 	if (type == D3DSBT_ALL)
 	{
-		BOOST_FOREACH(const auto& pair1, sourceState.mTransforms)
+		for(const auto& pair1 : sourceState.mTransforms)
 		{
 			if (!onlyIfExists || targetState.mTransforms.count(pair1.first) > 0)
 			{

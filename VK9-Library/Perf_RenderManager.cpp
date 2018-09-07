@@ -541,7 +541,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	deviceState.mSpecializationConstants.textureCount = constants.textureCount;
 
 	int i = 0;
-	BOOST_FOREACH(auto& source, deviceState.mStreamSources)
+	for(auto& source : deviceState.mStreamSources)
 	{
 		realDevice->mVertexInputBindingDescription[i].binding = source.first;
 		realDevice->mVertexInputBindingDescription[i].stride = source.second.Stride;
@@ -1426,7 +1426,7 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 		0, 0, 1, 0,
 		0, 0, 0, 1;
 
-	BOOST_FOREACH(const auto& pair1, deviceState.mTransforms)
+	for(const auto& pair1 : deviceState.mTransforms)
 	{
 		switch (pair1.first)
 		{
