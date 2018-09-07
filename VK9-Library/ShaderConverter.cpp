@@ -794,7 +794,7 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 
 		if (mTextures[registerNumber])
 		{
-			mTextures[registerNumber];
+			registerNumber = mTextures[registerNumber];
 		}
 
 		break;

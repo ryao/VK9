@@ -97,7 +97,10 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	}
 
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
+	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eClear;
+
 	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
+	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
 	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearRenderPass);
 	if (result != vk::Result::eSuccess)
@@ -234,7 +237,10 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	}
 
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
+	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eClear;
+
 	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
+	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
 	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearRenderPass);
 	if (result != vk::Result::eSuccess)
@@ -311,6 +317,7 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 	if (clear)
 	{
 		mClearValues[0].color = mClearColorValue;
+		mClearValues[1].depthStencil = mClearDepthValue;
 		mRenderPassBeginInfo.renderPass = mClearRenderPass;
 	}
 	else
