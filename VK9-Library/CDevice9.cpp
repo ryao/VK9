@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2016 Christopher Joseph Dean Schaefer
 
@@ -587,22 +591,25 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 	switch (PrimitiveType)
 	{
 	case D3DPT_POINTLIST:
-		indexLength = (PrimitiveCount) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+		indexLength = (PrimitiveCount) * ((IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4);
 		break;
 	case D3DPT_LINELIST:
-		indexLength = (PrimitiveCount * 2) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+		indexLength = (PrimitiveCount * 2) * ((IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4);
 		break;
 	case D3DPT_LINESTRIP:
-		indexLength = (PrimitiveCount + 1) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+		indexLength = (PrimitiveCount + 1) * ((IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4);
 		break;
 	case D3DPT_TRIANGLELIST:
-		indexLength = (PrimitiveCount * 3) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+		indexLength = (PrimitiveCount * 3) * ((IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4);
 		break;
 	case D3DPT_TRIANGLESTRIP:
-		indexLength = (PrimitiveCount + 2) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+		indexLength = (PrimitiveCount + 2) * ((IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4);
 		break;
 	case D3DPT_TRIANGLEFAN:
-		indexLength = (PrimitiveCount + 2) * (IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4;
+		indexLength = (PrimitiveCount + 2) * ((IndexDataFormat == D3DFMT_INDEX16) ? 2 : 4);
+		break;
+	default:
+		//indexLength = PrimitiveCount;
 		break;
 	}
 
@@ -705,6 +712,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveTy
 	case D3DPT_TRIANGLEFAN:
 		NumVertices = (PrimitiveCount + 2);
 		vertexLength = NumVertices * VertexStreamZeroStride;
+		break;
+	default :
+		//NumVertices = PrimitiveCount;
+		//vertexLength = NumVertices * VertexStreamZeroStride;
 		break;
 	}
 
@@ -970,7 +981,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetMaterial(D3DMATERIAL9 *pMaterial)
 
 FLOAT STDMETHODCALLTYPE CDevice9::GetNPatchMode()
 {
-	FLOAT output;
+	FLOAT output = {};
 
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_GetMaterial;

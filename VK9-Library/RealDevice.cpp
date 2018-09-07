@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2018 Christopher Joseph Dean Schaefer
 
@@ -637,7 +641,7 @@ void RealDevice::SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask
 	mDevice.freeCommandBuffers(mCommandPool, 1, commandBuffers);
 }
 
-void RealDevice::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory)
+void RealDevice::CreateBuffer(vk::DeviceSize size, const vk::BufferUsageFlags& usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory)
 {
 	vk::Result result; // = VK_SUCCESS
 

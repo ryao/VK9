@@ -29,7 +29,7 @@ misrepresented as being the original software.
 
 struct RealVertexBuffer
 {
-	vk::MemoryRequirements mMemoryRequirements;
+	vk::MemoryRequirements mMemoryRequirements = {};
 	vk::Buffer mBuffer;
 	vk::DeviceMemory mMemory;
 	void* mData = nullptr;

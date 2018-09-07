@@ -1214,7 +1214,7 @@ struct RealDevice
 	~RealDevice();
 
 	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
-	void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory);
+	void CreateBuffer(vk::DeviceSize size, const vk::BufferUsageFlags& usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory);
 	void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 };
 

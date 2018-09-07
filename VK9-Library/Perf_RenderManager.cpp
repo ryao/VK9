@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2018 Christopher Joseph Dean Schaefer
 
@@ -815,20 +819,23 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	compareMask( compareMask_ )
 	, writeMask( writeMask_ )
 	*/
+	auto& pipelineDepthStencilStateCreateInfo = realDevice->mPipelineDepthStencilStateCreateInfo;
 
-	realDevice->mPipelineDepthStencilStateCreateInfo.back.reference = constants.stencilReference;
-	realDevice->mPipelineDepthStencilStateCreateInfo.back.compareMask = constants.stencilMask;
-	realDevice->mPipelineDepthStencilStateCreateInfo.back.writeMask = constants.stencilWriteMask;
+	auto& pipelineDepthStencilStateCreateInfoBack = pipelineDepthStencilStateCreateInfo.back;
+	pipelineDepthStencilStateCreateInfoBack.reference = constants.stencilReference;
+	pipelineDepthStencilStateCreateInfoBack.compareMask = constants.stencilMask;
+	pipelineDepthStencilStateCreateInfoBack.writeMask = constants.stencilWriteMask;
 
-	realDevice->mPipelineDepthStencilStateCreateInfo.front.reference = constants.stencilReference;
-	realDevice->mPipelineDepthStencilStateCreateInfo.front.compareMask = constants.stencilMask;
-	realDevice->mPipelineDepthStencilStateCreateInfo.front.writeMask = constants.stencilWriteMask;
+	auto& pipelineDepthStencilStateCreateInfoFront = pipelineDepthStencilStateCreateInfo.front;
+	pipelineDepthStencilStateCreateInfoFront.reference = constants.stencilReference;
+	pipelineDepthStencilStateCreateInfoFront.compareMask = constants.stencilMask;
+	pipelineDepthStencilStateCreateInfoFront.writeMask = constants.stencilWriteMask;
 
 	if (constants.cullMode == D3DCULL_CCW)
 	{
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.ccwStencilFail);
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.ccwStencilPass);
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+		pipelineDepthStencilStateCreateInfoBack.failOp = ConvertStencilOperation(constants.ccwStencilFail);
+		pipelineDepthStencilStateCreateInfoBack.passOp = ConvertStencilOperation(constants.ccwStencilPass);
+		pipelineDepthStencilStateCreateInfoBack.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
 
 
 		realDevice->mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.stencilFail);
@@ -837,13 +844,13 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 	else
 	{
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.failOp = ConvertStencilOperation(constants.stencilFail);
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.passOp = ConvertStencilOperation(constants.stencilPass);
-		realDevice->mPipelineDepthStencilStateCreateInfo.back.compareOp = ConvertCompareOperation(constants.stencilFunction);
+		pipelineDepthStencilStateCreateInfoBack.failOp = ConvertStencilOperation(constants.stencilFail);
+		pipelineDepthStencilStateCreateInfoBack.passOp = ConvertStencilOperation(constants.stencilPass);
+		pipelineDepthStencilStateCreateInfoBack.compareOp = ConvertCompareOperation(constants.stencilFunction);
 
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.failOp = ConvertStencilOperation(constants.ccwStencilFail);
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.passOp = ConvertStencilOperation(constants.ccwStencilPass);
-		realDevice->mPipelineDepthStencilStateCreateInfo.front.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+		pipelineDepthStencilStateCreateInfoFront.failOp = ConvertStencilOperation(constants.ccwStencilFail);
+		pipelineDepthStencilStateCreateInfoFront.passOp = ConvertStencilOperation(constants.ccwStencilPass);
+		pipelineDepthStencilStateCreateInfoFront.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
 	}
 
 
@@ -1141,8 +1148,12 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::BeginDraw unknown vertex format.";
 	}
 
-	realDevice->mPipelineLayoutCreateInfo.pPushConstantRanges = realDevice->mPushConstantRanges;
-	realDevice->mPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+	auto& pipelineLayoutCreateInfo = realDevice->mPipelineLayoutCreateInfo;
+	auto& vertexSpecializationInfo = realDevice->mVertexSpecializationInfo;
+	auto& pixelSpecializationInfo = realDevice->mPixelSpecializationInfo;
+
+	pipelineLayoutCreateInfo.pPushConstantRanges = realDevice->mPushConstantRanges;
+	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 
 	if (context->VertexShader != nullptr)
 	{
@@ -1155,20 +1166,20 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		memcpy(&realDevice->mDescriptorSetLayoutBinding, &convertedPixelShader.mDescriptorSetLayoutBinding, sizeof(realDevice->mDescriptorSetLayoutBinding));
 
 		realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
-		realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+		pipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 
 		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = convertedPixelShader.mDescriptorSetLayoutBindingCount;
-		realDevice->mPipelineLayoutCreateInfo.setLayoutCount = 1;
+		pipelineLayoutCreateInfo.setLayoutCount = 1;
 
-		realDevice->mVertexSpecializationInfo.pData = &context->mVertexShaderConstantSlots;
-		realDevice->mVertexSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
-		realDevice->mVertexSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		realDevice->mVertexSpecializationInfo.mapEntryCount = 1024;
+		vertexSpecializationInfo.pData = &context->mVertexShaderConstantSlots;
+		vertexSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
+		vertexSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
+		vertexSpecializationInfo.mapEntryCount = 1024;
 
-		realDevice->mPixelSpecializationInfo.pData = &context->mPixelShaderConstantSlots;
-		realDevice->mPixelSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
-		realDevice->mPixelSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		realDevice->mPixelSpecializationInfo.mapEntryCount = 1024;
+		pixelSpecializationInfo.pData = &context->mPixelShaderConstantSlots;
+		pixelSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
+		pixelSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
+		pixelSpecializationInfo.mapEntryCount = 1024;
 	}
 	else
 	{
@@ -1206,15 +1217,15 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.	
 		}
 
-		realDevice->mVertexSpecializationInfo.pData = &deviceState.mSpecializationConstants;
-		realDevice->mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		realDevice->mVertexSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		realDevice->mVertexSpecializationInfo.mapEntryCount = 251;
+		vertexSpecializationInfo.pData = &deviceState.mSpecializationConstants;
+		vertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+		vertexSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
+		vertexSpecializationInfo.mapEntryCount = 251;
 
-		realDevice->mPixelSpecializationInfo.pData = &deviceState.mSpecializationConstants;
-		realDevice->mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		realDevice->mPixelSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		realDevice->mPixelSpecializationInfo.mapEntryCount = 251;
+		pixelSpecializationInfo.pData = &deviceState.mSpecializationConstants;
+		pixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+		pixelSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
+		pixelSpecializationInfo.mapEntryCount = 251;
 	}
 
 	result = device.createDescriptorSetLayout(&realDevice->mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
@@ -1393,8 +1404,11 @@ void RenderManager::FlushDrawBufffer(std::shared_ptr<RealDevice> realDevice)
 	/*
 	Uses remove_if and chrono to remove elements that have not been used in over a second.
 	*/
-	realDevice->mDrawBuffer.erase(std::remove_if(realDevice->mDrawBuffer.begin(), realDevice->mDrawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), realDevice->mDrawBuffer.end());
-	realDevice->mSamplerRequests.erase(std::remove_if(realDevice->mSamplerRequests.begin(), realDevice->mSamplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), realDevice->mSamplerRequests.end());
+	auto& drawBuffer = realDevice->mDrawBuffer;
+	drawBuffer.erase(std::remove_if(drawBuffer.begin(), drawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), drawBuffer.end());
+	
+	auto& samplerRequests = realDevice->mSamplerRequests;
+	samplerRequests.erase(std::remove_if(samplerRequests.begin(), samplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), samplerRequests.end());
 
 	realDevice->mRenderTargets.clear();
 

@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2016 Christopher Joseph Dean Schaefer
 
@@ -472,6 +476,8 @@ boost::log::basic_record_ostream<char>& operator<< (boost::log::basic_record_ost
 	case spv::OpSubgroupBlockWriteINTEL: return os << "OpSubgroupBlockWriteINTEL";
 	case spv::OpSubgroupImageBlockReadINTEL: return os << "OpSubgroupImageBlockReadINTEL";
 	case spv::OpSubgroupImageBlockWriteINTEL: return os << "OpSubgroupImageBlockWriteINTEL";
+	case spv::OpDecorateStringGOOGLE: return os << "OpDecorateStringGOOGLE";
+	case spv::OpMemberDecorateStringGOOGLE: return os << "OpMemberDecorateStringGOOGLE";
 	case spv::OpMax: return os << "OpMax";
 	};
 	return os << static_cast<std::uint32_t>(code);
@@ -530,7 +536,9 @@ Khronos at https://www.khronos.org/registry/spir-v/api/spir-v.xml.
 #define SPIR_V_GENERATORS_NUMBER 0x00000000
 
 ShaderConverter::ShaderConverter(vk::Device& device, ShaderConstantSlots& shaderConstantSlots)
-	: mDevice(device), mShaderConstantSlots(shaderConstantSlots)
+	: mDevice(device), 
+	mShaderConstantSlots(shaderConstantSlots),
+	mFalseLabelCount(0)
 {
 
 }
@@ -794,7 +802,8 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 
 		if (mTextures[registerNumber])
 		{
-			mTextures[registerNumber];
+			//TODO: Revisit
+			registerNumber = mTextures[registerNumber];
 		}
 
 		break;
@@ -1322,7 +1331,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		{
 			uint32_t absoluteId = GetNextId();
 			mIdTypePairs[absoluteId] = loadedType;
-			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, loadedId);
 			loadedId = absoluteId;
 		}
 		break;
@@ -1343,7 +1352,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		{
 			uint32_t absoluteId = GetNextId();
 			mIdTypePairs[absoluteId] = loadedType;
-			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, loadedId);
 			loadedId = absoluteId;
 
 			uint32_t negatedId = GetNextId();

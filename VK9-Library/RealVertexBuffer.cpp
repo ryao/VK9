@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2018 Christopher Joseph Dean Schaefer
 
@@ -21,7 +25,8 @@ misrepresented as being the original software.
 #include "RealVertexBuffer.h"
 
 RealVertexBuffer::RealVertexBuffer(RealDevice* realDevice)
-	: mRealDevice(realDevice)
+	: mRealDevice(realDevice),
+	mSize(0)
 {
 }
 

@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 //-----------------------------------------------------------------------------
 //           Name: dx9_hlsl_simple_vs2ps.cpp
 //         Author: Kevin Harris

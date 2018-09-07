@@ -109,7 +109,7 @@ inline uint32_t FindMemoryType(VkPhysicalDeviceMemoryProperties& memoryPropertie
 	return 0;
 }
 
-inline bool GetMemoryTypeFromProperties(vk::PhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits, vk::MemoryPropertyFlags requirements_mask, uint32_t *typeIndex)
+inline bool GetMemoryTypeFromProperties(vk::PhysicalDeviceMemoryProperties& memoryProperties, uint32_t typeBits, const vk::MemoryPropertyFlags& requirements_mask, uint32_t *typeIndex)
 {
 	for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)
 	{
