@@ -310,7 +310,7 @@ UINT STDMETHODCALLTYPE C9::GetAdapterModeCount(UINT Adapter,D3DFORMAT Format)
 
 HMONITOR STDMETHODCALLTYPE C9::GetAdapterMonitor(UINT Adapter)
 {
-	if (mMonitors.size() > Adapter)
+	if ((mMonitors.size()-1) < Adapter)
 	{
 		return mMonitors[0].hMonitor;
 	}

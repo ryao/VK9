@@ -55,9 +55,6 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	//extensionNames.push_back("VK_KHR_maintenance1");
 	extensionNames.push_back("VK_KHR_push_descriptor");
 	//extensionNames.push_back("VK_KHR_sampler_mirror_clamp_to_edge");
-#ifdef _DEBUG
-	layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
-#endif // _DEBUG
 
 	float queue_priorities[1] = { 0.0 };
 	vk::DeviceQueueCreateInfo queue_info = {};
