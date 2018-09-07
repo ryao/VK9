@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2016 Christopher Joseph Dean Schaefer
 
@@ -33,7 +37,9 @@ CIndexBuffer9::CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORM
 	mSharedHandle(pSharedHandle),
 	mCapacity(0),
 	mIsDirty(true),
-	mLockCount(0)
+	mLockCount(0),
+	mSize(0),
+	mId(0)
 {
 
 }

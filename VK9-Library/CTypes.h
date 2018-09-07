@@ -567,8 +567,8 @@ struct DeviceState
 	SpecializationConstants mSpecializationConstants = {};
 
 	float mPushConstants[64] = {};
-	ShaderConstantSlots mVertexShaderConstantSlots;
-	ShaderConstantSlots mPixelShaderConstantSlots;
+	ShaderConstantSlots mVertexShaderConstantSlots = {};
+	ShaderConstantSlots mPixelShaderConstantSlots = {};
 
 	//ConvertedShader mConvertedVertexShader = {};
 	//ConvertedShader mConvertedPixelShader = {};

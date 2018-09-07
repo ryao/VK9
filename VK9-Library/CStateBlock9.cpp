@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2016 Christopher Joseph Dean Schaefer
 
@@ -26,7 +30,8 @@ misrepresented as being the original software.
 
 CStateBlock9::CStateBlock9(CDevice9* device, D3DSTATEBLOCKTYPE Type)
 	: mDevice(device),
-	mType(Type)
+	mType(Type),
+	mId(0)
 {
 	//We want at least one light so the UBO won't be messed up for fixed function.
 	Light light = {};

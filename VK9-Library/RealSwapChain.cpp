@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 Copyright(c) 2018 Christopher Joseph Dean Schaefer
 
@@ -392,7 +396,7 @@ void RealSwapChain::DestroyDepthBuffer()
 	mDevice.freeMemory(mDepthDeviceMemory, nullptr);
 }
 
-vk::Result RealSwapChain::Present(vk::CommandBuffer commandBuffer, vk::Queue queue, vk::Image source)
+vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& queue, vk::Image& source)
 {
 	mResult = mDevice.acquireNextImageKHR(mSwapchain, UINT64_MAX, nullptr, mSwapFence, &mCurrentIndex);
 	if (mResult != vk::Result::eSuccess)
