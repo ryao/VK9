@@ -41,8 +41,12 @@ struct RealRenderTarget
 	~RealRenderTarget();
 
 	bool mIsSceneStarted = false;
+
 	vk::RenderPass mStoreRenderPass;
-	vk::RenderPass mClearRenderPass;
+	vk::RenderPass mClearColorRenderPass;
+	vk::RenderPass mClearDepthRenderPass;
+	vk::RenderPass mClearBothRenderPass;
+
 	vk::AttachmentDescription mRenderAttachments[2];
 	vk::ClearValue mClearValues[2];
 	vk::ColorSpaceKHR mColorSpace;
@@ -60,7 +64,7 @@ struct RealRenderTarget
 	vk::Fence mCommandFence;
 	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
 
-	void StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clear, bool createNewCommand);
+	void StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clearColor, bool clearDepth, bool createNewCommand);
 	void StopScene(vk::CommandBuffer command, vk::Queue queue);
 	void Clear(vk::CommandBuffer command, DeviceState& deviceState, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 };

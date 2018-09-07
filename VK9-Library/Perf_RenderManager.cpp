@@ -74,7 +74,7 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice, false);
+		this->StartScene(realDevice, false,false);
 	}
 
 	//The dirty flag for lights can be set by enable light or set light.
@@ -91,13 +91,13 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 	}
 }
 
-void RenderManager::StartScene(std::shared_ptr<RealDevice> realDevice, bool clear)
+void RenderManager::StartScene(std::shared_ptr<RealDevice> realDevice, bool clearColor, bool clearDepth)
 {
 	auto& device = realDevice->mDevice;
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
-	realDevice->mDeviceState.mRenderTarget->StartScene(currentBuffer, deviceState, clear, deviceState.hasPresented);
+	realDevice->mDeviceState.mRenderTarget->StartScene(currentBuffer, deviceState, clearColor, clearDepth, deviceState.hasPresented);
 	deviceState.hasPresented = false;
 }
 
@@ -183,7 +183,7 @@ vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const 
 {
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice, false);
+		this->StartScene(realDevice, false,false);
 	}
 	this->StopScene(realDevice);
 
@@ -232,7 +232,7 @@ void RenderManager::DrawIndexedPrimitive(std::shared_ptr<RealDevice> realDevice,
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice, false);
+		this->StartScene(realDevice, false,false);
 	}
 
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(realDevice.get());
@@ -255,7 +255,7 @@ void RenderManager::DrawPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRI
 
 	if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 	{
-		this->StartScene(realDevice, false);
+		this->StartScene(realDevice, false,false);
 	}
 
 	std::shared_ptr<DrawContext> context = std::make_shared<DrawContext>(realDevice.get());

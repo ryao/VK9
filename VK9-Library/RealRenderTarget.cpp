@@ -100,13 +100,34 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 		return;
 	}
 
+
+	//Set color to clear but leave depth as store.
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
 	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
+	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearColorRenderPass);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//Set depth to clear so both are now clear.
 	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
 	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
-	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearRenderPass);
+	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearBothRenderPass);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//Reset color to load for the clear depth
+	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eLoad;
+
+	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearDepthRenderPass);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
@@ -240,13 +261,33 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 		return;
 	}
 
+	//Set color to clear but leave depth as store.
 	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eClear;
 	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
+	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearColorRenderPass);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//Set depth to clear so both are now clear.
 	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
 	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
-	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearRenderPass);
+	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearBothRenderPass);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//Reset color to load for the clear depth
+	mRenderAttachments[0].loadOp = vk::AttachmentLoadOp::eLoad;
+	mRenderAttachments[0].stencilLoadOp = vk::AttachmentLoadOp::eLoad;
+
+	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearDepthRenderPass);
 	if (result != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
@@ -311,18 +352,33 @@ RealRenderTarget::~RealRenderTarget()
 	mDevice.destroySemaphore(mPresentCompleteSemaphore, nullptr);
 	mDevice.destroyFramebuffer(mFramebuffer, nullptr);
 	mDevice.destroyRenderPass(mStoreRenderPass, nullptr);
-	mDevice.destroyRenderPass(mClearRenderPass, nullptr);
+	mDevice.destroyRenderPass(mClearColorRenderPass, nullptr);
+	mDevice.destroyRenderPass(mClearDepthRenderPass, nullptr);
+	mDevice.destroyRenderPass(mClearBothRenderPass, nullptr);
 }
 
-void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clear, bool createNewCommand)
+void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clearColor, bool clearDepth, bool createNewCommand)
 {
 	mIsSceneStarted = true;
 
-	if (clear)
+	if (clearColor && clearDepth)
 	{
 		mClearValues[0].color = mClearColorValue;
 		mClearValues[1].depthStencil = mClearDepthValue;
-		mRenderPassBeginInfo.renderPass = mClearRenderPass;
+
+		mRenderPassBeginInfo.renderPass = mClearBothRenderPass;
+	}
+	else if (clearColor)
+	{
+		mClearValues[0].color = mClearColorValue;
+
+		mRenderPassBeginInfo.renderPass = mClearColorRenderPass;
+	}
+	else if (clearDepth)
+	{
+		mClearValues[1].depthStencil = mClearDepthValue;
+
+		mRenderPassBeginInfo.renderPass = mClearDepthRenderPass;
 	}
 	else
 	{
@@ -429,6 +485,9 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState
 	}
 	else
 	{
-		this->StartScene(command, deviceState, true, deviceState.hasPresented);
+		bool clearColor = ((Flags & D3DCLEAR_TARGET) == D3DCLEAR_TARGET);
+		bool clearDepth = (((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL) || ((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER));
+
+		this->StartScene(command, deviceState, clearColor, clearDepth, deviceState.hasPresented);
 	}
 }

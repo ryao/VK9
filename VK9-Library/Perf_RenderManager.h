@@ -36,7 +36,7 @@ struct RenderManager
 	~RenderManager();
 
 	void UpdateBuffer(std::shared_ptr<RealDevice> realDevice);
-	void StartScene(std::shared_ptr<RealDevice> realDevice, bool clear);
+	void StartScene(std::shared_ptr<RealDevice> realDevice, bool clearColor, bool clearDepth);
 	void StopScene(std::shared_ptr<RealDevice>realDevice);
 	void CopyImage(std::shared_ptr<RealDevice> realDevice, vk::Image srcImage, vk::Image dstImage, int32_t x, int32_t y, uint32_t width, uint32_t height, uint32_t depth, uint32_t srcMip, uint32_t dstMip);
 	void Clear(std::shared_ptr<RealDevice> realDevice, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
