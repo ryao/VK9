@@ -378,33 +378,10 @@ void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
 	//bufferCreateInfo.flags = 0;
 
-	vk::MemoryAllocateInfo memoryAllocateInfo;
-	memoryAllocateInfo.allocationSize = 0;
-	memoryAllocateInfo.memoryTypeIndex = 0;
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-	auto& vulkanDevice = device->mDevice;
-
-	result = vulkanDevice.createBuffer(&bufferCreateInfo, nullptr, &ptr->mBuffer);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVertexBuffer vkCreateBuffer failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	ptr->mMemoryRequirements = vulkanDevice.getBufferMemoryRequirements(ptr->mBuffer);
-
-	memoryAllocateInfo.allocationSize = ptr->mMemoryRequirements.size;
-
-	GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, ptr->mMemoryRequirements.memoryTypeBits, (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent), &memoryAllocateInfo.memoryTypeIndex);
-
-	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mMemory);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVertexBuffer vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	vulkanDevice.bindBufferMemory(ptr->mBuffer, ptr->mMemory, 0);
+	vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
 
 	uint32_t attributeStride = 0;
 

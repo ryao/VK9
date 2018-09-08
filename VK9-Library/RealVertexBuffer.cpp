@@ -36,8 +36,7 @@ RealVertexBuffer::~RealVertexBuffer()
 	if (mRealDevice != nullptr)
 	{
 		auto& device = mRealDevice->mDevice;
-		device.destroyBuffer(mBuffer, nullptr);
-		device.freeMemory(mMemory, nullptr);
+		vmaDestroyBuffer(mRealDevice->mAllocator, (VkBuffer)mBuffer, mAllocation);
 	}
 }
 

@@ -3275,7 +3275,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData == nullptr)
 				{
-					realVertexBuffer.mData = realVertexBuffer.mRealDevice->mDevice.mapMemory(realVertexBuffer.mMemory, 0, realVertexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
+					vk::Result result = (vk::Result)vmaMapMemory(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation, &realVertexBuffer.mData);
 					if (realVertexBuffer.mData == nullptr)
 					{
 						*ppbData = nullptr;
@@ -3297,7 +3297,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData != nullptr)
 				{
-					realVertexBuffer.mRealDevice->mDevice.unmapMemory(realVertexBuffer.mMemory);
+					vmaUnmapMemory(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation);
 					realVertexBuffer.mData = nullptr;
 				}
 			}
