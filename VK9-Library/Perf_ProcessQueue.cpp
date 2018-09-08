@@ -3312,7 +3312,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData == nullptr)
 				{
-					realIndexBuffer.mData = realIndexBuffer.mRealDevice->mDevice.mapMemory(realIndexBuffer.mMemory, 0, realIndexBuffer.mMemoryRequirements.size, vk::MemoryMapFlags()).value;
+					vk::Result result = (vk::Result)vmaMapMemory(realIndexBuffer.mRealDevice->mAllocator, realIndexBuffer.mAllocation, &realIndexBuffer.mData);
 					if (realIndexBuffer.mData == nullptr)
 					{
 						(*ppbData) = nullptr;
@@ -3334,7 +3334,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData != nullptr)
 				{
-					realIndexBuffer.mRealDevice->mDevice.unmapMemory(realIndexBuffer.mMemory);
+					vmaUnmapMemory(realIndexBuffer.mRealDevice->mAllocator, realIndexBuffer.mAllocation);
 					realIndexBuffer.mData = nullptr;
 				}
 			}

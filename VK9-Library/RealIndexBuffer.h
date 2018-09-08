@@ -28,9 +28,9 @@ misrepresented as being the original software.
 
 struct RealIndexBuffer
 {
-	vk::MemoryRequirements mMemoryRequirements;
 	vk::Buffer mBuffer;
-	vk::DeviceMemory mMemory;
+	VmaAllocation mAllocation;
+	VmaAllocationInfo mAllocationInfo;
 	vk::IndexType mIndexType;
 	void* mData = nullptr;
 	int32_t mSize;
