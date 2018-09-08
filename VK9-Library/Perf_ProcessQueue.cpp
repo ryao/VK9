@@ -348,6 +348,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				commandStreamManager->mResult = commandStreamManager->mRenderManager.Present(realDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+
+				//This isn't truely atomic but worst case that some extra buffers will be created.
+				commandStreamManager->mFrameBit = !commandStreamManager->mFrameBit;
 			}
 			break;
 			case Device_BeginStateBlock:
@@ -3268,10 +3271,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case VertexBuffer_Lock:
 			{
 				auto& realVertexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mVertexBuffers[workItem->Id]);
+				
 				UINT OffsetToLock = bit_cast<UINT>(workItem->Argument1);
 				UINT SizeToLock = bit_cast<UINT>(workItem->Argument2);
 				VOID** ppbData = bit_cast<VOID**>(workItem->Argument3);
 				DWORD Flags = bit_cast<DWORD>(workItem->Argument4);
+				size_t lastId = (size_t)workItem->Argument5;
+
+				if (lastId != workItem->Id)
+				{
+					auto& oldRealVertexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mVertexBuffers[lastId]);
+
+					realVertexBuffer.mRealDevice->CopyBuffer(oldRealVertexBuffer.mBuffer, realVertexBuffer.mBuffer, realVertexBuffer.mAllocationInfo.size);
+				}
 
 				if (realVertexBuffer.mData == nullptr)
 				{

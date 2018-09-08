@@ -60,6 +60,7 @@ struct CommandStreamManager
 	std::atomic_bool IsBusy = 0;
 
 	std::atomic<vk::Result> mResult = vk::Result::eSuccess;
+	std::atomic<uint32_t> mFrameBit = 1;
 
 	CommandStreamManager();
 	~CommandStreamManager();

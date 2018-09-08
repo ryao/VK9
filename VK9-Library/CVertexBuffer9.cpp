@@ -41,15 +41,30 @@ CVertexBuffer9::CVertexBuffer9(CDevice9* device, UINT Length, DWORD Usage, DWORD
 	mLockCount(0),
 	mId(0)
 {
+	this->mCommandStreamManager = this->mDevice->mCommandStreamManager;
+
 	mSize = mLength / sizeof(float);
 }
 
 CVertexBuffer9::~CVertexBuffer9()
 {	
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
-	workItem->WorkItemType = WorkItemType::VertexBuffer_Destroy;
-	workItem->Id = mId;
-	mCommandStreamManager->RequestWorkAndWait(workItem);
+	for (size_t id : mIds)
+	{
+		WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
+		workItem->WorkItemType = WorkItemType::VertexBuffer_Destroy;
+		workItem->Id = id;
+		mCommandStreamManager->RequestWorkAndWait(workItem);
+	}
+}
+
+void CVertexBuffer9::Init()
+{	
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->Id = this->mDevice->mId;
+	workItem->WorkItemType = WorkItemType::VertexBuffer_Create;
+	workItem->Argument1 = (void*)this;
+	this->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+	this->mIds.push_back(this->mId); //Added so it won't be lost.
 }
 
 ULONG STDMETHODCALLTYPE CVertexBuffer9::AddRef(void)
@@ -193,6 +208,37 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 
 	InterlockedIncrement(&mLockCount);
 
+	/*
+	Unless the caller indicates that they have not overwritten anything used by a previous draw call then we have to assume they have.
+	Because the draw may not have happened we need to check to see if presentation has occured and if not flip to the next vertex
+	*/
+	if ( ((Flags & D3DLOCK_NOOVERWRITE) == D3DLOCK_NOOVERWRITE) || ((Flags & D3DLOCK_READONLY) == D3DLOCK_READONLY) )
+	{
+		//This is best case the caller says they didn't modify anything used in a draw call.
+	}
+	else
+	{
+		if (mFrameBit != mCommandStreamManager->mFrameBit)
+		{
+			mIndex = 0;
+			mFrameBit = mCommandStreamManager->mFrameBit;
+		}
+		else
+		{
+			mLastIndex = mIndex;
+			mIndex++;
+		}
+	}
+
+	if (mIndex > mIds.size() - 1)
+	{
+		Init();
+	}
+	else
+	{
+		mId = mIds[mIndex];
+	}
+
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::VertexBuffer_Lock;
 	workItem->Id = mId;
@@ -200,7 +246,10 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 	workItem->Argument2 = (void*)SizeToLock;
 	workItem->Argument3 = (void*)ppbData;
 	workItem->Argument4 = (void*)Flags;
+	workItem->Argument5 = (void*)mIds[mLastIndex];
 	mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	mLastIndex = mIndex;
 
 	return S_OK;	
 }

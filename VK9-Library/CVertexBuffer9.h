@@ -30,6 +30,8 @@ public:
 	CVertexBuffer9(CDevice9* device,UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CVertexBuffer9();
 
+	void Init();
+
 	size_t mId;
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 
@@ -45,6 +47,11 @@ public:
 	int32_t mCapacity;
 	bool mIsDirty;
 	uint32_t mLockCount;
+
+	uint32_t mFrameBit = 0;
+	size_t mIndex = 0;
+	size_t mLastIndex = 0;
+	std::vector<size_t> mIds;
 
 public:
 	//IUnknown

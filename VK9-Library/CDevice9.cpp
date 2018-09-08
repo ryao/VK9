@@ -482,12 +482,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexBuffer(UINT Length, DWORD Usage,
 
 	CVertexBuffer9* obj = new CVertexBuffer9(this, Length, Usage, FVF, Pool, pSharedHandle);
 
-	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
-	workItem->Id = this->mId;
-	workItem->WorkItemType = WorkItemType::VertexBuffer_Create;
-	workItem->Argument1 = (void*)obj;
-	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+	obj->Init();
 
 	(*ppVertexBuffer) = (IDirect3DVertexBuffer9*)obj;
 

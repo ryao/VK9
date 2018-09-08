@@ -381,7 +381,7 @@ void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-	vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
+	result = (vk::Result)vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
 
 	uint32_t attributeStride = 0;
 
@@ -469,7 +469,7 @@ void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-	vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
+	result = (vk::Result)vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
 
 	switch (indexBuffer9->mFormat)
 	{
