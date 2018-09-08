@@ -91,63 +91,22 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 
 	mExtent = imageCreateInfo.extent;
 
-	//if (surface9->mCubeTexture != nullptr)
-	//{
-	//	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
-	//}
-
-	result = realDevice->mDevice.createImage(&imageCreateInfo, nullptr, &mStagingImage);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage failed with return code of " << GetResultString((VkResult)result);
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
-		return;
-	}
-
-	//BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface vkCreateImage: " << static_cast<uint64_t>(mStagingImage);
-
-	//vk::DebugMarkerObjectNameInfoEXT objectName;
-	//objectName.object = static_cast<uint64_t>(mStagingImage);
-	//objectName.objectType = vk::DebugReportObjectTypeEXT::eImage;
-
-	//realDevice->mDevice.debugMarkerSetObjectNameEXT(objectName);
-
-	vk::MemoryRequirements memoryRequirements;
-	realDevice->mDevice.getImageMemoryRequirements(mStagingImage, &memoryRequirements);
-
-	//mMemoryAllocateInfo.allocationSize = 0;
-	mMemoryAllocateInfo.memoryTypeIndex = 0;
-	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-
+	VmaAllocationCreateInfo imageAllocInfo = {};
 	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
 	{
-		if (!GetMemoryTypeFromProperties(realDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &mMemoryAllocateInfo.memoryTypeIndex))
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface Could not find memory type from properties.";
-			return;
-		}
+		imageAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 	}
 	else
 	{
-		if (!GetMemoryTypeFromProperties(realDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, 0, &mMemoryAllocateInfo.memoryTypeIndex))
-		{
-			BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface Could not find memory type from properties.";
-			return;
-		}
+		imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 	}
 
-	result = realDevice->mDevice.allocateMemory(&mMemoryAllocateInfo, nullptr, &mStagingDeviceMemory);
+	result = (vk::Result)vmaCreateImage(mRealDevice->mAllocator, (VkImageCreateInfo*)&imageCreateInfo, &imageAllocInfo, (VkImage*)&mStagingImage, &mImageAllocation, &mImageAllocationInfo);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vmaCreateImage failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
-
-	realDevice->mDevice.bindImageMemory(mStagingImage, mStagingDeviceMemory, 0);
 
 	mSubresource.mipLevel = 0;
 
@@ -297,46 +256,15 @@ RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
 	imageCreateInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst;
 	imageCreateInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 
-	//if (Volume9->mCubeTexture != nullptr)
-	//{
-	//	imageCreateInfo.flags = vk::ImageCreateFlagBits::eCubeCompatible;
-	//}
+	VmaAllocationCreateInfo imageAllocInfo = {};
+	imageAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-	result = realDevice->mDevice.createImage(&imageCreateInfo, nullptr, &mStagingImage);
+	result = (vk::Result)vmaCreateImage(mRealDevice->mAllocator, (VkImageCreateInfo*)&imageCreateInfo, &imageAllocInfo, (VkImage*)&mStagingImage, &mImageAllocation, &mImageAllocationInfo);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage failed with return code of " << GetResultString((VkResult)result);
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vmaCreateImage failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
-
-	//BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface vkCreateImage: " << static_cast<uint64_t>(mStagingImage);
-
-	vk::MemoryRequirements memoryRequirements;
-	realDevice->mDevice.getImageMemoryRequirements(mStagingImage, &memoryRequirements);
-
-	//mMemoryAllocateInfo.allocationSize = 0;
-	mMemoryAllocateInfo.memoryTypeIndex = 0;
-	mMemoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(realDevice->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, &mMemoryAllocateInfo.memoryTypeIndex))
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface Could not find memory type from properties.";
-		return;
-	}
-
-	result = realDevice->mDevice.allocateMemory(&mMemoryAllocateInfo, nullptr, &mStagingDeviceMemory);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	realDevice->mDevice.bindImageMemory(mStagingImage, mStagingDeviceMemory, 0);
 
 	mSubresource.mipLevel = 0;
 	mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -353,7 +281,7 @@ RealSurface::~RealSurface()
 	{
 		auto& device = mRealDevice->mDevice;
 		device.destroyImageView(mStagingImageView, nullptr);
-		device.destroyImage(mStagingImage, nullptr);
-		device.freeMemory(mStagingDeviceMemory, nullptr);
+
+		vmaDestroyImage(mRealDevice->mAllocator, (VkImage)mStagingImage, mImageAllocation);
 	}
 }

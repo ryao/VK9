@@ -141,6 +141,8 @@ void CDevice9::Destroy()
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 {
+	//Flags |= D3DCLEAR_TARGET;
+
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_Clear;
 	workItem->Id = mId;

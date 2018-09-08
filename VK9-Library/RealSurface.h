@@ -31,20 +31,20 @@ class CVolume9;
 
 struct RealSurface
 {
-	BOOL mIsFlushed = false;
+	BOOL mIsFlushed = true;
 	void* mData = nullptr;
 	vk::Image mStagingImage;
-	vk::DeviceMemory mStagingDeviceMemory;
-	vk::ImageView mStagingImageView;
+	VmaAllocation mImageAllocation;
+	VmaAllocationInfo mImageAllocationInfo;
 
 	std::vector< std::array<vk::Offset3D, 2> > mDirtyRects;
 
 	vk::Extent3D mExtent;
 	vk::Format mRealFormat = vk::Format::eR8G8B8A8Unorm;
-	vk::MemoryAllocateInfo mMemoryAllocateInfo;
 	vk::ImageLayout mImageLayout = vk::ImageLayout::eGeneral;
 	vk::SubresourceLayout mLayouts[1] = {};
 	vk::ImageSubresource mSubresource;
+	vk::ImageView mStagingImageView;
 
 	RealDevice* mRealDevice = nullptr; //null if not owner.
 	RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image* parentImage);

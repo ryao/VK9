@@ -244,7 +244,7 @@ void RenderManager::DrawIndexedPrimitive(std::shared_ptr<RealDevice> realDevice,
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 	https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
 	*/
-	currentBuffer.drawIndexed(std::min(deviceState.mIndexBuffer->mSize, ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount)), 1, StartIndex, BaseVertexIndex, 0);
+	currentBuffer.drawIndexed(ConvertPrimitiveCountToVertexCount(Type, PrimitiveCount), 1, StartIndex, BaseVertexIndex, 0);
 }
 
 void RenderManager::DrawPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
@@ -263,7 +263,7 @@ void RenderManager::DrawPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRI
 
 	BeginDraw(realDevice, context, resourceContext, PrimitiveType);
 
-	currentBuffer.draw(std::min(realDevice->mVertexCount, ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount)), 1, StartVertex, 0);
+	currentBuffer.draw(ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount), 1, StartVertex, 0);
 }
 
 void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture)

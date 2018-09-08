@@ -22,6 +22,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#define VMA_IMPLEMENTATION
+
 #include "RealDevice.h"
 #include "RealRenderTarget.h"
 #include "Utilities.h"
@@ -76,6 +78,11 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkCreateDevice failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
+
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice = (VkPhysicalDevice)mPhysicalDevice;
+	allocatorInfo.device = (VkDevice)mDevice;
+	vmaCreateAllocator(&allocatorInfo, &mAllocator);
 
 	vk::DescriptorPoolSize descriptorPoolSizes[11] = {};
 	descriptorPoolSizes[0].type = vk::DescriptorType::eSampler; //VK_DESCRIPTOR_TYPE_SAMPLER;
@@ -363,31 +370,16 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	//imageCreateInfo2.flags = 0;
 	imageCreateInfo2.initialLayout = vk::ImageLayout::ePreinitialized;
 
-	vk::MemoryAllocateInfo memoryAllocateInfo;
-	memoryAllocateInfo.allocationSize = 0;
-	memoryAllocateInfo.memoryTypeIndex = 0;
 
-	vk::MemoryRequirements memoryRequirements2;
+	VmaAllocationCreateInfo imageAllocInfo2 = {};
+	imageAllocInfo2.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-	result = mDevice.createImage(&imageCreateInfo2, nullptr, &mImage);
+	result = (vk::Result)vmaCreateImage(mAllocator, (VkImageCreateInfo*)&imageCreateInfo2, &imageAllocInfo2, (VkImage*)&mImage, &mImageAllocation, &mImageAllocationInfo);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vmaCreateImage failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
-
-	mDevice.getImageMemoryRequirements(mImage, &memoryRequirements2);
-	memoryAllocateInfo.allocationSize = memoryRequirements2.size;
-	GetMemoryTypeFromProperties(mPhysicalDeviceMemoryProperties, memoryRequirements2.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible, &memoryAllocateInfo.memoryTypeIndex);
-
-	result = mDevice.allocateMemory(&memoryAllocateInfo, nullptr, &mDeviceMemory);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	mDevice.bindImageMemory(mImage, mDeviceMemory, 0);
 
 	vk::ImageSubresource imageSubresource;
 	imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -402,10 +394,17 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	//BOOST_LOG_TRIVIAL(info) << "RealDevice::RealDevice using format " << (VkFormat)textureFormat;
 	mDevice.getImageSubresourceLayout(mImage, &imageSubresource, &subresourceLayout);
 
-	data = mDevice.mapMemory(mDeviceMemory, 0, memoryAllocateInfo.allocationSize, vk::MemoryMapFlags()).value;
-	if (data == nullptr)
+	//data = mDevice.mapMemory((vk::DeviceMemory)mImageAllocationInfo.deviceMemory, 0, (vk::DeviceSize)mImageAllocationInfo.size, vk::MemoryMapFlags()).value;
+	//if (data == nullptr)
+	//{
+	//	BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkMapMemory failed.";
+	//	return;
+	//}
+
+	result = (vk::Result)vmaMapMemory(mAllocator, mImageAllocation, &data);
+	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkMapMemory failed.";
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vmaMapMemory failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
 
@@ -418,7 +417,9 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 		}
 	}
 
-	mDevice.unmapMemory(mDeviceMemory);
+	//mDevice.unmapMemory((vk::DeviceMemory)mImageAllocationInfo.deviceMemory);
+	vmaUnmapMemory(mAllocator, mImageAllocation);
+
 	mImageLayout = vk::ImageLayout::eGeneral;
 	SetImageLayout(mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral);
 
@@ -533,8 +534,9 @@ RealDevice::~RealDevice()
 	mDevice.destroyBuffer(mMaterialBuffer, nullptr);
 	mDevice.freeMemory(mMaterialBufferMemory, nullptr);
 	mDevice.destroyImageView(mImageView, nullptr);
-	mDevice.destroyImage(mImage, nullptr);
-	mDevice.freeMemory(mDeviceMemory, nullptr);
+
+	vmaDestroyImage(mAllocator, (VkImage)mImage, mImageAllocation);
+
 	mDevice.destroySampler(mSampler, nullptr);
 
 	mDevice.destroyShaderModule(mVertShaderModule_XYZRHW, nullptr);
@@ -573,6 +575,7 @@ RealDevice::~RealDevice()
 	mDevice.destroyCommandPool(mCommandPool, nullptr);
 
 	mDevice.destroyDescriptorPool(mDescriptorPool, nullptr);
+	vmaDestroyAllocator(mAllocator);
 	mDevice.destroy();
 }
 

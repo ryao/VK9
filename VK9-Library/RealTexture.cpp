@@ -38,8 +38,8 @@ RealTexture::~RealTexture()
 		auto& device = mRealDevice->mDevice;
 		device.destroyImageView(mImageView, nullptr);
 		device.destroySampler(mSampler, nullptr);
-		device.destroyImage(mImage, nullptr);
-		device.freeMemory(mDeviceMemory, nullptr);
+		
+		vmaDestroyImage(mRealDevice->mAllocator, (VkImage)mImage, mImageAllocation);
 	}
 
 }

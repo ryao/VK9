@@ -28,6 +28,7 @@ RealVertexBuffer::RealVertexBuffer(RealDevice* realDevice)
 	: mRealDevice(realDevice),
 	mSize(0)
 {
+
 }
 
 RealVertexBuffer::~RealVertexBuffer()

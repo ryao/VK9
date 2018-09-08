@@ -539,7 +539,6 @@ void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 
 void StateManager::DestroyTexture(size_t id)
 {
-	mTextures[id]->mRealDevice->mEstimatedMemoryUsed -= mTextures[id]->mMemoryAllocateInfo.allocationSize;
 	mTextures[id].reset();
 }
 
@@ -573,37 +572,15 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 
 	auto& vulkanDevice = device->mDevice;
 
-	result = vulkanDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	VmaAllocationCreateInfo imageAllocInfo = {};
+	imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	result = (vk::Result)vmaCreateImage(ptr->mRealDevice->mAllocator, (VkImageCreateInfo*)&imageCreateInfo, &imageAllocInfo, (VkImage*)&ptr->mImage, &ptr->mImageAllocation, &ptr->mImageAllocationInfo);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vmaCreateImage failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
-
-	vk::MemoryRequirements memoryRequirements;
-	vulkanDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
-
-	auto& memoryAllocateInfo = ptr->mMemoryAllocateInfo;
-	//memoryAllocateInfo.allocationSize = 0;
-	memoryAllocateInfo.memoryTypeIndex = 0;
-	memoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	device->mEstimatedMemoryUsed += memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &memoryAllocateInfo.memoryTypeIndex))
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture Could not find memory type from properties.";
-		return;
-	}
-
-	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	vulkanDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;
@@ -653,7 +630,6 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 
 void StateManager::DestroyCubeTexture(size_t id)
 {
-	mTextures[id]->mRealDevice->mEstimatedMemoryUsed -= mTextures[id]->mMemoryAllocateInfo.allocationSize;
 	mTextures[id].reset();
 }
 
@@ -686,42 +662,15 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 
 	auto& vulkanDevice = device->mDevice;
 
-	result = vulkanDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	VmaAllocationCreateInfo imageAllocInfo = {};
+	imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	result = (vk::Result)vmaCreateImage(ptr->mRealDevice->mAllocator, (VkImageCreateInfo*)&imageCreateInfo, &imageAllocInfo, (VkImage*)&ptr->mImage, &ptr->mImageAllocation, &ptr->mImageAllocationInfo);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vmaCreateImage failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
-
-	vk::MemoryRequirements memoryRequirements;
-	vulkanDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
-
-	auto& memoryAllocateInfo = ptr->mMemoryAllocateInfo;
-	//memoryAllocateInfo.allocationSize = 0;
-	memoryAllocateInfo.memoryTypeIndex = 0;
-	memoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	device->mEstimatedMemoryUsed += memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &memoryAllocateInfo.memoryTypeIndex))
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture Could not find memory type from properties.";
-		return;
-	}
-
-	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	vulkanDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;
@@ -770,7 +719,6 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 
 void StateManager::DestroyVolumeTexture(size_t id)
 {
-	mTextures[id]->mRealDevice->mEstimatedMemoryUsed -= mTextures[id]->mMemoryAllocateInfo.allocationSize;
 	mTextures[id].reset();
 }
 
@@ -803,42 +751,15 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 
 	auto& vulkanDevice = device->mDevice;
 
-	result = vulkanDevice.createImage(&imageCreateInfo, nullptr, &ptr->mImage);
+	VmaAllocationCreateInfo imageAllocInfo = {};
+	imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	result = (vk::Result)vmaCreateImage(ptr->mRealDevice->mAllocator, (VkImageCreateInfo*)&imageCreateInfo, &imageAllocInfo, (VkImage*)&ptr->mImage, &ptr->mImageAllocation, &ptr->mImageAllocationInfo);
 	if (result != vk::Result::eSuccess)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage failed with return code of " << GetResultString((VkResult)result);
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage format:" << (VkFormat)imageCreateInfo.format;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage imageType:" << (VkImageType)imageCreateInfo.imageType;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage tiling:" << (VkImageTiling)imageCreateInfo.tiling;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage usage:" << (VkImageUsageFlags)imageCreateInfo.usage;
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkCreateImage flags:" << (VkImageCreateFlags)imageCreateInfo.flags;
+		BOOST_LOG_TRIVIAL(fatal) << "RealSurface::RealSurface vmaCreateImage failed with return code of " << GetResultString((VkResult)result);
 		return;
 	}
-
-	vk::MemoryRequirements memoryRequirements;
-	vulkanDevice.getImageMemoryRequirements(ptr->mImage, &memoryRequirements);
-
-	auto& memoryAllocateInfo = ptr->mMemoryAllocateInfo;
-	//memoryAllocateInfo.allocationSize = 0;
-	memoryAllocateInfo.memoryTypeIndex = 0;
-	memoryAllocateInfo.allocationSize = memoryRequirements.size;
-
-	device->mEstimatedMemoryUsed += memoryRequirements.size;
-
-	if (!GetMemoryTypeFromProperties(device->mPhysicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal, &memoryAllocateInfo.memoryTypeIndex))
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture Could not find memory type from properties.";
-		return;
-	}
-
-	result = vulkanDevice.allocateMemory(&memoryAllocateInfo, nullptr, &ptr->mDeviceMemory);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture vkAllocateMemory failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	vulkanDevice.bindImageMemory(ptr->mImage, ptr->mDeviceMemory, 0);
 
 	vk::ImageViewCreateInfo imageViewCreateInfo;
 	imageViewCreateInfo.image = ptr->mImage;

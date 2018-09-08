@@ -3784,7 +3784,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						realDevice->SetImageLayout(surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 					}
 
-					result = device.mapMemory(surface.mStagingDeviceMemory, 0, surface.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &surface.mData);
+					result = (vk::Result)vmaMapMemory(realDevice->mAllocator, surface.mImageAllocation, &surface.mData);
 					if (result != vk::Result::eSuccess)
 					{
 						BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkMapMemory failed with return code of " << GetResultString((VkResult)result);
@@ -3854,7 +3854,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					//	SetAlpha((char*)surface.mData, surface9->mHeight, surface9->mWidth, surface.mLayouts[0].rowPitch);
 					//}
 
-					device.unmapMemory(surface.mStagingDeviceMemory);
+					vmaUnmapMemory(realDevice->mAllocator, surface.mImageAllocation);
 					surface.mData = nullptr;
 				}
 
@@ -4001,7 +4001,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						realDevice->SetImageLayout(volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral); //VK_IMAGE_LAYOUT_PREINITIALIZED			
 					}
 
-					result = device.mapMemory(volume.mStagingDeviceMemory, 0, volume.mMemoryAllocateInfo.allocationSize, vk::MemoryMapFlags(), &volume.mData);
+					//result = device.mapMemory((vk::DeviceMemory)volume.mImageAllocationInfo.deviceMemory, 0, (vk::DeviceSize)volume.mImageAllocationInfo.size, vk::MemoryMapFlags(), &volume.mData);
+					result = (vk::Result)vmaMapMemory(realDevice->mAllocator, volume.mImageAllocation, &volume.mData);
 					if (result != vk::Result::eSuccess)
 					{
 						BOOST_LOG_TRIVIAL(fatal) << "ProcessQueue vkMapMemory failed with return code of " << GetResultString((VkResult)result);
@@ -4074,7 +4075,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					//	SetAlpha((char*)Volume.mData, Volume9->mHeight, Volume9->mWidth, Volume.mLayouts[0].rowPitch);
 					//}
 
-					device.unmapMemory(volume.mStagingDeviceMemory);
+					vmaUnmapMemory(realDevice->mAllocator, volume.mImageAllocation);
 					volume.mData = nullptr;
 				}
 

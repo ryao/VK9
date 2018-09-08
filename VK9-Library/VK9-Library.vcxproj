@@ -487,6 +487,7 @@
     <ClInclude Include="ShaderConverter.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="WorkItem.h" />
     <ClInclude Include="WorkItemType.h" />
   </ItemGroup>

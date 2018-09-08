@@ -25,6 +25,8 @@ misrepresented as being the original software.
 
 #include "CTypes.h" //needed for DeviceState
 
+#include "vk_mem_alloc.h"
+
 struct RealRenderTarget;
 struct SamplerRequest;
 struct DrawContext;
@@ -64,6 +66,9 @@ struct RealDevice
 	uint32_t mCurrentCommandBuffer = 0;
 	vk::Queue mQueue;
 	vk::Sampler mSampler;
+
+	//Memory Management
+	VmaAllocator mAllocator;
 
 	//Misc
 	vk::DeviceSize mEstimatedMemoryUsed = 0;
@@ -1176,9 +1181,11 @@ struct RealDevice
 
 	//Placeholder image for unbound sampler slots.
 	vk::Image mImage;
-	vk::DeviceMemory mDeviceMemory;
 	vk::ImageLayout mImageLayout;
 	vk::ImageView mImageView;
+	VmaAllocation mImageAllocation;
+	VmaAllocationInfo mImageAllocationInfo;
+
 
 	//Created with max slots. I can pass a count to limit the number. This should prevent me from needing to realloc.
 	vk::VertexInputBindingDescription mVertexInputBindingDescription[16];

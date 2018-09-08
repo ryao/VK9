@@ -33,9 +33,9 @@ struct RealTexture
 
 	vk::Extent3D mExtent;
 	vk::Format mRealFormat;
-	vk::MemoryAllocateInfo mMemoryAllocateInfo;
 	vk::Image mImage;
-	vk::DeviceMemory mDeviceMemory;
+	VmaAllocation mImageAllocation;
+	VmaAllocationInfo mImageAllocationInfo;
 	vk::Sampler mSampler;
 	vk::ImageView mImageView;
 
