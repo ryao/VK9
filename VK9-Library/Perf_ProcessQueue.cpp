@@ -269,43 +269,45 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					if (realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget != nullptr)
+					auto& renderTarget = realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget;
+					if (renderTarget != nullptr)
 					{
-						colorSurface = realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget->mColorSurface;
-						colorTexture = realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget->mColorTexture;
+						colorSurface = renderTarget->mColorSurface;
+						colorTexture = renderTarget->mColorTexture;
 					}
 
 					if (colorTexture != nullptr)
 					{
-						realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+						renderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
 					}
 					else
 					{
-						realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+						renderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
 					}		
 				}
 				else
 				{
-					if (realDevice->mDeviceState.mRenderTarget != nullptr)
+					auto& renderTarget = realDevice->mDeviceState.mRenderTarget;
+					if (renderTarget != nullptr)
 					{
-						if (realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+						if (renderTarget->mIsSceneStarted)
 						{
 							renderManager.StopScene(realDevice);
 						}
 
-						colorSurface = realDevice->mDeviceState.mRenderTarget->mColorSurface;
-						colorTexture = realDevice->mDeviceState.mRenderTarget->mColorTexture;
+						colorSurface = renderTarget->mColorSurface;
+						colorTexture = renderTarget->mColorTexture;
 					}
 
 					if (colorTexture != nullptr)
 					{
-						realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
+						renderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
 					}
 					else
 					{
-						realDevice->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
+						renderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
 					}	
-					realDevice->mRenderTargets.push_back(realDevice->mDeviceState.mRenderTarget);
+					realDevice->mRenderTargets.push_back(renderTarget);
 				}
 			}
 			break;
@@ -3924,45 +3926,45 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 				
-				//vk::ImageSubresourceLayers subResource1;
-				//subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
-				//subResource1.baseArrayLayer = 0;
-				//subResource1.mipLevel = 0;
-				//subResource1.layerCount = 1;
+				vk::ImageSubresourceLayers subResource1;
+				subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource1.baseArrayLayer = 0;
+				subResource1.mipLevel = 0;
+				subResource1.layerCount = 1;
 
-				//vk::ImageSubresourceLayers subResource2;
-				//subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
-				//subResource2.baseArrayLayer = surface9->mTargetLayer;
-				//subResource2.mipLevel = surface9->mMipIndex;
-				//subResource2.layerCount = 1;
+				vk::ImageSubresourceLayers subResource2;
+				subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource2.baseArrayLayer = surface9->mTargetLayer;
+				subResource2.mipLevel = surface9->mMipIndex;
+				subResource2.layerCount = 1;
 
-				//vk::ImageBlit region;
-				//region.srcSubresource = subResource1;
-				//region.dstSubresource = subResource2;
+				vk::ImageBlit region;
+				region.srcSubresource = subResource1;
+				region.dstSubresource = subResource2;
 
-				//if (surface.mDirtyRects.size())
-				//{
-				//	std::vector<vk::ImageBlit> regions;
-				//	for (auto& dirtyRect : surface.mDirtyRects)
-				//	{
-				//		region.srcOffsets[0] = dirtyRect[0];
-				//		region.srcOffsets[1] = dirtyRect[1];
-				//		region.dstOffsets[0] = dirtyRect[0];
-				//		region.dstOffsets[1] = dirtyRect[1];
+				if (surface.mDirtyRects.size())
+				{
+					std::vector<vk::ImageBlit> regions;
+					for (auto& dirtyRect : surface.mDirtyRects)
+					{
+						region.srcOffsets[0] = dirtyRect[0];
+						region.srcOffsets[1] = dirtyRect[1];
+						region.dstOffsets[0] = dirtyRect[0];
+						region.dstOffsets[1] = dirtyRect[1];
 
-				//		regions.push_back(region);
+						regions.push_back(region);
 
-				//		commandBuffer.blitImage(
-				//			surface.mStagingImage, vk::ImageLayout::eTransferSrcOptimal,
-				//			texture.mImage, vk::ImageLayout::eTransferDstOptimal,
-				//			1, &regions[regions.size() - 1], vk::Filter::eLinear);
-				//	}
-				//	surface.mDirtyRects.clear();
-				//}
-				//else
-				//{
+						commandBuffer.blitImage(
+							surface.mStagingImage, vk::ImageLayout::eTransferSrcOptimal,
+							texture.mImage, vk::ImageLayout::eTransferDstOptimal,
+							1, &regions[regions.size() - 1], vk::Filter::eLinear);
+					}
+					surface.mDirtyRects.clear();
+				}
+				else
+				{
 					ReallyCopyImage(commandBuffer, surface.mStagingImage, texture.mImage, 0, 0, surface9->mWidth, surface9->mHeight, 1, 0, surface9->mMipIndex, 0, surface9->mTargetLayer);
-				//}
+				}
 
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 
@@ -4145,45 +4147,45 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
 				
-				//vk::ImageSubresourceLayers subResource1;
-				//subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
-				//subResource1.baseArrayLayer = 0;
-				//subResource1.mipLevel = 0;
-				//subResource1.layerCount = 1;
+				vk::ImageSubresourceLayers subResource1;
+				subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource1.baseArrayLayer = 0;
+				subResource1.mipLevel = 0;
+				subResource1.layerCount = 1;
 
-				//vk::ImageSubresourceLayers subResource2;
-				//subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
-				//subResource2.baseArrayLayer = volume9->mTargetLayer;
-				//subResource2.mipLevel = volume9->mMipIndex;
-				//subResource2.layerCount = 1;
+				vk::ImageSubresourceLayers subResource2;
+				subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
+				subResource2.baseArrayLayer = volume9->mTargetLayer;
+				subResource2.mipLevel = volume9->mMipIndex;
+				subResource2.layerCount = 1;
 
-				//vk::ImageBlit region;
-				//region.srcSubresource = subResource1;
-				//region.dstSubresource = subResource2;
+				vk::ImageBlit region;
+				region.srcSubresource = subResource1;
+				region.dstSubresource = subResource2;
 
-				//if (volume.mDirtyRects.size())
-				//{
-				//	std::vector<vk::ImageBlit> regions;
-				//	for (auto& dirtyRect : volume.mDirtyRects)
-				//	{
-				//		region.srcOffsets[0] = dirtyRect[0];
-				//		region.srcOffsets[1] = dirtyRect[1];
-				//		region.dstOffsets[0] = dirtyRect[0];
-				//		region.dstOffsets[1] = dirtyRect[1];
+				if (volume.mDirtyRects.size())
+				{
+					std::vector<vk::ImageBlit> regions;
+					for (auto& dirtyRect : volume.mDirtyRects)
+					{
+						region.srcOffsets[0] = dirtyRect[0];
+						region.srcOffsets[1] = dirtyRect[1];
+						region.dstOffsets[0] = dirtyRect[0];
+						region.dstOffsets[1] = dirtyRect[1];
 
-				//		regions.push_back(region);
+						regions.push_back(region);
 
-				//		commandBuffer.blitImage(
-				//			volume.mStagingImage, vk::ImageLayout::eTransferSrcOptimal,
-				//			texture.mImage, vk::ImageLayout::eTransferDstOptimal,
-				//			1, &regions[regions.size() - 1], vk::Filter::eLinear);
-				//	}
-				//	volume.mDirtyRects.clear();
-				//}
-				//else
-				//{
+						commandBuffer.blitImage(
+							volume.mStagingImage, vk::ImageLayout::eTransferSrcOptimal,
+							texture.mImage, vk::ImageLayout::eTransferDstOptimal,
+							1, &regions[regions.size() - 1], vk::Filter::eLinear);
+					}
+					volume.mDirtyRects.clear();
+				}
+				else
+				{
 					ReallyCopyImage(commandBuffer, volume.mStagingImage, texture.mImage, 0, 0, volume9->mWidth, volume9->mHeight, volume9->mDepth, 0, volume9->mMipIndex, 0, volume9->mTargetLayer);
-				//}
+				}
 
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
 

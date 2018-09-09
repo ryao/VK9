@@ -29,8 +29,8 @@ misrepresented as being the original software.
 struct RealVertexBuffer
 {
 	vk::Buffer mBuffer;
-	VmaAllocation mAllocation;
-	VmaAllocationInfo mAllocationInfo;
+	VmaAllocation mAllocation = {};
+	VmaAllocationInfo mAllocationInfo = {};
 	void* mData = nullptr;
 	int32_t mSize;
 
