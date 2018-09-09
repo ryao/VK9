@@ -329,7 +329,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realDevice = renderManager.mStateManager.mDevices[workItem->Id];
 				if (!realDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 				{
-					renderManager.StartScene(realDevice,false,false);
+					renderManager.StartScene(realDevice, false, false, false);
 				}
 			}
 			break;

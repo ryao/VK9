@@ -45,7 +45,9 @@ struct RealRenderTarget
 	vk::RenderPass mStoreRenderPass;
 	vk::RenderPass mClearColorRenderPass;
 	vk::RenderPass mClearDepthRenderPass;
-	vk::RenderPass mClearBothRenderPass;
+	vk::RenderPass mClearStencilRenderPass;
+	vk::RenderPass mClearColorDepthRenderPass;
+	vk::RenderPass mClearAllRenderPass;
 
 	vk::AttachmentDescription mRenderAttachments[2];
 	vk::ClearValue mClearValues[2];
@@ -64,7 +66,7 @@ struct RealRenderTarget
 	vk::Fence mCommandFence;
 	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
 
-	void StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clearColor, bool clearDepth, bool createNewCommand);
+	void StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clearColor, bool clearDepth, bool clearStencil, bool createNewCommand);
 	void StopScene(vk::CommandBuffer command, vk::Queue queue);
 	void Clear(vk::CommandBuffer command, DeviceState& deviceState, DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 };
