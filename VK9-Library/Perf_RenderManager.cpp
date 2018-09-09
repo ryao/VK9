@@ -719,7 +719,8 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	uint32_t textureCount = 0; //constants.textureCount
 	uint32_t lightCount = constants.lightCount;
 	uint32_t positionSize = 3;
-	BOOL hasColor = 0;
+	BOOL hasColor1 = 0;
+	BOOL hasColor2 = 0;
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
 	BOOL isTransformed = 0;
@@ -729,8 +730,9 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	{
 		auto vertexDeclaration = context->VertexDeclaration;
 
-		hasColor = vertexDeclaration->mHasColor;
 		hasPosition = vertexDeclaration->mHasPosition;
+		hasColor1 = vertexDeclaration->mHasColor1;
+		hasColor2 = vertexDeclaration->mHasColor2;
 		hasNormal = vertexDeclaration->mHasNormal;
 		textureCount = vertexDeclaration->mTextureCount;
 	}
@@ -768,12 +770,12 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 
 		if ((context->FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 		{
-			hasColor = true;
+			hasColor1 = true;
 		}
 
 		if ((context->FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 		{
-			BOOST_LOG_TRIVIAL(warning) << "RenderManager::CreatePipe D3DFVF_SPECULAR is not implemented!";
+			hasColor2 = true;
 		}
 
 		textureCount = ConvertFormat(context->FVF);
@@ -787,8 +789,9 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe unsupported layout definition.";
 	}
 
-	attributeCount += hasColor;
 	attributeCount += hasPosition;
+	attributeCount += hasColor1;
+	attributeCount += hasColor2;
 	attributeCount += hasNormal;
 	attributeCount += textureCount;
 
@@ -879,7 +882,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 	else
 	{
-		if (hasPosition && !hasColor && !hasNormal)
+		if (hasPosition && !hasColor1 && !hasColor2 && !hasNormal)
 		{
 			switch (textureCount)
 			{
@@ -945,7 +948,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			}
 		}
-		else if (hasPosition && hasColor && !hasNormal)
+		else if (hasPosition && hasColor1 && !hasColor2 && !hasNormal)
 		{
 			switch (textureCount)
 			{
@@ -1013,7 +1016,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			}
 		}
-		else if (hasPosition && hasColor && hasNormal)
+		else if (hasPosition && hasColor1 && !hasColor2 && hasNormal)
 		{
 			switch (textureCount)
 			{
@@ -1044,7 +1047,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			}
 		}
-		else if (hasPosition && !hasColor && hasNormal)
+		else if (hasPosition && !hasColor1 && !hasColor2 && hasNormal)
 		{
 			switch (textureCount)
 			{
@@ -1090,7 +1093,8 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		{
 			BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe unsupported layout.";
 			BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe hasPosition = " << hasPosition;
-			BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe hasColor = " << hasColor;
+			BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe hasColor1 = " << hasColor1;
+			BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe hasColor2 = " << hasColor2;
 			BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe hasNormal = " << hasNormal;
 			BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe textureCount = " << textureCount;
 		}
@@ -1132,7 +1136,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			case D3DDECLUSAGE_PSIZE:
 				break;
 			case D3DDECLUSAGE_TEXCOORD:
-				realDevice->mVertexInputAttributeDescription[i].location = hasPosition + hasNormal + hasColor + textureIndex;
+				realDevice->mVertexInputAttributeDescription[i].location = hasPosition + hasNormal + hasColor1 + hasColor2 + textureIndex;
 				textureIndex += 1;
 				break;
 			case D3DDECLUSAGE_TANGENT:

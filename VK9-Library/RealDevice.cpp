@@ -24,6 +24,12 @@ misrepresented as being the original software.
 
 #define VMA_IMPLEMENTATION
 
+#ifdef _DEBUG
+#define VMA_DEBUG_INITIALIZE_ALLOCATIONS 1
+#define VMA_DEBUG_MARGIN 16
+#define VMA_DEBUG_DETECT_CORRUPTION 1
+#endif
+
 #include "RealDevice.h"
 #include "RealRenderTarget.h"
 #include "Utilities.h"

@@ -42,7 +42,14 @@ CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMEN
 			mHasPosition = true;
 			break;
 		case D3DDECLUSAGE_COLOR:
-			mHasColor = true;
+			if (pVertexElements[i].UsageIndex)
+			{
+				mHasColor2 = true;
+			}
+			else
+			{
+				mHasColor1 = true;
+			}		
 			break;
 		case D3DDECLUSAGE_TEXCOORD:
 			mTextureCount++;
