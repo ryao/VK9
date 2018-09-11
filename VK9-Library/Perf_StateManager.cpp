@@ -375,13 +375,19 @@ void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 
 	vk::BufferCreateInfo bufferCreateInfo;
 	bufferCreateInfo.size = vertexBuffer9->mLength;
-	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
-	//bufferCreateInfo.flags = 0;
+	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst;
+	//bufferCreateInfo.flags = 0;									 
 
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 	result = (vk::Result)vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
+
+	//d3d9 apps assume memory is cleared
+	result = (vk::Result)vmaMapMemory(ptr->mRealDevice->mAllocator, ptr->mAllocation, &ptr->mData);
+	memset(ptr->mData, 0, vertexBuffer9->mLength);
+	vmaUnmapMemory(ptr->mRealDevice->mAllocator, ptr->mAllocation);
+	ptr->mData = nullptr;
 
 	uint32_t attributeStride = 0;
 

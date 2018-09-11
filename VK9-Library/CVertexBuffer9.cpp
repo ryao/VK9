@@ -251,6 +251,11 @@ HRESULT STDMETHODCALLTYPE CVertexBuffer9::Lock(UINT OffsetToLock, UINT SizeToLoc
 
 	mLastIndex = mIndex;
 
+	if ((Flags & D3DLOCK_DISCARD) == D3DLOCK_DISCARD)
+	{		
+		memset((*ppbData), OffsetToLock, SizeToLock);
+	}
+
 	return S_OK;	
 }
 
