@@ -37,7 +37,7 @@ struct RealInstance
 
 	vk::DebugReportCallbackEXT mCallback;
 
-	RealInstance();
+	RealInstance(bool enableDebugLayers);
 	~RealInstance();
 };
 

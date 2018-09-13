@@ -24,9 +24,75 @@ misrepresented as being the original software.
 
 #include "RealInstance.h"
 
-RealInstance::RealInstance()
+RealInstance::RealInstance(bool enableDebugLayers)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealInstance::RealInstance";
+
+	std::vector<char*> extensionNames;
+	std::vector<char*> layerNames;
+
+	extensionNames.push_back("VK_KHR_surface");
+	extensionNames.push_back("VK_KHR_win32_surface");
+	extensionNames.push_back("VK_KHR_get_physical_device_properties2");
+
+	if (enableDebugLayers)
+	{
+		extensionNames.push_back("VK_EXT_debug_report");
+		//extensionNames.push_back("VK_EXT_debug_marker");
+		layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
+	}
+
+	HINSTANCE instance = LoadLibraryA("renderdoc.dll");
+	mRenderDocDll = GetModuleHandleA("renderdoc.dll");
+	if (mRenderDocDll != nullptr)
+	{
+		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mRenderDocDll, "RENDERDOC_GetAPI");
+		if (RENDERDOC_GetAPI != nullptr)
+		{
+			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&mRenderDocApi);
+			if (ret != 1)
+			{
+				BOOST_LOG_TRIVIAL(warning) << "RealInstance::RealInstance unable to find RENDERDOC_API_Version_1_1_ !";
+			}
+			else
+			{
+				mRenderDocApi->SetLogFilePathTemplate("vk");
+			}
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(warning) << "RealInstance::RealInstance unable to find RENDERDOC_GetAPI !";
+		}
+
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(warning) << "RealInstance::RealInstance unable to find renderdoc.dll !";
+	}
+
+	vk::Result result;
+	vk::ApplicationInfo applicationInfo("VK9", 1, "VK9", 1, VK_MAKE_VERSION(1, 1, 0));
+	vk::InstanceCreateInfo createInfo({}, &applicationInfo, layerNames.size(), layerNames.data(), extensionNames.size(), extensionNames.data());
+
+	result = vk::createInstance(&createInfo, nullptr, &mInstance);
+	if (result == vk::Result::eSuccess)
+	{
+		//Fetch an array of available physical devices.
+		result = mInstance.enumeratePhysicalDevices(&mPhysicalDeviceCount, nullptr);
+		if (result == vk::Result::eSuccess)
+		{
+			mPhysicalDevices = new vk::PhysicalDevice[mPhysicalDeviceCount];
+			mInstance.enumeratePhysicalDevices(&mPhysicalDeviceCount, mPhysicalDevices);
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance No physical devices were found.";
+		}
+	}
+	else
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance failed to create vulkan instance.";
+	}
 }
 
 RealInstance::~RealInstance()

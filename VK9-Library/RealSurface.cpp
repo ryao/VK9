@@ -92,6 +92,8 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 	mExtent = imageCreateInfo.extent;
 
 	VmaAllocationCreateInfo imageAllocInfo = {};
+	imageAllocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+
 	if (surface9->mTexture != nullptr || surface9->mCubeTexture != nullptr)
 	{
 		imageAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
@@ -258,6 +260,7 @@ RealSurface::RealSurface(RealDevice* realDevice, CVolume9* volume9)
 
 	VmaAllocationCreateInfo imageAllocInfo = {};
 	imageAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+	imageAllocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
 	result = (vk::Result)vmaCreateImage(mRealDevice->mAllocator, (VkImageCreateInfo*)&imageCreateInfo, &imageAllocInfo, (VkImage*)&mStagingImage, &mImageAllocation, &mImageAllocationInfo);
 	if (result != vk::Result::eSuccess)

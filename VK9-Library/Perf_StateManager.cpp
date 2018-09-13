@@ -252,15 +252,6 @@ void StateManager::DestroyInstance(size_t id)
 
 void StateManager::CreateInstance()
 {
-	auto ptr = std::make_shared<RealInstance>();
-
-	std::vector<char*> extensionNames;
-	std::vector<char*> layerNames;
-
-	extensionNames.push_back("VK_KHR_surface");
-	extensionNames.push_back("VK_KHR_win32_surface");
-	extensionNames.push_back("VK_KHR_get_physical_device_properties2");
-
 #ifdef _DEBUG
 	bool enableDebugLayers = true;
 #else
@@ -272,93 +263,37 @@ void StateManager::CreateInstance()
 		enableDebugLayers = mOptions["EnableDebugLayers"].as<uint32_t>();
 	}
 
-	if (enableDebugLayers)
-	{
-		extensionNames.push_back("VK_EXT_debug_report");
-		//extensionNames.push_back("VK_EXT_debug_marker");
-		layerNames.push_back("VK_LAYER_LUNARG_standard_validation");
-	}
-
-	//This didn't work so I switched it back to what I had.
-	//BOOL res = GetModuleHandleEx(0, TEXT("renderdoc.dll"), &ptr->mRenderDocDll);
-
-	HINSTANCE instance = LoadLibraryA("renderdoc.dll");
-	ptr->mRenderDocDll = GetModuleHandleA("renderdoc.dll");
-	if (ptr->mRenderDocDll != nullptr)
-	{
-		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(ptr->mRenderDocDll, "RENDERDOC_GetAPI");
-		if (RENDERDOC_GetAPI != nullptr)
-		{
-			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&ptr->mRenderDocApi);
-			if (ret != 1)
-			{
-				BOOST_LOG_TRIVIAL(warning) << "StateManager::CreateInstance unable to find RENDERDOC_API_Version_1_1_ !";
-			}
-			else
-			{
-				ptr->mRenderDocApi->SetLogFilePathTemplate("vk");
-			}
-		}
-		else
-		{
-			BOOST_LOG_TRIVIAL(warning) << "StateManager::CreateInstance unable to find RENDERDOC_GetAPI !";
-		}
-
-	}
-	else
-	{
-		BOOST_LOG_TRIVIAL(warning) << "StateManager::CreateInstance unable to find renderdoc.dll !";
-	}
-
-	vk::Result result;
-	vk::ApplicationInfo applicationInfo("VK9", 1, "VK9", 1, VK_MAKE_VERSION(1, 1, 0));
-	vk::InstanceCreateInfo createInfo({}, &applicationInfo, layerNames.size(), layerNames.data(), extensionNames.size(), extensionNames.data());
+	auto ptr = std::make_shared<RealInstance>(enableDebugLayers);
 
 	//Get an instance handle.
 	auto& vulkanInstance = ptr->mInstance;
-	result = vk::createInstance(&createInfo, nullptr, &vulkanInstance);
-	if (result == vk::Result::eSuccess)
+	
+	if (enableDebugLayers)
 	{
-		if (enableDebugLayers)
-		{	
-			pfn_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vulkanInstance.getProcAddr("vkCreateDebugReportCallbackEXT"));
-			pfn_vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(vulkanInstance.getProcAddr("vkDebugReportMessageEXT"));
-			pfn_vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vulkanInstance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
+		pfn_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vulkanInstance.getProcAddr("vkCreateDebugReportCallbackEXT"));
+		pfn_vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(vulkanInstance.getProcAddr("vkDebugReportMessageEXT"));
+		pfn_vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vulkanInstance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
 
-			vk::DebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
-			callbackCreateInfo.flags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::ePerformanceWarning;
-			callbackCreateInfo.pfnCallback = &DebugReportCallback;
-			callbackCreateInfo.pUserData = this;
+		vk::DebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+		callbackCreateInfo.flags = vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::ePerformanceWarning;
+		callbackCreateInfo.pfnCallback = &DebugReportCallback;
+		callbackCreateInfo.pUserData = this;
 
-			result = vulkanInstance.createDebugReportCallbackEXT(&callbackCreateInfo, nullptr, &ptr->mCallback);
-			if (result == vk::Result::eSuccess)
-			{
-				BOOST_LOG_TRIVIAL(info) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT succeeded.";
-			}
-			else
-			{
-				BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT failed with return code of " << GetResultString((VkResult)result);
-				return;
-			}
-		}
-
-		//Fetch an array of available physical devices.
-		result = vulkanInstance.enumeratePhysicalDevices(&ptr->mPhysicalDeviceCount, nullptr);
+		vk::Result result = vulkanInstance.createDebugReportCallbackEXT(&callbackCreateInfo, nullptr, &ptr->mCallback);
 		if (result == vk::Result::eSuccess)
 		{
-			ptr->mPhysicalDevices = new vk::PhysicalDevice[ptr->mPhysicalDeviceCount];
-			vulkanInstance.enumeratePhysicalDevices(&ptr->mPhysicalDeviceCount, ptr->mPhysicalDevices);
+			BOOST_LOG_TRIVIAL(info) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT succeeded.";
 		}
 		else
 		{
-			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance No physical devices were found.";
+			BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance vkCreateDebugReportCallbackEXT failed with return code of " << GetResultString((VkResult)result);
+			return;
 		}
-		mInstances.push_back(ptr);
 	}
-	else
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateInstance failed to create vulkan instance.";
-	}
+
+	mInstances.push_back(ptr);
+
+
 }
 
 void StateManager::DestroyVertexBuffer(size_t id)
@@ -380,6 +315,7 @@ void StateManager::CreateVertexBuffer(size_t id, void* argument1)
 
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+	allocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
 	result = (vk::Result)vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
 
@@ -474,6 +410,7 @@ void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+	allocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
 	result = (vk::Result)vmaCreateBuffer(ptr->mRealDevice->mAllocator, (VkBufferCreateInfo*)&bufferCreateInfo, &allocInfo, (VkBuffer*)&ptr->mBuffer, &ptr->mAllocation, &ptr->mAllocationInfo);
 

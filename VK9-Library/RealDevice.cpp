@@ -63,6 +63,8 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	//extensionNames.push_back("VK_KHR_maintenance1");
 	extensionNames.push_back("VK_KHR_push_descriptor");
 	//extensionNames.push_back("VK_KHR_sampler_mirror_clamp_to_edge");
+	extensionNames.push_back("VK_KHR_get_memory_requirements2");
+	extensionNames.push_back("VK_KHR_dedicated_allocation");
 
 	float queue_priorities[1] = { 0.0 };
 	vk::DeviceQueueCreateInfo queue_info = {};
@@ -88,6 +90,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = (VkPhysicalDevice)mPhysicalDevice;
 	allocatorInfo.device = (VkDevice)mDevice;
+	allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
 	vmaCreateAllocator(&allocatorInfo, &mAllocator);
 
 	vk::DescriptorPoolSize descriptorPoolSizes[11] = {};

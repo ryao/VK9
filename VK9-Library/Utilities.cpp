@@ -948,6 +948,8 @@ void ReallySetImageLayout(vk::CommandBuffer commandBuffer, vk::Image image, vk::
 	case vk::ImageLayout::eUndefined:
 		break;
 	case vk::ImageLayout::eGeneral:
+		imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+		sourceStages |= vk::PipelineStageFlagBits::eTransfer;
 		break;
 	case vk::ImageLayout::eColorAttachmentOptimal:
 		imageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite; //Added based on validation layer complaints.
@@ -983,6 +985,8 @@ void ReallySetImageLayout(vk::CommandBuffer commandBuffer, vk::Image image, vk::
 	case vk::ImageLayout::eUndefined:
 		break;
 	case vk::ImageLayout::eGeneral:
+		imageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+		destinationStages |= vk::PipelineStageFlagBits::eTransfer;
 		break;
 	case vk::ImageLayout::eColorAttachmentOptimal:
 		imageMemoryBarrier.srcAccessMask |= vk::AccessFlagBits::eMemoryRead;

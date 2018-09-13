@@ -408,7 +408,7 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	mDevice.waitForFences(1, &mSwapFence, VK_TRUE, UINT64_MAX);
 	mDevice.resetFences(1, &mSwapFence);
 
-	mImageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+	mImageMemoryBarrier.srcAccessMask = vk::AccessFlags(); //vk::AccessFlagBits::eMemoryWrite
 	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
 	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eGeneral;
 	mImageMemoryBarrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
@@ -418,8 +418,8 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
-	//mImageMemoryBarrier.srcAccessMask = 0;
-	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+	mImageMemoryBarrier.srcAccessMask = vk::AccessFlags();
+	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
 	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eUndefined;
 	mImageMemoryBarrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -465,15 +465,15 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	//	mImages[mCurrentIndex], vk::ImageLayout::eTransferDstOptimal,
 	//	1, &region);
 
-	//realWindow.mImageMemoryBarrier.srcAccessMask = 0;
-	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead; //VK_ACCESS_MEMORY_READ_BIT;
+	mImageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
 	mImageMemoryBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.image = mImages[mCurrentIndex];
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
+	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
 	//mImageMemoryBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
 	//mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
