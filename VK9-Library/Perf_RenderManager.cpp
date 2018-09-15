@@ -77,16 +77,43 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 		this->StartScene(realDevice, false, false, false);
 	}
 
+	vk::BufferMemoryBarrier uboBarrier;
+	uboBarrier.offset = 0;
+
 	//The dirty flag for lights can be set by enable light or set light.
 	if (deviceState.mAreLightsDirty)
 	{
-		currentBuffer.updateBuffer(realDevice->mLightBuffer, 0, sizeof(Light)*deviceState.mLights.size(), deviceState.mLights.data()); //context->mSpecializationConstants.lightCount
+		uboBarrier.buffer = realDevice->mLightBuffer;
+		uboBarrier.size = sizeof(Light)*deviceState.mLights.size();
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		currentBuffer.updateBuffer(realDevice->mLightBuffer, 0, uboBarrier.size, deviceState.mLights.data()); //context->mSpecializationConstants.lightCount
+		
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
 		deviceState.mAreLightsDirty = false;
 	}
 
 	if (deviceState.mIsMaterialDirty)
 	{
-		currentBuffer.updateBuffer(realDevice->mMaterialBuffer, 0, sizeof(D3DMATERIAL9), &deviceState.mMaterial);
+		uboBarrier.buffer = realDevice->mMaterialBuffer;
+		uboBarrier.size = sizeof(D3DMATERIAL9);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		currentBuffer.updateBuffer(realDevice->mMaterialBuffer, 0, uboBarrier.size, &deviceState.mMaterial);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
 		deviceState.mIsMaterialDirty = false;
 	}
 }
@@ -549,7 +576,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	deviceState.mSpecializationConstants.textureCount = constants.textureCount;
 
 	int i = 0;
-	for(auto& source : deviceState.mStreamSources)
+	for (auto& source : deviceState.mStreamSources)
 	{
 		realDevice->mVertexInputBindingDescription[i].binding = source.first;
 		realDevice->mVertexInputBindingDescription[i].stride = source.second.Stride;
@@ -695,7 +722,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		currentBuffer.bindIndexBuffer(deviceState.mIndexBuffer->mBuffer, 0, deviceState.mIndexBuffer->mIndexType);
 	}
 
-	for(auto& source : deviceState.mStreamSources)
+	for (auto& source : deviceState.mStreamSources)
 	{
 		auto& buffer = mStateManager.mVertexBuffers[source.second.StreamData->mId];
 		currentBuffer.bindVertexBuffers(source.first, 1, &buffer->mBuffer, &source.second.OffsetInBytes);
@@ -825,7 +852,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	attributeCount += hasNormal;
 	attributeCount += hasPSize;
 	attributeCount += hasColor1;
-	attributeCount += hasColor2;	
+	attributeCount += hasColor2;
 	attributeCount += textureCount;
 
 	/**********************************************
@@ -915,7 +942,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 	else
 	{
-		if (hasPosition && !hasNormal && !hasPSize && !hasColor1 && !hasColor2 )
+		if (hasPosition && !hasNormal && !hasPSize && !hasColor1 && !hasColor2)
 		{
 			switch (textureCount)
 			{
@@ -947,7 +974,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				{
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX1;
 				}
-		
+
 				if (deviceState.hasPointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
@@ -966,7 +993,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				{
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX2;
 				}
-		
+
 				if (deviceState.hasPointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
@@ -993,7 +1020,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				else
 				{
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE;
-				}		
+				}
 
 				if (deviceState.hasPointSpriteEnable)
 				{
@@ -1034,7 +1061,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				{
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX2;
 				}
-				
+
 				if (deviceState.hasPointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && !hasNormal && " << textureCount;
@@ -1080,7 +1107,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			}
 		}
-		else if (hasPosition  && hasNormal  && !hasPSize && !hasColor1 && !hasColor2)
+		else if (hasPosition  && hasNormal && !hasPSize && !hasColor1 && !hasColor2)
 		{
 			switch (textureCount)
 			{
@@ -1492,7 +1519,7 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 		0, 0, 1, 0,
 		0, 0, 0, 1;
 
-	for(const auto& pair1 : deviceState.mTransforms)
+	for (const auto& pair1 : deviceState.mTransforms)
 	{
 		switch (pair1.first)
 		{
@@ -1542,7 +1569,7 @@ void RenderManager::FlushDrawBufffer(std::shared_ptr<RealDevice> realDevice)
 	*/
 	auto& drawBuffer = realDevice->mDrawBuffer;
 	drawBuffer.erase(std::remove_if(drawBuffer.begin(), drawBuffer.end(), [](const std::shared_ptr<DrawContext> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), drawBuffer.end());
-	
+
 	auto& samplerRequests = realDevice->mSamplerRequests;
 	samplerRequests.erase(std::remove_if(samplerRequests.begin(), samplerRequests.end(), [](const std::shared_ptr<SamplerRequest> & o) { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - o->LastUsed).count() > CACHE_SECONDS; }), samplerRequests.end());
 

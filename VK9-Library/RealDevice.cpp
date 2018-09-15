@@ -362,7 +362,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	*/
 	const vk::Format textureFormat = vk::Format::eB8G8R8A8Unorm;
 	vk::FormatProperties formatProperties;
-	const uint32_t textureColors[2] = { 0xffff0000, 0xff00ff00 };
+	const uint32_t textureColors[2] = {}; //{ 0xffff0000, 0xff00ff00 };
 	//mFormat = vk::Format::eB8G8R8A8Unorm;
 
 	mPhysicalDevice.getFormatProperties(textureFormat, &formatProperties);

@@ -82,8 +82,9 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	mRenderAttachments[1].finalLayout = vk::ImageLayout::eGeneral;
 
 	vk::SubpassDependency dependency;
-	dependency.srcStageMask = vk::PipelineStageFlagBits::eAllGraphics;
-	dependency.dstStageMask = vk::PipelineStageFlagBits::eAllGraphics;
+	dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput; // eAllGraphics;
+	dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput; // eAllGraphics;
+	dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = 2; //revisit
@@ -111,8 +112,17 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 		return;
 	}
 
-	//Set depth to clear so both are now clear.
+	//Set depth to clear but leave stencil as store
 	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eClear;
+
+	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearColorDepthRenderPass);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealRenderTarget::RealRenderTarget vkCreateRenderPass failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
+	//Set stencil to clear so all are now clear.
 	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
 	result = mDevice.createRenderPass(&renderPassCreateInfo, nullptr, &mClearAllRenderPass);
@@ -136,7 +146,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 		return;
 	}
 
-	//Set stencil to clear so only stencil is cleared.
+	//Set stencil to clear and depth to load so only stencil is cleared.
 	mRenderAttachments[1].loadOp = vk::AttachmentLoadOp::eLoad;
 	mRenderAttachments[1].stencilLoadOp = vk::AttachmentLoadOp::eClear;
 
@@ -454,7 +464,7 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 	command.setScissor(0, 1, &deviceState.mScissor);
 
 	ReallySetImageLayout(command, mColorSurface->mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral, 1, 0, 1); //ePresentSrcKHR
-	
+
 	auto& realFormat = mDepthSurface->mRealFormat;
 	if (realFormat == vk::Format::eD16UnormS8Uint || realFormat == vk::Format::eD24UnormS8Uint || realFormat == vk::Format::eD32SfloatS8Uint)
 	{
@@ -467,7 +477,7 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 	else
 	{
 		ReallySetImageLayout(command, mDepthSurface->mStagingImage, vk::ImageAspectFlagBits::eDepth, vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral, 1, 0, 1); //eDepthStencilAttachmentOptimal
-	}	
+	}
 
 	command.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 
@@ -526,20 +536,20 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState
 			ReallySetImageLayout(command, mColorSurface->mStagingImage, subResourceRange.aspectMask, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
 		}
 
-		if ( ((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL) || ((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER) )
+		if (((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL) || ((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER))
 		{
 			auto& realFormat = mDepthSurface->mRealFormat;
 			vk::ImageAspectFlags formatAspectMask;
 
-			if ( (realFormat == vk::Format::eD16UnormS8Uint || realFormat == vk::Format::eD24UnormS8Uint || realFormat == vk::Format::eD32SfloatS8Uint) )
+			if ((realFormat == vk::Format::eD16UnormS8Uint || realFormat == vk::Format::eD24UnormS8Uint || realFormat == vk::Format::eD32SfloatS8Uint))
 			{
 				formatAspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 			}
-			else if ( (realFormat == vk::Format::eS8Uint) )
+			else if ((realFormat == vk::Format::eS8Uint))
 			{
 				formatAspectMask = vk::ImageAspectFlagBits::eStencil;
 			}
-			else if ( (realFormat == vk::Format::eD16Unorm || realFormat == vk::Format::eD32Sfloat) )
+			else if ((realFormat == vk::Format::eD16Unorm || realFormat == vk::Format::eD32Sfloat))
 			{
 				formatAspectMask = vk::ImageAspectFlagBits::eDepth;
 			}
@@ -549,15 +559,15 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState
 				BOOST_LOG_TRIVIAL(warning) << "RealRenderTarget::Clear unknown depth format " << (uint32_t)realFormat;
 			}
 
-			if ( ((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL) && ((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER) )
+			if (((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL) && ((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER))
 			{
 				subResourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
 			}
-			else if ( ((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL) )
+			else if (((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL))
 			{
 				subResourceRange.aspectMask = vk::ImageAspectFlagBits::eStencil;
 			}
-			else if ( ((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER) )
+			else if (((Flags & D3DCLEAR_ZBUFFER) == D3DCLEAR_ZBUFFER))
 			{
 				subResourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 			}

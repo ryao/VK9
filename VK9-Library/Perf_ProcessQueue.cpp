@@ -3311,6 +3311,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realVertexBuffer.mData != nullptr)
 				{
+					vmaFlushAllocation(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation, 0, VK_WHOLE_SIZE);
 					vmaUnmapMemory(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation);
 					realVertexBuffer.mData = nullptr;
 				}
@@ -3348,6 +3349,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realIndexBuffer.mData != nullptr)
 				{
+					vmaFlushAllocation(realIndexBuffer.mRealDevice->mAllocator, realIndexBuffer.mAllocation, 0, VK_WHOLE_SIZE);
 					vmaUnmapMemory(realIndexBuffer.mRealDevice->mAllocator, realIndexBuffer.mAllocation);
 					realIndexBuffer.mData = nullptr;
 				}
@@ -3867,7 +3869,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					//{
 					//	SetAlpha((char*)surface.mData, surface9->mHeight, surface9->mWidth, surface.mLayouts[0].rowPitch);
 					//}
-
+					vmaFlushAllocation(realDevice->mAllocator, surface.mImageAllocation, 0, VK_WHOLE_SIZE);
 					vmaUnmapMemory(realDevice->mAllocator, surface.mImageAllocation);
 					surface.mData = nullptr;
 				}
@@ -3923,7 +3925,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				}
 
-				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
+				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eGeneral, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
 				
 				vk::ImageSubresourceLayers subResource1;
@@ -4088,7 +4090,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					//{
 					//	SetAlpha((char*)Volume.mData, Volume9->mHeight, Volume9->mWidth, Volume.mLayouts[0].rowPitch);
 					//}
-
+					vmaFlushAllocation(realDevice->mAllocator, volume.mImageAllocation, 0, VK_WHOLE_SIZE);
 					vmaUnmapMemory(realDevice->mAllocator, volume.mImageAllocation);
 					volume.mData = nullptr;
 				}

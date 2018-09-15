@@ -164,7 +164,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::BeginScene() //
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
 	workItem->WorkItemType = WorkItemType::Device_BeginScene;
 	workItem->Id = mId;
-	mCommandStreamManager->RequestWork(workItem);
+	//mCommandStreamManager->RequestWork(workItem);
 
 	return D3D_OK;
 }
