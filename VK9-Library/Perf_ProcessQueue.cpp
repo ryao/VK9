@@ -3314,6 +3314,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					vmaFlushAllocation(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation, 0, VK_WHOLE_SIZE);
 					vmaUnmapMemory(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation);
 					realVertexBuffer.mData = nullptr;
+		
+					//if (realVertexBuffer.mRealDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+					//{
+					//	vk::BufferMemoryBarrier uboBarrier(vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eShaderRead, 0, 0, 0, VK_WHOLE_SIZE);
+					//	uboBarrier.buffer = realVertexBuffer.mBuffer;
+
+					//	auto& currentBuffer = realVertexBuffer.mRealDevice->mCommandBuffers[realVertexBuffer.mRealDevice->mCurrentCommandBuffer];
+					//	currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+					//}
 				}
 			}
 			break;
@@ -3324,6 +3333,14 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT SizeToLock = bit_cast<UINT>(workItem->Argument2);
 				VOID** ppbData = bit_cast<VOID**>(workItem->Argument3);
 				DWORD Flags = bit_cast<DWORD>(workItem->Argument4);
+				size_t lastId = (size_t)workItem->Argument5;
+
+				if (lastId != workItem->Id)
+				{
+					auto& oldRealIndexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mIndexBuffers[lastId]);
+
+					realIndexBuffer.mRealDevice->CopyBuffer(oldRealIndexBuffer.mBuffer, realIndexBuffer.mBuffer, realIndexBuffer.mAllocationInfo.size);
+				}
 
 				if (realIndexBuffer.mData == nullptr)
 				{
@@ -3352,6 +3369,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					vmaFlushAllocation(realIndexBuffer.mRealDevice->mAllocator, realIndexBuffer.mAllocation, 0, VK_WHOLE_SIZE);
 					vmaUnmapMemory(realIndexBuffer.mRealDevice->mAllocator, realIndexBuffer.mAllocation);
 					realIndexBuffer.mData = nullptr;
+
+					//if (realIndexBuffer.mRealDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
+					//{
+					//	vk::BufferMemoryBarrier uboBarrier(vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eShaderRead, 0, 0, 0, VK_WHOLE_SIZE);
+					//	uboBarrier.buffer = realIndexBuffer.mBuffer;
+
+					//	auto& currentBuffer = realIndexBuffer.mRealDevice->mCommandBuffers[realIndexBuffer.mRealDevice->mCurrentCommandBuffer];
+					//	currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+					//}
 				}
 			}
 			break;

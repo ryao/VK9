@@ -30,6 +30,8 @@ public:
 	CIndexBuffer9(CDevice9* device, UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE* pSharedHandle);
 	~CIndexBuffer9();
 
+	void Init();
+
 	size_t mId;
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 
@@ -40,11 +42,16 @@ public:
 	D3DPOOL mPool;
 	HANDLE* mSharedHandle;
 
-	int32_t mSize;
 	ULONG mReferenceCount = 1;
+	int32_t mSize;	
 	int32_t mCapacity;
 	bool mIsDirty;
 	uint32_t mLockCount;
+
+	uint32_t mFrameBit = 0;
+	size_t mIndex = 0;
+	size_t mLastIndex = 0;
+	std::vector<size_t> mIds;
 
 public:
 	//IUnknown

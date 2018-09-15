@@ -267,6 +267,9 @@ void RenderManager::DrawIndexedPrimitive(std::shared_ptr<RealDevice> realDevice,
 
 	BeginDraw(realDevice, context, resourceContext, Type);
 
+	//vk::MemoryBarrier globalBarrier(vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::AccessFlagBits::eDepthStencilAttachmentRead);
+	//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllGraphics, vk::PipelineStageFlagBits::eAllGraphics, vk::DependencyFlags(), 1, &globalBarrier, 0, nullptr, 0, nullptr);
+
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb174369(v=vs.85).aspx
 	https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdDrawIndexed.html
@@ -289,6 +292,9 @@ void RenderManager::DrawPrimitive(std::shared_ptr<RealDevice> realDevice, D3DPRI
 	std::shared_ptr<ResourceContext> resourceContext = std::make_shared<ResourceContext>(realDevice.get());
 
 	BeginDraw(realDevice, context, resourceContext, PrimitiveType);
+
+	//vk::MemoryBarrier globalBarrier(vk::AccessFlagBits::eDepthStencilAttachmentWrite, vk::AccessFlagBits::eDepthStencilAttachmentRead);
+	//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllGraphics, vk::PipelineStageFlagBits::eAllGraphics, vk::DependencyFlags(), 1, &globalBarrier, 0, nullptr, 0, nullptr);
 
 	currentBuffer.draw(ConvertPrimitiveCountToVertexCount(PrimitiveType, PrimitiveCount), 1, StartVertex, 0);
 }

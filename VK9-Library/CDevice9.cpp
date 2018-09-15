@@ -336,12 +336,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateIndexBuffer(UINT Length, DWORD Usage, 
 
 	CIndexBuffer9* obj = new CIndexBuffer9(this, Length, Usage, Format, Pool, pSharedHandle);
 
-	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = this->mCommandStreamManager->GetWorkItem(this);
-	workItem->Id = this->mId;
-	workItem->WorkItemType = WorkItemType::IndexBuffer_Create;
-	workItem->Argument1 = obj;
-	obj->mId = this->mCommandStreamManager->RequestWork(workItem);
+	obj->Init();
 
 	(*ppIndexBuffer) = (IDirect3DIndexBuffer9*)obj;
 

@@ -82,9 +82,9 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	mRenderAttachments[1].finalLayout = vk::ImageLayout::eGeneral;
 
 	vk::SubpassDependency dependency;
-	dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput; // eAllGraphics;
-	dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput; // eAllGraphics;
-	dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+	dependency.srcStageMask = vk::PipelineStageFlagBits::eAllCommands;
+	dependency.dstStageMask = vk::PipelineStageFlagBits::eAllCommands;
+	dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = 2; //revisit
@@ -266,8 +266,9 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mRenderAttachments[1].finalLayout = vk::ImageLayout::eGeneral;
 
 	vk::SubpassDependency dependency;
-	dependency.srcStageMask = vk::PipelineStageFlagBits::eAllGraphics;
-	dependency.dstStageMask = vk::PipelineStageFlagBits::eAllGraphics;
+	dependency.srcStageMask = vk::PipelineStageFlagBits::eAllCommands;
+	dependency.dstStageMask = vk::PipelineStageFlagBits::eAllCommands;
+	dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
 	vk::RenderPassCreateInfo renderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = 2; //revisit
@@ -591,5 +592,6 @@ void RealRenderTarget::Clear(vk::CommandBuffer command, DeviceState& deviceState
 		bool clearStencil = ((Flags & D3DCLEAR_STENCIL) == D3DCLEAR_STENCIL);
 
 		this->StartScene(command, deviceState, clearColor, clearDepth, clearStencil, deviceState.hasPresented);
+		deviceState.hasPresented = false;
 	}
 }
