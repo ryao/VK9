@@ -44,6 +44,10 @@ class CStateBlock9;
 #define NOMINMAX
 #endif // NOMINMAX
 
+#ifndef MAXFRAMECOMMANDBUFFERS
+#define MAXFRAMECOMMANDBUFFERS 4
+#endif // MAXFRAMECOMMANDBUFFERS
+
 #ifndef REALDEVICE_H
 #define REALDEVICE_H
 
@@ -62,7 +66,7 @@ struct RealDevice
 	vk::Instance mInstance;
 	vk::DescriptorPool mDescriptorPool;
 	vk::CommandPool mCommandPool;
-	vk::CommandBuffer mCommandBuffers[2];
+	vk::CommandBuffer mCommandBuffers[MAXFRAMECOMMANDBUFFERS];
 	uint32_t mCurrentCommandBuffer = 0;
 	vk::Queue mQueue;
 	vk::Sampler mSampler;

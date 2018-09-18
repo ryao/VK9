@@ -3464,7 +3464,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				//commandBufferInheritanceInfo.pipelineStatistics = 0;
 
 				vk::CommandBufferBeginInfo commandBufferBeginInfo;
-				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 				result = commandBuffer.begin(&commandBufferBeginInfo);
@@ -3589,7 +3589,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				//commandBufferInheritanceInfo.pipelineStatistics = 0;
 
 				vk::CommandBufferBeginInfo commandBufferBeginInfo;
-				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 				result = commandBuffer.begin(&commandBufferBeginInfo);
@@ -3714,7 +3714,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				//commandBufferInheritanceInfo.pipelineStatistics = 0;
 
 				vk::CommandBufferBeginInfo commandBufferBeginInfo;
-				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 				result = commandBuffer.begin(&commandBufferBeginInfo);
@@ -3954,7 +3954,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				//commandBufferInheritanceInfo.pipelineStatistics = 0;
 
 				vk::CommandBufferBeginInfo commandBufferBeginInfo;
-				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 				result = commandBuffer.begin(&commandBufferBeginInfo);
@@ -4175,7 +4175,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				//commandBufferInheritanceInfo.pipelineStatistics = 0;
 
 				vk::CommandBufferBeginInfo commandBufferBeginInfo;
-				//commandBufferBeginInfo.flags = 0;
+				commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 				commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 				result = commandBuffer.begin(&commandBufferBeginInfo);

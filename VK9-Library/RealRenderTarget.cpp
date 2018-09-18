@@ -195,17 +195,6 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.image = mColorTexture->mImage;
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-	result = mDevice.createSemaphore(&mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSemaphore failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	vk::FenceCreateInfo fenceInfo;
-
-	mDevice.createFence(&fenceInfo, nullptr, &mCommandFence);
 }
 
 RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface, RealSurface* depthSurface)
@@ -380,23 +369,11 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealSurface* colorSurface,
 	mImageMemoryBarrier.image = mColorSurface->mStagingImage;
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-	result = mDevice.createSemaphore(&mPresentCompleteSemaphoreCreateInfo, nullptr, &mPresentCompleteSemaphore);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateWindow1 vkCreateSemaphore failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
-	vk::FenceCreateInfo fenceInfo;
-
-	mDevice.createFence(&fenceInfo, nullptr, &mCommandFence);
 }
 
 RealRenderTarget::~RealRenderTarget()
 {
 	//BOOST_LOG_TRIVIAL(info) << "RealRenderTarget::~RealRenderTarget";
-	mDevice.destroyFence(mCommandFence, nullptr);
-	mDevice.destroySemaphore(mPresentCompleteSemaphore, nullptr);
 	mDevice.destroyFramebuffer(mFramebuffer, nullptr);
 	mDevice.destroyRenderPass(mStoreRenderPass, nullptr);
 	mDevice.destroyRenderPass(mClearColorRenderPass, nullptr);
@@ -453,6 +430,7 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 
 	if (createNewCommand)
 	{
+		command.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 		vk::Result result = command.begin(&mCommandBufferBeginInfo);
 		if (result != vk::Result::eSuccess)
 		{

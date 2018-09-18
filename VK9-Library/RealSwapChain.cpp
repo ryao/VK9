@@ -538,8 +538,12 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Present vkQueuePresentKHR failed with return code of " << GetResultString((VkResult)mResult);
 		return mResult;
 	}
+
+	/*
+	Unforunately I don't have a system for tracking resources used in a buffer and holding on to them until the buffer has executed so for now I need this heavy wait here.
+	*/
 	queue.waitIdle();
-	commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+	//commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
 	mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mSwapchainImageCount;
 

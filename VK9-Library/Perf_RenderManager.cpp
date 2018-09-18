@@ -162,7 +162,7 @@ void RenderManager::CopyImage(std::shared_ptr<RealDevice> realDevice, vk::Image 
 	//commandBufferInheritanceInfo.pipelineStatistics = 0;
 
 	vk::CommandBufferBeginInfo commandBufferBeginInfo;
-	//commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 	result = commandBuffer.begin(&commandBufferBeginInfo);
@@ -222,7 +222,7 @@ vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const 
 
 	vk::Result result = swapchain->Present(currentBuffer, realDevice->mQueue, deviceState.mRenderTarget->mColorSurface->mStagingImage);
 	deviceState.hasPresented = true;
-	realDevice->mCurrentCommandBuffer = !realDevice->mCurrentCommandBuffer;
+	realDevice->mCurrentCommandBuffer = (realDevice->mCurrentCommandBuffer + 1) % MAXFRAMECOMMANDBUFFERS;
 
 	//Clean up pipes.
 	FlushDrawBufffer(realDevice);
@@ -332,7 +332,7 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 	//commandBufferInheritanceInfo.pipelineStatistics = 0;
 
 	vk::CommandBufferBeginInfo commandBufferBeginInfo;
-	//commandBufferBeginInfo.flags = 0;
+	commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 	commandBufferBeginInfo.pInheritanceInfo = &commandBufferInheritanceInfo;
 
 	result = commandBuffer.begin(&commandBufferBeginInfo);

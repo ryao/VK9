@@ -60,10 +60,8 @@ struct RealRenderTarget
 	vk::ImageMemoryBarrier mPrePresentBarrier;
 	vk::PipelineStageFlags mPipeStageFlags;
 	vk::SemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo;
-	vk::Semaphore mPresentCompleteSemaphore;
 	vk::SubmitInfo mSubmitInfo;
 	vk::Fence mNullFence;
-	vk::Fence mCommandFence;
 	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
 
 	void StartScene(vk::CommandBuffer command, DeviceState& deviceState, bool clearColor, bool clearDepth, bool clearStencil, bool createNewCommand);

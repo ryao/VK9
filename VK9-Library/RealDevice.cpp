@@ -169,7 +169,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	vk::CommandBufferAllocateInfo commandBufferInfo;
 	commandBufferInfo.commandPool = mCommandPool;
 	commandBufferInfo.level = vk::CommandBufferLevel::ePrimary;
-	commandBufferInfo.commandBufferCount = 2;
+	commandBufferInfo.commandBufferCount = MAXFRAMECOMMANDBUFFERS;
 
 	result = mDevice.allocateCommandBuffers(&commandBufferInfo, mCommandBuffers);
 	if (result != vk::Result::eSuccess)
@@ -532,6 +532,8 @@ RealDevice::~RealDevice()
 	{
 		return;
 	}
+
+	mDevice.waitIdle();
 
 	mDrawBuffer.clear();
 	mSamplerRequests.clear();
