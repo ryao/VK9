@@ -59,9 +59,7 @@ struct RealSwapChain
 	vk::DeviceMemory mDepthDeviceMemory;
 	vk::Format mDepthFormat = vk::Format::eD16Unorm;
 
-	//Presentation
-	vk::SemaphoreCreateInfo mPresentCompleteSemaphoreCreateInfo;
-	
+	//Presentation	
 	vk::CommandBufferBeginInfo mCommandBufferBeginInfo;
 	vk::PipelineStageFlags mPipeStageFlags;
 	vk::SubmitInfo mSubmitInfo;
@@ -70,11 +68,13 @@ struct RealSwapChain
 
 	//Misc
 	vk::Result mResult;
-	uint32_t mCurrentIndex=0;
+	uint32_t mCurrentImageIndex=0;
+	uint32_t mCurrentFrameIndex = 0;
 	vk::Fence mNullFence;
-	vk::Fence mSwapFence;
 
-	vk::Semaphore mSwapSemaphore;
+	std::vector<vk::Semaphore> mImageAvailableSemaphores;
+	std::vector<vk::Semaphore> mRenderFinishedSemaphores;
+	std::vector<vk::Fence> mInFlightFences;
 
 	//Functions
 	RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, HWND windowHandle, uint32_t width, uint32_t height);

@@ -36,21 +36,30 @@ RealSwapChain::RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalD
 	BOOST_LOG_TRIVIAL(info) << "RealSwapChain::RealSwapChain";
 
 	mCommandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-
-	mResult = mDevice.createSemaphore(&mPresentCompleteSemaphoreCreateInfo, nullptr, &mSwapSemaphore);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::RealSwapChain vkCreateSemaphore failed with return code of " << GetResultString((VkResult)mResult);
-		return;
-	}
-
 	
+	vk::SemaphoreCreateInfo semaphoreInfo;
+
 	vk::FenceCreateInfo fenceInfo;
-	//fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
-	mDevice.createFence(&fenceInfo, nullptr, &mSwapFence);
+	fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
 
 	InitSurface();
 	InitSwapChain();
+
+	mImageAvailableSemaphores.resize(mSwapchainImageCount);
+	mRenderFinishedSemaphores.resize(mSwapchainImageCount);
+	mInFlightFences.resize(mSwapchainImageCount);
+
+	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	{
+		if (mDevice.createSemaphore(&semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != vk::Result::eSuccess
+			|| mDevice.createSemaphore(&semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != vk::Result::eSuccess
+			|| mDevice.createFence(&fenceInfo, nullptr, &mInFlightFences[i]) != vk::Result::eSuccess)
+		{
+			BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::RealSwapChain failed to create synchronization objects for a frame!";
+			return;
+		}
+	}
+
 	InitDepthBuffer(); //Might not need will revisit later.
 
 	//mImageMemoryBarrier.srcAccessMask = 0;
@@ -59,7 +68,7 @@ RealSwapChain::RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalD
 	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR; //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mImageMemoryBarrier.image = mImages[mCurrentIndex];
+	mImageMemoryBarrier.image = mImages[mCurrentImageIndex];
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
 	mPrePresentBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead; //VK_ACCESS_MEMORY_READ_BIT;
@@ -79,7 +88,7 @@ RealSwapChain::RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalD
 	mSubmitInfo.commandBufferCount = 1;
 	//mSubmitInfo.pCommandBuffers = &commandBuffer;
 	mSubmitInfo.signalSemaphoreCount = 1;
-	mSubmitInfo.pSignalSemaphores = &mSwapSemaphore;
+	//mSubmitInfo.pSignalSemaphores = &mSwapSemaphore;
 }
 
 RealSwapChain::~RealSwapChain()
@@ -90,9 +99,12 @@ RealSwapChain::~RealSwapChain()
 	DestroySwapChain();
 	DestroySurface();
 
-	mDevice.destroyFence(mSwapFence, nullptr);
-
-	mDevice.destroySemaphore(mSwapSemaphore, nullptr);
+	for (size_t i = 0; i < mSwapchainImageCount; i++)
+	{
+		mDevice.destroySemaphore(mRenderFinishedSemaphores[i], nullptr);
+		mDevice.destroySemaphore(mImageAvailableSemaphores[i], nullptr);
+		mDevice.destroyFence(mInFlightFences[i], nullptr);
+	}
 }
 
 void RealSwapChain::InitSurface()
@@ -294,7 +306,7 @@ void RealSwapChain::InitSwapChain()
 	mPresentInfo.pSwapchains = &mSwapchain;
 	mPresentInfo.waitSemaphoreCount = 1;
 	//mPresentInfo.waitSemaphoreCount = 0;
-	mPresentInfo.pWaitSemaphores = &mSwapSemaphore;
+	//mPresentInfo.pWaitSemaphores = &mSwapSemaphore;
 	//mPresentInfo.pWaitSemaphores = nullptr;
 }
 
@@ -398,15 +410,16 @@ void RealSwapChain::DestroyDepthBuffer()
 
 vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& queue, vk::Image& source)
 {
-	mResult = mDevice.acquireNextImageKHR(mSwapchain, UINT64_MAX, nullptr, mSwapFence, &mCurrentIndex);
+	mDevice.waitForFences(1, &mInFlightFences[mCurrentFrameIndex], VK_TRUE, std::numeric_limits<uint64_t>::max());
+	mDevice.resetFences(1, &mInFlightFences[mCurrentFrameIndex]);
+
+	mResult = mDevice.acquireNextImageKHR(mSwapchain, std::numeric_limits<uint64_t>::max(), mImageAvailableSemaphores[mCurrentFrameIndex], nullptr, &mCurrentImageIndex);
 	if (mResult != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Start vkAcquireNextImageKHR failed with return code of " << GetResultString((VkResult)mResult);
 		return mResult;
 	}
 
-	mDevice.waitForFences(1, &mSwapFence, VK_TRUE, UINT64_MAX);
-	mDevice.resetFences(1, &mSwapFence);
 
 	mImageMemoryBarrier.srcAccessMask = vk::AccessFlags(); //vk::AccessFlagBits::eMemoryWrite
 	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
@@ -424,7 +437,7 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	mImageMemoryBarrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mImageMemoryBarrier.image = mImages[mCurrentIndex];
+	mImageMemoryBarrier.image = mImages[mCurrentImageIndex];
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
@@ -448,7 +461,7 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 
 	commandBuffer.blitImage(
 		source, vk::ImageLayout::eTransferSrcOptimal,
-		mImages[mCurrentIndex], vk::ImageLayout::eTransferDstOptimal,
+		mImages[mCurrentImageIndex], vk::ImageLayout::eTransferDstOptimal,
 		1, &region, vk::Filter::eLinear);
 
 	//vk::ImageCopy region;
@@ -471,7 +484,7 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	mImageMemoryBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
 	mImageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	mImageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	mImageMemoryBarrier.image = mImages[mCurrentIndex];
+	mImageMemoryBarrier.image = mImages[mCurrentImageIndex];
 	mImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 	commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &mImageMemoryBarrier);
 
@@ -487,8 +500,21 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 
 	commandBuffer.end();
 
+	vk::Semaphore waitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrameIndex] };
+	vk::Semaphore signalSemaphores[] = { mRenderFinishedSemaphores[mCurrentFrameIndex] };
+	vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+
+	mSubmitInfo.waitSemaphoreCount = 1;
+	mSubmitInfo.pWaitSemaphores = waitSemaphores;
+	mSubmitInfo.pWaitDstStageMask = waitStages;
+
+	mSubmitInfo.commandBufferCount = 1;
 	mSubmitInfo.pCommandBuffers = &commandBuffer;
-	mResult = queue.submit(1, &mSubmitInfo, mNullFence);
+
+	mSubmitInfo.signalSemaphoreCount = 1;
+	mSubmitInfo.pSignalSemaphores = signalSemaphores;
+
+	mResult = queue.submit(1, &mSubmitInfo, mInFlightFences[mCurrentFrameIndex]);
 	if (mResult != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Present vkQueueSubmit failed with return code of " << GetResultString((VkResult)mResult);
@@ -496,15 +522,16 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	}
 
 	//Using C API because someone decided to do an assert here in the C++ API instead of returning an error code.
-	mResult = (vk::Result)vkQueueWaitIdle((VkQueue)queue);
-	if (mResult != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Present vkQueueWaitIdle failed with return code of " << GetResultString((VkResult)mResult);
-		return mResult;
-	}
+	//mResult = (vk::Result)vkQueueWaitIdle((VkQueue)queue);
+	//if (mResult != vk::Result::eSuccess)
+	//{
+	//	BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Present vkQueueWaitIdle failed with return code of " << GetResultString((VkResult)mResult);
+	//	return mResult;
+	//}
 
-
-	mPresentInfo.pImageIndices = &mCurrentIndex;
+	mPresentInfo.waitSemaphoreCount = 1;
+	mPresentInfo.pWaitSemaphores = signalSemaphores;
+	mPresentInfo.pImageIndices = &mCurrentImageIndex;
 	mResult = queue.presentKHR(&mPresentInfo);
 	if (mResult != vk::Result::eSuccess)
 	{
@@ -513,6 +540,8 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	}
 	queue.waitIdle();
 	commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+
+	mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mSwapchainImageCount;
 
 	return mResult;
 }

@@ -454,12 +454,7 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateTexture(UINT Width, UINT Height, UINT 
 
 	CTexture9* obj = new CTexture9(this, Width, Height, Levels, Usage, Format, Pool, pSharedHandle);
 
-	obj->mCommandStreamManager = this->mCommandStreamManager;
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
-	workItem->Id = this->mId;
-	workItem->WorkItemType = WorkItemType::Texture_Create;
-	workItem->Argument1 = (void*)obj;
-	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+	obj->Init();
 
 	for (size_t i = 0; i < obj->mLevels; i++)
 	{

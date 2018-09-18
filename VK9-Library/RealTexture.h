@@ -38,6 +38,8 @@ struct RealTexture
 	VmaAllocationInfo mImageAllocationInfo;
 	vk::Sampler mSampler;
 	vk::ImageView mImageView;
+	uint32_t mLevels = 1;
+	uint32_t mLayers = 1;
 
 	RealDevice* mRealDevice = nullptr; //null if not owner.
 	RealTexture(RealDevice* realDevice);

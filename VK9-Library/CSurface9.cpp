@@ -198,6 +198,7 @@ void CSurface9::Init()
 	{
 		mTextureId = mTexture->mId;
 	}
+	mLastTextureId = mTextureId;
 
 	mCommandStreamManager = mDevice->mCommandStreamManager;
 	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
@@ -377,6 +378,8 @@ HRESULT STDMETHODCALLTYPE CSurface9::LockRect(D3DLOCKED_RECT* pLockedRect, const
 	workItem->Argument1 = (void*)pLockedRect;
 	workItem->Argument2 = (void*)pRect;
 	workItem->Argument3 = (void*)Flags;
+	workItem->Argument4 = (void*)mTextureId;
+	workItem->Argument5 = (void*)mLastTextureId;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
 	return S_OK;

@@ -34,7 +34,7 @@ RealRenderTarget::RealRenderTarget(vk::Device device, RealTexture* colorTexture,
 	mColorSurface(colorSurface),
 	mDepthSurface(depthSurface)
 {
-	if (colorTexture == nullptr || depthSurface == nullptr)
+	if (colorTexture == nullptr || colorSurface == nullptr || depthSurface == nullptr)
 	{
 		return;
 	}

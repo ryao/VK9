@@ -46,6 +46,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mSharedHandle(pSharedHandle)
 {
 	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9";
+
+	this->mCommandStreamManager = this->mDevice->mCommandStreamManager;
 	//mDevice->AddRef();
 
 	if (!mLevels)
@@ -84,10 +86,23 @@ CTexture9::~CTexture9()
 		mSurfaces[i]->Release();
 	}
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
-	workItem->WorkItemType = WorkItemType::Texture_Destroy;
-	workItem->Id = mId;
-	mCommandStreamManager->RequestWorkAndWait(workItem);
+	for (size_t id : mIds)
+	{
+		WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
+		workItem->WorkItemType = WorkItemType::Texture_Destroy;
+		workItem->Id = id;
+		mCommandStreamManager->RequestWorkAndWait(workItem);
+	}
+}
+
+void CTexture9::Init()
+{
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+	workItem->Id = this->mDevice->mId;
+	workItem->WorkItemType = WorkItemType::Texture_Create;
+	workItem->Argument1 = (void*)this;
+	this->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+	this->mIds.push_back(this->mId); //Added so it won't be lost.
 }
 
 ULONG STDMETHODCALLTYPE CTexture9::AddRef(void)
@@ -294,12 +309,58 @@ HRESULT STDMETHODCALLTYPE CTexture9::GetSurfaceLevel(UINT Level, IDirect3DSurfac
 
 HRESULT STDMETHODCALLTYPE CTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLockedRect, const RECT* pRect, DWORD Flags)
 {	
-	return mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
+	/*
+	Unless the caller indicates that they have not overwritten anything used by a previous draw call then we have to assume they have.
+	Because the draw may not have happened we need to check to see if presentation has occured and if not flip to the next vertex
+	*/
+
+	//if (((Flags & D3DLOCK_NOOVERWRITE) == D3DLOCK_NOOVERWRITE) || ((Flags & D3DLOCK_READONLY) == D3DLOCK_READONLY))
+	//{
+	//	//This is best case the caller says they didn't modify anything used in a draw call.
+	//}
+	//else
+	//{
+	//	if (mFrameBit != mCommandStreamManager->mFrameBit)
+	//	{
+	//		mIndex = 0;
+	//		mFrameBit = mCommandStreamManager->mFrameBit;
+	//	}
+	//	else
+	//	{
+	//		mLastIndex = mIndex;
+	//		mIndex++;
+	//	}
+	//}
+
+	//if (mIndex > mIds.size() - 1)
+	//{
+	//	Init();
+	//}
+	//else
+	//{
+	//	mId = mIds[mIndex];
+	//}
+
+	//mSurfaces[Level]->mTextureId = mId;
+	//mSurfaces[Level]->mLastTextureId = mIds[mLastIndex];
+
+	HRESULT result = mSurfaces[Level]->LockRect(pLockedRect, pRect, Flags);
+
+	if ((Flags & D3DLOCK_DISCARD) == D3DLOCK_DISCARD)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "CTexture9::LockRect D3DLOCK_DISCARD is not implemented!";
+	}
+
+	//mLastIndex = mIndex;
+
+	return result;
 }
 
 HRESULT STDMETHODCALLTYPE CTexture9::UnlockRect(UINT Level)
 {
-	return mSurfaces[Level]->UnlockRect();
+	HRESULT result = mSurfaces[Level]->UnlockRect();
+
+	return result;
 }
 
 void CTexture9::Flush()

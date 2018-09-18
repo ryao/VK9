@@ -3815,6 +3815,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DLOCKED_RECT* pLockedRect = bit_cast<D3DLOCKED_RECT*>(workItem->Argument1);
 				RECT* pRect = bit_cast<RECT*>(workItem->Argument2);
 				DWORD Flags = bit_cast<DWORD>(workItem->Argument3);
+				//size_t currentId = (size_t)workItem->Argument4;
+				//size_t lastId = (size_t)workItem->Argument5;
+
+				//if (currentId != -1 && lastId != -1)
+				//{
+				//	if (lastId != currentId)
+				//	{
+				//		auto& oldRealTexture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[lastId]);
+				//		auto& newRealTexture = (*commandStreamManager->mRenderManager.mStateManager.mTextures[currentId]);
+
+				//		realDevice->CopyImage(oldRealTexture.mImage, newRealTexture.mImage, newRealTexture.mLevels, newRealTexture.mLayers, newRealTexture.mExtent.width, newRealTexture.mExtent.height, newRealTexture.mExtent.depth);
+				//	}
+				//}
 
 				vk::Result result;
 				char* bytes = nullptr;

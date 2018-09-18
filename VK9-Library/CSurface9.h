@@ -44,6 +44,7 @@ public:
 
 	size_t mId = -1;
 	size_t mTextureId = -1;
+	size_t mLastTextureId = -1;
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 
 	CDevice9* mDevice = nullptr;

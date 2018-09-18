@@ -1223,6 +1223,7 @@ struct RealDevice
 	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);
 	void CreateBuffer(vk::DeviceSize size, const vk::BufferUsageFlags& usage, vk::MemoryPropertyFlagBits properties, vk::Buffer& buffer, vk::DeviceMemory& deviceMemory);
 	void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
+	void CopyImage(vk::Image srcImage, vk::Image dstImage, uint32_t levelCount, uint32_t layerCount, uint32_t width, uint32_t height, uint32_t depth);
 };
 
 #endif // REALDEVICE_H

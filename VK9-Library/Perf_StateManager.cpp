@@ -405,7 +405,7 @@ void StateManager::CreateIndexBuffer(size_t id, void* argument1)
 
 	vk::BufferCreateInfo bufferCreateInfo;
 	bufferCreateInfo.size = indexBuffer9->mLength;
-	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eIndexBuffer;
+	bufferCreateInfo.usage = vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst;
 	//bufferCreateInfo.flags = 0;
 
 	VmaAllocationCreateInfo allocInfo = {};
@@ -454,6 +454,8 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	}
 
 	ptr->mExtent = vk::Extent3D(texture9->mWidth, texture9->mHeight, 1);
+	ptr->mLevels = texture9->mLevels;
+	ptr->mLayers = 1;
 
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
@@ -544,6 +546,10 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateCubeTexture unknown format: " << texture9->mFormat;
 	}
 
+	ptr->mExtent = vk::Extent3D(texture9->mEdgeLength, texture9->mEdgeLength, 1);
+	ptr->mLevels = texture9->mLevels;
+	ptr->mLayers = 6;
+
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = ptr->mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
@@ -632,6 +638,10 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "StateManager::CreateVolumeTexture unknown format: " << texture9->mFormat;
 	}
+
+	ptr->mExtent = vk::Extent3D(texture9->mWidth, texture9->mHeight, 1);
+	ptr->mLevels = texture9->mLevels;
+	ptr->mLayers = 1;
 
 	vk::ImageCreateInfo imageCreateInfo;
 	imageCreateInfo.imageType = vk::ImageType::e3D;

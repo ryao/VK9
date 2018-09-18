@@ -701,3 +701,47 @@ void RealDevice::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::Devi
 	mQueue.waitIdle();
 	mCommandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources); //So far resetting a command buffer is about 10 times faster than allocating a new one.
 }
+
+void RealDevice::CopyImage(vk::Image srcImage, vk::Image dstImage, uint32_t levelCount, uint32_t layerCount, uint32_t width, uint32_t height, uint32_t depth)
+{
+	const vk::Offset3D zero(0, 0, 0);
+
+	mCommandBuffer.begin(&mBeginInfo);
+
+	ReallySetImageLayout(mCommandBuffer, srcImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, levelCount, 0, layerCount); //eGeneral
+	ReallySetImageLayout(mCommandBuffer, dstImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, levelCount, 0, layerCount);
+
+	vk::ImageSubresourceLayers subResource1;
+	subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
+	subResource1.baseArrayLayer = 0;
+	subResource1.mipLevel = 0;
+	subResource1.layerCount = layerCount;
+
+	vk::ImageSubresourceLayers subResource2;
+	subResource2.aspectMask = vk::ImageAspectFlagBits::eColor;
+	subResource2.baseArrayLayer = 0;
+	subResource2.mipLevel = 0;
+	subResource2.layerCount = layerCount;
+
+	vk::ImageCopy region;
+	region.srcSubresource = subResource1;
+	region.dstSubresource = subResource2;
+	region.srcOffset = zero;
+	region.dstOffset = zero;
+	region.extent.width = width;
+	region.extent.height = height;
+	region.extent.depth = depth;
+
+	mCommandBuffer.copyImage(
+		srcImage, vk::ImageLayout::eTransferSrcOptimal,
+		dstImage, vk::ImageLayout::eTransferDstOptimal,
+		1, &region);
+
+	ReallySetImageLayout(mCommandBuffer, srcImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eGeneral, levelCount, 0, layerCount);
+	ReallySetImageLayout(mCommandBuffer, dstImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, levelCount, 0, layerCount);
+
+	mCommandBuffer.end();
+	mQueue.submit(1, &mSubmitInfo, nullptr);
+	mQueue.waitIdle();
+	mCommandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources); //So far resetting a command buffer is about 10 times faster than allocating a new one.
+}

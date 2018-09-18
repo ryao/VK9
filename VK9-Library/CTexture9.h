@@ -32,6 +32,8 @@ public:
 	CTexture9(CDevice9* device,UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, HANDLE *pSharedHandle);
 	~CTexture9();
 
+	void Init();
+
 	size_t mId;
 	std::shared_ptr<CommandStreamManager> mCommandStreamManager;
 
@@ -49,6 +51,11 @@ public:
 	D3DTEXTUREFILTERTYPE mMipFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMinFilter = D3DTEXF_NONE;
 	D3DTEXTUREFILTERTYPE mMagFilter = D3DTEXF_NONE;
+
+	uint32_t mFrameBit = 0;
+	size_t mIndex = 0;
+	size_t mLastIndex = 0;
+	std::vector<size_t> mIds;
 
 	std::vector<CSurface9*> mSurfaces;
 
