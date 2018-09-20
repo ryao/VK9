@@ -230,6 +230,7 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 		switch(alphaFunction)
 		{
 		    case D3DCMP_NEVER:
+				discard;
 			break;
 			case D3DCMP_LESS:
 			if(tempResult.a < ref){}else{discard;}
@@ -249,8 +250,7 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 			case D3DCMP_GREATEREQUAL:
 			if(tempResult.a >= ref){}else{discard;}
 			break;
-			case D3DCMP_ALWAYS:
-				discard;
+			case D3DCMP_ALWAYS:		
 			break;
 		}
 	}	

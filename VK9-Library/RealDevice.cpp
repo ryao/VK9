@@ -34,6 +34,104 @@ misrepresented as being the original software.
 #include "RealRenderTarget.h"
 #include "Utilities.h"
 
+const uint32_t VERTEX_BUFFER_XYZRHW_VERT[] = 
+#include "Shaders/VertexBuffer_XYZRHW.vert.h" 								
+;
+const uint32_t VERTEX_BUFFER_XYZ_VERT[] = 
+#include "Shaders/VertexBuffer_XYZ.vert.h"									
+;
+const uint32_t VERTEX_BUFFER_XYZ_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ.frag.h"									
+;
+
+const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_VERT[] = 
+#include "Shaders/VertexBuffer_XYZRHW_DIFFUSE.vert.h"						
+;
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_VERT[] = 
+#include "Shaders/VertexBuffer_XYZ_DIFFUSE.vert.h"							
+;
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_DIFFUSE.frag.h"							
+;
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_GEOM[] =  
+#include "Shaders/VertexBuffer_XYZ_DIFFUSE.geom.h"							
+;
+
+const uint32_t VERTEX_BUFFER_XYZRHW_TEX1_VERT[] =  
+#include "Shaders/VertexBuffer_XYZRHW_TEX1.vert.h"							
+;
+const uint32_t VERTEX_BUFFER_XYZ_TEX1_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_TEX1.vert.h"								
+;
+const uint32_t VERTEX_BUFFER_XYZ_TEX1_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_TEX1.frag.h"								
+;
+
+const uint32_t VERTEX_BUFFER_XYZRHW_TEX2_VERT[] =  
+#include "Shaders/VertexBuffer_XYZRHW_TEX2.vert.h"							
+;
+const uint32_t VERTEX_BUFFER_XYZ_TEX2_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_TEX2.vert.h"								
+;
+const uint32_t VERTEX_BUFFER_XYZ_TEX2_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_TEX2.frag.h"								
+;
+
+const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX1_VERT[] =  
+#include "Shaders/VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h"					
+;
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX1_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h"						
+;
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX1_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h"						
+;
+
+const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX2_VERT[] =  
+#include "Shaders/VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h"					
+;
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX2_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h"						
+;
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX2_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h"						
+;
+
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_NORMAL.vert.h"							
+;
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_NORMAL.frag.h"							
+;
+
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX1_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX1.vert.h"						
+;
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX1_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX1.frag.h"						
+;
+
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX2_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX2.vert.h"						
+;
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX2_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX2.frag.h"						
+;
+
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h"					
+;
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h"					
+;
+
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_VERT[] =  
+#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h"				
+;
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h"				
+;
+
 RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice, int32_t width, int32_t height)
 	: mInstance(instance),
 	mPhysicalDevice(physicalDevice)
@@ -179,45 +277,45 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	}
 
 	//Load fixed function shaders.
-	mVertShaderModule_XYZRHW = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW.vert.spv");
-	mVertShaderModule_XYZ = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ.vert.spv");
-	mFragShaderModule_XYZ = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ.frag.spv");
+	mVertShaderModule_XYZRHW = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZRHW_VERT);
+	mVertShaderModule_XYZ = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_VERT);
+	mFragShaderModule_XYZ = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_FRAG);
 
-	mVertShaderModule_XYZRHW_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_DIFFUSE.vert.spv");
-	mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.vert.spv");
-	mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.frag.spv");
-	mGeomShaderModule_XYZ_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE.geom.spv");
+	mVertShaderModule_XYZRHW_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZRHW_DIFFUSE_VERT);
+	mVertShaderModule_XYZ_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_DIFFUSE_VERT);
+	mFragShaderModule_XYZ_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_DIFFUSE_FRAG);
+	mGeomShaderModule_XYZ_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_DIFFUSE_GEOM);
 
-	mVertShaderModule_XYZRHW_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_TEX1.vert.spv");
-	mVertShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX1.vert.spv");
-	mFragShaderModule_XYZ_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX1.frag.spv");
+	mVertShaderModule_XYZRHW_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZRHW_TEX1_VERT);
+	mVertShaderModule_XYZ_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_TEX1_VERT);
+	mFragShaderModule_XYZ_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_TEX1_FRAG);
 
-	mVertShaderModule_XYZRHW_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_TEX2.vert.spv");
-	mVertShaderModule_XYZ_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX2.vert.spv");
-	mFragShaderModule_XYZ_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_TEX2.frag.spv");
+	mVertShaderModule_XYZRHW_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZRHW_TEX2_VERT);
+	mVertShaderModule_XYZ_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_TEX2_VERT);
+	mFragShaderModule_XYZ_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_TEX2_FRAG);
 
-	mVertShaderModule_XYZRHW_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.spv");
-	mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.spv");
-	mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.spv");
+	mVertShaderModule_XYZRHW_DIFFUSE_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX1_VERT);
+	mVertShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_DIFFUSE_TEX1_VERT);
+	mFragShaderModule_XYZ_DIFFUSE_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_DIFFUSE_TEX1_FRAG);
 
-	mVertShaderModule_XYZRHW_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.spv");
-	mVertShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.vert.spv");
-	mFragShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_DIFFUSE_TEX2.frag.spv");
+	mVertShaderModule_XYZRHW_DIFFUSE_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX2_VERT);
+	mVertShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_DIFFUSE_TEX2_VERT);
+	mFragShaderModule_XYZ_DIFFUSE_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_DIFFUSE_TEX2_FRAG);
 
-	mVertShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL.vert.spv");
-	mFragShaderModule_XYZ_NORMAL = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL.frag.spv");
+	mVertShaderModule_XYZ_NORMAL = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_VERT);
+	mFragShaderModule_XYZ_NORMAL = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_FRAG);
 
-	mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.vert.spv");
-	mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_TEX1.frag.spv");
+	mVertShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_TEX1_VERT);
+	mFragShaderModule_XYZ_NORMAL_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_TEX1_FRAG);
 
-	mVertShaderModule_XYZ_NORMAL_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_TEX2.vert.spv");
-	mFragShaderModule_XYZ_NORMAL_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_TEX2.frag.spv");
+	mVertShaderModule_XYZ_NORMAL_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_TEX2_VERT);
+	mFragShaderModule_XYZ_NORMAL_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_TEX2_FRAG);
 
-	mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.spv");
-	mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.spv");
+	mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_VERT);
+	mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_FRAG);
 
-	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.spv");
-	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromFile(mDevice, "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.spv");
+	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_VERT);
+	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_FRAG);
 
 	//pipeline stuff.
 	mPushConstantRanges[0].offset = 0;

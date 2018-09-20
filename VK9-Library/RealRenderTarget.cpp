@@ -387,18 +387,16 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 {
 	mIsSceneStarted = true;
 
+	//Clear value is a union so color and depth/stencil clear values use the same space in memory.
+	mClearValues[0].color = mClearColorValue;
+	mClearValues[1].depthStencil = mClearDepthValue;
+
 	if (clearColor && clearDepth && clearStencil)
 	{
-		mClearValues[0].color = mClearColorValue;
-		mClearValues[1].depthStencil = mClearDepthValue;
-
 		mRenderPassBeginInfo.renderPass = mClearAllRenderPass;
 	}
 	else if (clearColor && clearDepth)
 	{
-		mClearValues[0].color = mClearColorValue;
-		mClearValues[1].depthStencil = mClearDepthValue;
-
 		mRenderPassBeginInfo.renderPass = mClearColorDepthRenderPass;
 	}
 	else if (clearDepth && clearStencil)
@@ -407,20 +405,14 @@ void RealRenderTarget::StartScene(vk::CommandBuffer command, DeviceState& device
 	}
 	else if (clearColor)
 	{
-		mClearValues[0].color = mClearColorValue;
-
 		mRenderPassBeginInfo.renderPass = mClearColorRenderPass;
 	}
 	else if (clearDepth)
 	{
-		mClearValues[1].depthStencil = mClearDepthValue;
-
 		mRenderPassBeginInfo.renderPass = mClearDepthRenderPass;
 	}
 	else if (clearStencil)
 	{
-		mClearValues[1].depthStencil = mClearDepthValue;
-
 		mRenderPassBeginInfo.renderPass = mClearStencilRenderPass;
 	}
 	else

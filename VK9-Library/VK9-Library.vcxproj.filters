@@ -287,6 +287,93 @@
     <ClInclude Include="vk_mem_alloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_DIFFUSE.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_DIFFUSE.geom.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_DIFFUSE.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_TEX1.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_TEX1.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_TEX2.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_TEX2.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZRHW.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZRHW_TEX1.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZRHW_TEX2.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def">

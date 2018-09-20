@@ -76,6 +76,24 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 HMODULE GetModule(HMODULE module = 0);
 
+
+template < typename T, size_t arraySize>
+vk::ShaderModule LoadShaderFromConst(vk::Device device, const T(&data)[arraySize])
+{
+	vk::ShaderModule module;
+	vk::ShaderModuleCreateInfo moduleCreateInfo;
+	moduleCreateInfo.codeSize = arraySize * sizeof(T);
+	moduleCreateInfo.pCode = (const uint32_t*)data; //Why is this uint32_t* if the size is in bytes?
+
+	vk::Result result = device.createShaderModule(&moduleCreateInfo, nullptr, &module);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "LoadShaderFromConst vkCreateShaderModule failed with return code of " << GetResultString((VkResult)result);
+	}
+
+	return module;
+}
+
 vk::ShaderModule LoadShaderFromFile(vk::Device device, const char *filename);
 vk::ShaderModule LoadShaderFromResource(vk::Device device, WORD resource);
 
