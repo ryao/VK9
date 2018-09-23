@@ -957,9 +957,12 @@ uint32_t ShaderConverter::GetIdByRegister(const Token& token, _D3DSHADER_PARAM_R
 		switch (registerType)
 		{
 		case D3DSPR_RASTOUT:
-			mPositionId = id;
-			registerName = "oPos" + std::to_string(registerNumber);
-			usage = D3DDECLUSAGE_POSITION;
+			if (this->mIsVertexShader)
+			{
+				mPositionId = id;
+				registerName = "oPos" + std::to_string(registerNumber);
+				usage = D3DDECLUSAGE_POSITION;
+			}
 			break;
 		case D3DSPR_ATTROUT:
 		case D3DSPR_COLOROUT:
@@ -2517,6 +2520,11 @@ void ShaderConverter::GenerateConstantIndices()
 
 void ShaderConverter::GeneratePostition()
 {
+	if (!this->mIsVertexShader)
+	{
+		return;
+	}
+
 	TypeDescription positionType;
 	positionType.PrimaryType = spv::OpTypeVector;
 	positionType.SecondaryType = spv::OpTypeFloat;
@@ -2648,12 +2656,6 @@ void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t input
 			{
 				switch (usage)
 				{
-				case D3DDECLUSAGE_POSITION:
-					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-					mDecorateInstructions.push_back(inputId); //target (Id)
-					mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
-					mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
-					break;
 				case D3DDECLUSAGE_COLOR:
 					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 					mDecorateInstructions.push_back(inputId); //target (Id)
@@ -2711,12 +2713,6 @@ void ShaderConverter::GenerateDecoration(uint32_t registerNumber, uint32_t input
 			{
 				switch (usage)
 				{
-				case D3DDECLUSAGE_POSITION:
-					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
-					mDecorateInstructions.push_back(inputId); //target (Id)
-					mDecorateInstructions.push_back(spv::DecorationBuiltIn); //Decoration Type (Id)
-					mDecorateInstructions.push_back(spv::BuiltInPosition); //Location offset
-					break;
 				default:
 					mDecorateInstructions.push_back(Pack(3 + 1, spv::OpDecorate)); //size,Type
 					mDecorateInstructions.push_back(inputId); //target (Id)
@@ -3786,33 +3782,42 @@ void ShaderConverter::Process_DCL_Pixel()
 	uint32_t textureType;
 	std::string registerName;
 
-	typeDescription.PrimaryType = spv::OpTypePointer;
-	typeDescription.SecondaryType = spv::OpTypeVector;
-	typeDescription.TernaryType = spv::OpTypeFloat;
-	typeDescription.StorageClass = spv::StorageClassInput;
-
-	//Magic numbers from ToGL (no whole numbers?)
-	switch (registerComponents)
+	if (registerType == D3DSPR_SAMPLER)
 	{
-	case 1: //float
-		typeDescription.SecondaryType = spv::OpTypeFloat;
-		typeDescription.TernaryType = spv::OpTypeVoid;
-		typeDescription.ComponentCount = 1;
-		break;
-	case 3: //vec2
-		typeDescription.ComponentCount = 2;
-		break;
-	case 7: //vec3
-		//This is really a vec3 but I'm going to declare it has a vec4 to make later code easier.
-		//typeDescription.ComponentCount = 3;
-		typeDescription.ComponentCount = 4;
-		break;
-	case 0xF: //vec4
-		typeDescription.ComponentCount = 4;
-		break;
-	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported component type " << registerComponents;
-		break;
+		typeDescription.PrimaryType = spv::OpTypePointer;
+		typeDescription.SecondaryType = spv::OpTypeImage;
+		typeDescription.StorageClass = spv::StorageClassUniformConstant;
+	}
+	else
+	{
+		typeDescription.PrimaryType = spv::OpTypePointer;
+		typeDescription.SecondaryType = spv::OpTypeVector;
+		typeDescription.TernaryType = spv::OpTypeFloat;
+		typeDescription.StorageClass = spv::StorageClassInput;
+
+		//Magic numbers from ToGL (no whole numbers?)
+		switch (registerComponents)
+		{
+		case 1: //float
+			typeDescription.SecondaryType = spv::OpTypeFloat;
+			typeDescription.TernaryType = spv::OpTypeVoid;
+			typeDescription.ComponentCount = 1;
+			break;
+		case 3: //vec2
+			typeDescription.ComponentCount = 2;
+			break;
+		case 7: //vec3
+			//This is really a vec3 but I'm going to declare it has a vec4 to make later code easier.
+			//typeDescription.ComponentCount = 3;
+			typeDescription.ComponentCount = 4;
+			break;
+		case 0xF: //vec4
+			typeDescription.ComponentCount = 4;
+			break;
+		default:
+			BOOST_LOG_TRIVIAL(warning) << "Process_DCL - Unsupported component type " << registerComponents;
+			break;
+		}
 	}
 
 	mIdTypePairs[tokenId] = typeDescription;
