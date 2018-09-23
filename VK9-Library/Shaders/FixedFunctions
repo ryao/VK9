@@ -146,6 +146,11 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D 
 		break;
 	}
 	
+	if(!alphaBlendEnable)
+	{
+		realResult.a = 1.0;
+	}
+	
 	if((argument & D3DTA_ALPHAREPLICATE) != 0)
 	{
 		realResult.rgb = vec3(realResult.a,realResult.a,realResult.a);
@@ -188,6 +193,11 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 		default:
 			realResult = vec4(1,1,1,1);
 		break;
+	}
+	
+	if(!alphaBlendEnable)
+	{
+		realResult.a = 1.0;
 	}
 	
 	if((argument & D3DTA_ALPHAREPLICATE) != 0)
@@ -255,11 +265,6 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 		}
 	}	
 	
-	if(!alphaBlendEnable)
-	{
-		tempResult.a = 1.0;
-	}
-
 	if(colorOperation != D3DTOP_DISABLE)
 	{
 		tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rgb;	

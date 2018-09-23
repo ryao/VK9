@@ -553,6 +553,8 @@ private:
 	uint32_t m2Id = 0;
 	uint32_t m3Id = 0;
 
+	uint32_t mTemp = 0;
+
 	//
 	uint32_t mTextures[12] = {};
 

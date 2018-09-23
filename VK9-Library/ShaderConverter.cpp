@@ -630,6 +630,12 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 	{
 		if (type.first == registerType)
 		{
+#ifdef _EXTRA_SHADER_DEBUG_INFO
+			if (type.second == 0)
+			{
+				throw "";
+			}
+#endif
 			return type.second;
 		}
 	}
@@ -746,12 +752,19 @@ uint32_t ShaderConverter::GetSpirVTypeId(TypeDescription& registerType, uint32_t
 	mTypeIdPairs[registerType] = id;
 	mIdTypePairs[id] = registerType;
 
+#ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (id == 0)
+	{
+		throw "";
+	}
+#endif
+
 	return id;
 }
 
 /*
 SPIR-V is SSA so this method will generate a new id with the type of the old one when a new "register" is needed.
-To handle this result registers will get a new Id each type. The result Id can be used as an input to other operations so this will work fine.
+To handle this result registers will get a new Id each time. The result Id can be used as an input to other operations so this will work fine.
 To make sure each call gets the latest id number the lookups must be updated.
 */
 uint32_t ShaderConverter::GetNextVersionId(const Token& token)
@@ -1210,6 +1223,17 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		{
 			originalId = matrixId;
 		}
+		else
+		{
+			uint32_t matrixId = mVector4Matrix4X4Pairs[originalId];
+			if (matrixId)
+			{
+				originalId = matrixId;
+
+				//Couldn't find mat3 version so create one quick and return that instead.
+				originalId = ConvertMat4ToMat3(originalId);
+			}
+		}
 	}
 	else if (lookingFor == GIVE_ME_VECTOR_3)
 	{
@@ -1241,8 +1265,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	uint32_t loadedTypeId = 0;
 
 	if (originalType.PrimaryType == spv::OpTypePointer)
-	{
-		
+	{		
 		loadedType.PrimaryType = originalType.SecondaryType;
 		loadedType.SecondaryType = originalType.TernaryType;
 		loadedType.TernaryType = spv::OpTypeVoid;
@@ -1252,12 +1275,18 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		loadedId = GetNextId();
 		mIdTypePairs[loadedId] = loadedType;
 		PushLoad(loadedTypeId, loadedId, originalId);	
+		mTemp = loadedTypeId;
 	}
 	else
 	{
 		loadedType = originalType;
 		loadedId = originalId;
 		loadedTypeId = originalTypeId;
+	}
+
+	if (!loadedTypeId)
+	{
+		loadedTypeId = mTemp; //Compiler bug workaround. loadedTypeId will lose it's value when exiting the above if.
 	}
 
 	/*
@@ -1293,10 +1322,46 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_BIASNEG";
 		break;
 	case D3DSPSM_SIGN:
-		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_SIGN";
+		if (loadedType.PrimaryType == spv::OpTypeFloat || loadedType.SecondaryType == spv::OpTypeFloat)
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FSign, loadedId);
+			loadedId = absoluteId;
+		}
+		else
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450SSign, loadedId);
+			loadedId = absoluteId;
+		}
 		break;
 	case D3DSPSM_SIGNNEG:
-		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_SIGNNEG";
+		if (loadedType.PrimaryType == spv::OpTypeFloat || loadedType.SecondaryType == spv::OpTypeFloat)
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FSign, loadedId);
+			loadedId = absoluteId;
+
+			uint32_t negatedId = GetNextId();
+			mIdTypePairs[negatedId] = loadedType;
+			Push(spv::OpFNegate, loadedTypeId, negatedId, loadedId);
+			loadedId = negatedId;
+		}
+		else
+		{
+			uint32_t absoluteId = GetNextId();
+			mIdTypePairs[absoluteId] = loadedType;
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450SSign, loadedId);
+			loadedId = absoluteId;
+
+			uint32_t negatedId = GetNextId();
+			mIdTypePairs[negatedId] = loadedType;
+			Push(spv::OpSNegate, loadedTypeId, negatedId, loadedId);
+			loadedId = negatedId;
+		}
 		break;
 	case D3DSPSM_COMP:
 		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_COMP";
@@ -1325,7 +1390,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		{
 			uint32_t absoluteId = GetNextId();
 			mIdTypePairs[absoluteId] = loadedType;
-			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, loadedId);
 			loadedId = absoluteId;
 		}
 		break;
@@ -1346,7 +1411,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		{
 			uint32_t absoluteId = GetNextId();
 			mIdTypePairs[absoluteId] = loadedType;
-			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450FAbs, loadedId);
+			Push(spv::OpExtInst, loadedTypeId, absoluteId, mGlslExtensionId, GLSLstd450::GLSLstd450SAbs, loadedId);
 			loadedId = absoluteId;
 
 			uint32_t negatedId = GetNextId();
@@ -3007,6 +3072,34 @@ To match GLSL behavior we will extract the components and construct a new compos
 
 uint32_t ShaderConverter::ConvertVec4ToVec3(uint32_t id)
 {
+	//Check to see if the input is a pointer and if so load it first.
+	TypeDescription originalType = mIdTypePairs[id];
+	uint32_t originalTypeId = GetSpirVTypeId(originalType);
+
+	uint32_t loadedId = 0;
+	TypeDescription loadedType;
+	uint32_t loadedTypeId = 0;
+
+	if (originalType.PrimaryType == spv::OpTypePointer)
+	{
+		loadedType.PrimaryType = originalType.SecondaryType;
+		loadedType.SecondaryType = originalType.TernaryType;
+		loadedType.TernaryType = spv::OpTypeVoid;
+		loadedType.ComponentCount = originalType.ComponentCount;
+		uint32_t loadedTypeId = GetSpirVTypeId(loadedType);
+
+		loadedId = GetNextId();
+		mIdTypePairs[loadedId] = loadedType;
+		PushLoad(loadedTypeId, loadedId, id);
+	}
+	else
+	{
+		loadedType = originalType;
+		loadedId = id;
+		loadedTypeId = originalTypeId;
+	}
+
+	//Finally build the new vector.
 	TypeDescription floatType;
 	floatType.PrimaryType = spv::OpTypeFloat;
 	uint32_t floatTypeId = GetSpirVTypeId(floatType);
@@ -3020,18 +3113,17 @@ uint32_t ShaderConverter::ConvertVec4ToVec3(uint32_t id)
 	//
 	uint32_t xId = GetNextId();
 	mIdTypePairs[xId] = floatType;
-	PushCompositeExtract(floatTypeId, xId, id, 0);
+	PushCompositeExtract(floatTypeId, xId, loadedId, 0);
 
 	uint32_t yId = GetNextId();
 	mIdTypePairs[yId] = floatType;
-	PushCompositeExtract(floatTypeId, yId, id, 1);
+	PushCompositeExtract(floatTypeId, yId, loadedId, 1);
 
 	uint32_t zId = GetNextId();
 	mIdTypePairs[zId] = floatType;
-	PushCompositeExtract(floatTypeId, zId, id, 1);
+	PushCompositeExtract(floatTypeId, zId, loadedId, 1);
 
-
-
+	//
 	uint32_t resultId = GetNextId();
 	mIdTypePairs[resultId] = vectorType;
 	Push(spv::OpCompositeConstruct, vectorTypeId, resultId, xId, yId, zId);
@@ -3041,6 +3133,34 @@ uint32_t ShaderConverter::ConvertVec4ToVec3(uint32_t id)
 
 uint32_t ShaderConverter::ConvertMat4ToMat3(uint32_t id)
 {
+	//Check to see if the input is a pointer and if so load it first.
+	TypeDescription originalType = mIdTypePairs[id];
+	uint32_t originalTypeId = GetSpirVTypeId(originalType);
+
+	uint32_t loadedId = 0;
+	TypeDescription loadedType;
+	uint32_t loadedTypeId = 0;
+
+	if (originalType.PrimaryType == spv::OpTypePointer)
+	{
+		loadedType.PrimaryType = originalType.SecondaryType;
+		loadedType.SecondaryType = originalType.TernaryType;
+		loadedType.TernaryType = spv::OpTypeVoid;
+		loadedType.ComponentCount = originalType.ComponentCount;
+		uint32_t loadedTypeId = GetSpirVTypeId(loadedType);
+
+		loadedId = GetNextId();
+		mIdTypePairs[loadedId] = loadedType;
+		PushLoad(loadedTypeId, loadedId, id);
+	}
+	else
+	{
+		loadedType = originalType;
+		loadedId = id;
+		loadedTypeId = originalTypeId;
+	}
+
+	//Finally build the new matrix.
 	TypeDescription floatType;
 	floatType.PrimaryType = spv::OpTypeFloat;
 	uint32_t floatTypeId = GetSpirVTypeId(floatType);
@@ -3060,15 +3180,15 @@ uint32_t ShaderConverter::ConvertMat4ToMat3(uint32_t id)
 	//
 	uint32_t x1Id = GetNextId();
 	mIdTypePairs[x1Id] = floatType;
-	PushCompositeExtract(floatTypeId, x1Id, id, 0,0);
+	PushCompositeExtract(floatTypeId, x1Id, loadedId, 0,0);
 
 	uint32_t y1Id = GetNextId();
 	mIdTypePairs[y1Id] = floatType;
-	PushCompositeExtract(floatTypeId, y1Id, id, 0,1);
+	PushCompositeExtract(floatTypeId, y1Id, loadedId, 0,1);
 
 	uint32_t z1Id = GetNextId();
 	mIdTypePairs[z1Id] = floatType;
-	PushCompositeExtract(floatTypeId, z1Id, id, 0,2);
+	PushCompositeExtract(floatTypeId, z1Id, loadedId, 0,2);
 
 	uint32_t v1Id = GetNextId();
 	mIdTypePairs[v1Id] = vectorType;
@@ -3077,15 +3197,15 @@ uint32_t ShaderConverter::ConvertMat4ToMat3(uint32_t id)
 	//
 	uint32_t x2Id = GetNextId();
 	mIdTypePairs[x2Id] = floatType;
-	PushCompositeExtract(floatTypeId, x2Id, id, 1, 0);
+	PushCompositeExtract(floatTypeId, x2Id, loadedId, 1, 0);
 
 	uint32_t y2Id = GetNextId();
 	mIdTypePairs[y2Id] = floatType;
-	PushCompositeExtract(floatTypeId, y2Id, id, 1, 1);
+	PushCompositeExtract(floatTypeId, y2Id, loadedId, 1, 1);
 
 	uint32_t z2Id = GetNextId();
 	mIdTypePairs[z2Id] = floatType;
-	PushCompositeExtract(floatTypeId, z2Id, id, 1, 2);
+	PushCompositeExtract(floatTypeId, z2Id, loadedId, 1, 2);
 
 	uint32_t v2Id = GetNextId();
 	mIdTypePairs[v2Id] = vectorType;
@@ -3094,22 +3214,21 @@ uint32_t ShaderConverter::ConvertMat4ToMat3(uint32_t id)
 	//
 	uint32_t x3Id = GetNextId();
 	mIdTypePairs[x3Id] = floatType;
-	PushCompositeExtract(floatTypeId, x3Id, id, 2, 0);
+	PushCompositeExtract(floatTypeId, x3Id, loadedId, 2, 0);
 
 	uint32_t y3Id = GetNextId();
 	mIdTypePairs[y3Id] = floatType;
-	PushCompositeExtract(floatTypeId, y3Id, id, 2, 1);
+	PushCompositeExtract(floatTypeId, y3Id, loadedId, 2, 1);
 
 	uint32_t z3Id = GetNextId();
 	mIdTypePairs[z3Id] = floatType;
-	PushCompositeExtract(floatTypeId, z3Id, id, 2, 2);
+	PushCompositeExtract(floatTypeId, z3Id, loadedId, 2, 2);
 
 	uint32_t v3Id = GetNextId();
 	mIdTypePairs[v3Id] = vectorType;
 	Push(spv::OpCompositeConstruct, vectorTypeId, v3Id, x3Id, y3Id, z3Id);
 
-
-
+	//
 	uint32_t resultId = GetNextId();
 	mIdTypePairs[resultId] = matrixType;
 	Push(spv::OpCompositeConstruct, matrixTypeId, resultId, v1Id, v2Id, v3Id);
@@ -3144,6 +3263,13 @@ void ShaderConverter::PushName(uint32_t id, std::string& registerName)
 
 void ShaderConverter::PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index)
 {
+#ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (resultTypeId == 0)
+	{
+		throw "";
+	}
+#endif
+
 	std::string registerName = mNameIdPairs[baseId];
 	if (registerName.size())
 	{
@@ -3172,6 +3298,13 @@ void ShaderConverter::PushCompositeExtract(uint32_t resultTypeId, uint32_t resul
 
 void ShaderConverter::PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index1, uint32_t index2)
 {
+#ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (resultTypeId == 0)
+	{
+		throw "";
+	}
+#endif
+
 	std::string registerName = mNameIdPairs[baseId];
 	if (registerName.size())
 	{
@@ -3185,6 +3318,13 @@ void ShaderConverter::PushCompositeExtract(uint32_t resultTypeId, uint32_t resul
 
 void ShaderConverter::PushAccessChain(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t indexId)
 {
+#ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (resultTypeId == 0)
+	{
+		throw "";
+	}
+#endif
+
 	std::string registerName = mNameIdPairs[baseId];
 	if (registerName.size())
 	{
@@ -3236,6 +3376,11 @@ void ShaderConverter::PushAccessChain(uint32_t resultTypeId, uint32_t resultId, 
 void ShaderConverter::PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId)
 {
 #ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (resultTypeId == 0)
+	{
+		throw "";
+	}
+
 	auto& argumentType = mIdTypePairs[argumentId];
 	auto& resultType = mIdTypePairs[resultTypeId];
 
@@ -3266,6 +3411,11 @@ void ShaderConverter::PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, 
 void ShaderConverter::PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId)
 {
 #ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (resultTypeId == 0)
+	{
+		throw "";
+	}
+
 	auto& resultType = mIdTypePairs[resultTypeId];
 	auto& pointerType = mIdTypePairs[pointerId];
 
@@ -5580,11 +5730,11 @@ void ShaderConverter::Process_TEX()
 
 	Token argumentToken1 = (mMajorVersion > 1 || mMinorVersion >= 4) ? GetNextToken() : resultToken;
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
-	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_SAMPLER);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_2);
 
 	Token argumentToken2 = (mMajorVersion > 1) ? GetNextToken() : argumentToken1;
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
-	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_2);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_SAMPLER);
 
 	TypeDescription typeDescription = mIdTypePairs[argumentId1];
 
@@ -5611,7 +5761,7 @@ void ShaderConverter::Process_TEX()
 
 	//TEX output is vec4 even though input is a vec2 and sampler.
 	mIdTypePairs[resultId] = vectorType;
-	Push(spv::OpImageSampleImplicitLod, vectorTypeId, resultId, argumentId1, argumentId2);
+	Push(spv::OpImageSampleImplicitLod, vectorTypeId, resultId, argumentId2, argumentId1);
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 

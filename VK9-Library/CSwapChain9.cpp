@@ -33,8 +33,11 @@ CSwapChain9::CSwapChain9(CDevice9* Device, D3DPRESENT_PARAMETERS *pPresentationP
 {
 	BOOST_LOG_TRIVIAL(info) << "CSwapChain9::CSwapChain9";
 
-	//pPresentationParameters->BackBufferFormat = D3DFMT_X8R8G8B8; //TODO: review this to see if there is a better way to work around 16bit textures.
-
+	if (pPresentationParameters->BackBufferFormat == D3DFMT_A8R8G8B8)
+	{
+		pPresentationParameters->BackBufferFormat = D3DFMT_X8R8G8B8;
+	}
+	
 	mBackBuffer = new CSurface9(Device, pPresentationParameters);
 	mFrontBuffer = new CSurface9(Device, pPresentationParameters);
 	mCommandStreamManager = mDevice->mCommandStreamManager;

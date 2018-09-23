@@ -342,8 +342,6 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 		return;
 	}
 
-	//TODO: Handle dirty regions and multiple mip levels.
-
 	std::shared_ptr<RealTexture> source;
 	std::shared_ptr<RealTexture> target;
 	uint32_t width = 0;
@@ -354,14 +352,14 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 		CTexture9& target9 = (*(CTexture9*)pDestinationTexture);
 		target = mStateManager.mTextures[target9.mId];
 
-		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 1);
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
 	else
 	{
 		CCubeTexture9& target9 = (*(CCubeTexture9*)pDestinationTexture);
 		target = mStateManager.mTextures[target9.mId];
 
-		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, 0, 6);
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
 
 	if (pSourceTexture->GetType() == D3DRTYPE_CUBETEXTURE)
@@ -369,33 +367,47 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 		CCubeTexture9& source9 = (*(CCubeTexture9*)pSourceTexture);
 		source = mStateManager.mTextures[source9.mId];
 
-		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 6);
-		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mEdgeLength, source9.mEdgeLength, 1, 0, 0, 0, 0);
+		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
+
+		for (size_t i = 0; i < source->mLevels; i++)
+		{
+			ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mEdgeLength, source9.mEdgeLength, 1, i, i, 0, 0);
+		}
+
+		
 	}
 	else if (pSourceTexture->GetType() == D3DRTYPE_VOLUMETEXTURE)
 	{
 		CVolumeTexture9& source9 = (*(CVolumeTexture9*)pSourceTexture);
 		source = mStateManager.mTextures[source9.mId];
 
-		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
-		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, source9.mDepth, 0, 0, 0, 0);
+		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
+		
+		for (size_t i = 0; i < source->mLevels; i++)
+		{
+			ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, source9.mDepth, i, i, 0, 0);
+		}		
 	}
 	else
 	{
 		CTexture9& source9 = (*(CTexture9*)pSourceTexture);
 		source = mStateManager.mTextures[source9.mId];
 
-		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1);
-		ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, 1, 0, 0, 0, 0);
+		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
+		
+		for (size_t i = 0; i < source->mLevels; i++)
+		{
+			ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, 1, i, i, 0, 0);
+		}	
 	}
 
 	if (pDestinationTexture->GetType() != D3DRTYPE_CUBETEXTURE)
 	{
-		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 1);
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
 	else
 	{
-		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, 1, 0, 6);
+		ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
 
 	commandBuffer.end();
