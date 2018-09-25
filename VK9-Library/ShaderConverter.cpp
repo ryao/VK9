@@ -3141,7 +3141,7 @@ uint32_t ShaderConverter::ConvertMat4ToMat3(uint32_t id)
 		loadedType.SecondaryType = originalType.TernaryType;
 		loadedType.TernaryType = spv::OpTypeVoid;
 		loadedType.ComponentCount = originalType.ComponentCount;
-		uint32_t loadedTypeId = GetSpirVTypeId(loadedType);
+		loadedTypeId = GetSpirVTypeId(loadedType);
 
 		loadedId = GetNextId();
 		mIdTypePairs[loadedId] = loadedType;
