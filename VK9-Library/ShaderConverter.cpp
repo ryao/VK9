@@ -475,6 +475,8 @@ boost::log::basic_record_ostream<char>& operator<< (boost::log::basic_record_ost
 	case spv::OpSubgroupBlockWriteINTEL: return os << "OpSubgroupBlockWriteINTEL";
 	case spv::OpSubgroupImageBlockReadINTEL: return os << "OpSubgroupImageBlockReadINTEL";
 	case spv::OpSubgroupImageBlockWriteINTEL: return os << "OpSubgroupImageBlockWriteINTEL";
+	case spv::OpDecorateStringGOOGLE: return os << "OpDecorateStringGOOGLE";
+	case spv::OpMemberDecorateStringGOOGLE: return os << "OpMemberDecorateStringGOOGLE";
 	case spv::OpMax: return os << "OpMax";
 	};
 	return os << static_cast<std::uint32_t>(code);
@@ -1273,12 +1275,11 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		loadedType.SecondaryType = originalType.TernaryType;
 		loadedType.TernaryType = spv::OpTypeVoid;
 		loadedType.ComponentCount = originalType.ComponentCount;
-		uint32_t loadedTypeId = GetSpirVTypeId(loadedType);
+		loadedTypeId = GetSpirVTypeId(loadedType);
 
 		loadedId = GetNextId();
 		mIdTypePairs[loadedId] = loadedType;
 		PushLoad(loadedTypeId, loadedId, originalId);	
-		mTemp = loadedTypeId;
 	}
 	else
 	{
@@ -1287,10 +1288,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		loadedTypeId = originalTypeId;
 	}
 
-	if (!loadedTypeId)
-	{
-		loadedTypeId = mTemp; //Compiler bug workaround. loadedTypeId will lose it's value when exiting the above if.
-	}
+	//Turns out it's nota compiler bug just variable shadowing.
 
 	/*
 	Check for modifiers and if found apply them to the interim result.
@@ -1437,7 +1435,7 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 	*/
 	uint32_t swizzle = token.i & D3DVS_SWIZZLE_MASK;
 
-	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || outputComponentCount == 0 || lookingFor == GIVE_ME_SAMPLER)
+	if (swizzle == 0 || swizzle == D3DVS_NOSWIZZLE || lookingFor == GIVE_ME_SAMPLER)
 	{
 		return loadedId; //No swizzle no op.
 	}

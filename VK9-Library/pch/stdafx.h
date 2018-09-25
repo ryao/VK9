@@ -19,9 +19,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+#pragma warning(disable: 4005)
+
 #pragma once
 
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 
 // C++ headers
 #include <algorithm>

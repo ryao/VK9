@@ -148,9 +148,9 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D 
 	
 	if(!alphaBlendEnable)
 	{
-		realResult.a = 1.0;
+		realResult.a = 1.0f;
 	}
-	
+		
 	if((argument & D3DTA_ALPHAREPLICATE) != 0)
 	{
 		realResult.rgb = vec3(realResult.a,realResult.a,realResult.a);
@@ -197,9 +197,9 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 	
 	if(!alphaBlendEnable)
 	{
-		realResult.a = 1.0;
+		realResult.a = 1.0f;
 	}
-	
+		
 	if((argument & D3DTA_ALPHAREPLICATE) != 0)
 	{
 		realResult.rgb = vec3(realResult.a,realResult.a,realResult.a);
@@ -230,35 +230,47 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	vec4 alphaArg1 = getStageArgument(alphaArgument1,tempIn,constant,resultIn, tex, texcoord);
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn, tex, texcoord);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn, tex, texcoord);
-
-	//TODO: review alpha factor logic.
-	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+	
+	if(alphaBlendEnable)
+	{
+		//TODO: review alpha factor logic.
+		tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+	}
+	else
+	{
+		tempResult.a = 1.0f;
+	}	
+	
 	
 	if(alphaTestEnable)
 	{
 		float ref = alphaReference / 255.0f;
+		float alpha = 0.0f;
+		
+		alpha = tempResult.a;
+						
 		switch(alphaFunction)
 		{
 		    case D3DCMP_NEVER:
 				discard;
 			break;
 			case D3DCMP_LESS:
-			if(tempResult.a < ref){}else{discard;}
+			if(alpha < ref){}else{discard;}
 			break;
 			case D3DCMP_EQUAL:
-			if(tempResult.a == ref){}else{discard;}
+			if(alpha == ref){}else{discard;}
 			break;
 			case D3DCMP_LESSEQUAL:
-			if(tempResult.a <= ref){}else{discard;}
+			if(alpha <= ref){}else{discard;}
 			break;
 			case D3DCMP_GREATER:
-			if(tempResult.a > ref){}else{discard;}
+			if(alpha > ref){}else{discard;}
 			break;
 			case D3DCMP_NOTEQUAL:
-			if(tempResult.a != ref){}else{discard;}
+			if(alpha != ref){}else{discard;}
 			break;
 			case D3DCMP_GREATEREQUAL:
-			if(tempResult.a >= ref){}else{discard;}
+			if(alpha>= ref){}else{discard;}
 			break;
 			case D3DCMP_ALWAYS:		
 			break;
@@ -311,9 +323,44 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	}
 	else
 	{
-		tempResult.a = 1.0;
+		tempResult.a = 1.0f;
 	}
 
+	if(alphaTestEnable)
+	{
+		float ref = alphaReference / 255.0f;
+		float alpha = 0.0f;
+		
+		alpha = tempResult.a;
+				
+		switch(alphaFunction)
+		{
+		    case D3DCMP_NEVER:
+				discard;
+			break;
+			case D3DCMP_LESS:
+			if(alpha < ref){}else{discard;}
+			break;
+			case D3DCMP_EQUAL:
+			if(alpha == ref){}else{discard;}
+			break;
+			case D3DCMP_LESSEQUAL:
+			if(alpha <= ref){}else{discard;}
+			break;
+			case D3DCMP_GREATER:
+			if(alpha > ref){}else{discard;}
+			break;
+			case D3DCMP_NOTEQUAL:
+			if(alpha != ref){}else{discard;}
+			break;
+			case D3DCMP_GREATEREQUAL:
+			if(alpha>= ref){}else{discard;}
+			break;
+			case D3DCMP_ALWAYS:		
+			break;
+		}
+	}	
+	
 	if(colorOperation != D3DTOP_DISABLE)
 	{
 		tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rgb;	

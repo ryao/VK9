@@ -25,7 +25,7 @@ misrepresented as being the original software.
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include "resource.h"
+//#include "resource.h"
 #include "CTypes.h"
 #include "d3d9.h" // Base class: IDirect3DDevice9
 

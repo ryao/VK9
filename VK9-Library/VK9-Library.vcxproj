@@ -103,7 +103,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;VULKAN_HPP_ASSERT //;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -175,7 +175,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;VULKAN_HPP_ASSERT //;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -246,7 +246,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;VULKAN_HPP_ASSERT //;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -318,7 +318,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;VULKAN_HPP_ASSERT //;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -654,6 +654,11 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
     </CustomBuild>
+    <None Include="Shaders\Constants" />
+    <None Include="Shaders\FixedFunctions" />
+    <None Include="Shaders\Functions" />
+    <None Include="Shaders\GlobalIllumination" />
+    <None Include="Shaders\Structures" />
     <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert" />
     <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert" />
     <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert" />

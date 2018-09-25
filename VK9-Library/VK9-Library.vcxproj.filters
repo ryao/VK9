@@ -407,6 +407,21 @@
     <None Include="Shaders\VertexBuffer_XYZRHW_TEX2.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\Constants">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\FixedFunctions">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Functions">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\GlobalIllumination">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Structures">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">
