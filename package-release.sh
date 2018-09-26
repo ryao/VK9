@@ -113,12 +113,6 @@ function build_arch {
   cp "$VK9_SRC_DIR/VK9-Library/VK9.conf" "$VK9_BUILD_DIR/x$1/VK9.conf"
   cp "$VK9_BUILD_DIR/install.$1/bin/setup_vk9.sh" "$VK9_BUILD_DIR/x$1/setup_vk9.sh"
 
-  if [ $2 == true ]; then
-    mkdir -p "$VK9_BUILD_DIR/Shaders"
-    # *.spv suffix must be outside of quotes
-    cp "$VK9_BUILD_DIR/build.$1/VK9-Library/Shaders/Shaders@cus/"*.spv "$VK9_BUILD_DIR/Shaders/"
-  fi
-
   if [ $KEEP_BUILDDIR == false ]; then
     rm -R "$VK9_BUILD_DIR/build.$1"
     rm -R "$VK9_BUILD_DIR/install.$1"
@@ -145,16 +139,13 @@ function package {
   fi
 }
 
-BUILD_SHADERS=true
 
 if [ $BUILD_32BIT == true ]; then
-  build_arch 32 $BUILD_SHADERS
-  BUILD_SHADERS=false
+  build_arch 32
 fi
 
 if [ $BUILD_64BIT == true ]; then
-  build_arch 64 $BUILD_SHADERS
-  BUILD_SHADERS=false
+  build_arch 64
 fi
 
 if [ $BUILD_PACKAGE == true ]; then
