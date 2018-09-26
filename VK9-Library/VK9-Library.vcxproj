@@ -102,7 +102,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -140,43 +140,43 @@
       <Profile>true</Profile>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;WIN32;_DEBUG;_WINDOWS;_USRDLL;SCHAEFERGLLIBRARY_EXPORTS;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VULKAN_HPP_TYPESAFE_CONVERSION 1;VULKAN_HPP_NO_SMART_HANDLE;VULKAN_HPP_NO_EXCEPTIONS;VK_KHR_push_descriptor;VK_EXT_debug_report;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -213,37 +213,37 @@
       <Profile>true</Profile>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -256,7 +256,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
@@ -287,37 +287,37 @@
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -330,7 +330,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\spirv-tools\external\spirv-headers\include\spirv\1.2;$(VULKAN_SDK)\Include;C:\local\boost_1_67_0;C:\eigen_3_3_3;C:\Program Files\RenderDoc;C:\Program Files (x86)\Visual Leak Detector\include;$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
@@ -360,37 +360,37 @@
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PreBuildEvent>
-      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
-"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
+      <Command>"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX1.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX1.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.vert.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.vert"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_NORMAL_TEX2.frag.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_NORMAL_TEX2.frag"
+"$(VK_SDK_PATH)\Bin32\glslc.exe" -mfmt=c -o "$(OutDir)\VertexBuffer_XYZ_DIFFUSE.geom.h" "$(ProjectDir)\Shaders\VertexBuffer_XYZ_DIFFUSE.geom"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

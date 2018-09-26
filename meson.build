@@ -20,8 +20,8 @@ vulkan_defs = ['-DVK_USE_PLATFORM_WIN32_KHR', '-DVK_PROTOTYPES', '-DVULKAN_HPP_N
 
 glsl_compiler = find_program('glslc')
 glsl_generator = generator(glsl_compiler,
-  output    : [ '@PLAINNAME@.spv' ],
-  arguments : [ '@INPUT@', '-o', '@OUTPUT@' ])
+  output    : [ '@PLAINNAME@.h' ],
+  arguments : [ '-mfmt=c', '@INPUT@', '-o', '@OUTPUT@' ])
 
 ms_d3d9_dep = declare_dependency(link_args : ['-ld3d9'])
 ms_d3dx9_dep = declare_dependency(link_args : ['-ld3dx9'])

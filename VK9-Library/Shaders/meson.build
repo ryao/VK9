@@ -31,11 +31,3 @@ shader_src = [
 ]
 
 shader_spv = glsl_generator.process(shader_src)
-
-# Dummy target to force shader building
-shaders = custom_target('Shaders',
-  input : shader_spv,
-  output : 'dummy.txt',
-  command : ['touch', '@BUILD_DIR@/../dummy.txt'],
-  install : true,
-  install_dir : 'Shaders')
