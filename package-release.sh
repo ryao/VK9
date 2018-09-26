@@ -17,7 +17,7 @@ if [ -z "$1" ] || [ -z "$2" ]; then
   exit -1
 fi
 
-if [ -z $(export -p | grep WINEPREFIX\=) ]; then
+if [ -z "$(export -p | grep WINEPREFIX\=)" ]; then
   export WINEPREFIX=~/.wine/VK9-build
 fi
 
@@ -85,14 +85,21 @@ echo "    precompiled header: $USE_PCH"
 function build_arch {
   cd "$VK9_SRC_DIR"
 
-  if [ -z $(export -p | grep PKG_CONFIG_PATH\=) ]; then
+  PKG_CONFIG_PATH_SET=true
+  PKG_CONFIG_PATH_CUSTOM_SET=true
+
+  if [ -z "$(export -p | grep PKG_CONFIG_PATH\=)" ]; then
     export PKG_CONFIG_PATH=./dep$1
+    PKG_CONFIG_PATH_SET=false
   fi
-  if [ -z $(export -p | grep PKG_CONFIG_PATH_CUSTOM\=) ]; then
+  if [ -z "$(export -p | grep PKG_CONFIG_PATH_CUSTOM\=)" ]; then
     # Some distributions use PKG_CONFIG_PATH_CUSTOM instead.
     export PKG_CONFIG_PATH_CUSTOM=./dep$1
+    PKG_CONFIG_PATH_CUSTOM_SET=false
   fi
 
+  BOOST_INCLUDEDIR_SET=true
+  BOOST_LIBRARYDIR_SET=true
   source ./dep$1/boost.sh
 
   meson --cross-file "$VK9_SRC_DIR/build-win$1.txt"   \
@@ -116,6 +123,20 @@ function build_arch {
   if [ $KEEP_BUILDDIR == false ]; then
     rm -R "$VK9_BUILD_DIR/build.$1"
     rm -R "$VK9_BUILD_DIR/install.$1"
+  fi
+
+  # Clean up environment variables.
+  if [ $BOOST_INCLUDEDIR_SET == false ]; then
+    unset BOOST_INCLUDEDIR
+  fi
+  if [ $BOOST_LIBRARYDIR_SET == false ]; then
+    unset BOOST_LIBRARYDIR
+  fi
+  if [ $PKG_CONFIG_PATH_SET == false ]; then
+    unset PKG_CONFIG_PATH
+  fi
+  if [ $PKG_CONFIG_PATH_CUSTOM_SET == false ]; then
+    unset PKG_CONFIG_PATH_CUSTOM
   fi
 }
 
