@@ -408,10 +408,12 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 				else
 				{
-					pMode->Height = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.height;
-					pMode->Width = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.width;
+					auto& colorSurface = realDevice->mDeviceState.mRenderTarget->mColorSurface;
+
+					pMode->Height = colorSurface->mExtent.height;
+					pMode->Width = colorSurface->mExtent.width;
 					pMode->RefreshRate = 60; //fake it till you make it.
-					pMode->Format = ConvertFormat(realDevice->mDeviceState.mRenderTarget->mColorSurface->mRealFormat);
+					pMode->Format = ConvertFormat(colorSurface->mRealFormat);
 				}
 			}
 			break;
@@ -1625,15 +1627,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realDevice->mCurrentStateRecording->mDeviceState.mFVF = FVF;
-					realDevice->mCurrentStateRecording->mDeviceState.mHasFVF = true;
-					realDevice->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = false;
+					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
+
+					deviceState.mFVF = FVF;
+					deviceState.mHasFVF = true;
+					deviceState.mHasVertexDeclaration = false;
 				}
 				else
 				{
-					realDevice->mDeviceState.mFVF = FVF;
-					realDevice->mDeviceState.mHasFVF = true;
-					realDevice->mDeviceState.mHasVertexDeclaration = false;
+					auto& deviceState = realDevice->mDeviceState;
+
+					deviceState.mFVF = FVF;
+					deviceState.mHasFVF = true;
+					deviceState.mHasVertexDeclaration = false;
 				}
 			}
 			break;
@@ -3406,7 +3412,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
-				MergeState(stateBlock->mDeviceState, realDevice->mDeviceState, stateBlock->mType);
+				MergeState(stateBlock->mDeviceState, realDevice->mDeviceState, stateBlock->mType);			
 
 				if (realDevice->mRenderTargets.size())
 				{

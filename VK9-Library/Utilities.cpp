@@ -38,6 +38,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	All https://msdn.microsoft.com/en-us/library/windows/desktop/bb147350(v=vs.85).aspx
 	*/
 
+	//if (type == D3DSBT_ALL)
+	//{
+	//	onlyIfExists = false;
+	//}
+
 	//I don't see in render target nor depth buffer in docs but applications use them as if they are included in state blocks so I guess I'll roll with it.
 	
 	//&& (!onlyIfExists || targetState.mRenderTarget != nullptr)
