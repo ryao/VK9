@@ -1886,11 +1886,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_FILLMODE:
 					constants->fillMode = Value;
-					state->hasFillMode = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_SHADEMODE:
 					constants->shadeMode = Value;
-					state->hasShadeMode = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_ZWRITEENABLE:
 					constants->zWriteEnable = Value;
@@ -1902,19 +1902,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_LASTPIXEL:
 					constants->lastPixel = Value;
-					state->hasLastPixel = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_SRCBLEND:
 					constants->sourceBlend = Value;
-					state->hasSourceBlend = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_DESTBLEND:
 					constants->destinationBlend = Value;
-					state->hasDestinationBlend = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_CULLMODE:
 					constants->cullMode = Value;
-					state->hasCullMode = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_ZFUNC:
 					constants->zFunction = Value;
@@ -1930,11 +1930,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_DITHERENABLE:
 					constants->ditherEnable = Value;
-					state->hasDitherEnable = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_ALPHABLENDENABLE:
 					constants->alphaBlendEnable = Value;
-					state->hasAlphaBlendEnable = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_FOGENABLE:
 					constants->fogEnable = Value;
@@ -2086,19 +2086,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_CLIPPLANEENABLE:
 					constants->clipPlaneEnable = Value;
-					state->hasClipPlaneEnable = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSIZE:
 					constants->pointSize = bit_cast(Value);
-					state->hasPointSize = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSIZE_MIN:
 					constants->pointSizeMinimum = bit_cast(Value);
-					state->hasPointSizeMinimum = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSPRITEENABLE:
 					constants->pointSpriteEnable = Value;
-					state->hasPointSpriteEnable = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSCALEENABLE:
 					constants->pointScaleEnable = Value;
@@ -2134,7 +2134,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_POINTSIZE_MAX:
 					constants->pointSizeMaximum = bit_cast(Value);
-					state->hasPointSizeMaximum = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_INDEXEDVERTEXBLENDENABLE:
 					constants->indexedVertexBlendEnable = Value;
@@ -2142,7 +2142,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_COLORWRITEENABLE:
 					constants->colorWriteEnable = Value;
-					state->hasColorWriteEnable = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_TWEENFACTOR:
 					constants->tweenFactor = bit_cast(Value);
@@ -2150,7 +2150,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_BLENDOP:
 					constants->blendOperation = Value;
-					state->hasBlendOperation = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_POSITIONDEGREE:
 					constants->positionDegree = Value;
@@ -2162,15 +2162,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_SCISSORTESTENABLE:
 					constants->scissorTestEnable = Value;
-					state->hasScissorTestEnable = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_SLOPESCALEDEPTHBIAS:
 					constants->slopeScaleDepthBias = bit_cast(Value);
-					state->hasSlopeScaleDepthBias = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_ANTIALIASEDLINEENABLE:
 					constants->antiAliasedLineEnable = Value;
-					state->hasAntiAliasedLineEnable = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_MINTESSELLATIONLEVEL:
 					constants->minimumTessellationLevel = bit_cast(Value);
@@ -2222,15 +2222,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_COLORWRITEENABLE1:
 					constants->colorWriteEnable1 = Value;
-					state->hasColorWriteEnable1 = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE2:
 					constants->colorWriteEnable2 = Value;
-					state->hasColorWriteEnable2 = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE3:
 					constants->colorWriteEnable3 = Value;
-					state->hasColorWriteEnable3 = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_BLENDFACTOR:
 					constants->blendFactor = Value;
@@ -2242,7 +2242,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_DEPTHBIAS:
 					constants->depthBias = bit_cast(Value);
-					state->hasDepthBias = true;
+					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_WRAP8:
 					constants->wrap8 = Value;
@@ -2278,19 +2278,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_SEPARATEALPHABLENDENABLE:
 					constants->separateAlphaBlendEnable = Value;
-					state->hasSeparateAlphaBlendEnable = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_SRCBLENDALPHA:
 					constants->sourceBlendAlpha = Value;
-					state->hasSourceBlendAlpha = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_DESTBLENDALPHA:
 					constants->destinationBlendAlpha = Value;
-					state->hasDestinationBlendAlpha = true;
+					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_BLENDOPALPHA:
 					constants->blendOperationAlpha = Value;
-					state->hasBlendOperationAlpha = true;
+					state->wasBlendGroupModified = true;
 					break;
 				default:
 					BOOST_LOG_TRIVIAL(warning) << "ProcessQueue unknown state! " << State;
@@ -3412,7 +3412,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				CStateBlock9* stateBlock = bit_cast<CStateBlock9*>(workItem->Argument1);
 
-				MergeState(stateBlock->mDeviceState, realDevice->mDeviceState, stateBlock->mType);			
+				MergeState(stateBlock->mDeviceState, realDevice->mDeviceState, stateBlock->mType, false);
 
 				if (realDevice->mRenderTargets.size())
 				{

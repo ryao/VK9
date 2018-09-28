@@ -41,7 +41,7 @@ public:
 	ULONG mReferenceCount = 1;
 
 	//Device State
-	D3DSTATEBLOCKTYPE mType = D3DSBT_ALL;
+	D3DSTATEBLOCKTYPE mType = D3DSBT_FORCE_DWORD;
 	DeviceState mDeviceState = {};
 
 public:

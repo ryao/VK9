@@ -967,7 +967,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ;
 				}
 
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -986,7 +986,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX1;
 				}
 
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -1005,7 +1005,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX2;
 				}
 
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -1033,7 +1033,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE;
 				}
 
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					realDevice->mGraphicsPipelineCreateInfo.stageCount = 3;
 					realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_DIFFUSE_TEX1;
@@ -1054,7 +1054,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX1;
 				}
 
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && !hasNormal && " << textureCount;
 				}
@@ -1073,7 +1073,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX2;
 				}
 
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && !hasNormal && " << textureCount;
 				}
@@ -1093,7 +1093,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			{
 			case 2:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1104,7 +1104,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 0:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE;
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1124,7 +1124,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			{
 			case 0:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL;
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1135,7 +1135,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 1:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_TEX1;
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1146,7 +1146,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 2:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_TEX2;
-				if (deviceState.hasPointSpriteEnable)
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}

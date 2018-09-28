@@ -419,20 +419,23 @@ struct DeviceState
 	//IDirect3DDevice9::SetPixelShaderConstantI
 	//IDirect3DDevice9::SetRenderState
 	//Render State
+	bool wasBlendGroupModified = false;
+	bool wasRasterizerGroupModified = false;
+
 	bool hasZEnable = false;
-	bool hasFillMode = false;
-	bool hasShadeMode = false;
+	//bool hasFillMode = false;
+	//bool hasShadeMode = false;
 	bool hasZWriteEnable = false;
 	bool hasAlphaTestEnable = false;
-	bool hasLastPixel = false;
-	bool hasSourceBlend = false;
-	bool hasDestinationBlend = false;
-	bool hasCullMode = false;
+	//bool hasLastPixel = false;
+	//bool hasSourceBlend = false;
+	//bool hasDestinationBlend = false;
+	//bool hasCullMode = false;
 	bool hasZFunction = false;
 	bool hasAlphaReference = false;
 	bool hasAlphaFunction = false;
-	bool hasDitherEnable = false;
-	bool hasAlphaBlendEnable = false;
+	//bool hasDitherEnable = false;
+	//bool hasAlphaBlendEnable = false;
 	bool hasFogEnable = false;
 	bool hasSpecularEnable = false;
 	bool hasFogColor = false;
@@ -470,10 +473,10 @@ struct DeviceState
 	bool hasAmbientMaterialSource = false;
 	bool hasEmissiveMaterialSource = false;
 	bool hasVertexBlend = false;
-	bool hasClipPlaneEnable = false;
-	bool hasPointSize = false;
-	bool hasPointSizeMinimum = false;
-	bool hasPointSpriteEnable = false;
+	//bool hasClipPlaneEnable = false;
+	//bool hasPointSize = false;
+	//bool hasPointSizeMinimum = false;
+	//bool hasPointSpriteEnable = false;
 	bool hasPointScaleEnable = false;
 	bool hasPointScaleA = false;
 	bool hasPointScaleB = false;
@@ -482,16 +485,16 @@ struct DeviceState
 	bool hasMultisampleMask = false;
 	bool hasPatchEdgeStyle = false;
 	bool hasDebugMonitorToken = false;
-	bool hasPointSizeMaximum = false;
+	//bool hasPointSizeMaximum = false;
 	bool hasIndexedVertexBlendEnable = false;
-	bool hasColorWriteEnable = false;
+	//bool hasColorWriteEnable = false;
 	bool hasTweenFactor = false;
-	bool hasBlendOperation = false;
+	//bool hasBlendOperation = false;
 	bool hasPositionDegree = false;
 	bool hasNormalDegree = false;
-	bool hasScissorTestEnable = false;
-	bool hasSlopeScaleDepthBias = false;
-	bool hasAntiAliasedLineEnable = false;
+	//bool hasScissorTestEnable = false;
+	//bool hasSlopeScaleDepthBias = false;
+	//bool hasAntiAliasedLineEnable = false;
 	bool hasMinimumTessellationLevel = false;
 	bool hasMaximumTessellationLevel = false;
 	bool hasAdaptivetessX = false;
@@ -504,12 +507,12 @@ struct DeviceState
 	bool hasCcwStencilZFail = false;
 	bool hasCcwStencilPass = false;
 	bool hasCcwStencilFunction = false;
-	bool hasColorWriteEnable1 = false;
-	bool hasColorWriteEnable2 = false;
-	bool hasColorWriteEnable3 = false;
+	//bool hasColorWriteEnable1 = false;
+	//bool hasColorWriteEnable2 = false;
+	//bool hasColorWriteEnable3 = false;
 	bool hasBlendFactor = false;
 	bool hasSrgbWriteEnable = false;
-	bool hasDepthBias = false;
+	//bool hasDepthBias = false;
 	bool hasWrap8 = false;
 	bool hasWrap9 = false;
 	bool hasWrap10 = false;
@@ -518,10 +521,10 @@ struct DeviceState
 	bool hasWrap13 = false;
 	bool hasWrap14 = false;
 	bool hasWrap15 = false;
-	bool hasSeparateAlphaBlendEnable = false;
-	bool hasSourceBlendAlpha = false;
-	bool hasDestinationBlendAlpha = false;
-	bool hasBlendOperationAlpha = false;
+	//bool hasSeparateAlphaBlendEnable = false;
+	//bool hasSourceBlendAlpha = false;
+	//bool hasDestinationBlendAlpha = false;
+	//bool hasBlendOperationAlpha = false;
 
 	//IDirect3DDevice9::SetSamplerState
 	std::unordered_map<DWORD, std::unordered_map<D3DSAMPLERSTATETYPE, DWORD> > mSamplerStates;
