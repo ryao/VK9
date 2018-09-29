@@ -195,11 +195,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
 			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.rangeFogEnable = sourceState.mSpecializationConstants.rangeFogEnable;
 		}
-		if (sourceState.hasAmbient && (targetState.hasAmbient || !onlyIfExists)) {
-			targetState.hasAmbient = true;  targetState.mSpecializationConstants.ambient = sourceState.mSpecializationConstants.ambient;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.ambient = sourceState.mSpecializationConstants.ambient;
 		}
-		if (sourceState.hasColorVertex && (targetState.hasColorVertex || !onlyIfExists)) {
-			targetState.hasColorVertex = true; targetState.mSpecializationConstants.colorVertex = sourceState.mSpecializationConstants.colorVertex;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true; targetState.mSpecializationConstants.colorVertex = sourceState.mSpecializationConstants.colorVertex;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
 			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mSpecializationConstants.fogVertexMode = sourceState.mSpecializationConstants.fogVertexMode;
@@ -207,23 +207,23 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.hasClipping && (targetState.hasClipping || !onlyIfExists)) {
 			targetState.hasClipping = true;  targetState.mSpecializationConstants.clipping = sourceState.mSpecializationConstants.clipping;
 		}
-		if (sourceState.hasLighting && (targetState.hasLighting || !onlyIfExists)) {
-			targetState.hasLighting = true;  targetState.mSpecializationConstants.lighting = sourceState.mSpecializationConstants.lighting;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.lighting = sourceState.mSpecializationConstants.lighting;
 		}
-		if (sourceState.hasLocalViewer && (targetState.hasLocalViewer || !onlyIfExists)) {
-			targetState.hasLocalViewer = true;  targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
 		}
-		if (sourceState.hasEmissiveMaterialSource && (targetState.hasEmissiveMaterialSource || !onlyIfExists)) {
-			targetState.hasEmissiveMaterialSource = true;  targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
 		}
-		if (sourceState.hasAmbientMaterialSource && (targetState.hasAmbientMaterialSource || !onlyIfExists)) {
-			targetState.hasAmbientMaterialSource = true;  targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
 		}
-		if (sourceState.hasDiffuseMaterialSource && (targetState.hasDiffuseMaterialSource || !onlyIfExists)) {
-			targetState.hasDiffuseMaterialSource = true;  targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
 		}
-		if (sourceState.hasSpecularMaterialSource && (targetState.hasSpecularMaterialSource || !onlyIfExists)) {
-			targetState.hasSpecularMaterialSource = true; targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true; targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
 			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mSpecializationConstants.vertexBlend = sourceState.mSpecializationConstants.vertexBlend;
@@ -307,8 +307,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 			targetState.wasMultisampleGroupModified = true;
 			targetState.mSpecializationConstants.zEnable = sourceState.mSpecializationConstants.zEnable;
 		}
-		if (sourceState.hasSpecularEnable && (targetState.hasSpecularEnable || !onlyIfExists)) {
-			targetState.hasSpecularEnable = true;  targetState.mSpecializationConstants.specularEnable = sourceState.mSpecializationConstants.specularEnable;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.specularEnable = sourceState.mSpecializationConstants.specularEnable;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true;  targetState.mSpecializationConstants.fillMode = sourceState.mSpecializationConstants.fillMode;
@@ -439,20 +439,20 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.hasWrap15 && (targetState.hasWrap15 || !onlyIfExists)) {
 			targetState.hasWrap15 = true;  targetState.mSpecializationConstants.wrap15 = sourceState.mSpecializationConstants.wrap15;
 		}
-		if (sourceState.hasLocalViewer && (targetState.hasLocalViewer || !onlyIfExists)) {
-			targetState.hasLocalViewer = true;  targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.localViewer = sourceState.mSpecializationConstants.localViewer;
 		}
-		if (sourceState.hasEmissiveMaterialSource && (targetState.hasEmissiveMaterialSource || !onlyIfExists)) {
-			targetState.hasEmissiveMaterialSource = true;  targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.emissiveMaterialSource = sourceState.mSpecializationConstants.emissiveMaterialSource;
 		}
-		if (sourceState.hasAmbientMaterialSource && (targetState.hasAmbientMaterialSource || !onlyIfExists)) {
-			targetState.hasAmbientMaterialSource = true;  targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.ambientMaterialSource = sourceState.mSpecializationConstants.ambientMaterialSource;
 		}
-		if (sourceState.hasDiffuseMaterialSource && (targetState.hasDiffuseMaterialSource || !onlyIfExists)) {
-			targetState.hasDiffuseMaterialSource = true;  targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mSpecializationConstants.diffuseMaterialSource = sourceState.mSpecializationConstants.diffuseMaterialSource;
 		}
-		if (sourceState.hasSpecularMaterialSource && (targetState.hasSpecularMaterialSource || !onlyIfExists)) {
-			targetState.hasSpecularMaterialSource = true; targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
+		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionLightingGroupModified = true; targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
 			targetState.wasBlendGroupModified = true; targetState.mSpecializationConstants.colorWriteEnable = sourceState.mSpecializationConstants.colorWriteEnable;

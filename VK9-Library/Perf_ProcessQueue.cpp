@@ -1945,7 +1945,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_SPECULARENABLE:
 					constants->specularEnable = Value;
-					state->hasSpecularEnable = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_FOGCOLOR:
 					constants->fogColor = Value;
@@ -2052,11 +2052,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_LIGHTING:
 					constants->lighting = Value;
-					state->hasLighting = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_AMBIENT:
 					constants->ambient = Value;
-					state->hasAmbient = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_FOGVERTEXMODE:
 					constants->fogVertexMode = Value;
@@ -2064,11 +2064,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_COLORVERTEX:
 					constants->colorVertex = Value;
-					state->hasColorVertex = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_LOCALVIEWER:
 					constants->localViewer = Value;
-					state->hasLocalViewer = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_NORMALIZENORMALS:
 					constants->normalizeNormals = Value;
@@ -2076,19 +2076,19 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_DIFFUSEMATERIALSOURCE:
 					constants->diffuseMaterialSource = Value;
-					state->hasDiffuseMaterialSource = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_SPECULARMATERIALSOURCE:
 					constants->specularMaterialSource = Value;
-					state->hasSpecularMaterialSource = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_AMBIENTMATERIALSOURCE:
 					constants->ambientMaterialSource = Value;
-					state->hasAmbientMaterialSource = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_EMISSIVEMATERIALSOURCE:
 					constants->emissiveMaterialSource = Value;
-					state->hasEmissiveMaterialSource = true;
+					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_VERTEXBLEND:
 					constants->vertexBlend = Value;
