@@ -49,8 +49,8 @@ struct RealRenderTarget
 	vk::RenderPass mClearColorDepthRenderPass;
 	vk::RenderPass mClearAllRenderPass;
 
-	vk::AttachmentDescription mRenderAttachments[2];
-	vk::ClearValue mClearValues[2];
+	vk::AttachmentDescription mRenderAttachments[2] = {};
+	vk::ClearValue mClearValues[2] = {};
 	vk::ColorSpaceKHR mColorSpace;
 	vk::ClearColorValue mClearColorValue;
 	vk::ClearDepthStencilValue mClearDepthValue;

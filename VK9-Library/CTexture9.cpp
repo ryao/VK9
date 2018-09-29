@@ -43,7 +43,8 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 	mUsage(Usage),
 	mFormat(Format),
 	mPool(Pool),
-	mSharedHandle(pSharedHandle)
+	mSharedHandle(pSharedHandle),
+	mId(0)
 {
 	BOOST_LOG_TRIVIAL(info) << "CTexture9::CTexture9";
 

@@ -32,7 +32,7 @@ struct RealTexture
 	int32_t mSize;
 
 	vk::Extent3D mExtent;
-	vk::Format mRealFormat;
+	vk::Format mRealFormat = vk::Format::eUndefined;
 	vk::Image mImage;
 	VmaAllocation mImageAllocation;
 	VmaAllocationInfo mImageAllocationInfo;

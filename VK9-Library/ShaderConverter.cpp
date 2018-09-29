@@ -3866,8 +3866,6 @@ void ShaderConverter::Process_DCL_Pixel()
 	else
 	{
 		typeDescription.PrimaryType = spv::OpTypePointer;
-		typeDescription.SecondaryType = spv::OpTypeVector;
-		typeDescription.TernaryType = spv::OpTypeFloat;
 		typeDescription.StorageClass = spv::StorageClassInput;
 
 		//Magic numbers from ToGL (no whole numbers?)
@@ -3879,14 +3877,20 @@ void ShaderConverter::Process_DCL_Pixel()
 			typeDescription.ComponentCount = 1;
 			break;
 		case 3: //vec2
+			typeDescription.SecondaryType = spv::OpTypeVector;
+			typeDescription.TernaryType = spv::OpTypeFloat;
 			typeDescription.ComponentCount = 2;
 			break;
 		case 7: //vec3
 			//This is really a vec3 but I'm going to declare it has a vec4 to make later code easier.
 			//typeDescription.ComponentCount = 3;
+			typeDescription.SecondaryType = spv::OpTypeVector;
+			typeDescription.TernaryType = spv::OpTypeFloat;
 			typeDescription.ComponentCount = 4;
 			break;
 		case 0xF: //vec4
+			typeDescription.SecondaryType = spv::OpTypeVector;
+			typeDescription.TernaryType = spv::OpTypeFloat;
 			typeDescription.ComponentCount = 4;
 			break;
 		default:
@@ -4143,37 +4147,17 @@ void ShaderConverter::Process_DCL_Vertex()
 
 		if (this->mMajorVersion == 3)
 		{
-			if (registerType == D3DSPR_INPUT)
-			{
-				registerName = "input" + std::to_string(registerNumber);
-				PushName(tokenId, registerName);
+			registerName = "input" + std::to_string(registerNumber);
+			PushName(tokenId, registerName);
 
-				GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage, true);
-			}
-			else
-			{
-				registerName = "output" + std::to_string(registerNumber);
-				PushName(tokenId, registerName);
-
-				GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage, true);
-			}
+			GenerateDecoration(registerNumber, tokenId, (_D3DDECLUSAGE)usage, true);
 		}
 		else
 		{
-			if (registerType == D3DSPR_INPUT)
-			{
-				registerName = "oD" + std::to_string(registerNumber);
-				PushName(tokenId, registerName);
+			registerName = "oD" + std::to_string(registerNumber);
+			PushName(tokenId, registerName);
 
-				GenerateDecoration(registerNumber, tokenId, D3DDECLUSAGE_COLOR, true);
-			}
-			else
-			{
-				registerName = "oT" + std::to_string(registerNumber);
-				PushName(tokenId, registerName);
-
-				GenerateDecoration(registerNumber, tokenId, D3DDECLUSAGE_TEXCOORD, true);
-			}
+			GenerateDecoration(registerNumber, tokenId, D3DDECLUSAGE_COLOR, true);
 		}
 
 		break;

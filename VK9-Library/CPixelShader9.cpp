@@ -29,7 +29,8 @@ misrepresented as being the original software.
 
 CPixelShader9::CPixelShader9(CDevice9* device,const DWORD* pFunction)
 	: mDevice(device),
-	mFunction((DWORD*)pFunction)
+	mFunction((DWORD*)pFunction),
+	mId(0)
 {
 	BOOST_LOG_TRIVIAL(info) << "CPixelShader9::CPixelShader9";
 }

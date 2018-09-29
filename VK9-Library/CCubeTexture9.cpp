@@ -37,7 +37,8 @@ CCubeTexture9::CCubeTexture9(CDevice9* device, UINT EdgeLength, UINT Levels, DWO
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
 	mReferenceCount(1),
-	mResult(vk::Result::eSuccess)
+	mResult(vk::Result::eSuccess),
+	mId(0)
 {
 	BOOST_LOG_TRIVIAL(info) << "CCubeTexture9::CCubeTexture9";
 	//mDevice->AddRef();

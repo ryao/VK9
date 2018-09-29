@@ -1802,13 +1802,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 				else
 				{
-					if (realDevice->mDeviceState.mPixelShader != nullptr)
+					auto& deviceState = realDevice->mDeviceState;
+
+					if (deviceState.mPixelShader != nullptr)
 					{
-						realDevice->mDeviceState.mPixelShader->Release();
+						deviceState.mPixelShader->Release();
 					}
 
-					realDevice->mDeviceState.mPixelShader = (CPixelShader9*)pShader;
-					realDevice->mDeviceState.mHasPixelShader = true;
+					deviceState.mPixelShader = (CPixelShader9*)pShader;
+					deviceState.mHasPixelShader = true;
 				}
 			}
 			break;
@@ -3006,17 +3008,21 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realDevice->mCurrentStateRecording->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
-					realDevice->mCurrentStateRecording->mDeviceState.mHasVertexDeclaration = true;
-					realDevice->mCurrentStateRecording->mDeviceState.mHasFVF = false;
+					deviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+
+					deviceState.mHasVertexDeclaration = true;
+					deviceState.mHasFVF = false;
 				}
 				else
 				{
-					realDevice->mDeviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+					auto& deviceState = realDevice->mDeviceState;
 
-					realDevice->mDeviceState.mHasVertexDeclaration = true;
-					realDevice->mDeviceState.mHasFVF = false;
+					deviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+
+					deviceState.mHasVertexDeclaration = true;
+					deviceState.mHasFVF = false;
 				}
 			}
 			break;

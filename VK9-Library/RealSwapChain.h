@@ -67,7 +67,7 @@ struct RealSwapChain
 	vk::ImageMemoryBarrier mImageMemoryBarrier;
 
 	//Misc
-	vk::Result mResult;
+	vk::Result mResult = vk::Result::eSuccess;
 	uint32_t mCurrentImageIndex=0;
 	uint32_t mCurrentFrameIndex = 0;
 	vk::Fence mNullFence;

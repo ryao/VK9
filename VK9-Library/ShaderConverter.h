@@ -64,9 +64,9 @@ struct ConvertedShader
 	//Information about layout
 	//VkVertexInputBindingDescription mVertexInputBindingDescription[16] = {};
 	uint32_t mVertexInputAttributeDescriptionCount = 0;
-	vk::VertexInputAttributeDescription mVertexInputAttributeDescription[32];
+	vk::VertexInputAttributeDescription mVertexInputAttributeDescription[32] = {};
 	uint32_t mDescriptorSetLayoutBindingCount = 0;
-	vk::DescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16];
+	vk::DescriptorSetLayoutBinding mDescriptorSetLayoutBinding[16] = {};
 
 	//Actual Payload
 	UINT Size = 0;

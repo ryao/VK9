@@ -44,7 +44,8 @@ CVolumeTexture9::CVolumeTexture9(CDevice9* device, UINT Width, UINT Height, UINT
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mResult(VK_SUCCESS)
+	mResult(VK_SUCCESS),
+	mId(0)
 {
 	BOOST_LOG_TRIVIAL(info) << "CVolumeTexture9::CVolumeTexture9";
 
