@@ -1882,7 +1882,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 				case D3DRS_ZENABLE:
 					constants->zEnable = Value;
-					state->hasZEnable = true;
+					state->wasDsaGroupModified = true;
+					state->wasMultisampleGroupModified = true;
 					break;
 				case D3DRS_FILLMODE:
 					constants->fillMode = Value;
@@ -1894,11 +1895,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_ZWRITEENABLE:
 					constants->zWriteEnable = Value;
-					state->hasZWriteEnable = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_ALPHATESTENABLE:
 					constants->alphaTestEnable = Value;
-					state->hasAlphaTestEnable = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_LASTPIXEL:
 					constants->lastPixel = Value;
@@ -1918,15 +1919,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_ZFUNC:
 					constants->zFunction = Value;
-					state->hasZFunction = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_ALPHAREF:
 					constants->alphaReference = Value;
-					state->hasAlphaReference = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_ALPHAFUNC:
 					constants->alphaFunction = Value;
-					state->hasAlphaFunction = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_DITHERENABLE:
 					constants->ditherEnable = Value;
@@ -1970,23 +1971,24 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_STENCILENABLE:
 					constants->stencilEnable = Value;
-					state->hasStencilEnable = true;
+					state->wasDsaGroupModified = true;
+					state->wasMultisampleGroupModified = true;
 					break;
 				case D3DRS_STENCILFAIL:
 					constants->stencilFail = Value;
-					state->hasStencilFail = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILZFAIL:
 					constants->stencilZFail = Value;
-					state->hasStencilZFail = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILPASS:
 					constants->stencilPass = Value;
-					state->hasStencilPass = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILFUNC:
 					constants->stencilFunction = Value;
-					state->hasStencilFunction = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILREF:
 					constants->stencilReference = Value;
@@ -1994,11 +1996,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_STENCILMASK:
 					constants->stencilMask = Value;
-					state->hasStencilMask = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILWRITEMASK:
 					constants->stencilWriteMask = Value;
-					state->hasStencilWriteMask = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_TEXTUREFACTOR:
 					constants->textureFactor = Value;
@@ -2202,23 +2204,23 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_TWOSIDEDSTENCILMODE:
 					constants->twoSidedStencilMode = Value;
-					state->hasTwoSidedStencilMode = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILFAIL:
 					constants->ccwStencilFail = Value;
-					state->hasCcwStencilFail = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILZFAIL:
 					constants->ccwStencilZFail = Value;
-					state->hasCcwStencilZFail = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILPASS:
 					constants->ccwStencilPass = Value;
-					state->hasCcwStencilPass = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILFUNC:
 					constants->ccwStencilFunction = Value;
-					state->hasCcwStencilFunction = true;
+					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE1:
 					constants->colorWriteEnable1 = Value;

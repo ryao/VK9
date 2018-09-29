@@ -270,8 +270,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 	if (type == D3DSBT_ALL || type == D3DSBT_PIXELSTATE || type == D3DSBT_FORCE_DWORD)
 	{
-		if (sourceState.hasZEnable && (targetState.hasZEnable || !onlyIfExists)) {
-			targetState.hasZEnable = true;  targetState.mSpecializationConstants.zEnable = sourceState.mSpecializationConstants.zEnable;
+		if ((sourceState.wasDsaGroupModified || sourceState.wasMultisampleGroupModified) && (targetState.wasDsaGroupModified || targetState.wasMultisampleGroupModified || !onlyIfExists))
+		{
+			targetState.wasDsaGroupModified = true;
+			targetState.wasMultisampleGroupModified = true;
+			targetState.mSpecializationConstants.zEnable = sourceState.mSpecializationConstants.zEnable;
 		}
 		if (sourceState.hasSpecularEnable && (targetState.hasSpecularEnable || !onlyIfExists)) {
 			targetState.hasSpecularEnable = true;  targetState.mSpecializationConstants.specularEnable = sourceState.mSpecializationConstants.specularEnable;
@@ -282,11 +285,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true;  targetState.mSpecializationConstants.shadeMode = sourceState.mSpecializationConstants.shadeMode;
 		}
-		if (sourceState.hasZWriteEnable && (targetState.hasZWriteEnable || !onlyIfExists)) {
-			targetState.hasZWriteEnable = true;  targetState.mSpecializationConstants.zWriteEnable = sourceState.mSpecializationConstants.zWriteEnable;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.zWriteEnable = sourceState.mSpecializationConstants.zWriteEnable;
 		}
-		if (sourceState.hasAlphaTestEnable && (targetState.hasAlphaTestEnable || !onlyIfExists)) {
-			targetState.hasAlphaTestEnable = true; targetState.mSpecializationConstants.alphaTestEnable = sourceState.mSpecializationConstants.alphaTestEnable;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true; targetState.mSpecializationConstants.alphaTestEnable = sourceState.mSpecializationConstants.alphaTestEnable;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true; targetState.mSpecializationConstants.lastPixel = sourceState.mSpecializationConstants.lastPixel;
@@ -297,14 +300,14 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
 			targetState.wasBlendGroupModified = true; targetState.mSpecializationConstants.destinationBlend = sourceState.mSpecializationConstants.destinationBlend;
 		}
-		if (sourceState.hasZFunction && (targetState.hasZFunction || !onlyIfExists)) {
-			targetState.hasZFunction = true; targetState.mSpecializationConstants.zFunction = sourceState.mSpecializationConstants.zFunction;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true; targetState.mSpecializationConstants.zFunction = sourceState.mSpecializationConstants.zFunction;
 		}
-		if (sourceState.hasAlphaReference && (targetState.hasAlphaReference || !onlyIfExists)) {
-			targetState.hasAlphaReference = true;  targetState.mSpecializationConstants.alphaReference = sourceState.mSpecializationConstants.alphaReference;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.alphaReference = sourceState.mSpecializationConstants.alphaReference;
 		}
-		if (sourceState.hasAlphaFunction && (targetState.hasAlphaFunction || !onlyIfExists)) {
-			targetState.hasAlphaFunction = true;  targetState.mSpecializationConstants.alphaFunction = sourceState.mSpecializationConstants.alphaFunction;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.alphaFunction = sourceState.mSpecializationConstants.alphaFunction;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
 			targetState.wasBlendGroupModified = true;  targetState.mSpecializationConstants.ditherEnable = sourceState.mSpecializationConstants.ditherEnable;
@@ -327,29 +330,32 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true;  targetState.mSpecializationConstants.depthBias = sourceState.mSpecializationConstants.depthBias;
 		}
-		if (sourceState.hasStencilEnable && (targetState.hasStencilEnable || !onlyIfExists)) {
-			targetState.hasStencilEnable = true;  targetState.mSpecializationConstants.stencilEnable = sourceState.mSpecializationConstants.stencilEnable;
+		if ((sourceState.wasDsaGroupModified || sourceState.wasMultisampleGroupModified) && (targetState.wasDsaGroupModified || targetState.wasMultisampleGroupModified || !onlyIfExists))
+		{
+			targetState.wasDsaGroupModified = true;  
+			targetState.wasMultisampleGroupModified = true;
+			targetState.mSpecializationConstants.stencilEnable = sourceState.mSpecializationConstants.stencilEnable;
 		}
-		if (sourceState.hasStencilFail && (targetState.hasStencilFail || !onlyIfExists)) {
-			targetState.hasStencilFail = true;  targetState.mSpecializationConstants.stencilFail = sourceState.mSpecializationConstants.stencilFail;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.stencilFail = sourceState.mSpecializationConstants.stencilFail;
 		}
-		if (sourceState.hasStencilZFail && (targetState.hasStencilZFail || !onlyIfExists)) {
-			targetState.hasStencilZFail = true;  targetState.mSpecializationConstants.stencilZFail = sourceState.mSpecializationConstants.stencilZFail;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.stencilZFail = sourceState.mSpecializationConstants.stencilZFail;
 		}
-		if (sourceState.hasStencilPass && (targetState.hasStencilPass || !onlyIfExists)) {
-			targetState.hasStencilPass = true;  targetState.mSpecializationConstants.stencilPass = sourceState.mSpecializationConstants.stencilPass;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.stencilPass = sourceState.mSpecializationConstants.stencilPass;
 		}
-		if (sourceState.hasStencilFunction && (targetState.hasStencilFunction || !onlyIfExists)) {
-			targetState.hasStencilFunction = true;  targetState.mSpecializationConstants.stencilFunction = sourceState.mSpecializationConstants.stencilFunction;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.stencilFunction = sourceState.mSpecializationConstants.stencilFunction;
 		}
 		if (sourceState.hasStencilReference && (targetState.hasStencilReference || !onlyIfExists)) {
 			targetState.hasStencilReference = true; targetState.mSpecializationConstants.stencilReference = sourceState.mSpecializationConstants.stencilReference;
 		}
-		if (sourceState.hasStencilMask && (targetState.hasStencilMask || !onlyIfExists)) {
-			targetState.hasStencilMask = true; targetState.mSpecializationConstants.stencilMask = sourceState.mSpecializationConstants.stencilMask;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true; targetState.mSpecializationConstants.stencilMask = sourceState.mSpecializationConstants.stencilMask;
 		}
-		if (sourceState.hasStencilWriteMask && (targetState.hasStencilWriteMask || !onlyIfExists)) {
-			targetState.hasStencilWriteMask = true; targetState.mSpecializationConstants.stencilWriteMask = sourceState.mSpecializationConstants.stencilWriteMask;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true; targetState.mSpecializationConstants.stencilWriteMask = sourceState.mSpecializationConstants.stencilWriteMask;
 		}
 		if (sourceState.hasTextureFactor && (targetState.hasTextureFactor || !onlyIfExists)) {
 			targetState.hasTextureFactor = true;  targetState.mSpecializationConstants.textureFactor = sourceState.mSpecializationConstants.textureFactor;
@@ -432,20 +438,20 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true;  targetState.mSpecializationConstants.antiAliasedLineEnable = sourceState.mSpecializationConstants.antiAliasedLineEnable;
 		}
-		if (sourceState.hasTwoSidedStencilMode && (targetState.hasTwoSidedStencilMode || !onlyIfExists)) {
-			targetState.hasTwoSidedStencilMode = true; targetState.mSpecializationConstants.twoSidedStencilMode = sourceState.mSpecializationConstants.twoSidedStencilMode;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true; targetState.mSpecializationConstants.twoSidedStencilMode = sourceState.mSpecializationConstants.twoSidedStencilMode;
 		}
-		if (sourceState.hasCcwStencilFail && (targetState.hasCcwStencilFail || !onlyIfExists)) {
-			targetState.hasCcwStencilFail = true;  targetState.mSpecializationConstants.ccwStencilFail = sourceState.mSpecializationConstants.ccwStencilFail;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.ccwStencilFail = sourceState.mSpecializationConstants.ccwStencilFail;
 		}
-		if (sourceState.hasCcwStencilZFail && (targetState.hasCcwStencilZFail || !onlyIfExists)) {
-			targetState.hasCcwStencilZFail = true; targetState.mSpecializationConstants.ccwStencilZFail = sourceState.mSpecializationConstants.ccwStencilZFail;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true; targetState.mSpecializationConstants.ccwStencilZFail = sourceState.mSpecializationConstants.ccwStencilZFail;
 		}
-		if (sourceState.hasCcwStencilPass && (targetState.hasCcwStencilPass || !onlyIfExists)) {
-			targetState.hasCcwStencilPass = true;  targetState.mSpecializationConstants.ccwStencilPass = sourceState.mSpecializationConstants.ccwStencilPass;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true;  targetState.mSpecializationConstants.ccwStencilPass = sourceState.mSpecializationConstants.ccwStencilPass;
 		}
-		if (sourceState.hasCcwStencilFunction && (targetState.hasCcwStencilFunction || !onlyIfExists)) {
-			targetState.hasCcwStencilFunction = true; targetState.mSpecializationConstants.ccwStencilFunction = sourceState.mSpecializationConstants.ccwStencilFunction;
+		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
+			targetState.wasDsaGroupModified = true; targetState.mSpecializationConstants.ccwStencilFunction = sourceState.mSpecializationConstants.ccwStencilFunction;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
 			targetState.wasBlendGroupModified = true; targetState.mSpecializationConstants.colorWriteEnable1 = sourceState.mSpecializationConstants.colorWriteEnable1;
