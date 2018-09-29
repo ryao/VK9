@@ -130,11 +130,16 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetRenderState
 	if (type == D3DSBT_ALL || type == D3DSBT_FORCE_DWORD)
 	{
-		if (sourceState.hasFogEnable && (targetState.hasFogEnable || !onlyIfExists)) {
-			targetState.hasFogEnable = true; targetState.mSpecializationConstants.fogEnable = sourceState.mSpecializationConstants.fogEnable;
+		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasFogGroupModified || sourceState.wasPixelShaderConstantGroupModified)
+		&& (targetState.wasFixedFunctionOtherGroupModified || targetState.wasFogGroupModified || targetState.wasPixelShaderConstantGroupModified || !onlyIfExists))
+		{
+			targetState.wasFixedFunctionOtherGroupModified = true;
+			targetState.wasFogGroupModified = true;
+			targetState.wasPixelShaderConstantGroupModified = true;
+			targetState.mSpecializationConstants.fogEnable = sourceState.mSpecializationConstants.fogEnable;
 		}
-		if (sourceState.hasNormalizeNormals && (targetState.hasNormalizeNormals || !onlyIfExists)) {
-			targetState.hasNormalizeNormals = true; targetState.mSpecializationConstants.normalizeNormals = sourceState.mSpecializationConstants.normalizeNormals;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.normalizeNormals = sourceState.mSpecializationConstants.normalizeNormals;
 		}
 		if (sourceState.hasDebugMonitorToken && (targetState.hasDebugMonitorToken || !onlyIfExists)) {
 			targetState.hasDebugMonitorToken = true; targetState.mSpecializationConstants.debugMonitorToken = sourceState.mSpecializationConstants.debugMonitorToken;
@@ -146,23 +151,49 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true;  targetState.mSpecializationConstants.cullMode = sourceState.mSpecializationConstants.cullMode;
 		}
-		if (sourceState.hasFogColor && (targetState.hasFogColor || !onlyIfExists)) {
-			targetState.hasFogColor = true;  targetState.mSpecializationConstants.fogColor = sourceState.mSpecializationConstants.fogColor;
+
+		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
+			&& (targetState.wasFixedFunctionOtherGroupModified || targetState.wasPixelShaderConstantGroupModified || !onlyIfExists))
+		{
+			targetState.wasFixedFunctionOtherGroupModified = true;
+			targetState.wasPixelShaderConstantGroupModified = true;
+			targetState.mSpecializationConstants.fogColor = sourceState.mSpecializationConstants.fogColor;
 		}
-		if (sourceState.hasFogTableMode && (targetState.hasFogTableMode || !onlyIfExists)) {
-			targetState.hasFogTableMode = true; targetState.mSpecializationConstants.fogTableMode = sourceState.mSpecializationConstants.fogTableMode;
+
+		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasFogGroupModified || sourceState.wasPixelShaderConstantGroupModified)
+			&& (targetState.wasFixedFunctionOtherGroupModified || targetState.wasFogGroupModified || targetState.wasPixelShaderConstantGroupModified || !onlyIfExists))
+		{
+			targetState.wasFixedFunctionOtherGroupModified = true;
+			targetState.wasFogGroupModified = true;
+			targetState.wasPixelShaderConstantGroupModified = true;
+			targetState.mSpecializationConstants.fogTableMode = sourceState.mSpecializationConstants.fogTableMode;
 		}
-		if (sourceState.hasFogStart && (targetState.hasFogStart || !onlyIfExists)) {
-			targetState.hasFogStart = true; targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
+
+		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
+			&& (targetState.wasFixedFunctionOtherGroupModified || targetState.wasPixelShaderConstantGroupModified || !onlyIfExists))
+		{
+			targetState.wasFixedFunctionOtherGroupModified = true;
+			targetState.wasPixelShaderConstantGroupModified = true;
+			targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
 		}
-		if (sourceState.hasFogEnd && (targetState.hasFogEnd || !onlyIfExists)) {
-			targetState.hasFogEnd = true;  targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
+
+		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
+			&& (targetState.wasFixedFunctionOtherGroupModified || targetState.wasPixelShaderConstantGroupModified || !onlyIfExists))
+		{
+			targetState.wasFixedFunctionOtherGroupModified = true;
+			targetState.wasPixelShaderConstantGroupModified = true;
+			targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
 		}
-		if (sourceState.hasFogDensity && (targetState.hasFogDensity || !onlyIfExists)) {
-			targetState.hasFogDensity = true; targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
+
+		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
+			&& (targetState.wasFixedFunctionOtherGroupModified || targetState.wasPixelShaderConstantGroupModified || !onlyIfExists))
+		{
+			targetState.wasFixedFunctionOtherGroupModified = true;
+			targetState.wasPixelShaderConstantGroupModified = true;
+			targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
 		}
-		if (sourceState.hasRangeFogEnable && (targetState.hasRangeFogEnable || !onlyIfExists)) {
-			targetState.hasRangeFogEnable = true; targetState.mSpecializationConstants.rangeFogEnable = sourceState.mSpecializationConstants.rangeFogEnable;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.rangeFogEnable = sourceState.mSpecializationConstants.rangeFogEnable;
 		}
 		if (sourceState.hasAmbient && (targetState.hasAmbient || !onlyIfExists)) {
 			targetState.hasAmbient = true;  targetState.mSpecializationConstants.ambient = sourceState.mSpecializationConstants.ambient;
@@ -170,8 +201,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.hasColorVertex && (targetState.hasColorVertex || !onlyIfExists)) {
 			targetState.hasColorVertex = true; targetState.mSpecializationConstants.colorVertex = sourceState.mSpecializationConstants.colorVertex;
 		}
-		if (sourceState.hasFogVertexMode && (targetState.hasFogVertexMode || !onlyIfExists)) {
-			targetState.hasFogVertexMode = true;  targetState.mSpecializationConstants.fogVertexMode = sourceState.mSpecializationConstants.fogVertexMode;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mSpecializationConstants.fogVertexMode = sourceState.mSpecializationConstants.fogVertexMode;
 		}
 		if (sourceState.hasClipping && (targetState.hasClipping || !onlyIfExists)) {
 			targetState.hasClipping = true;  targetState.mSpecializationConstants.clipping = sourceState.mSpecializationConstants.clipping;
@@ -194,8 +225,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.hasSpecularMaterialSource && (targetState.hasSpecularMaterialSource || !onlyIfExists)) {
 			targetState.hasSpecularMaterialSource = true; targetState.mSpecializationConstants.specularMaterialSource = sourceState.mSpecializationConstants.specularMaterialSource;
 		}
-		if (sourceState.hasVertexBlend && (targetState.hasVertexBlend || !onlyIfExists)) {
-			targetState.hasVertexBlend = true;  targetState.mSpecializationConstants.vertexBlend = sourceState.mSpecializationConstants.vertexBlend;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mSpecializationConstants.vertexBlend = sourceState.mSpecializationConstants.vertexBlend;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true;  targetState.mSpecializationConstants.clipPlaneEnable = sourceState.mSpecializationConstants.clipPlaneEnable;
@@ -209,20 +240,20 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true;  targetState.mSpecializationConstants.pointSpriteEnable = sourceState.mSpecializationConstants.pointSpriteEnable;
 		}
-		if (sourceState.hasPointScaleEnable && (targetState.hasPointScaleEnable || !onlyIfExists)) {
-			targetState.hasPointScaleEnable = true; targetState.mSpecializationConstants.pointScaleEnable = sourceState.mSpecializationConstants.pointScaleEnable;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.pointScaleEnable = sourceState.mSpecializationConstants.pointScaleEnable;
 		}
-		if (sourceState.hasPointScaleA && (targetState.hasPointScaleA || !onlyIfExists)) {
-			targetState.hasPointScaleA = true; targetState.mSpecializationConstants.pointScaleA = sourceState.mSpecializationConstants.pointScaleA;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.pointScaleA = sourceState.mSpecializationConstants.pointScaleA;
 		}
-		if (sourceState.hasPointScaleB && (targetState.hasPointScaleB || !onlyIfExists)) {
-			targetState.hasPointScaleB = true; targetState.mSpecializationConstants.pointScaleB = sourceState.mSpecializationConstants.pointScaleB;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.pointScaleB = sourceState.mSpecializationConstants.pointScaleB;
 		}
-		if (sourceState.hasPointScaleC && (targetState.hasPointScaleC || !onlyIfExists)) {
-			targetState.hasPointScaleC = true; targetState.mSpecializationConstants.pointScaleC = sourceState.mSpecializationConstants.pointScaleC;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.pointScaleC = sourceState.mSpecializationConstants.pointScaleC;
 		}
-		if (sourceState.hasMultisampleAntiAlias && (targetState.hasMultisampleAntiAlias || !onlyIfExists)) {
-			targetState.hasMultisampleAntiAlias = true; targetState.mSpecializationConstants.multisampleAntiAlias = sourceState.mSpecializationConstants.multisampleAntiAlias;
+		if (sourceState.wasMultisampleGroupModified && (targetState.wasMultisampleGroupModified || !onlyIfExists)) {
+			targetState.wasMultisampleGroupModified = true; targetState.mSpecializationConstants.multisampleAntiAlias = sourceState.mSpecializationConstants.multisampleAntiAlias;
 		}
 		if (sourceState.hasMultisampleMask && (targetState.hasMultisampleMask || !onlyIfExists)) {
 			targetState.hasMultisampleMask = true;  targetState.mSpecializationConstants.multisampleMask = sourceState.mSpecializationConstants.multisampleMask;
@@ -233,11 +264,11 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
 			targetState.wasRasterizerGroupModified = true; targetState.mSpecializationConstants.pointSizeMaximum = sourceState.mSpecializationConstants.pointSizeMaximum;
 		}
-		if (sourceState.hasIndexedVertexBlendEnable && (targetState.hasIndexedVertexBlendEnable || !onlyIfExists)) {
-			targetState.hasIndexedVertexBlendEnable = true; targetState.mSpecializationConstants.indexedVertexBlendEnable = sourceState.mSpecializationConstants.indexedVertexBlendEnable;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.indexedVertexBlendEnable = sourceState.mSpecializationConstants.indexedVertexBlendEnable;
 		}
-		if (sourceState.hasTweenFactor && (targetState.hasTweenFactor || !onlyIfExists)) {
-			targetState.hasTweenFactor = true;  targetState.mSpecializationConstants.tweenFactor = sourceState.mSpecializationConstants.tweenFactor;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mSpecializationConstants.tweenFactor = sourceState.mSpecializationConstants.tweenFactor;
 		}
 		if (sourceState.hasPositionDegree && (targetState.hasPositionDegree || !onlyIfExists)) {
 			targetState.hasPositionDegree = true; targetState.mSpecializationConstants.positionDegree = sourceState.mSpecializationConstants.positionDegree;
@@ -312,14 +343,14 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
 			targetState.wasBlendGroupModified = true;  targetState.mSpecializationConstants.ditherEnable = sourceState.mSpecializationConstants.ditherEnable;
 		}
-		if (sourceState.hasFogStart && (targetState.hasFogStart || !onlyIfExists)) {
-			targetState.hasFogStart = true; targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.fogStart = sourceState.mSpecializationConstants.fogStart;
 		}
-		if (sourceState.hasFogEnd && (targetState.hasFogEnd || !onlyIfExists)) {
-			targetState.hasFogEnd = true;  targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mSpecializationConstants.fogEnd = sourceState.mSpecializationConstants.fogEnd;
 		}
-		if (sourceState.hasFogDensity && (targetState.hasFogDensity || !onlyIfExists)) {
-			targetState.hasFogDensity = true; targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
+		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
+			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mSpecializationConstants.fogDensity = sourceState.mSpecializationConstants.fogDensity;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
 			targetState.wasBlendGroupModified = true;  targetState.mSpecializationConstants.alphaBlendEnable = sourceState.mSpecializationConstants.alphaBlendEnable;

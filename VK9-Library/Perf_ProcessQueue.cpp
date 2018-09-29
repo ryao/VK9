@@ -1939,7 +1939,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_FOGENABLE:
 					constants->fogEnable = Value;
-					state->hasFogEnable = true;
+					state->wasFixedFunctionOtherGroupModified = true;
+					state->wasFogGroupModified = true;
+					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_SPECULARENABLE:
 					constants->specularEnable = Value;
@@ -1947,27 +1949,33 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_FOGCOLOR:
 					constants->fogColor = Value;
-					state->hasFogColor = true;
+					state->wasFixedFunctionOtherGroupModified = true;
+					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGTABLEMODE:
 					constants->fogTableMode = Value;
-					state->hasFogTableMode = true;
+					state->wasFixedFunctionOtherGroupModified = true;
+					state->wasFogGroupModified = true;
+					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGSTART:
 					constants->fogStart = bit_cast(Value);
-					state->hasFogStart = true;
+					state->wasFixedFunctionOtherGroupModified = true;
+					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGEND:
 					constants->fogEnd = bit_cast(Value);
-					state->hasFogEnd = true;
+					state->wasFixedFunctionOtherGroupModified = true;
+					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGDENSITY:
 					constants->fogDensity = bit_cast(Value);
-					state->hasFogDensity = true;
+					state->wasFixedFunctionOtherGroupModified = true;
+					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_RANGEFOGENABLE:
 					constants->rangeFogEnable = Value;
-					state->hasRangeFogEnable = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_STENCILENABLE:
 					constants->stencilEnable = Value;
@@ -2052,7 +2060,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_FOGVERTEXMODE:
 					constants->fogVertexMode = Value;
-					state->hasFogVertexMode = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_COLORVERTEX:
 					constants->colorVertex = Value;
@@ -2064,7 +2072,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_NORMALIZENORMALS:
 					constants->normalizeNormals = Value;
-					state->hasNormalizeNormals = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_DIFFUSEMATERIALSOURCE:
 					constants->diffuseMaterialSource = Value;
@@ -2084,7 +2092,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_VERTEXBLEND:
 					constants->vertexBlend = Value;
-					state->hasVertexBlend = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_CLIPPLANEENABLE:
 					constants->clipPlaneEnable = Value;
@@ -2104,23 +2112,23 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_POINTSCALEENABLE:
 					constants->pointScaleEnable = Value;
-					state->hasPointScaleEnable = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_POINTSCALE_A:
 					constants->pointScaleA = bit_cast(Value);
-					state->hasPointScaleA = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_POINTSCALE_B:
 					constants->pointScaleB = bit_cast(Value);
-					state->hasPointScaleB = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_POINTSCALE_C:
 					constants->pointScaleC = bit_cast(Value);
-					state->hasPointScaleC = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_MULTISAMPLEANTIALIAS:
 					constants->multisampleAntiAlias = Value;
-					state->hasMultisampleAntiAlias = true;
+					state->wasMultisampleGroupModified = true;
 					break;
 				case D3DRS_MULTISAMPLEMASK:
 					constants->multisampleMask = Value;
@@ -2140,7 +2148,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_INDEXEDVERTEXBLENDENABLE:
 					constants->indexedVertexBlendEnable = Value;
-					state->hasIndexedVertexBlendEnable = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE:
 					constants->colorWriteEnable = Value;
@@ -2148,7 +2156,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					break;
 				case D3DRS_TWEENFACTOR:
 					constants->tweenFactor = bit_cast(Value);
-					state->hasTweenFactor = true;
+					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_BLENDOP:
 					constants->blendOperation = Value;
