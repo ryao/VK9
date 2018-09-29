@@ -222,12 +222,13 @@ StateManager::~StateManager()
 
 void StateManager::DestroyDevice(size_t id)
 {
-	if (mDevices.size() == 1)
-	{
-		mSurfaces.clear();
-	}
-	mSwapChains.clear();
-	mDevices[id].reset();
+	//TODO: figure out a way to stop everything from blowing up when doing reset.
+	//if (mDevices.size() == 1)
+	//{
+	//	mSurfaces.clear();
+	//	mSwapChains.clear();
+	//}	
+	//mDevices[id].reset();
 }
 
 void StateManager::CreateDevice(size_t id, void* argument1)
