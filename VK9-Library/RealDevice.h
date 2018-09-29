@@ -124,6 +124,9 @@ struct RealDevice
 	vk::ShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE;
 	vk::ShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE;
 
+	vk::ShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX1;
+	vk::ShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX1;
+
 	vk::ShaderModule mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
 	vk::ShaderModule mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
 

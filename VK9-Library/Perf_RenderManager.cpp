@@ -1102,6 +1102,17 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
 				}
 				break;
+			case 1:
+				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX1;
+				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				{
+					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
+				}
+				else
+				{
+					realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX1;
+				}
+				break;
 			case 0:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE;
 				if (deviceState.mSpecializationConstants.pointSpriteEnable)

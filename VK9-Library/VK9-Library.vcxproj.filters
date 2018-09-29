@@ -374,6 +374,12 @@
     <ClInclude Include="Shaders\VertexBuffer_XYZRHW_TEX2.vert.h">
       <Filter>Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def">
@@ -420,6 +426,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\Structures">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

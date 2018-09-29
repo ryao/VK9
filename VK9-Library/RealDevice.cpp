@@ -125,6 +125,13 @@ const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_FRAG[] =
 #include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h"					
 ;
 
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX1_VERT[] =
+#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h"				
+;
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX1_FRAG[] =
+#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h"				
+;
+
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_VERT[] =  
 #include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h"				
 ;
@@ -313,6 +320,9 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 
 	mVertShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_VERT);
 	mFragShaderModule_XYZ_NORMAL_DIFFUSE = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_FRAG);
+
+	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX1_VERT);
+	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX1 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX1_FRAG);
 
 	mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_VERT);
 	mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2 = LoadShaderFromConst(mDevice, VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_FRAG);
@@ -675,6 +685,8 @@ RealDevice::~RealDevice()
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_TEX2, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_DIFFUSE, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_DIFFUSE, nullptr);
+	mDevice.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX1, nullptr);
+	mDevice.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX1, nullptr);
 	mDevice.destroyShaderModule(mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, nullptr);
 	mDevice.destroyShaderModule(mFragShaderModule_XYZ_NORMAL_DIFFUSE_TEX2, nullptr);
 	mDevice.destroyPipelineCache(mPipelineCache, nullptr);
