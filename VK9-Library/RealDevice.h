@@ -66,7 +66,7 @@ struct RealDevice
 	vk::Instance mInstance;
 	vk::DescriptorPool mDescriptorPool;
 	vk::CommandPool mCommandPool;
-	vk::CommandBuffer mCommandBuffers[MAXFRAMECOMMANDBUFFERS];
+	vk::CommandBuffer mCommandBuffers[MAXFRAMECOMMANDBUFFERS] = {};
 	uint32_t mCurrentCommandBuffer = 0;
 	vk::Queue mQueue;
 	vk::Sampler mSampler;

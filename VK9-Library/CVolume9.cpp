@@ -40,7 +40,8 @@ CVolume9::CVolume9(CDevice9* device, CVolumeTexture9* texture, UINT Width, UINT 
 	mFormat(Format),
 	mPool(Pool),
 	mSharedHandle(pSharedHandle),
-	mId(0)
+	mId(0),
+	mTextureId(0)
 {
 	BOOST_LOG_TRIVIAL(info) << "CVolume9::CVolume9";
 }

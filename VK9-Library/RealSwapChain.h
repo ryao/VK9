@@ -31,14 +31,14 @@ struct RealSwapChain
 	vk::Instance mInstance;
 	vk::PhysicalDevice mPhysicalDevice;
 	vk::Device mDevice;
-	HWND mWindowHandle;
-	uint32_t mWidth;
-	uint32_t mHeight;
+	HWND mWindowHandle = {};
+	uint32_t mWidth = 0;
+	uint32_t mHeight = 0;
 
 	//Surface Stuff
 	vk::SurfaceKHR mSurface;
 	vk::SurfaceCapabilitiesKHR mSurfaceCapabilities;
-	uint32_t mSurfaceFormatCount;
+	uint32_t mSurfaceFormatCount = 0;
 	vk::SurfaceFormatKHR* mSurfaceFormats;
 	vk::SurfaceTransformFlagBitsKHR mTransformFlags;
 	vk::Format mSurfaceFormat;
@@ -48,9 +48,9 @@ struct RealSwapChain
 	//SwapChain Stuff
 	vk::SwapchainKHR mSwapchain;
 	vk::Extent2D mSwapchainExtent;
-	uint32_t mSwapchainImageCount;
-	vk::Image* mImages;
-	vk::ImageView* mViews;
+	uint32_t mSwapchainImageCount = 0;
+	vk::Image* mImages = nullptr;
+	vk::ImageView* mViews = nullptr;
 	
 
 	//DepthBuffer

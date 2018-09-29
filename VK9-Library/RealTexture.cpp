@@ -25,7 +25,8 @@ misrepresented as being the original software.
 #include "RealTexture.h"
 
 RealTexture::RealTexture(RealDevice* realDevice)
-	: mRealDevice(realDevice)
+	: mRealDevice(realDevice),
+	mSize(0)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealTexture::RealTexture";
 }
