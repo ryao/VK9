@@ -60,6 +60,36 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 	}
 
 	vk::ImageCreateInfo imageCreateInfo;
+	vk::ImageViewCreateInfo imageViewCreateInfo;
+	vk::FormatProperties formatProperties;
+	realDevice->mPhysicalDevice.getFormatProperties(mRealFormat, &formatProperties);
+
+	if (mRealFormat == vk::Format::eD16UnormS8Uint || mRealFormat == vk::Format::eD24UnormS8Uint || mRealFormat == vk::Format::eD32SfloatS8Uint)
+	{
+		if (!formatProperties.linearTilingFeatures && !formatProperties.optimalTilingFeatures && !formatProperties.bufferFeatures)
+		{
+			mRealFormat = vk::Format::eD32SfloatS8Uint; //This is probably an AMD card.
+		}
+
+		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+	}
+	else if (mRealFormat == vk::Format::eS8Uint)
+	{
+		mSubresource.aspectMask = vk::ImageAspectFlagBits::eStencil;
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eStencil;
+	}
+	else if (mRealFormat == vk::Format::eD16Unorm || mRealFormat == vk::Format::eD32Sfloat)
+	{
+		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+	}
+	else
+	{
+		mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+
 	imageCreateInfo.imageType = vk::ImageType::e2D;
 	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
 	imageCreateInfo.extent = vk::Extent3D(surface9->mWidth, surface9->mHeight, 1);
@@ -91,6 +121,7 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 
 	mExtent = imageCreateInfo.extent;
 
+	
 	VmaAllocationCreateInfo imageAllocInfo = {};
 	imageAllocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
@@ -111,41 +142,9 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 	}
 
 	mSubresource.mipLevel = 0;
-
-	vk::ImageViewCreateInfo imageViewCreateInfo;
-
-	vk::FormatProperties formatProperties;	
-	realDevice->mPhysicalDevice.getFormatProperties(mRealFormat,&formatProperties);
-	
-	if (mRealFormat == vk::Format::eD16UnormS8Uint || mRealFormat == vk::Format::eD24UnormS8Uint || mRealFormat == vk::Format::eD32SfloatS8Uint)
-	{
-		if(!formatProperties.linearTilingFeatures && !formatProperties.optimalTilingFeatures && !formatProperties.bufferFeatures)
-		{
-			mRealFormat = vk::Format::eD32SfloatS8Uint; //This is probably an AMD card.
-		}
-
-		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
-	}
-	else if (mRealFormat == vk::Format::eS8Uint)
-	{
-		mSubresource.aspectMask = vk::ImageAspectFlagBits::eStencil;
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eStencil;
-	}
-	else if (mRealFormat == vk::Format::eD16Unorm || mRealFormat == vk::Format::eD32Sfloat)
-	{
-		mSubresource.aspectMask = vk::ImageAspectFlagBits::eDepth;
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
-	}
-	else
-	{
-		mSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-	}
-
 	mSubresource.arrayLayer = 0; //if this is wrong you may get 4294967296.
-
 	mLayouts[0] = {};
+
 	if (imageCreateInfo.tiling == vk::ImageTiling::eLinear)
 	{
 		//BOOST_LOG_TRIVIAL(info) << "RealSurface::RealSurface (CSurface9) using format " << (VkFormat)mRealFormat;
