@@ -215,10 +215,10 @@ void RealSwapChain::InitSurface()
 			mPresentationMode = vk::PresentModeKHR::eMailbox;
 			break;
 		}
-		else if (presentationModes[i] == vk::PresentModeKHR::eImmediate)
-		{
-			mPresentationMode = vk::PresentModeKHR::eImmediate;
-		} //Already defaulted to FIFO so do nothing for else.
+		//else if (presentationModes[i] == vk::PresentModeKHR::eImmediate)
+		//{
+		//	mPresentationMode = vk::PresentModeKHR::eImmediate;
+		//}
 	}
 
 	delete[] presentationModes;

@@ -163,13 +163,29 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 
 	std::vector<char*> extensionNames;
 	std::vector<char*> layerNames;
+	std::vector<VkExtensionProperties> supportedExtensions;
+
+	bool useDedicatedAllocation = false;
+	uint32_t supportedExtensionsCount;
+	vkEnumerateDeviceExtensionProperties((VkPhysicalDevice)physicalDevice, nullptr, &supportedExtensionsCount, nullptr);
+	supportedExtensions.resize(supportedExtensionsCount);
+	vkEnumerateDeviceExtensionProperties((VkPhysicalDevice)physicalDevice, nullptr, &supportedExtensionsCount, supportedExtensions.data());
 
 	extensionNames.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-	//extensionNames.push_back("VK_KHR_maintenance1");
 	extensionNames.push_back("VK_KHR_push_descriptor");
-	//extensionNames.push_back("VK_KHR_sampler_mirror_clamp_to_edge");
-	extensionNames.push_back("VK_KHR_get_memory_requirements2");
-	extensionNames.push_back("VK_KHR_dedicated_allocation");
+
+	for (auto& supportedExtension : supportedExtensions)
+	{
+		if (!strcmp(supportedExtension.extensionName, "VK_KHR_get_memory_requirements2"))
+		{
+			extensionNames.push_back("VK_KHR_get_memory_requirements2");
+		}
+		else if (!strcmp(supportedExtension.extensionName, "VK_KHR_dedicated_allocation"))
+		{
+			useDedicatedAllocation = true;
+			extensionNames.push_back("VK_KHR_dedicated_allocation");
+		}
+	}
 
 	float queue_priorities[1] = { 0.0 };
 	vk::DeviceQueueCreateInfo queue_info = {};
@@ -195,7 +211,10 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = (VkPhysicalDevice)mPhysicalDevice;
 	allocatorInfo.device = (VkDevice)mDevice;
-	allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+	if (useDedicatedAllocation)
+	{
+		allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+	}
 	vmaCreateAllocator(&allocatorInfo, &mAllocator);
 
 	vk::DescriptorPoolSize descriptorPoolSizes[11] = {};
