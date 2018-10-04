@@ -4810,6 +4810,55 @@ void ShaderConverter::Process_RSQ()
 	PrintTokenInformation("RSQ", resultToken, argumentToken1);
 }
 
+void ShaderConverter::Process_RCP()
+{
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	mIdTypePairs[resultId] = typeDescription;
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		Push(spv::OpFDiv, dataTypeId, resultId, argumentId1, m1fId);
+		break;
+	case spv::OpTypeInt:
+		Push(spv::OpSDiv, dataTypeId, resultId, argumentId1, m1Id);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_RCP - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("RCP", resultToken, argumentToken1);
+}
+
 /*
 If x, y, or z are less than zero then kill the pixel.
 */
@@ -5765,6 +5814,136 @@ void ShaderConverter::Process_MAX()
 	PrintTokenInformation("MAX", resultToken, argumentToken1, argumentToken2);
 }
 
+void ShaderConverter::Process_SGE()
+{
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
+
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
+	{
+		typeDescription = mIdTypePairs[argumentId2];
+	}
+
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	TypeDescription booleanType;
+	booleanType.PrimaryType = spv::OpTypeBool;
+	uint32_t booleanTypeId = GetSpirVTypeId(booleanType);
+
+	mIdTypePairs[resultId] = booleanType;
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		Push(spv::OpSGreaterThanEqual, booleanTypeId, resultId, argumentId1, argumentId2);
+		break;
+	case spv::OpTypeInt:
+		Push(spv::OpSGreaterThanEqual, booleanTypeId, resultId, argumentId1, argumentId2);
+		break;
+	case spv::OpTypeFloat:
+		Push(spv::OpFUnordGreaterThanEqual, booleanTypeId, resultId, argumentId1, argumentId2);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_SGE - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("SGE", resultToken, argumentToken1, argumentToken2);
+}
+
+void ShaderConverter::Process_SLT()
+{
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
+
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
+	{
+		typeDescription = mIdTypePairs[argumentId2];
+	}
+
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	TypeDescription booleanType;
+	booleanType.PrimaryType = spv::OpTypeBool;
+	uint32_t booleanTypeId = GetSpirVTypeId(booleanType);
+
+	mIdTypePairs[resultId] = booleanType;
+	switch (dataType)
+	{
+	case spv::OpTypeBool:
+		Push(spv::OpSLessThan, booleanTypeId, resultId, argumentId1, argumentId2);
+		break;
+	case spv::OpTypeInt:
+		Push(spv::OpSLessThan, booleanTypeId, resultId, argumentId1, argumentId2);
+		break;
+	case spv::OpTypeFloat:
+		Push(spv::OpFUnordLessThan, booleanTypeId, resultId, argumentId1, argumentId2);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_SLT - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("SLT", resultToken, argumentToken1, argumentToken2);
+}
+
 void ShaderConverter::Process_DP3()
 {
 	TypeDescription floatType;
@@ -6352,6 +6531,11 @@ void ShaderConverter::Process_LRP()
 
 	mIdTypePairs[resultId] = typeDescription;
 
+	//Not too sure which of these two formula is correct so for now I'll use mix which is the former.
+
+	//x * (1 - a) + y * a
+	//x * (y - a) + a
+
 	switch (dataType)
 	{
 	case spv::OpTypeBool:
@@ -6629,8 +6813,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			Process_MOV();
 			break;
 		case D3DSIO_RCP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_RCP.";
-			SkipTokens(2);
+			Process_RCP();
 			break;
 		case D3DSIO_RSQ:
 			Process_RSQ();
@@ -6713,12 +6896,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			Process_DST();
 			break;
 		case D3DSIO_SLT:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SLT.";
-			SkipTokens(3);
+			Process_SLT();
 			break;
 		case D3DSIO_SGE:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SGE.";
-			SkipTokens(3);
+			Process_SGE();
 			break;
 		case D3DSIO_CRS:
 			Process_CRS();

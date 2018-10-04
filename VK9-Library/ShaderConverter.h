@@ -633,6 +633,7 @@ private:
 	void Process_MOV();
 	void Process_MOVA();
 	void Process_RSQ();
+	void Process_RCP();
 
 	//Binary Operators (mixed unary in here by mistake will sort out some day ... maybe)
 	void Process_DST();
@@ -649,11 +650,12 @@ private:
 	void Process_SUB();
 	void Process_MIN();
 	void Process_MAX();
+	void Process_SGE();
+	void Process_SLT();
 	void Process_DP3();
 	void Process_DP4();
 	void Process_TEX();
 	void Process_TEXKILL();
-
 	void Process_TEXCOORD();
 
 	//matrix operators
