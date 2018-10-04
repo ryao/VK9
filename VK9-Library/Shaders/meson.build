@@ -12,6 +12,8 @@ shader_src = [
   'VertexBuffer_XYZ_NORMAL.vert',
   'VertexBuffer_XYZ_NORMAL_DIFFUSE.frag',
   'VertexBuffer_XYZ_NORMAL_DIFFUSE.vert',
+  'VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag',
+  'VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert',
   'VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag',
   'VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert',
   'VertexBuffer_XYZRHW.vert',
