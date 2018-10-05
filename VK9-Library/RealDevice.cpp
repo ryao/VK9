@@ -34,109 +34,109 @@ misrepresented as being the original software.
 #include "RealRenderTarget.h"
 #include "Utilities.h"
 
-const uint32_t VERTEX_BUFFER_XYZRHW_VERT[] = 
-#include "Shaders/VertexBuffer_XYZRHW.vert.h" 								
+const uint32_t VERTEX_BUFFER_XYZRHW_VERT[] =
+#include "VertexBuffer_XYZRHW.vert.h"
 ;
-const uint32_t VERTEX_BUFFER_XYZ_VERT[] = 
-#include "Shaders/VertexBuffer_XYZ.vert.h"									
+const uint32_t VERTEX_BUFFER_XYZ_VERT[] =
+#include "VertexBuffer_XYZ.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ.frag.h"									
+#include "VertexBuffer_XYZ.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_VERT[] = 
-#include "Shaders/VertexBuffer_XYZRHW_DIFFUSE.vert.h"						
+const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_VERT[] =
+#include "VertexBuffer_XYZRHW_DIFFUSE.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_VERT[] = 
-#include "Shaders/VertexBuffer_XYZ_DIFFUSE.vert.h"							
+#include "VertexBuffer_XYZ_DIFFUSE.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_DIFFUSE.frag.h"							
+#include "VertexBuffer_XYZ_DIFFUSE.frag.h"
 ;
-const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_GEOM[] =  
-#include "Shaders/VertexBuffer_XYZ_DIFFUSE.geom.h"							
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_GEOM[] =
+#include "VertexBuffer_XYZ_DIFFUSE.geom.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZRHW_TEX1_VERT[] =  
-#include "Shaders/VertexBuffer_XYZRHW_TEX1.vert.h"							
+const uint32_t VERTEX_BUFFER_XYZRHW_TEX1_VERT[] =
+#include "VertexBuffer_XYZRHW_TEX1.vert.h"
 ;
-const uint32_t VERTEX_BUFFER_XYZ_TEX1_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_TEX1.vert.h"								
+const uint32_t VERTEX_BUFFER_XYZ_TEX1_VERT[] =
+#include "VertexBuffer_XYZ_TEX1.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_TEX1_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_TEX1.frag.h"								
+#include "VertexBuffer_XYZ_TEX1.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZRHW_TEX2_VERT[] =  
-#include "Shaders/VertexBuffer_XYZRHW_TEX2.vert.h"							
+const uint32_t VERTEX_BUFFER_XYZRHW_TEX2_VERT[] =
+#include "VertexBuffer_XYZRHW_TEX2.vert.h"
 ;
-const uint32_t VERTEX_BUFFER_XYZ_TEX2_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_TEX2.vert.h"								
+const uint32_t VERTEX_BUFFER_XYZ_TEX2_VERT[] =
+#include "VertexBuffer_XYZ_TEX2.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_TEX2_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_TEX2.frag.h"								
+#include "VertexBuffer_XYZ_TEX2.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX1_VERT[] =  
-#include "Shaders/VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h"					
+const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX1_VERT[] =
+#include "VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert.h"
 ;
-const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX1_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h"						
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX1_VERT[] =
+#include "VertexBuffer_XYZ_DIFFUSE_TEX1.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX1_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h"						
+#include "VertexBuffer_XYZ_DIFFUSE_TEX1.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX2_VERT[] =  
-#include "Shaders/VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h"					
+const uint32_t VERTEX_BUFFER_XYZRHW_DIFFUSE_TEX2_VERT[] =
+#include "VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert.h"
 ;
-const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX2_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h"						
+const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX2_VERT[] =
+#include "VertexBuffer_XYZ_DIFFUSE_TEX2.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_DIFFUSE_TEX2_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h"						
+#include "VertexBuffer_XYZ_DIFFUSE_TEX2.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZ_NORMAL_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_NORMAL.vert.h"							
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_VERT[] =
+#include "VertexBuffer_XYZ_NORMAL.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_NORMAL.frag.h"							
+#include "VertexBuffer_XYZ_NORMAL.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX1_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX1.vert.h"						
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX1_VERT[] =
+#include "VertexBuffer_XYZ_NORMAL_TEX1.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX1_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX1.frag.h"						
+#include "VertexBuffer_XYZ_NORMAL_TEX1.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX2_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX2.vert.h"						
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX2_VERT[] =
+#include "VertexBuffer_XYZ_NORMAL_TEX2.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_TEX2_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_NORMAL_TEX2.frag.h"						
+#include "VertexBuffer_XYZ_NORMAL_TEX2.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h"					
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_VERT[] =
+#include "VertexBuffer_XYZ_NORMAL_DIFFUSE.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h"					
+#include "VertexBuffer_XYZ_NORMAL_DIFFUSE.frag.h"
 ;
 
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX1_VERT[] =
-#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h"				
+#include "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX1_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h"				
+#include "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.frag.h"
 ;
 
-const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_VERT[] =  
-#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h"				
+const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_VERT[] =
+#include "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.vert.h"
 ;
 const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_FRAG[] =
-#include "Shaders/VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h"				
+#include "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h"
 ;
 
 RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice, int32_t width, int32_t height)

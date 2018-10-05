@@ -44,7 +44,9 @@ d3d9_src = [
   'Utilities.cpp'
 ]
 
-d3d9_dll = shared_library('d3d9', d3d9_src,
+subdir('Shaders')
+
+d3d9_dll = shared_library('d3d9', d3d9_src, shader_spv,
   name_prefix         : '',
   link_with           : [ ],
   dependencies        : [ boost_dep, vulkan_dep, eigen_dep ],
@@ -58,4 +60,3 @@ d3d9_dep = declare_dependency(
   link_with           : [ d3d9_dll ],
   include_directories : [ include_directories('.') ])
 
-subdir('Shaders')
