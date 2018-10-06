@@ -607,14 +607,23 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 	void* buffer = nullptr;
 
 	CreateIndexBuffer(indexLength, Usage, IndexDataFormat, D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)&indexBuffer, nullptr);
-	CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+	
+	switch (VertexStreamZeroStride)
+	{
+	case 12:
+		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+		break;
+	case 36:
+		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_NORMAL, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitiveUP unhandled stride " << VertexStreamZeroStride;
+		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+		break;
+	}	
 
 	vertexBuffer->mSize = NumVertices;
 
-	if (VertexStreamZeroStride != 12)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitiveUP unhandled stride " << VertexStreamZeroStride;
-	}
 
 	vertexBuffer->Lock(0, 0, (void**)&buffer, 0);
 	memcpy(buffer, pVertexStreamZeroData, vertexLength);

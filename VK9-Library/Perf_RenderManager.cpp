@@ -220,7 +220,9 @@ vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const 
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride,0,0);
 
-	vk::Result result = swapchain->Present(currentBuffer, realDevice->mQueue, deviceState.mRenderTarget->mColorSurface->mStagingImage);
+	auto colorSurface = deviceState.mRenderTarget->mColorSurface;
+
+	vk::Result result = swapchain->Present(currentBuffer, realDevice->mQueue, colorSurface->mStagingImage, colorSurface->mExtent.width, colorSurface->mExtent.height);
 	if (result == vk::Result::eErrorOutOfDateKHR)
 	{
 		mStateManager.mSwapChains.erase(hDestWindowOverride);

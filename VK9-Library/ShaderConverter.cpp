@@ -6750,7 +6750,14 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			//Nothing
 			break;
 		case D3DSIO_PHASE:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_PHASE.";
+			if (!mIsVertexShader)
+			{
+				if(mMajorVersion == 1 && mMinorVersion == 4)
+				{
+					mMajorVersion = 2;
+					mMinorVersion = 0;
+				}
+			}		
 			break;
 		case D3DSIO_RET:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_RET.";

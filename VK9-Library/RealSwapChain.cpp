@@ -408,7 +408,7 @@ void RealSwapChain::DestroyDepthBuffer()
 	mDevice.freeMemory(mDepthDeviceMemory, nullptr);
 }
 
-vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& queue, vk::Image& source)
+vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& queue, vk::Image& source, int32_t width, int32_t height)
 {
 	mDevice.waitForFences(1, &mInFlightFences[mCurrentFrameIndex], VK_TRUE, std::numeric_limits<uint64_t>::max());
 	mDevice.resetFences(1, &mInFlightFences[mCurrentFrameIndex]);
@@ -421,7 +421,6 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 		commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 		return mResult;
 	}
-
 
 	mImageMemoryBarrier.srcAccessMask = vk::AccessFlags(); //vk::AccessFlagBits::eMemoryWrite
 	mImageMemoryBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
@@ -458,7 +457,7 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	vk::ImageBlit region;
 	region.srcSubresource = subResource1;
 	region.dstSubresource = subResource2;
-	region.srcOffsets[1] = vk::Offset3D(mSwapchainExtent.width, mSwapchainExtent.height, 1);
+	region.srcOffsets[1] = vk::Offset3D(width, height, 1);
 	region.dstOffsets[1] = vk::Offset3D(mSwapchainExtent.width, mSwapchainExtent.height, 1);
 
 	commandBuffer.blitImage(
