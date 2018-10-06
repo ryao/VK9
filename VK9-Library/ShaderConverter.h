@@ -667,6 +667,7 @@ private:
 
 	//ternary operators
 	void Process_MAD();
+	void Process_DP2ADD();
 	void Process_LRP();
 };
 
