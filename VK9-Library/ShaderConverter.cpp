@@ -4007,6 +4007,8 @@ void ShaderConverter::Process_DCL_Pixel()
 		}
 
 		break;
+	case D3DSPR_MISCTYPE:
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Pixel unsupported register type D3DSPR_MISCTYPE";
 	default:
 		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::Process_DCL_Pixel unsupported register type " << registerType;
 		break;
@@ -6868,6 +6870,33 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			Process_ENDIF();
 			break;
 		case D3DSIO_REP:
+
+			/*
+			This is what for loops look like in SPIR-V
+			%i = OpVariable %_ptr_Function_int Function
+               OpStore %j %int_0
+               OpStore %i %int_0
+               OpBranch %11
+         %11 = OpLabel
+               OpLoopMerge %13 %14 None
+               OpBranch %15
+         %15 = OpLabel
+         %16 = OpLoad %int %i
+         %19 = OpSLessThanEqual %bool %16 %int_99
+               OpBranchConditional %19 %12 %13
+         %12 = OpLabel
+         %20 = OpLoad %int %j
+         %22 = OpIAdd %int %20 %int_1
+               OpStore %j %22
+               OpBranch %14
+         %14 = OpLabel
+         %23 = OpLoad %int %i
+         %24 = OpIAdd %int %23 %int_1
+               OpStore %i %24
+               OpBranch %11
+         %13 = OpLabel
+			*/
+
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_REP.";
 			SkipTokens(2);
 			break;

@@ -147,7 +147,10 @@ void main()
 
 	normal = ubo.modelTransformation * vec4(attr1,0);
 	normal *= vec4(1.0,-1.0,1.0,1.0);
-	normal = normalize(normal);	
+	if(normalizeNormals)
+	{
+		normal = normalize(normal);
+	}	
 
 	globalIllumination = GetGlobalIllumination();
 }
