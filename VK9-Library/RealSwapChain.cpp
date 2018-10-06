@@ -215,10 +215,10 @@ void RealSwapChain::InitSurface()
 			mPresentationMode = vk::PresentModeKHR::eMailbox;
 			break;
 		}
-		//else if (presentationModes[i] == vk::PresentModeKHR::eImmediate)
-		//{
-		//	mPresentationMode = vk::PresentModeKHR::eImmediate;
-		//}
+		else if (presentationModes[i] == vk::PresentModeKHR::eImmediate)
+		{
+			mPresentationMode = vk::PresentModeKHR::eImmediate;
+		}
 	}
 
 	delete[] presentationModes;
@@ -417,6 +417,8 @@ vk::Result RealSwapChain::Present(vk::CommandBuffer& commandBuffer, vk::Queue& q
 	if (mResult != vk::Result::eSuccess)
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "RealSwapChain::Start vkAcquireNextImageKHR failed with return code of " << GetResultString((VkResult)mResult);
+		commandBuffer.end();
+		commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 		return mResult;
 	}
 

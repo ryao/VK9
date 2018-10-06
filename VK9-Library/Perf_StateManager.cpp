@@ -243,6 +243,20 @@ void StateManager::CreateDevice(size_t id, void* argument1)
 		pfn_vkCmdPushDescriptorSetKHR = reinterpret_cast<PFN_vkCmdPushDescriptorSetKHR>(device->mDevice.getProcAddr("vkCmdPushDescriptorSetKHR"));
 	}
 
+	//The user wants d3d9 to auto-detect so I'll go ahead and grab the swap and pull it's format.
+	auto& presentationParameters = device9->mPresentationParameters;
+	if (presentationParameters.BackBufferFormat == D3DFMT_UNKNOWN)
+	{
+		HWND handle = device9->mFocusWindow;
+		auto swapChain = GetSwapChain(device, handle, presentationParameters.BackBufferWidth, presentationParameters.BackBufferHeight);
+		presentationParameters.BackBufferFormat = ConvertFormat(swapChain->mSurfaceFormat);				   
+	}
+
+	if (presentationParameters.AutoDepthStencilFormat == D3DFMT_UNKNOWN)
+	{
+		presentationParameters.AutoDepthStencilFormat = D3DFMT_D24S8;
+	}
+
 	mDevices.push_back(device);
 }
 
@@ -499,6 +513,10 @@ void StateManager::CreateTexture(size_t id, void* argument1)
 	*/
 	switch (texture9->mFormat)
 	{
+	case D3DFMT_A8:
+		//TODO: Revisit A8 mapping.
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
+		break;
 	case D3DFMT_L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
 		break;
@@ -592,6 +610,10 @@ void StateManager::CreateCubeTexture(size_t id, void* argument1)
 	*/
 	switch (texture9->mFormat)
 	{
+	case D3DFMT_A8:
+		//TODO: Revisit A8 mapping.
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
+		break;
 	case D3DFMT_L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
 		break;
@@ -685,6 +707,10 @@ void StateManager::CreateVolumeTexture(size_t id, void* argument1)
 	*/
 	switch (texture9->mFormat)
 	{
+	case D3DFMT_A8:
+		//TODO: Revisit A8 mapping.
+		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eR);
+		break;
 	case D3DFMT_L8:
 		imageViewCreateInfo.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eOne);
 		break;
@@ -885,7 +911,7 @@ void StateManager::CreateQuery(size_t id, void* argument1)
 	mQueries.push_back(ptr);
 }
 
-std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealDevice> realDevice, HWND handle)
+std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealDevice> realDevice, HWND handle, uint32_t width, uint32_t height)
 {
 	auto it = mSwapChains.find(handle);
 	if (it != mSwapChains.end())
@@ -898,8 +924,13 @@ std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealDe
 		vk::PhysicalDevice physicalDevice = realDevice->mPhysicalDevice;
 		vk::Device device = realDevice->mDevice;
 		HWND windowHandle = handle;
-		uint32_t width = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.width;
-		uint32_t height = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.height;
+
+		if (realDevice->mDeviceState.mRenderTarget != nullptr && realDevice->mDeviceState.mRenderTarget->mColorSurface != nullptr)
+		{
+			width = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.width;
+			height = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.height;
+		}
+
 		auto output = std::make_shared<RealSwapChain>(instance, physicalDevice, device, windowHandle, width, height);
 		mSwapChains[handle] = output;
 

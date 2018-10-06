@@ -61,6 +61,7 @@ enum WorkItemType
 	, Device_GetVertexShaderConstantI
 	, Device_GetViewport
 	, Device_LightEnable
+	, Device_Reset
 	, Device_SetFVF
 	, Device_SetIndices
 	, Device_SetLight

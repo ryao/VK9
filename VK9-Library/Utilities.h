@@ -655,7 +655,7 @@ inline vk::Format ConvertFormat(D3DFORMAT format) noexcept
 	case D3DFMT_R3G3B2:
 		return (vk::Format)VK_FORMAT_UNDEFINED; //B2G3R3_UNORM:
 	case D3DFMT_A8:
-		return (vk::Format)VK_FORMAT_UNDEFINED; //A8_UNORM
+		return (vk::Format)VK_FORMAT_R8_UNORM; //A8_UNORM
 	case D3DFMT_A8R3G3B2:
 		return (vk::Format)VK_FORMAT_UNDEFINED; //B2G3R3A8_UNORM
 	case D3DFMT_X4R4G4B4:

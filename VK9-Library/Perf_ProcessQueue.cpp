@@ -1620,6 +1620,14 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 			}
 			break;
+			case Device_Reset:
+			{
+				auto& stateManager = commandStreamManager->mRenderManager.mStateManager;
+				HWND FocusWindow = bit_cast<HWND>(workItem->Argument1);
+
+				stateManager.mSwapChains.erase(FocusWindow);
+			}
+			break;
 			case Device_SetFVF:
 			{
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];

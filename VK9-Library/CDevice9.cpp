@@ -128,15 +128,16 @@ void CDevice9::Destroy()
 		delete buffer;
 	}
 
-	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
-	workItem->WorkItemType = WorkItemType::Device_Destroy;
-	workItem->Id = mId;
-	mCommandStreamManager->RequestWorkAndWait(workItem);
-
 	for (size_t i = 0; i < mSwapChains.size(); i++)
 	{
 		delete mSwapChains[i];
 	}
+	mSwapChains.clear();
+
+	WorkItem* workItem = mCommandStreamManager->GetWorkItem(nullptr);
+	workItem->WorkItemType = WorkItemType::Device_Destroy;
+	workItem->Id = mId;
+	mCommandStreamManager->RequestWorkAndWait(workItem);
 }
 
 HRESULT STDMETHODCALLTYPE CDevice9::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil)
@@ -1294,14 +1295,25 @@ HRESULT STDMETHODCALLTYPE CDevice9::ProcessVertices(UINT SrcStartIndex, UINT Des
 
 HRESULT STDMETHODCALLTYPE CDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters)
 {
-	/*
-	All of the the d3d9 "device state" is attached to the RealDevice object so just destroy the current one and make a new one.
-	The application is responsible for destroying any handles it has before calling Reset but I doubt games really do that.
-	*/
-	memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
+	if (mCommandStreamManager->mResult == vk::Result::eErrorDeviceLost)
+	{
+		/*
+		All of the the d3d9 "device state" is attached to the RealDevice object so just destroy the current one and make a new one.
+		The application is responsible for destroying any handles it has before calling Reset but I doubt games really do that.
+		*/
+		memcpy(&mPresentationParameters, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
 
-	Destroy();
-	Init();
+		Destroy();
+		Init();
+	}
+	else
+	{
+		WorkItem* workItem = mCommandStreamManager->GetWorkItem(this);
+		workItem->WorkItemType = WorkItemType::Device_Reset;
+		workItem->Id = mId;
+		workItem->Argument1 = mFocusWindow;
+		mCommandStreamManager->RequestWork(workItem);
+	}
 
 	return S_OK;
 }
