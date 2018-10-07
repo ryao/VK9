@@ -119,6 +119,7 @@ function build_arch {
   cp "$VK9_BUILD_DIR/install.$1/bin/d3d9.dll" "$VK9_BUILD_DIR/x$1/d3d9.dll"
   cp "$VK9_SRC_DIR/VK9-Library/VK9.conf" "$VK9_BUILD_DIR/x$1/VK9.conf"
   cp "$VK9_BUILD_DIR/install.$1/bin/setup_vk9.sh" "$VK9_BUILD_DIR/x$1/setup_vk9.sh"
+  cp "$VK9_SRC_DIR/wine_utils/setup_vk9.verb" "$VK9_BUILD_DIR/setup_vk9.verb"
 
   if [ $KEEP_BUILDDIR == false ]; then
     rm -R "$VK9_BUILD_DIR/build.$1"
@@ -150,9 +151,7 @@ function package {
   if [ -d "vk9-$VK9_VERSION/x32" ]; then
     TAR_DIRS="$TAR_DIRS vk9-$VK9_VERSION/x32"
   fi
-  if [ -d "vk9-$VK9_VERSION/Shaders" ]; then
-    TAR_DIRS="$TAR_DIRS vk9-$VK9_VERSION/Shaders"
-  fi
+  TAR_DIRS="$TAR_DIRS vk9-$VK9_VERSION/setup_vk9.verb"
 
   tar -czvf "$VK9_ARCHIVE_PATH" $TAR_DIRS
   if [ $KEEP_BUILDDIR == false ]; then
