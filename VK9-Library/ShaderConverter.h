@@ -596,6 +596,8 @@ private:
 	void PushCompositeExtract(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t index1, uint32_t index2);
 	void PushAccessChain(uint32_t resultTypeId, uint32_t resultId, uint32_t baseId, uint32_t indexId);
 	void PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId);
+	void PushCos(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId);
+	void PushSin(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId);
 	void PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId);
 	void PushStore(uint32_t pointerId, uint32_t objectId);
 
@@ -669,6 +671,7 @@ private:
 	void Process_MAD();
 	void Process_DP2ADD();
 	void Process_LRP();
+	void Process_SINCOS();
 };
 
 #endif //SHADERCONVERTER_H

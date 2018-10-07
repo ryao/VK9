@@ -3479,6 +3479,76 @@ void ShaderConverter::PushInverseSqrt(uint32_t resultTypeId, uint32_t resultId, 
 	Push(spv::OpExtInst, resultTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450InverseSqrt, argumentId);
 }
 
+void ShaderConverter::PushCos(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId)
+{
+#ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (resultTypeId == 0)
+	{
+		throw "";
+	}
+
+	auto& argumentType = mIdTypePairs[argumentId];
+	auto& resultType = mIdTypePairs[resultTypeId];
+
+	if (resultType.PrimaryType != argumentType.PrimaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushCos PrimaryType mismatch " << resultType.PrimaryType << " != " << argumentType.PrimaryType;
+	}
+
+	if (resultType.SecondaryType != argumentType.SecondaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushCos SecondaryType mismatch " << resultType.SecondaryType << " != " << argumentType.SecondaryType;
+	}
+
+	if (resultType.TernaryType != argumentType.TernaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushCos TernaryType mismatch " << resultType.TernaryType << " != " << argumentType.TernaryType;
+	}
+
+	if (resultType.ComponentCount != argumentType.ComponentCount)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushCos ComponentCount mismatch " << resultType.ComponentCount << " != " << argumentType.ComponentCount;
+	}
+#endif
+
+	Push(spv::OpExtInst, resultTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Cos, argumentId);
+}
+
+void ShaderConverter::PushSin(uint32_t resultTypeId, uint32_t resultId, uint32_t argumentId)
+{
+#ifdef _EXTRA_SHADER_DEBUG_INFO
+	if (resultTypeId == 0)
+	{
+		throw "";
+	}
+
+	auto& argumentType = mIdTypePairs[argumentId];
+	auto& resultType = mIdTypePairs[resultTypeId];
+
+	if (resultType.PrimaryType != argumentType.PrimaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushSin PrimaryType mismatch " << resultType.PrimaryType << " != " << argumentType.PrimaryType;
+	}
+
+	if (resultType.SecondaryType != argumentType.SecondaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushSin SecondaryType mismatch " << resultType.SecondaryType << " != " << argumentType.SecondaryType;
+	}
+
+	if (resultType.TernaryType != argumentType.TernaryType)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushSin TernaryType mismatch " << resultType.TernaryType << " != " << argumentType.TernaryType;
+	}
+
+	if (resultType.ComponentCount != argumentType.ComponentCount)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "ShaderConverter::PushSin ComponentCount mismatch " << resultType.ComponentCount << " != " << argumentType.ComponentCount;
+	}
+#endif
+
+	Push(spv::OpExtInst, resultTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450Sin, argumentId);
+}
+
 void ShaderConverter::PushLoad(uint32_t resultTypeId, uint32_t resultId, uint32_t pointerId)
 {
 #ifdef _EXTRA_SHADER_DEBUG_INFO
@@ -6614,13 +6684,82 @@ void ShaderConverter::Process_LRP()
 		Push(spv::OpExtInst, dataTypeId, resultId, mGlslExtensionId, GLSLstd450::GLSLstd450FMix, argumentId1, argumentId2, argumentId3);
 		break;
 	default:
-		BOOST_LOG_TRIVIAL(warning) << "Process_MAD - Unsupported data type " << dataType;
+		BOOST_LOG_TRIVIAL(warning) << "Process_LRP - Unsupported data type " << dataType;
 		break;
 	}
 
 	resultId = ApplyWriteMask(resultToken, resultId);
 
 	PrintTokenInformation("LRP", resultToken, argumentToken1, argumentToken2, argumentToken3);
+}
+
+void ShaderConverter::Process_SINCOS()
+{
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	Token argumentToken2 = (mMajorVersion < 3) ? GetNextToken() : argumentToken1;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
+
+	Token argumentToken3 = (mMajorVersion < 3) ? GetNextToken() : argumentToken1;
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType3 = GetRegisterType(argumentToken3.i);
+	uint32_t argumentId3 = GetSwizzledId(argumentToken3, GIVE_ME_VECTOR_4);
+
+	TypeDescription vectorType;
+	vectorType.PrimaryType = spv::OpTypeVector;
+	vectorType.SecondaryType = spv::OpTypeFloat;
+	vectorType.ComponentCount = 4;
+	uint32_t vectorTypeId = GetSpirVTypeId(vectorType);
+
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	uint32_t cosResultId = GetNextId();
+	uint32_t sinResultId = GetNextId();
+
+	mIdTypePairs[resultId] = vectorType;
+	mIdTypePairs[cosResultId] = typeDescription;
+	mIdTypePairs[sinResultId] = typeDescription;
+
+	switch (dataType)
+	{
+	case spv::OpTypeFloat:
+		//Per the documentation Z is undefined so I'll just stick the same values in Z & W.
+		PushCos(dataTypeId, cosResultId, argumentId1);
+		PushSin(dataTypeId, sinResultId, argumentId1);
+		Push(spv::OpCompositeConstruct, vectorTypeId, resultId, cosResultId, sinResultId, cosResultId, sinResultId);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_SINCOS - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId = ApplyWriteMask(resultToken, resultId);
+
+	PrintTokenInformation("SINCOS", resultToken, argumentToken1, argumentToken2, argumentToken3);
 }
 
 ConvertedShader ShaderConverter::Convert(uint32_t* shader)
@@ -7026,15 +7165,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			SkipTokens(4);
 			break;
 		case D3DSIO_SINCOS:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_SINCOS.";
-			if (mMajorVersion >= 3)
-			{
-				SkipTokens(3);
-			}
-			else
-			{
-				SkipTokens(2);
-			}
+			Process_SINCOS();
 			break;
 		case D3DSIO_MAD:
 			Process_MAD();
