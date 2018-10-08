@@ -50,14 +50,22 @@ CommandStreamManager::CommandStreamManager()
 		("LogLevel", boost::program_options::value<uint32_t>(), "The level of the log file.")
 		("EnableDebugLayers", boost::program_options::value<uint32_t>(), "Enable validation layers?");
 
-	boost::program_options::store(boost::program_options::parse_config_file<char>("VK9.conf", mOptionDescriptions), mOptions);
-	boost::program_options::notify(mOptions);
-
 	boost::log::add_console_log(
 		std::cout, 
 		boost::log::keywords::format = "[%TimeStamp%]: %Message%",
 		boost::log::keywords::auto_flush = true
 	);
+
+	try
+	{
+		boost::program_options::store(boost::program_options::parse_config_file<char>("VK9.conf", mOptionDescriptions), mOptions);
+	}
+	catch(const std::exception& ex)
+	{
+		BOOST_LOG_TRIVIAL(warning) << "program_options::parse_config_file: " << ex.what()
+								   << ", using default values";
+	}
+	boost::program_options::notify(mOptions);
 
 	if (mOptions.count("LogFile"))
 	{

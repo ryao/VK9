@@ -1,0 +1,28 @@
+w_metadata setup_vk9 dlls \
+    title="VK9" \
+    publisher="Christopher Joseph Dean Schaefer" \
+    year="2018" \
+    media="manual_download" \
+    file="d3d9.dll" \
+    installed_file="$W_SYSTEM32_DLLS_WIN/d3d9.dll" \
+    homepage="https://github.com/disks86/VK9"
+
+VK9_ROOT_DIR=`dirname "$(readlink -f $1)"`
+
+load_setup_vk9()
+{
+    if [ ! -e "$VK9_ROOT_DIR/x64" ] || [ ! -e "$VK9_ROOT_DIR/x32" ]; then
+        (>&2 echo "$VK9_ROOT_DIR/x32 or $VK9_ROOT_DIR/x64 directory not found.")
+        exit 1
+    fi
+
+    w_try cp "$VK9_ROOT_DIR/x32/$file" "$W_SYSTEM32_DLLS/$file"
+
+    if [ "$W_ARCH" = "win64" ]; then
+        vk9_64_dir="/usr/lib64/wine/vk9"
+        w_try cp "$VK9_ROOT_DIR/x64/$file" "$W_SYSTEM64_DLLS/$file"
+    fi
+
+    w_override_dlls native \
+        d3d9
+}
