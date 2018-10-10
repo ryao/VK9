@@ -5412,6 +5412,13 @@ void ShaderConverter::Process_MUL()
 		mIdTypePairs[resultId] = typeDescription;
 		Push(spv::OpVectorTimesScalar, dataTypeId, resultId, argumentId1, argumentId2);
 	}
+	else if (argumentType1.PrimaryType == spv::OpTypeFloat && argumentType2.PrimaryType == spv::OpTypeVector)
+	{
+		typeDescription = argumentType1;
+		uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+		mIdTypePairs[resultId] = typeDescription;
+		Push(spv::OpVectorTimesScalar, dataTypeId, resultId, argumentId2, argumentId1);
+	}
 	else if (argumentType1.PrimaryType == spv::OpTypeMatrix && argumentType2.PrimaryType == spv::OpTypeFloat)
 	{
 		typeDescription = argumentType1;
