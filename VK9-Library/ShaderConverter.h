@@ -457,6 +457,20 @@ These enums will allow the requestor to let methods down the stack know which on
 #define GIVE_ME_SAMPLER 5
 #define GIVE_ME_VECTOR_2 6
 
+
+struct LoopIds
+{
+	uint32_t VariableId;
+
+	uint32_t PreMergeLabelId;
+	uint32_t PostMergeLabelId;
+
+	uint32_t PreExecuteLabelId;
+
+	uint32_t PreEndLabelId;
+	uint32_t PostEndLabelId;
+};
+
 class CDevice9;
 
 class ShaderConverter
@@ -514,6 +528,8 @@ private:
 	std::stack<uint32_t> mFalseLabels;
 	size_t mFalseLabelCount = 0;
 	std::stack<uint32_t> mEndIfLabels;
+	
+	std::stack<LoopIds> mLoopIds;
 
 	uint32_t* mBaseToken = nullptr;
 	uint32_t* mPreviousToken = nullptr;
@@ -629,6 +645,8 @@ private:
 	void Process_IF();
 	void Process_ELSE();
 	void Process_ENDIF();
+	void Process_REP();
+	void Process_ENDREP();
 
 	//Unary Operators
 	void Process_NRM();

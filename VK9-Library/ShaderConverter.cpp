@@ -4687,6 +4687,167 @@ void ShaderConverter::Process_ENDIF()
 	PrintTokenInformation("ENDIF");
 }
 
+/*
+This is what for loops look like in SPIR-V
+------------------------------------------------
+%i = OpVariable %_ptr_Function_int Function
+   OpStore %j %int_0
+   OpStore %i %int_0
+   OpBranch %11
+%11 = OpLabel
+	  OpLoopMerge %13 %14 None
+	  OpBranch %15
+%15 = OpLabel
+
+
+%16 = OpLoad %int %i
+%19 = OpSLessThanEqual %bool %16 %int_99
+	  OpBranchConditional %19 %12 %13
+%12 = OpLabel
+
+	(Logic goes here)
+
+	  OpBranch %14
+%14 = OpLabel
+
+%23 = OpLoad %int %i
+%24 = OpIAdd %int %23 %int_1
+	  OpStore %i %24
+
+	  OpBranch %11
+%13 = OpLabel
+   */
+
+void ShaderConverter::Process_REP()
+{
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	spv::Op dataType = typeDescription.PrimaryType;
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}	
+
+	TypeDescription integerType;
+	integerType.PrimaryType = spv::OpTypeInt;
+	uint32_t integerTypeId = GetSpirVTypeId(integerType);
+
+	TypeDescription booleanType;
+	booleanType.PrimaryType = spv::OpTypeBool;
+	uint32_t booleanTypeId = GetSpirVTypeId(booleanType);
+
+	TypeDescription integerPointerType;
+	integerPointerType.PrimaryType = spv::OpTypePointer;
+	integerPointerType.SecondaryType = spv::OpTypeInt;
+	uint32_t integerPointerTypeId = GetSpirVTypeId(integerPointerType);
+
+	TypeDescription labelType;
+	labelType.PrimaryType = spv::OpLabel;
+	uint32_t labelTypeId = GetSpirVTypeId(labelType);
+
+	LoopIds loopIds;
+
+	loopIds.VariableId = GetNextId();
+	mIdTypePairs[loopIds.VariableId] = integerPointerType;
+
+	loopIds.PreMergeLabelId = GetNextId();
+	mIdTypePairs[loopIds.PreMergeLabelId] = labelType;
+
+	loopIds.PostMergeLabelId = GetNextId();
+	mIdTypePairs[loopIds.PostMergeLabelId] = labelType;
+
+	loopIds.PreExecuteLabelId = GetNextId();
+	mIdTypePairs[loopIds.PreExecuteLabelId] = labelType;
+
+	loopIds.PreEndLabelId = GetNextId();
+	mIdTypePairs[loopIds.PreEndLabelId] = labelType;
+
+	loopIds.PostEndLabelId = GetNextId();
+	mIdTypePairs[loopIds.PostEndLabelId] = labelType;
+
+	mLoopIds.push(loopIds);
+
+	//Create Counter variable
+	mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
+	mTypeInstructions.push_back(integerPointerTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
+	mTypeInstructions.push_back(loopIds.VariableId); //Result (Id)
+	mTypeInstructions.push_back(spv::StorageClassFunction); //Storage Class
+
+	//Zero out the counter.
+	PushStore(loopIds.VariableId, m0Id);
+
+	//Setup top of loop
+	Push(spv::OpBranch, loopIds.PreMergeLabelId);
+	Push(spv::OpLabel, loopIds.PreMergeLabelId);
+	Push(spv::OpLoopMerge, loopIds.PostEndLabelId, loopIds.PreEndLabelId, 0);
+	Push(spv::OpBranch, loopIds.PostMergeLabelId);
+	Push(spv::OpLabel, loopIds.PostMergeLabelId);
+
+	//Load counter
+	uint32_t loadedId = GetNextId();
+	mIdTypePairs[loadedId] = integerType;
+	PushLoad(integerTypeId, loadedId, loopIds.VariableId);
+
+	//Check condition
+	uint32_t resultId = GetNextId();
+	mIdTypePairs[resultId] = booleanType;
+	Push(spv::OpSLessThanEqual, booleanTypeId, resultId, loadedId, argumentId1);
+
+	//Branch based on condition
+	uint32_t conditionId = GetNextId();
+	Push(spv::OpBranchConditional, conditionId, loopIds.PreExecuteLabelId, loopIds.PostEndLabelId);
+	Push(spv::OpLabel, loopIds.PreExecuteLabelId);
+
+	PrintTokenInformation("REP", argumentToken1);
+}
+
+void ShaderConverter::Process_ENDREP()
+{
+	TypeDescription integerType;
+	integerType.PrimaryType = spv::OpTypeInt;
+	uint32_t integerTypeId = GetSpirVTypeId(integerType);
+
+	LoopIds loopIds = mLoopIds.top();
+	mLoopIds.pop();
+
+	Push(spv::OpBranch, loopIds.PreEndLabelId);
+	Push(spv::OpLabel, loopIds.PreEndLabelId);
+
+	//Load counter
+	uint32_t loadedId = GetNextId();
+	mIdTypePairs[loadedId] = integerType;
+	PushLoad(integerTypeId, loadedId, loopIds.VariableId);
+
+	//increment counter
+	uint32_t resultId = GetNextId();
+	mIdTypePairs[resultId] = integerType;
+	Push(spv::OpIAdd, integerTypeId, resultId, loadedId, m1Id);
+
+	//store counter
+	PushStore(loopIds.VariableId, resultId);
+
+	//End loop
+	Push(spv::OpBranch, loopIds.PreMergeLabelId);
+	Push(spv::OpLabel, loopIds.PostEndLabelId);
+
+	PrintTokenInformation("ENDREP");
+}
+
 void ShaderConverter::Process_NRM()
 {
 	Token resultToken = GetNextToken();
@@ -7009,38 +7170,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			Process_ENDIF();
 			break;
 		case D3DSIO_REP:
-
-			/*
-			This is what for loops look like in SPIR-V
-			%i = OpVariable %_ptr_Function_int Function
-               OpStore %j %int_0
-               OpStore %i %int_0
-               OpBranch %11
-         %11 = OpLabel
-               OpLoopMerge %13 %14 None
-               OpBranch %15
-         %15 = OpLabel
-         %16 = OpLoad %int %i
-         %19 = OpSLessThanEqual %bool %16 %int_99
-               OpBranchConditional %19 %12 %13
-         %12 = OpLabel
-         %20 = OpLoad %int %j
-         %22 = OpIAdd %int %20 %int_1
-               OpStore %j %22
-               OpBranch %14
-         %14 = OpLabel
-         %23 = OpLoad %int %i
-         %24 = OpIAdd %int %23 %int_1
-               OpStore %i %24
-               OpBranch %11
-         %13 = OpLabel
-			*/
-
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_REP.";
-			SkipTokens(2);
+			Process_REP();
 			break;
 		case D3DSIO_ENDREP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_ENDREP.";
+			Process_ENDREP();
 			break;
 		case D3DSIO_NRM:
 			Process_NRM();
