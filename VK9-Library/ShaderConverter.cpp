@@ -6731,6 +6731,77 @@ void ShaderConverter::Process_MAD()
 	PrintTokenInformation("MAD", resultToken, argumentToken1, argumentToken2, argumentToken3);
 }
 
+void ShaderConverter::Process_CMP()
+{
+	Token resultToken = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE resultRegisterType = GetRegisterType(resultToken.i);
+	uint32_t resultId = GetNextId();
+	uint32_t resultId2 = GetNextId();
+
+	Token argumentToken1 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
+	uint32_t argumentId1 = GetSwizzledId(argumentToken1, GIVE_ME_VECTOR_4);
+
+	Token argumentToken2 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType2 = GetRegisterType(argumentToken2.i);
+	uint32_t argumentId2 = GetSwizzledId(argumentToken2, GIVE_ME_VECTOR_4);
+
+	Token argumentToken3 = GetNextToken();
+	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType3 = GetRegisterType(argumentToken3.i);
+	uint32_t argumentId3 = GetSwizzledId(argumentToken3, GIVE_ME_VECTOR_4);
+
+	TypeDescription typeDescription = mIdTypePairs[argumentId1];
+
+	if (typeDescription.PrimaryType == spv::OpTypeVoid)
+	{
+		typeDescription = mIdTypePairs[argumentId2];
+	}
+
+	spv::Op dataType = typeDescription.PrimaryType;
+
+	//Type could be pointer and matrix so checks are run separately.
+	if (typeDescription.PrimaryType == spv::OpTypePointer)
+	{
+		//Shift the result type so we get a register instead of a pointer as the output type.
+		typeDescription.PrimaryType = typeDescription.SecondaryType;
+		typeDescription.SecondaryType = typeDescription.TernaryType;
+		typeDescription.TernaryType = spv::OpTypeVoid;
+	}
+
+	if (typeDescription.PrimaryType == spv::OpTypeMatrix || typeDescription.PrimaryType == spv::OpTypeVector)
+	{
+		dataType = typeDescription.SecondaryType;
+	}
+
+	uint32_t dataTypeId = GetSpirVTypeId(typeDescription);
+
+	TypeDescription booleanType;
+	booleanType.PrimaryType = spv::OpTypeBool;
+	uint32_t booleanTypeId = GetSpirVTypeId(booleanType);
+
+	mIdTypePairs[resultId] = booleanType;
+	mIdTypePairs[resultId2] = typeDescription;
+
+	switch (dataType)
+	{
+	case spv::OpTypeInt:
+		Push(spv::OpSGreaterThanEqual, booleanTypeId, resultId, argumentId1, m0fId);
+		Push(spv::OpSelect, dataTypeId, resultId2, resultId, argumentId2, argumentId3);
+		break;
+	case spv::OpTypeFloat:
+		Push(spv::OpFOrdGreaterThanEqual, booleanTypeId, resultId, argumentId1, m0fId);
+		Push(spv::OpSelect, dataTypeId, resultId2, resultId, argumentId2, argumentId3);
+		break;
+	default:
+		BOOST_LOG_TRIVIAL(warning) << "Process_CMP - Unsupported data type " << dataType;
+		break;
+	}
+
+	resultId2 = ApplyWriteMask(resultToken, resultId2);
+
+	PrintTokenInformation("CMP", resultToken, argumentToken1, argumentToken2, argumentToken3);
+}
+
 void ShaderConverter::Process_DP2ADD()
 {
 	Token resultToken = GetNextToken();
@@ -7301,8 +7372,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			SkipTokens(4);
 			break;
 		case D3DSIO_CMP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_CMP.";
-			SkipTokens(4);
+			Process_CMP();
 			break;
 		case D3DSIO_SINCOS:
 			Process_SINCOS();
