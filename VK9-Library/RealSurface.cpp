@@ -90,7 +90,15 @@ RealSurface::RealSurface(RealDevice* realDevice, CSurface9* surface9, vk::Image*
 		imageViewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
 	}
 
-	imageCreateInfo.imageType = vk::ImageType::e2D;
+	if (surface9->mWidth > 0)
+	{
+		imageCreateInfo.imageType = vk::ImageType::e2D;
+	}
+	else
+	{
+		imageCreateInfo.imageType = vk::ImageType::e1D;
+	}
+
 	imageCreateInfo.format = mRealFormat; //VK_FORMAT_B8G8R8A8_UNORM
 	imageCreateInfo.extent = vk::Extent3D(surface9->mWidth, surface9->mHeight, 1);
 	imageCreateInfo.mipLevels = 1;
