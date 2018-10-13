@@ -616,8 +616,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 	case 36:
 		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_NORMAL, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
 		break;
+	case 44:
+		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
 	default:
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawIndexedPrimitiveUP unhandled stride " << VertexStreamZeroStride;
+		BOOST_LOG_TRIVIAL(info) << "CDevice9::DrawIndexedPrimitiveUP unhandled stride " << VertexStreamZeroStride;
 		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
 		break;
 	}	

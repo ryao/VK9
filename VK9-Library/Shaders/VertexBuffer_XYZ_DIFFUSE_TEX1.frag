@@ -36,9 +36,15 @@ layout(binding = 1) uniform MaterialBlock
 	Material material;
 };
 
-layout(binding = 2) uniform sampler2D textures[textureCount];
+layout(binding = 2) uniform Matrices 
+{
+	mat4 textureMatrices[9];
+} matrices;
 
-layout(push_constant) uniform UniformBufferObject {
+layout(binding = 3) uniform sampler2D textures[1];
+
+layout(push_constant) uniform UniformBufferObject 
+{
     mat4 totalTransformation;
 	mat4 modelTransformation;
 } ubo;

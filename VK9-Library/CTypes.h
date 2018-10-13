@@ -407,6 +407,9 @@ struct DeviceState
 	};
 	BOOL mIsMaterialDirty = true;
 
+	D3DMATRIX mTextureMatrices[9] = {};
+	BOOL mAreTextureMaticesDirty = true;
+
 	//IDirect3DDevice9::SetNPatchMode
 	float mNSegments = -1;
 

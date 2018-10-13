@@ -116,6 +116,26 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 
 		deviceState.mIsMaterialDirty = false;
 	}
+
+	//	D3DMATRIX mTextureMatrices[9] = {};
+	//BOOL mAreTextureMaticesDirty = true;
+	if (deviceState.mAreTextureMaticesDirty)
+	{
+		uboBarrier.buffer = realDevice->mTextureMatricesBuffer;
+		uboBarrier.size = sizeof(D3DMATRIX) * 9;
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		currentBuffer.updateBuffer(realDevice->mTextureMatricesBuffer, 0, uboBarrier.size, &deviceState.mTextureMatrices);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		deviceState.mAreTextureMaticesDirty = false;
+	}
 }
 
 void RenderManager::StartScene(std::shared_ptr<RealDevice> realDevice, bool clearColor, bool clearDepth, bool clearStencil)
@@ -687,6 +707,10 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 			realDevice->mDescriptorBufferInfo[1].offset = 0;
 			realDevice->mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
 
+			realDevice->mDescriptorBufferInfo[2].buffer = realDevice->mTextureMatricesBuffer;
+			realDevice->mDescriptorBufferInfo[2].offset = 0;
+			realDevice->mDescriptorBufferInfo[2].range = sizeof(D3DMATRIX) * 9;
+
 			realDevice->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
 			realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
 			realDevice->mWriteDescriptorSet[0].descriptorCount = 1;
@@ -697,16 +721,20 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 			realDevice->mWriteDescriptorSet[1].pBufferInfo = &realDevice->mDescriptorBufferInfo[1];
 
 			realDevice->mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-			realDevice->mWriteDescriptorSet[2].descriptorCount = constants.textureCount;
-			realDevice->mWriteDescriptorSet[2].pImageInfo = resourceContext->DescriptorImageInfo;
+			realDevice->mWriteDescriptorSet[2].descriptorCount = 1;
+			realDevice->mWriteDescriptorSet[2].pBufferInfo = &realDevice->mDescriptorBufferInfo[2];
+
+			realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
+			realDevice->mWriteDescriptorSet[3].descriptorCount = constants.textureCount;
+			realDevice->mWriteDescriptorSet[3].pImageInfo = resourceContext->DescriptorImageInfo;
 
 			if (constants.textureCount)
 			{
-				currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 3, realDevice->mWriteDescriptorSet);
+				currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 4, realDevice->mWriteDescriptorSet);
 			}
 			else
 			{
-				currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 2, realDevice->mWriteDescriptorSet);
+				currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 3, realDevice->mWriteDescriptorSet);
 			}
 		}
 		else
@@ -1388,10 +1416,16 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		realDevice->mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
 
 		realDevice->mDescriptorSetLayoutBinding[2].binding = 2;
-		realDevice->mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-		realDevice->mDescriptorSetLayoutBinding[2].descriptorCount = constants.textureCount; //Update to use mapped texture.
+		realDevice->mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eUniformBuffer;
+		realDevice->mDescriptorSetLayoutBinding[2].descriptorCount = 1;
 		realDevice->mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eFragment;
 		realDevice->mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
+
+		realDevice->mDescriptorSetLayoutBinding[3].binding = 3;
+		realDevice->mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+		realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = constants.textureCount; //Update to use mapped texture.
+		realDevice->mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eFragment;
+		realDevice->mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
 
 		realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
 		realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
@@ -1399,11 +1433,11 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 
 		if (constants.textureCount)
 		{
-			realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.			
+			realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 4; //The number of elements in pBindings.			
 		}
 		else
 		{
-			realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 2; //The number of elements in pBindings.	
+			realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
 		}
 
 		vertexSpecializationInfo.pData = &deviceState.mSpecializationConstants;
@@ -1579,7 +1613,7 @@ void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, 
 
 			break;
 		default:
-			BOOST_LOG_TRIVIAL(warning) << "RenderManager::UpdateUniformBuffer The following state type was ignored. " << pair1.first;
+			//These are handled with a uniform buffer.
 			break;
 		}
 	}

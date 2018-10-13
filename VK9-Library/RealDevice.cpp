@@ -595,9 +595,16 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	//mWriteDescriptorSet[2].dstSet = descriptorSet;
 	mWriteDescriptorSet[2].dstBinding = 2;
 	mWriteDescriptorSet[2].dstArrayElement = 0;
-	mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mWriteDescriptorSet[2].descriptorCount = 1;
-	mWriteDescriptorSet[2].pImageInfo = mDeviceState.mDescriptorImageInfo;
+	mWriteDescriptorSet[2].pBufferInfo = &mDescriptorBufferInfo[2];
+
+	//mWriteDescriptorSet[3].dstSet = descriptorSet;
+	mWriteDescriptorSet[3].dstBinding = 3;
+	mWriteDescriptorSet[3].dstArrayElement = 0;
+	mWriteDescriptorSet[3].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	mWriteDescriptorSet[3].descriptorCount = 1;
+	mWriteDescriptorSet[3].pImageInfo = mDeviceState.mDescriptorImageInfo;
 
 	mCommandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
 	mCommandBufferAllocateInfo.commandPool = mCommandPool;
@@ -649,6 +656,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
 	CreateBuffer(sizeof(Light) * 4, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mLightBuffer, mLightBufferMemory);
 	CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mMaterialBuffer, mMaterialBufferMemory);
+	CreateBuffer(sizeof(D3DMATRIX) * 9, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureMatricesBuffer, mTextureMatricesBufferMemory);
 }
 
 RealDevice::~RealDevice()
@@ -669,8 +677,13 @@ RealDevice::~RealDevice()
 	
 	mDevice.destroyBuffer(mLightBuffer, nullptr);
 	mDevice.freeMemory(mLightBufferMemory, nullptr);
+
 	mDevice.destroyBuffer(mMaterialBuffer, nullptr);
 	mDevice.freeMemory(mMaterialBufferMemory, nullptr);
+
+	mDevice.destroyBuffer(mTextureMatricesBuffer, nullptr);
+	mDevice.freeMemory(mTextureMatricesBufferMemory, nullptr);
+
 	mDevice.destroyImageView(mImageView, nullptr);
 
 	vmaDestroyImage(mAllocator, (VkImage)mImage, mImageAllocation);

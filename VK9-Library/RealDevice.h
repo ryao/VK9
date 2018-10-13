@@ -1181,10 +1181,15 @@ struct RealDevice
 
 	//Buffer Stuff
 	vk::BufferCopy mCopyRegion;
+
 	vk::Buffer mLightBuffer;
 	vk::DeviceMemory mLightBufferMemory;
+
 	vk::Buffer mMaterialBuffer;
 	vk::DeviceMemory mMaterialBufferMemory;
+
+	vk::Buffer mTextureMatricesBuffer;
+	vk::DeviceMemory mTextureMatricesBufferMemory;
 
 	//Placeholder image for unbound sampler slots.
 	vk::Image mImage;
@@ -1215,8 +1220,8 @@ struct RealDevice
 	vk::GraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
 	vk::PipelineCacheCreateInfo mPipelineCacheCreateInfo;
 	vk::PipelineCache mPipelineCache;
-	vk::DescriptorBufferInfo mDescriptorBufferInfo[2];
-	vk::WriteDescriptorSet mWriteDescriptorSet[3];
+	vk::DescriptorBufferInfo mDescriptorBufferInfo[3];
+	vk::WriteDescriptorSet mWriteDescriptorSet[4];
 
 	//Utility Buffer
 	vk::CommandBufferAllocateInfo mCommandBufferAllocateInfo;

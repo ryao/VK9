@@ -178,7 +178,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				auto& renderManager = commandStreamManager->mRenderManager;
 				auto& stateManager = renderManager.mStateManager;
-				auto& realDevice = stateManager.mDevices[workItem->Id];		
+				auto& realDevice = stateManager.mDevices[workItem->Id];
 
 				RealSurface* colorSurface = nullptr;
 				RealTexture* colorTexture = nullptr;
@@ -203,7 +203,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 							realDevice->mCurrentStateRecording->mDeviceState.mRenderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorTexture, colorSurface, depthSurface);
 						}
 						else
-						{			
+						{
 							if (deviceState.mRenderTarget != nullptr && deviceState.mRenderTarget->mIsSceneStarted)
 							{
 								renderManager.StopScene(realDevice);
@@ -242,7 +242,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 							realDevice->mRenderTargets.push_back(deviceState.mRenderTarget);
 						}
 					}
-				}	
+				}
 			}
 			break;
 			case Device_SetDepthStencilSurface:
@@ -262,7 +262,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					auto& constants = realDevice->mDeviceState.mSpecializationConstants;
 					constants.screenWidth = pNewZStencil->mWidth;
-					constants.screenHeight = pNewZStencil->mHeight; 
+					constants.screenHeight = pNewZStencil->mHeight;
 
 					depthSurface = stateManager.mSurfaces[pNewZStencil->mId].get();
 				}
@@ -283,7 +283,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					else
 					{
 						renderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
-					}		
+					}
 				}
 				else
 				{
@@ -306,7 +306,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					else
 					{
 						renderTarget = std::make_shared<RealRenderTarget>(realDevice->mDevice, colorSurface, depthSurface);
-					}	
+					}
 					realDevice->mRenderTargets.push_back(renderTarget);
 				}
 			}
@@ -2999,13 +2999,91 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realDevice->mCurrentStateRecording->mDeviceState.mTransforms[State] = (*pMatrix);
-					realDevice->mCurrentStateRecording->mDeviceState.mHasTransformsChanged = true;
+					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
+
+					switch (State)
+					{
+					case D3DTS_TEXTURE0:
+						deviceState.mTextureMatrices[0] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE1:
+						deviceState.mTextureMatrices[1] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE2:
+						deviceState.mTextureMatrices[2] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE3:
+						deviceState.mTextureMatrices[3] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE4:
+						deviceState.mTextureMatrices[4] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE5:
+						deviceState.mTextureMatrices[5] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE6:
+						deviceState.mTextureMatrices[6] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE7:
+						deviceState.mTextureMatrices[7] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					default:
+						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
+						break;
+					}
 				}
 				else
 				{
-					realDevice->mDeviceState.mTransforms[State] = (*pMatrix);
-					realDevice->mDeviceState.mHasTransformsChanged = true;
+					auto& deviceState = realDevice->mDeviceState;
+
+					switch (State)
+					{
+					case D3DTS_TEXTURE0:
+						deviceState.mTextureMatrices[0] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE1:
+						deviceState.mTextureMatrices[1] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE2:
+						deviceState.mTextureMatrices[2] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE3:
+						deviceState.mTextureMatrices[3] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE4:
+						deviceState.mTextureMatrices[4] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE5:
+						deviceState.mTextureMatrices[5] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE6:
+						deviceState.mTextureMatrices[6] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					case D3DTS_TEXTURE7:
+						deviceState.mTextureMatrices[7] = (*pMatrix);
+						deviceState.mAreTextureMaticesDirty = true;
+						break;
+					default:
+						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
+						break;
+					}
 				}
 			}
 			break;
@@ -3303,7 +3381,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			case VertexBuffer_Lock:
 			{
 				auto& realVertexBuffer = (*commandStreamManager->mRenderManager.mStateManager.mVertexBuffers[workItem->Id]);
-				
+
 				UINT OffsetToLock = bit_cast<UINT>(workItem->Argument1);
 				UINT SizeToLock = bit_cast<UINT>(workItem->Argument2);
 				VOID** ppbData = bit_cast<VOID**>(workItem->Argument3);
@@ -3344,7 +3422,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					vmaFlushAllocation(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation, 0, VK_WHOLE_SIZE);
 					vmaUnmapMemory(realVertexBuffer.mRealDevice->mAllocator, realVertexBuffer.mAllocation);
 					realVertexBuffer.mData = nullptr;
-		
+
 					//if (realVertexBuffer.mRealDevice->mDeviceState.mRenderTarget->mIsSceneStarted)
 					//{
 					//	vk::BufferMemoryBarrier uboBarrier(vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eShaderRead, 0, 0, 0, VK_WHOLE_SIZE);
@@ -3918,10 +3996,10 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					//TODO: revisit
 				}
 				else
-				{ 
+				{
 					surface.mDirtyRects.push_back(dirtyRect);
 					surface.mIsFlushed = false;
-				}		
+				}
 			}
 			break;
 			case Surface_UnlockRect:
@@ -3996,7 +4074,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				ReallySetImageLayout(commandBuffer, surface.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eGeneral, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, surface9->mMipIndex, surface9->mTargetLayer + 1);
-				
+
 				vk::ImageSubresourceLayers subResource1;
 				subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
 				subResource1.baseArrayLayer = 0;
@@ -4124,7 +4202,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					dirtyRect[0] = vk::Offset3D(0, 0, 0);
 					dirtyRect[1] = vk::Offset3D(volume.mExtent.width, volume.mExtent.height, volume.mExtent.depth);
 				}
-	
+
 
 				pLockedVolume->pBits = (void*)bytes;
 				pLockedVolume->RowPitch = volume.mLayouts[0].rowPitch;
@@ -4217,7 +4295,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				ReallySetImageLayout(commandBuffer, volume.mStagingImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, 1, 0, 1); //eGeneral
 				ReallySetImageLayout(commandBuffer, texture.mImage, vk::ImageAspectFlagBits::eColor, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, 1, volume9->mMipIndex, volume9->mTargetLayer + 1);
-				
+
 				vk::ImageSubresourceLayers subResource1;
 				subResource1.aspectMask = vk::ImageAspectFlagBits::eColor;
 				subResource1.baseArrayLayer = 0;
