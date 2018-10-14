@@ -117,8 +117,6 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 		deviceState.mIsMaterialDirty = false;
 	}
 
-	//	D3DMATRIX mTextureMatrices[9] = {};
-	//BOOL mAreTextureMaticesDirty = true;
 	if (deviceState.mAreTextureMaticesDirty)
 	{
 		uboBarrier.buffer = realDevice->mTextureMatricesBuffer;
@@ -238,7 +236,7 @@ vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const 
 	auto& device = realDevice->mDevice;
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
-	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride,0,0);
+	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride,0,0, realDevice->mUseVsync);
 
 	auto colorSurface = deviceState.mRenderTarget->mColorSurface;
 

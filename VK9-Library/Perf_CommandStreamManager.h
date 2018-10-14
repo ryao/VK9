@@ -21,6 +21,7 @@ misrepresented as being the original software.
 #include <atomic>
 #include <thread>
 #include <boost/lockfree/queue.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
 
@@ -50,8 +51,8 @@ struct CommandStreamManager
 	std::thread mWorkerThread;
 	RenderManager mRenderManager;
 
-	boost::lockfree::queue<WorkItem*, boost::lockfree::capacity<1024>> mWorkItems;
-	boost::lockfree::queue<WorkItem*, boost::lockfree::capacity<1024>> mUnusedWorkItems;
+	boost::lockfree::spsc_queue<WorkItem*, boost::lockfree::capacity<1024>> mWorkItems;
+	boost::lockfree::spsc_queue<WorkItem*, boost::lockfree::capacity<1024>> mUnusedWorkItems;
 
 	//moodycamel::ReaderWriterQueue<WorkItem*> mWorkItems;
 	//moodycamel::ReaderWriterQueue<WorkItem*> mUnusedWorkItems;

@@ -63,7 +63,7 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 		mUsage = D3DUSAGE_RENDERTARGET;
 	}
 
-	//mSurfaces.reserve(mLevels);
+	mSurfaces.reserve(mLevels);
 	UINT width = mWidth, height = mHeight;
 	for (size_t i = 0; i < mLevels; i++)
 	{
@@ -85,7 +85,6 @@ CTexture9::CTexture9(CDevice9* device, UINT Width, UINT Height, UINT Levels, DWO
 			width = 1;
 		}
 	}
-	//mLevels = mSurfaces.size(); //Correct if loop was aborted.
 }
 
 CTexture9::~CTexture9()

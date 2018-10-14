@@ -41,7 +41,7 @@ layout(binding = 2) uniform Matrices
 	mat4 textureMatrices[9];
 } matrices;
 
-layout(binding = 3) uniform sampler2D textures[2];
+layout(binding = 3) uniform sampler2D textures[textureCount];
 
 layout(push_constant) uniform UniformBufferObject 
 {

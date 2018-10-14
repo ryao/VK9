@@ -36,18 +36,23 @@ layout(binding = 1) uniform MaterialBlock
 	Material material;
 };
 
+layout(binding = 2) uniform Matrices 
+{
+	mat4 textureMatrices[9];
+} matrices;
+
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
 	mat4 modelTransformation;
 } ubo;
 
 layout (location = 0) in vec4 position;
-layout (location = 1) in vec2 attr;
+layout (location = 1) in vec4 attr;
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 ambientColor;
 layout (location = 2) out vec4 specularColor;
 layout (location = 3) out vec4 emissiveColor;
-layout (location = 4) out vec2 texcoord;
+layout (location = 4) out vec2 texcoord1;
 
 out gl_PerVertex 
 {
@@ -79,7 +84,14 @@ void main()
 	
 	gl_Position = vec4((x-1),(y-1),0.0,1.0);
 	
-	texcoord = attr;
+	if(textureTransformationFlags_0 == D3DTTFF_DISABLE)
+	{
+		texcoord1 = attr.xy;
+	}
+	else
+	{
+		texcoord1 = (attr * matrices.textureMatrices[0]).xy;
+	}
 
 	if(colorVertex)
 	{

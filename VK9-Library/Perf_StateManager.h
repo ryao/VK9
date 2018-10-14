@@ -149,7 +149,7 @@ struct StateManager
 	void DestroyQuery(size_t id);
 	void CreateQuery(size_t id, void* argument1);
 
-	std::shared_ptr<RealSwapChain> GetSwapChain(std::shared_ptr<RealDevice> realDevice, HWND handle, uint32_t width, uint32_t height);
+	std::shared_ptr<RealSwapChain> GetSwapChain(std::shared_ptr<RealDevice> realDevice, HWND handle, uint32_t width, uint32_t height, bool useVsync);
 };
 
 #endif // STATEMANAGER_H

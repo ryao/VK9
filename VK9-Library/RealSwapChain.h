@@ -34,6 +34,7 @@ struct RealSwapChain
 	HWND mWindowHandle = {};
 	uint32_t mWidth = 0;
 	uint32_t mHeight = 0;
+	bool mUseVsync = false;
 
 	//Surface Stuff
 	vk::SurfaceKHR mSurface;
@@ -77,7 +78,7 @@ struct RealSwapChain
 	std::vector<vk::Fence> mInFlightFences;
 
 	//Functions
-	RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, HWND windowHandle, uint32_t width, uint32_t height);
+	RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, HWND windowHandle, uint32_t width, uint32_t height, bool useVsync);
 	~RealSwapChain();
 
 	void InitSurface();

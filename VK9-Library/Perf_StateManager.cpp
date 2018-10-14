@@ -245,10 +245,14 @@ void StateManager::CreateDevice(size_t id, void* argument1)
 
 	//The user wants d3d9 to auto-detect so I'll go ahead and grab the swap and pull it's format.
 	auto& presentationParameters = device9->mPresentationParameters;
+	bool useVsync = !(presentationParameters.PresentationInterval == D3DPRESENT_DONOTWAIT || presentationParameters.PresentationInterval == D3DPRESENT_FORCEIMMEDIATE || presentationParameters.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE);
+
+	device->mUseVsync = useVsync;
+
 	if (presentationParameters.BackBufferFormat == D3DFMT_UNKNOWN)
 	{
 		HWND handle = device9->mFocusWindow;
-		auto swapChain = GetSwapChain(device, handle, presentationParameters.BackBufferWidth, presentationParameters.BackBufferHeight);
+		auto swapChain = GetSwapChain(device, handle, presentationParameters.BackBufferWidth, presentationParameters.BackBufferHeight, useVsync);
 		presentationParameters.BackBufferFormat = ConvertFormat(swapChain->mSurfaceFormat);				   
 	}
 
@@ -911,7 +915,7 @@ void StateManager::CreateQuery(size_t id, void* argument1)
 	mQueries.push_back(ptr);
 }
 
-std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealDevice> realDevice, HWND handle, uint32_t width, uint32_t height)
+std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealDevice> realDevice, HWND handle, uint32_t width, uint32_t height, bool useVsync)
 {
 	auto it = mSwapChains.find(handle);
 	if (it != mSwapChains.end())
@@ -931,7 +935,7 @@ std::shared_ptr<RealSwapChain> StateManager::GetSwapChain(std::shared_ptr<RealDe
 			height = realDevice->mDeviceState.mRenderTarget->mColorSurface->mExtent.height;
 		}
 
-		auto output = std::make_shared<RealSwapChain>(instance, physicalDevice, device, windowHandle, width, height);
+		auto output = std::make_shared<RealSwapChain>(instance, physicalDevice, device, windowHandle, width, height, useVsync);
 		mSwapChains[handle] = output;
 
 		return output;

@@ -41,7 +41,7 @@ vec4 GetGlobalIllumination()
 	float rho = 0;
 	float spot = 0;
 
-	vectorPosition = ubo.modelTransformation * vec4(position,1.0);
+	vectorPosition = ubo.modelTransformation * vec4(position.xyz,1.0);
 	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx

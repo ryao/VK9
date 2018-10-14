@@ -36,14 +36,19 @@ layout(binding = 1) uniform MaterialBlock
 	Material material;
 };
 
+layout(binding = 2) uniform Matrices 
+{
+	mat4 textureMatrices[9];
+} matrices;
+
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
 	mat4 modelTransformation;
 } ubo;
 
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec2 attr1;
-layout (location = 2) in vec2 attr2;
+layout (location = 0) in vec4 position;
+layout (location = 1) in vec4 attr1;
+layout (location = 2) in vec4 attr2;
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 ambientColor;
 layout (location = 2) out vec4 specularColor;
@@ -61,8 +66,23 @@ void main()
 	gl_Position = vec4(position.xy,0.0,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 
-	texcoord1 = attr1;
-	texcoord2 = attr2;
+	if(textureTransformationFlags_0 == D3DTTFF_DISABLE)
+	{
+		texcoord1 = attr1.xy;
+	}
+	else
+	{
+		texcoord1 = (attr1 * matrices.textureMatrices[0]).xy;
+	}
+	
+	if(textureTransformationFlags_1 == D3DTTFF_DISABLE)
+	{
+		texcoord2 = attr2.xy;
+	}
+	else
+	{
+		texcoord2 = (attr2 * matrices.textureMatrices[1]).xy;
+	}
 
 	if(colorVertex)
 	{

@@ -36,15 +36,20 @@ layout(binding = 1) uniform MaterialBlock
 	Material material;
 };
 
+layout(binding = 2) uniform Matrices 
+{
+	mat4 textureMatrices[9];
+} matrices;
+
 layout(push_constant) uniform UniformBufferObject {
     mat4 totalTransformation;
 	mat4 modelTransformation;
 } ubo;
 
-layout (location = 0) in vec3 position;
+layout (location = 0) in vec4 position;
 layout (location = 1) in vec3 attr1; //normal
 layout (location = 2) in uvec4 attr2; //color
-layout (location = 3) in vec2 attr3; //tex1
+layout (location = 3) in vec4 attr3; //tex1
 
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 ambientColor;
@@ -64,7 +69,7 @@ out gl_PerVertex
 
 void main() 
 {
-	gl_Position = ubo.totalTransformation * vec4(position,1.0);
+	gl_Position = ubo.totalTransformation * vec4(position.xyz,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
@@ -142,8 +147,15 @@ void main()
 		emissiveColor = material.Emissive;
 	}
 
-	texcoord1 = attr3;
-
+	if(textureTransformationFlags_0 == D3DTTFF_DISABLE)
+	{
+		texcoord1 = attr3.xy;
+	}
+	else
+	{
+		texcoord1 = (attr3 * matrices.textureMatrices[0]).xy;
+	}
+	
 	normal = ubo.modelTransformation * vec4(attr1,0);
 	normal *= vec4(1.0,-1.0,1.0,1.0);
 	if(normalizeNormals)

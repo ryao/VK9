@@ -25,13 +25,14 @@ misrepresented as being the original software.
 #include "RealSwapChain.h"
 #include "Utilities.h"
 
-RealSwapChain::RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, HWND windowHandle, uint32_t width, uint32_t height)
+RealSwapChain::RealSwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, HWND windowHandle, uint32_t width, uint32_t height, bool useVsync)
 	: mInstance(instance),
 	mPhysicalDevice(physicalDevice),
 	mDevice(device),
 	mWindowHandle(windowHandle),
 	mWidth(width),
-	mHeight(height)
+	mHeight(height),
+	mUseVsync(useVsync)
 {
 	BOOST_LOG_TRIVIAL(info) << "RealSwapChain::RealSwapChain";
 
@@ -208,19 +209,21 @@ void RealSwapChain::InitSurface()
 	}
 
 	mPresentationMode = vk::PresentModeKHR::eFifo;
-	for (size_t i = 0; i < presentationModeCount; i++)
+	if (!mUseVsync)
 	{
-		if (presentationModes[i] == vk::PresentModeKHR::eMailbox)
+		for (size_t i = 0; i < presentationModeCount; i++)
 		{
-			mPresentationMode = vk::PresentModeKHR::eMailbox;
-			break;
-		}
-		else if (presentationModes[i] == vk::PresentModeKHR::eImmediate)
-		{
-			mPresentationMode = vk::PresentModeKHR::eImmediate;
+			if (presentationModes[i] == vk::PresentModeKHR::eMailbox)
+			{
+				mPresentationMode = vk::PresentModeKHR::eMailbox;
+				break;
+			}
+			else if (presentationModes[i] == vk::PresentModeKHR::eImmediate)
+			{
+				mPresentationMode = vk::PresentModeKHR::eImmediate;
+			}
 		}
 	}
-
 	delete[] presentationModes;
 }
 

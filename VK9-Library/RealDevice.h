@@ -85,6 +85,7 @@ struct RealDevice
 	int32_t mVertexCount = 0;
 	Transformations mTransformations;
 	bool mIsDirty = true;
+	bool mUseVsync = false;
 
 	//Fixed Function Shaders
 	vk::ShaderModule mVertShaderModule_XYZRHW;
