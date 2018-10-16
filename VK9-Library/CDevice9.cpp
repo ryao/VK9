@@ -119,11 +119,11 @@ void CDevice9::Init()
 void CDevice9::Destroy()
 {
 	//Delete any temp buffers used to handle the UP draw calls.
-	for (auto buffer : mVertexBuffers)
+	for (auto buffer : mTempVertexBuffers)
 	{
 		delete buffer;
 	}
-	for (auto buffer : mIndexBuffers)
+	for (auto buffer : mTempIndexBuffers)
 	{
 		delete buffer;
 	}
@@ -189,30 +189,15 @@ HRESULT STDMETHODCALLTYPE CDevice9::Present(const RECT *pSourceRect, const RECT 
 	workItem->Argument4 = bit_cast<void*>(pDirtyRegion);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	/*
-	This might be a good spot for a co-routine so that the buffers can be freed after the render target is filled but before the swap chain present finishes.
-	Whether or not the present has to wait long enough depends on what presentation methods are available so this may or may not improve performance.
-	Ultimately someone will have to tinker with this to see what the effect is on performance.
-	*/
-
-	//Delete any temp buffers used to handle the UP draw calls.
-	for (auto buffer : mVertexBuffers)
+	//Mark the temp buffers as unused.
+	for (auto& buffer : mTempVertexBuffers)
 	{
-		if (buffer != nullptr)
-		{
-			buffer->Release();
-		}
+		buffer->mIsUsed = false;
 	}
-	mVertexBuffers.clear();
-
-	for (auto buffer : mIndexBuffers)
+	for (auto& buffer : mTempIndexBuffers)
 	{
-		if (buffer != nullptr)
-		{
-			buffer->Release();
-		}
+		buffer->mIsUsed = false;
 	}
-	mIndexBuffers.clear();
 
 	if (mCommandStreamManager->mResult == vk::Result::eErrorDeviceLost) { return D3DERR_DEVICELOST; }
 
@@ -606,24 +591,35 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE Prim
 	CVertexBuffer9* vertexBuffer = nullptr;
 	void* buffer = nullptr;
 
-	CreateIndexBuffer(indexLength, Usage, IndexDataFormat, D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)&indexBuffer, nullptr);
-	
-	switch (VertexStreamZeroStride)
+	for (auto& buffer : mTempIndexBuffers)
 	{
-	case 12:
-		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
-		break;
-	case 36:
-		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_NORMAL, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
-		break;
-	case 44:
-		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_NORMAL | D3DFVF_TEX1, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
-	default:
-		BOOST_LOG_TRIVIAL(info) << "CDevice9::DrawIndexedPrimitiveUP unhandled stride " << VertexStreamZeroStride;
-		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
-		break;
-	}	
+		if (!buffer->mIsUsed && buffer->mLength >= indexLength)
+		{
+			indexBuffer = buffer;
+			break;
+		}
+	}
+	if (indexBuffer == nullptr)
+	{
+		CreateIndexBuffer(indexLength, Usage, IndexDataFormat, D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)&indexBuffer, nullptr);
+		mTempIndexBuffers.push_back(indexBuffer);
+	}
 
+	for (auto& buffer : mTempVertexBuffers)
+	{
+		if (!buffer->mIsUsed && buffer->mLength >= vertexLength)
+		{
+			vertexBuffer = buffer;
+			break;
+		}
+	}
+	if (vertexBuffer == nullptr)
+	{
+		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+		mTempVertexBuffers.push_back(vertexBuffer);
+	}
+
+	vertexBuffer->mIsUsed = true;
 	vertexBuffer->mSize = NumVertices;
 
 
@@ -722,21 +718,30 @@ HRESULT STDMETHODCALLTYPE CDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveTy
 	CVertexBuffer9* vertexBuffer = nullptr;
 	void* buffer = nullptr;
 
-	CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+	for (auto& buffer : mTempVertexBuffers)
+	{
+		if (!buffer->mIsUsed && buffer->mLength >= vertexLength)
+		{
+			vertexBuffer = buffer;
+			break;
+		}
+	}
+	if (vertexBuffer == nullptr)
+	{
+		CreateVertexBuffer(vertexLength, Usage, D3DFVF_XYZ, D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)&vertexBuffer, nullptr);
+		mTempVertexBuffers.push_back(vertexBuffer);
+	}
 
+	vertexBuffer->mIsUsed = true;
 	vertexBuffer->mSize = NumVertices;
 
-	if (VertexStreamZeroStride != 12)
-	{
-		BOOST_LOG_TRIVIAL(warning) << "CDevice9::DrawPrimitiveUP unhandled stride " << VertexStreamZeroStride;
-	}
 
 	vertexBuffer->Lock(0, 0, (void**)&buffer, 0);
 	memcpy(buffer, pVertexStreamZeroData, vertexLength);
 	vertexBuffer->Unlock();
 
 	SetStreamSource(0, vertexBuffer, 0, VertexStreamZeroStride);
-	vertexBuffer->Release();
+	//vertexBuffer->Release();
 
 	//Queue draw command
 	//DrawPrimitive(PrimitiveType, 0, PrimitiveCount);
@@ -1438,7 +1443,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetIndices(IDirect3DIndexBuffer9* pIndexData
 {
 	if (pIndexData != nullptr)
 	{
-		mIndexBuffers.push_back((CIndexBuffer9*)pIndexData);
 		pIndexData->AddRef();
 	}
 
@@ -1607,7 +1611,6 @@ HRESULT STDMETHODCALLTYPE CDevice9::SetStreamSource(UINT StreamNumber, IDirect3D
 {
 	if (pStreamData != nullptr)
 	{
-		mVertexBuffers.push_back((CVertexBuffer9*)pStreamData);
 		pStreamData->AddRef();
 	}
 

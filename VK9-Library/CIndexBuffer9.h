@@ -53,6 +53,8 @@ public:
 	size_t mLastIndex = 0;
 	std::vector<size_t> mIds;
 
+	bool mIsUsed = false; //Only used for temp buffers.
+
 public:
 	//IUnknown
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,void  **ppv);

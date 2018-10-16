@@ -25,10 +25,21 @@ misrepresented as being the original software.
 //#include <boost/container/small_vector.hpp>
 #include "Perf_CommandStreamManager.h"
 
+#include<map>
+#include<vector>
+#include <tuple>
+
 class C9;
 class CSwapChain9;
 class CVertexBuffer9;
 class CIndexBuffer9;
+
+template <typename T1>
+struct Pair
+{
+	size_t first=0;
+	T1 second;
+};
 
 class CDevice9 : public IDirect3DDevice9
 {	
@@ -57,9 +68,6 @@ public:
 	std::vector<CSwapChain9*> mSwapChains;
 	CSurface9* mRenderTargets[4] = {};
 
-	std::vector<CVertexBuffer9*> mVertexBuffers;
-	std::vector<CIndexBuffer9*> mIndexBuffers;
-
 	BOOL mIsDirty = true;
 	
 	PAINTSTRUCT* mPaintInformation = {};
@@ -67,6 +75,10 @@ public:
 	CSurface9* mDepthStencilSurface = nullptr;
 
 	UINT mAvailableTextureMemory = 0;
+
+	//Buffer Caches
+	std::vector<CVertexBuffer9*> mTempVertexBuffers;
+	std::vector<CIndexBuffer9*> mTempIndexBuffers;
 
 public:
 
