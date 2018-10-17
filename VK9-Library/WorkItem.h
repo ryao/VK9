@@ -19,6 +19,8 @@ misrepresented as being the original software.
 */
 
 #include <atomic>
+#include <mutex>
+#include <condition_variable>
 #include "WorkItemType.h"
 #include "d3d9.h"
 
@@ -38,7 +40,9 @@ struct WorkItem
 
 	IUnknown* Caller = nullptr;
 
-	std::atomic_bool HasBeenProcessed = false;
+	bool HasBeenProcessed = false;
+	std::mutex Mutex;
+	std::condition_variable ConditionVariable;
 };
 
 #endif //WORKITEM_H

@@ -194,7 +194,8 @@ size_t CommandStreamManager::RequestWorkAndWait(WorkItem* workItem)
 {
 	size_t result = this->RequestWork(workItem);
 
-	while (!workItem->HasBeenProcessed){}
+	std::unique_lock<std::mutex> lk(workItem->Mutex);
+	workItem->ConditionVariable.wait(lk, [workItem]() {return workItem->HasBeenProcessed; });
 
 	return result;
 }

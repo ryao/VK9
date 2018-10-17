@@ -50,9 +50,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 	{
 		WorkItem* workItem = nullptr;
 
-		//if (commandStreamManager->mWorkItems.try_dequeue(workItem))
 		if (commandStreamManager->mWorkItems.pop(workItem))
 		{
+			std::lock_guard<std::mutex> lk(workItem->Mutex);
 			//try
 			//{
 			switch (workItem->WorkItemType)
@@ -4420,8 +4420,9 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			//{
 			//	BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType;
 			//}
-
+		
 			workItem->HasBeenProcessed = true;
+			workItem->ConditionVariable.notify_all();
 
 			if (workItem->Caller != nullptr)
 			{
@@ -4429,13 +4430,6 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				workItem->Caller = nullptr;
 			}
 
-			//TODO: I'll need to revisit this later. I feel like if it's deleted too soon the application will crash. because of an access violation on the waiting thread. This might be a good spot for GC.
-
-			//Waiting on this causes a deadlock so I'll just delete.
-			//if (!commandStreamManager->mUnusedWorkItems.try_enqueue(workItem))
-			//{
-			//	delete workItem;
-			//}
 			if (!commandStreamManager->mUnusedWorkItems.push(workItem))
 			{
 				delete workItem;
