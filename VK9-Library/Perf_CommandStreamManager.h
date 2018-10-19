@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Perf_RenderManager.h"
 #include "WorkItemType.h"
 #include "WorkItem.h"
+#include "WorkItemQueue.h"
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
@@ -51,11 +52,11 @@ struct CommandStreamManager
 	std::thread mWorkerThread;
 	RenderManager mRenderManager;
 
-	boost::lockfree::spsc_queue<WorkItem*, boost::lockfree::capacity<1024>> mWorkItems;
-	boost::lockfree::spsc_queue<WorkItem*, boost::lockfree::capacity<1024>> mUnusedWorkItems;
+	boost::lockfree::spsc_queue<WorkItem*, boost::lockfree::capacity<14>> mWorkItems;
+	boost::lockfree::spsc_queue<WorkItem*, boost::lockfree::capacity<14>> mUnusedWorkItems;
 
-	//moodycamel::ReaderWriterQueue<WorkItem*> mWorkItems;
-	//moodycamel::ReaderWriterQueue<WorkItem*> mUnusedWorkItems;
+	//WorkItemQueue mWorkItems;
+	//WorkItemQueue mUnusedWorkItems;
 
 	std::atomic_bool IsRunning = 1;
 	std::atomic_bool IsBusy = 0;
