@@ -1023,8 +1023,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetPixelShader(IDirect3DPixelShader9 **ppSha
 	workItem->Argument1 = bit_cast<void*>(ppShader);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	(*ppShader)->AddRef();
-
+	if ((*ppShader) != nullptr)
+	{
+		(*ppShader)->AddRef();
+	}
 	return S_OK;
 }
 
@@ -1161,8 +1163,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetSwapChain(UINT iSwapChain, IDirect3DSwapC
 {
 	(*ppSwapChain) = (IDirect3DSwapChain9*)mSwapChains[iSwapChain];
 
-	(*ppSwapChain)->AddRef();
-
+	if ((*ppSwapChain) != nullptr)
+	{
+		(*ppSwapChain)->AddRef();
+	}
 	return S_OK;
 }
 
@@ -1211,8 +1215,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexDeclaration(IDirect3DVertexDeclarat
 	workItem->Argument1 = bit_cast<void*>(ppDecl);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	(*ppDecl)->AddRef();
-
+	if ((*ppDecl) != nullptr)
+	{
+		(*ppDecl)->AddRef();
+	}
 	return S_OK;
 }
 
@@ -1224,8 +1230,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::GetVertexShader(IDirect3DVertexShader9** ppS
 	workItem->Argument1 = bit_cast<void*>(ppShader);
 	mCommandStreamManager->RequestWorkAndWait(workItem);
 
-	(*ppShader)->AddRef();
-
+	if ((*ppShader) != nullptr)
+	{
+		(*ppShader)->AddRef();
+	}
 	return S_OK;
 }
 
