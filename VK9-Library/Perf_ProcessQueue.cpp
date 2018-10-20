@@ -45,12 +45,14 @@ misrepresented as being the original software.
 
 void ProcessQueue(CommandStreamManager* commandStreamManager)
 {
+	size_t count = 0;
+
 	Sleep(100);
 	while (commandStreamManager->IsRunning)
 	{
 		WorkItem* workItem = nullptr;
 
-		if (commandStreamManager->mWorkItems.pop(workItem))
+		if (commandStreamManager->mWorkItems.Pop(workItem, count))
 		{
 			std::lock_guard<std::mutex> lk(workItem->Mutex);
 			//try
@@ -4420,7 +4422,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 			//{
 			//	BOOST_LOG_TRIVIAL(warning) << "ProcessQueue - " << workItem->WorkItemType;
 			//}
-		
+
 			workItem->HasBeenProcessed = true;
 			workItem->ConditionVariable.notify_all();
 
@@ -4430,7 +4432,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				workItem->Caller = nullptr;
 			}
 
-			if (!commandStreamManager->mUnusedWorkItems.push(workItem))
+			if (!commandStreamManager->mUnusedWorkItems.Push(workItem,count))
 			{
 				delete workItem;
 			}

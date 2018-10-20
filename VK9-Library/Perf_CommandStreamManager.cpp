@@ -125,6 +125,13 @@ CommandStreamManager::CommandStreamManager()
 
 	boost::log::core::get()->set_filter(boost::log::trivial::severity >= logLevel);
 
+	//size_t count = 0;
+	//auto items = new WorkItem[TINY_QUEUE_MAX_SIZE];
+	//for (size_t i = 0; i < TINY_QUEUE_MAX_SIZE; i++)
+	//{
+	//	mUnusedWorkItems.Push(&items[i], count);
+	//}
+
 	BOOST_LOG_TRIVIAL(info) << "CommandStreamManager::CommandStreamManager";
 }
 
@@ -141,9 +148,8 @@ size_t CommandStreamManager::RequestWork(WorkItem* workItem)
 	{
 		workItem->Caller->AddRef();
 	}
-
-	while (!mWorkItems.push(workItem)) {}
-	//while (!mWorkItems.try_enqueue(workItem)) {}
+	size_t count = 0;
+	while (!mWorkItems.Push(workItem, count)) {}
 
 	size_t key = 0;
 
@@ -212,8 +218,8 @@ WorkItem* CommandStreamManager::GetWorkItem(IUnknown* caller)
 	//{
 	//	returnValue->HasBeenProcessed = false;
 	//}
-
-	if (!mUnusedWorkItems.pop(returnValue))
+	size_t count = 0;
+	if (!mUnusedWorkItems.Pop(returnValue, count))
 	{
 		returnValue = new WorkItem();
 	}

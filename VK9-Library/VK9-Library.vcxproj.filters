@@ -287,6 +287,9 @@
     <ClInclude Include="vk_mem_alloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TinyQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def">
