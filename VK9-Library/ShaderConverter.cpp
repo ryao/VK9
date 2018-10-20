@@ -1411,7 +1411,20 @@ uint32_t ShaderConverter::GetSwizzledId(const Token& token, uint32_t lookingFor)
 		}
 		break;
 	case D3DSPSM_COMP:
-		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_COMP";
+		if (loadedType.PrimaryType == spv::OpTypeFloat || loadedType.SecondaryType == spv::OpTypeFloat)
+		{
+			uint32_t compId = GetNextId();
+			mIdTypePairs[compId] = loadedType;
+			Push(spv::OpFSub, loadedTypeId, compId, m1fId, loadedId);
+			loadedId = compId;
+		}
+		else
+		{
+			uint32_t compId = GetNextId();
+			mIdTypePairs[compId] = loadedType;
+			Push(spv::OpISub, loadedTypeId, compId, m1Id, loadedId);
+			loadedId = compId;
+		}
 		break;
 	case D3DSPSM_X2:
 		BOOST_LOG_TRIVIAL(warning) << "ShaderConverter::GetSwizzledId - Unsupported modifier type D3DSPSM_X2";
@@ -3110,18 +3123,18 @@ void ShaderConverter::CombineSpirVOpCodes()
 
 void ShaderConverter::CreateSpirVModule()
 {
-#ifdef _EXTRA_SHADER_DEBUG_INFO
-	if (!mIsVertexShader)
-	{
-		std::ofstream outFile("fragment_" + std::to_string((uint32_t)mInstructions.data()) + ".spv", std::ios::out | std::ios::binary);
-		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
-	}
-	else
-	{
-		std::ofstream outFile("vertex_" + std::to_string((uint32_t)mInstructions.data()) + ".spv", std::ios::out | std::ios::binary);
-		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
-	}
-#endif
+//#ifdef _EXTRA_SHADER_DEBUG_INFO
+//	if (!mIsVertexShader)
+//	{
+//		std::ofstream outFile("fragment_" + std::to_string((uint32_t)mInstructions.data()) + ".spv", std::ios::out | std::ios::binary);
+//		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
+//	}
+//	else
+//	{
+//		std::ofstream outFile("vertex_" + std::to_string((uint32_t)mInstructions.data()) + ".spv", std::ios::out | std::ios::binary);
+//		outFile.write((char*)mInstructions.data(), mInstructions.size() * sizeof(uint32_t));
+//	}
+//#endif
 
 	vk::Result result;
 	vk::ShaderModuleCreateInfo moduleCreateInfo;
