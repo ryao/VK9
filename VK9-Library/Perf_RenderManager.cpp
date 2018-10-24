@@ -81,58 +81,58 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 	uboBarrier.offset = 0;
 
 	//The dirty flag for lights can be set by enable light or set light.
-	if (deviceState.mAreLightsDirty)
+	if (deviceState.mIsShaderStateDirty)
 	{
-		uboBarrier.buffer = realDevice->mLightBuffer;
-		uboBarrier.size = sizeof(Light)*deviceState.mLights.size();
+		uboBarrier.buffer = realDevice->mShaderStateBuffer;
+		uboBarrier.size = sizeof(ShaderState);
 
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		currentBuffer.updateBuffer(realDevice->mLightBuffer, 0, uboBarrier.size, deviceState.mLights.data()); //context->mSpecializationConstants.lightCount
+		currentBuffer.updateBuffer(realDevice->mShaderStateBuffer, 0, uboBarrier.size, &deviceState.mShaderState);
 		
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		deviceState.mAreLightsDirty = false;
+		deviceState.mIsShaderStateDirty = false;
 	}
 
-	if (deviceState.mIsMaterialDirty)
+	if (deviceState.mAreVertexShaderSlotsDirty)
 	{
-		uboBarrier.buffer = realDevice->mMaterialBuffer;
-		uboBarrier.size = sizeof(D3DMATERIAL9);
+		uboBarrier.buffer = realDevice->mShaderVertexConstantBuffer;
+		uboBarrier.size = sizeof(ShaderConstantSlots);
 
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		currentBuffer.updateBuffer(realDevice->mMaterialBuffer, 0, uboBarrier.size, &deviceState.mMaterial);
+		currentBuffer.updateBuffer(realDevice->mShaderVertexConstantBuffer, 0, uboBarrier.size, &deviceState.mVertexShaderConstantSlots);
 
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		deviceState.mIsMaterialDirty = false;
+		deviceState.mAreVertexShaderSlotsDirty = false;
 	}
 
-	if (deviceState.mAreTextureMaticesDirty)
+	if (deviceState.mArePixelShaderSlotsDirty)
 	{
-		uboBarrier.buffer = realDevice->mTextureMatricesBuffer;
-		uboBarrier.size = sizeof(D3DMATRIX) * 9;
+		uboBarrier.buffer = realDevice->mShaderPixelConstantBuffer;
+		uboBarrier.size = sizeof(ShaderConstantSlots);
 
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		currentBuffer.updateBuffer(realDevice->mTextureMatricesBuffer, 0, uboBarrier.size, &deviceState.mTextureMatrices);
+		currentBuffer.updateBuffer(realDevice->mShaderPixelConstantBuffer, 0, uboBarrier.size, &deviceState.mPixelShaderConstantSlots);
 
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		deviceState.mAreTextureMaticesDirty = false;
+		deviceState.mArePixelShaderSlotsDirty = false;
 	}
 }
 
@@ -464,7 +464,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	/**********************************************
 	* Update the stuff that need to be done outside of a render pass.
 	**********************************************/
-	if (deviceState.mAreLightsDirty || deviceState.mIsMaterialDirty)
+	if (deviceState.mIsShaderStateDirty || deviceState.mAreVertexShaderSlotsDirty || deviceState.mArePixelShaderSlotsDirty)
 	{
 		currentBuffer.endRenderPass();
 		UpdateBuffer(realDevice);
@@ -478,7 +478,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 
 	for (size_t i = 0; i < 16; i++)
 	{
-		vk::DescriptorImageInfo& targetSampler = deviceState.mDescriptorImageInfo[i];
+		auto& targetSampler = deviceState.mDescriptorImageInfo[i];
 
 		if (deviceState.mTextures[i] != nullptr)
 		{
@@ -586,13 +586,12 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	}
 
 	context->StreamCount = deviceState.mStreamSources.size();
-	context->mSpecializationConstants = deviceState.mSpecializationConstants;
+	context->mShaderState = deviceState.mShaderState;
 
-	SpecializationConstants& constants = context->mSpecializationConstants;
-	ShaderConstantSlots& vertexSlots = context->mVertexShaderConstantSlots;
-	ShaderConstantSlots& pixelSlots = context->mPixelShaderConstantSlots;
+	auto& constants = context->mShaderState;
+	auto& vertexSlots = context->mVertexShaderConstantSlots;
+	auto& pixelSlots = context->mPixelShaderConstantSlots;
 
-	constants.lightCount = deviceState.mLights.size();
 	constants.textureCount = 0;
 
 	for (size_t i = 0; i < 16; i++)
@@ -607,8 +606,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		}
 	}
 
-	deviceState.mSpecializationConstants.lightCount = constants.lightCount;
-	deviceState.mSpecializationConstants.textureCount = constants.textureCount;
+	deviceState.mShaderState.textureCount = constants.textureCount;
 
 	int i = 0;
 	for (auto& source : deviceState.mStreamSources)
@@ -638,10 +636,6 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 
 			&& drawBuffer.FVF == context->FVF
 			&& drawBuffer.VertexDeclaration == context->VertexDeclaration
-
-			&& !memcmp(&drawBuffer.mSpecializationConstants, &constants, sizeof(SpecializationConstants))
-			&& !memcmp(&drawBuffer.mVertexShaderConstantSlots, &vertexSlots, sizeof(ShaderConstantSlots))
-			&& !memcmp(&drawBuffer.mPixelShaderConstantSlots, &pixelSlots, sizeof(ShaderConstantSlots))
 			)
 		{
 			if (!memcmp(&drawBuffer.Bindings, &context->Bindings, 64 * sizeof(UINT)))
@@ -695,54 +689,46 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	{
 		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
-		if (context->VertexShader == nullptr)
+		//Shader state
+		realDevice->mDescriptorBufferInfo[0].buffer = realDevice->mShaderStateBuffer;
+		realDevice->mDescriptorBufferInfo[0].offset = 0;
+		realDevice->mDescriptorBufferInfo[0].range = sizeof(ShaderState);
+
+		realDevice->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
+		realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[0].descriptorCount = 1;
+		realDevice->mWriteDescriptorSet[0].pBufferInfo = &realDevice->mDescriptorBufferInfo[0];
+
+		//Vertex Shader Const
+		realDevice->mDescriptorBufferInfo[1].buffer = realDevice->mShaderVertexConstantBuffer;
+		realDevice->mDescriptorBufferInfo[1].offset = 0;
+		realDevice->mDescriptorBufferInfo[1].range = sizeof(ShaderConstantSlots);
+
+		realDevice->mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[1].descriptorCount = 1;
+		realDevice->mWriteDescriptorSet[1].pBufferInfo = &realDevice->mDescriptorBufferInfo[1];
+
+		//Pixel Shader Const
+		realDevice->mDescriptorBufferInfo[2].buffer = realDevice->mShaderPixelConstantBuffer;
+		realDevice->mDescriptorBufferInfo[2].offset = 0;
+		realDevice->mDescriptorBufferInfo[2].range = sizeof(ShaderConstantSlots);
+
+		realDevice->mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[2].descriptorCount = 1;
+		realDevice->mWriteDescriptorSet[2].pBufferInfo = &realDevice->mDescriptorBufferInfo[2];
+
+		//Image/Sampler
+		realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[3].descriptorCount = constants.textureCount;
+		realDevice->mWriteDescriptorSet[3].pImageInfo = resourceContext->DescriptorImageInfo;
+
+		if (constants.textureCount)
 		{
-			realDevice->mDescriptorBufferInfo[0].buffer = realDevice->mLightBuffer;
-			realDevice->mDescriptorBufferInfo[0].offset = 0;
-			realDevice->mDescriptorBufferInfo[0].range = sizeof(Light) * deviceState.mLights.size(); //4; 
-
-			realDevice->mDescriptorBufferInfo[1].buffer = realDevice->mMaterialBuffer;
-			realDevice->mDescriptorBufferInfo[1].offset = 0;
-			realDevice->mDescriptorBufferInfo[1].range = sizeof(D3DMATERIAL9);
-
-			realDevice->mDescriptorBufferInfo[2].buffer = realDevice->mTextureMatricesBuffer;
-			realDevice->mDescriptorBufferInfo[2].offset = 0;
-			realDevice->mDescriptorBufferInfo[2].range = sizeof(D3DMATRIX) * 9;
-
-			realDevice->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
-			realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-			realDevice->mWriteDescriptorSet[0].descriptorCount = 1;
-			realDevice->mWriteDescriptorSet[0].pBufferInfo = &realDevice->mDescriptorBufferInfo[0];
-
-			realDevice->mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
-			realDevice->mWriteDescriptorSet[1].descriptorCount = 1;
-			realDevice->mWriteDescriptorSet[1].pBufferInfo = &realDevice->mDescriptorBufferInfo[1];
-
-			realDevice->mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-			realDevice->mWriteDescriptorSet[2].descriptorCount = 1;
-			realDevice->mWriteDescriptorSet[2].pBufferInfo = &realDevice->mDescriptorBufferInfo[2];
-
-			realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
-			realDevice->mWriteDescriptorSet[3].descriptorCount = constants.textureCount;
-			realDevice->mWriteDescriptorSet[3].pImageInfo = resourceContext->DescriptorImageInfo;
-
-			if (constants.textureCount)
-			{
-				currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 4, realDevice->mWriteDescriptorSet);
-			}
-			else
-			{
-				currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 3, realDevice->mWriteDescriptorSet);
-			}
+			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 4, realDevice->mWriteDescriptorSet);
 		}
 		else
 		{
-			realDevice->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eCombinedImageSampler;
-			realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-			realDevice->mWriteDescriptorSet[0].descriptorCount = constants.textureCount; //Revisit
-			realDevice->mWriteDescriptorSet[0].pImageInfo = resourceContext->DescriptorImageInfo;
-
-			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 1, realDevice->mWriteDescriptorSet);
+			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 3, realDevice->mWriteDescriptorSet);
 		}
 	}
 
@@ -784,10 +770,9 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	/**********************************************
 	* Figure out flags
 	**********************************************/
-	SpecializationConstants& constants = context->mSpecializationConstants;
+	auto& constants = context->mShaderState;
 	uint32_t attributeCount = 0;
 	uint32_t textureCount = 0; //constants.textureCount
-	uint32_t lightCount = constants.lightCount;
 	uint32_t positionSize = 3;
 	BOOL hasPosition = 0;
 	BOOL hasNormal = 0;
@@ -881,10 +866,6 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		}
 
 		textureCount = ConvertFormat(context->FVF);
-	}
-	else if (context->VertexShader != nullptr)
-	{
-		//Nothing so far.
 	}
 	else
 	{
@@ -999,7 +980,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ;
 				}
 
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -1018,7 +999,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX1;
 				}
 
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -1037,7 +1018,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX2;
 				}
 
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -1065,7 +1046,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE;
 				}
 
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					realDevice->mGraphicsPipelineCreateInfo.stageCount = 3;
 					realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_DIFFUSE_TEX1;
@@ -1086,7 +1067,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX1;
 				}
 
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && !hasNormal && " << textureCount;
 				}
@@ -1105,7 +1086,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX2;
 				}
 
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && !hasNormal && " << textureCount;
 				}
@@ -1125,7 +1106,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			{
 			case 2:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1136,7 +1117,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 1:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX1;
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1147,7 +1128,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 0:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE;
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1167,7 +1148,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			{
 			case 0:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL;
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1178,7 +1159,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 1:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_TEX1;
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1189,7 +1170,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 2:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_TEX2;
-				if (deviceState.mSpecializationConstants.pointSpriteEnable)
+				if (deviceState.mShaderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1364,89 +1345,48 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 
 	auto& pipelineLayoutCreateInfo = realDevice->mPipelineLayoutCreateInfo;
-	auto& vertexSpecializationInfo = realDevice->mVertexSpecializationInfo;
-	auto& pixelSpecializationInfo = realDevice->mPixelSpecializationInfo;
 
 	pipelineLayoutCreateInfo.pPushConstantRanges = realDevice->mPushConstantRanges;
 	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 
-	if (context->VertexShader != nullptr)
+	realDevice->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
+	realDevice->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
+
+	realDevice->mDescriptorSetLayoutBinding[0].binding = 0;
+	realDevice->mDescriptorSetLayoutBinding[0].descriptorType = vk::DescriptorType::eUniformBuffer;
+	realDevice->mDescriptorSetLayoutBinding[0].descriptorCount = 1;
+	realDevice->mDescriptorSetLayoutBinding[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	realDevice->mDescriptorSetLayoutBinding[0].pImmutableSamplers = nullptr;
+
+	realDevice->mDescriptorSetLayoutBinding[1].binding = 1;
+	realDevice->mDescriptorSetLayoutBinding[1].descriptorType = vk::DescriptorType::eUniformBuffer;
+	realDevice->mDescriptorSetLayoutBinding[1].descriptorCount = 1;
+	realDevice->mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	realDevice->mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
+
+	realDevice->mDescriptorSetLayoutBinding[2].binding = 2;
+	realDevice->mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eUniformBuffer;
+	realDevice->mDescriptorSetLayoutBinding[2].descriptorCount = 1;
+	realDevice->mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	realDevice->mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
+
+	realDevice->mDescriptorSetLayoutBinding[3].binding = 3;
+	realDevice->mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = constants.textureCount; //Update to use mapped texture.
+	realDevice->mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	realDevice->mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
+
+	realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
+	realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+	realDevice->mPipelineLayoutCreateInfo.setLayoutCount = 1;
+
+	if (constants.textureCount)
 	{
-		auto& convertedVertexShader = mStateManager.mShaderConverters[context->VertexShader->mId]->mConvertedShader;
-		auto& convertedPixelShader = mStateManager.mShaderConverters[context->PixelShader->mId]->mConvertedShader;
-
-		realDevice->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
-		realDevice->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
-
-		memcpy(&realDevice->mDescriptorSetLayoutBinding, &convertedPixelShader.mDescriptorSetLayoutBinding, sizeof(realDevice->mDescriptorSetLayoutBinding));
-
-		realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
-		pipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
-
-		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = convertedPixelShader.mDescriptorSetLayoutBindingCount;
-		pipelineLayoutCreateInfo.setLayoutCount = 1;
-
-		vertexSpecializationInfo.pData = &context->mVertexShaderConstantSlots;
-		vertexSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
-		vertexSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		vertexSpecializationInfo.mapEntryCount = 1024;
-
-		pixelSpecializationInfo.pData = &context->mPixelShaderConstantSlots;
-		pixelSpecializationInfo.dataSize = sizeof(ShaderConstantSlots);
-		pixelSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		pixelSpecializationInfo.mapEntryCount = 1024;
+		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 4; //The number of elements in pBindings.			
 	}
 	else
 	{
-		realDevice->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
-		realDevice->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
-
-		realDevice->mDescriptorSetLayoutBinding[0].binding = 0;
-		realDevice->mDescriptorSetLayoutBinding[0].descriptorType = vk::DescriptorType::eUniformBuffer;
-		realDevice->mDescriptorSetLayoutBinding[0].descriptorCount = 1;
-		realDevice->mDescriptorSetLayoutBinding[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
-		realDevice->mDescriptorSetLayoutBinding[0].pImmutableSamplers = nullptr;
-
-		realDevice->mDescriptorSetLayoutBinding[1].binding = 1;
-		realDevice->mDescriptorSetLayoutBinding[1].descriptorType = vk::DescriptorType::eUniformBuffer;
-		realDevice->mDescriptorSetLayoutBinding[1].descriptorCount = 1;
-		realDevice->mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
-		realDevice->mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
-
-		realDevice->mDescriptorSetLayoutBinding[2].binding = 2;
-		realDevice->mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eUniformBuffer;
-		realDevice->mDescriptorSetLayoutBinding[2].descriptorCount = 1;
-		realDevice->mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eFragment;
-		realDevice->mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
-
-		realDevice->mDescriptorSetLayoutBinding[3].binding = 3;
-		realDevice->mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-		realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = constants.textureCount; //Update to use mapped texture.
-		realDevice->mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eFragment;
-		realDevice->mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
-
-		realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
-		realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
-		realDevice->mPipelineLayoutCreateInfo.setLayoutCount = 1;
-
-		if (constants.textureCount)
-		{
-			realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 4; //The number of elements in pBindings.			
-		}
-		else
-		{
-			realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
-		}
-
-		vertexSpecializationInfo.pData = &deviceState.mSpecializationConstants;
-		vertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		vertexSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		vertexSpecializationInfo.mapEntryCount = 251;
-
-		pixelSpecializationInfo.pData = &deviceState.mSpecializationConstants;
-		pixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
-		pixelSpecializationInfo.pMapEntries = realDevice->mSlotMapEntries;
-		pixelSpecializationInfo.mapEntryCount = 251;
+		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
 	}
 
 	result = device.createDescriptorSetLayout(&realDevice->mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);

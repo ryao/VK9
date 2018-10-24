@@ -1164,33 +1164,33 @@ struct RealDevice
 	{ 1025, 1025 * sizeof(uint32_t), sizeof(uint32_t) }
 	};
 
-	vk::SpecializationInfo mVertexSpecializationInfo =
-	{
-		1026,                                           // mapEntryCount
-		mSlotMapEntries,							   // pMapEntries
-		sizeof(SpecializationConstants),               // dataSize
-		nullptr,// pData
-	};
+	//vk::SpecializationInfo mVertexSpecializationInfo =
+	//{
+	//	1026,                                           // mapEntryCount
+	//	mSlotMapEntries,							   // pMapEntries
+	//	sizeof(ShaderState),               // dataSize
+	//	nullptr,// pData
+	//};
 
-	vk::SpecializationInfo mPixelSpecializationInfo =
-	{
-		1026,                                           // mapEntryCount
-		mSlotMapEntries,                               // pMapEntries
-		sizeof(SpecializationConstants),               // dataSize
-		nullptr,// pData
-	};
+	//vk::SpecializationInfo mPixelSpecializationInfo =
+	//{
+	//	1026,                                           // mapEntryCount
+	//	mSlotMapEntries,                               // pMapEntries
+	//	sizeof(ShaderState),               // dataSize
+	//	nullptr,// pData
+	//};
 
 	//Buffer Stuff
 	vk::BufferCopy mCopyRegion;
 
-	vk::Buffer mLightBuffer;
-	vk::DeviceMemory mLightBufferMemory;
+	vk::Buffer mShaderStateBuffer;
+	vk::DeviceMemory mShaderStateBufferMemory;
 
-	vk::Buffer mMaterialBuffer;
-	vk::DeviceMemory mMaterialBufferMemory;
+	vk::Buffer mShaderVertexConstantBuffer;
+	vk::DeviceMemory mShaderVertexConstantBufferMemory;
 
-	vk::Buffer mTextureMatricesBuffer;
-	vk::DeviceMemory mTextureMatricesBufferMemory;
+	vk::Buffer mShaderPixelConstantBuffer;
+	vk::DeviceMemory mShaderPixelConstantBufferMemory;
 
 	//Placeholder image for unbound sampler slots.
 	vk::Image mImage;

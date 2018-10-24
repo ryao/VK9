@@ -351,11 +351,11 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mPushConstantRanges[0].size = UBO_SIZE * 2; //There are 2 matrices one for world transform and one for all transforms.
 	mPushConstantRanges[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics; //VK_SHADER_STAGE_ALL_GRAPHICS
 
-	mVertexSpecializationInfo.pData = &mDeviceState.mSpecializationConstants;
-	mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+	//mVertexSpecializationInfo.pData = &mDeviceState.mShaderState;
+	//mVertexSpecializationInfo.dataSize = sizeof(SpecializationConstants);
 
-	mPixelSpecializationInfo.pData = &mDeviceState.mSpecializationConstants;
-	mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
+	//mPixelSpecializationInfo.pData = &mDeviceState.mShaderState;
+	//mPixelSpecializationInfo.dataSize = sizeof(SpecializationConstants);
 
 	mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1; //reset later.
 	mPipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = mVertexInputBindingDescription;
@@ -429,17 +429,17 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mPipelineShaderStageCreateInfo[0].stage = vk::ShaderStageFlagBits::eVertex;
 	mPipelineShaderStageCreateInfo[0].module = mVertShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[0].pName = "main";
-	mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &mVertexSpecializationInfo;
+	//mPipelineShaderStageCreateInfo[0].pSpecializationInfo = &mVertexSpecializationInfo;
 
 	mPipelineShaderStageCreateInfo[1].stage = vk::ShaderStageFlagBits::eFragment;
 	mPipelineShaderStageCreateInfo[1].module = mFragShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[1].pName = "main";
-	mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &mPixelSpecializationInfo;
+	//mPipelineShaderStageCreateInfo[1].pSpecializationInfo = &mPixelSpecializationInfo;
 
 	mPipelineShaderStageCreateInfo[2].stage = vk::ShaderStageFlagBits::eGeometry;
 	mPipelineShaderStageCreateInfo[2].module = mGeomShaderModule_XYZ_DIFFUSE;
 	mPipelineShaderStageCreateInfo[2].pName = "main";
-	mPipelineShaderStageCreateInfo[2].pSpecializationInfo = &mVertexSpecializationInfo;
+	//mPipelineShaderStageCreateInfo[2].pSpecializationInfo = &mVertexSpecializationInfo;
 
 	mGraphicsPipelineCreateInfo.pVertexInputState = &mPipelineVertexInputStateCreateInfo;
 	mGraphicsPipelineCreateInfo.pInputAssemblyState = &mPipelineInputAssemblyStateCreateInfo;
@@ -648,15 +648,9 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mDeviceState.m9Scissor.left = 0;
 	mDeviceState.m9Scissor.top = 0;
 
-	Light light = {};
-	mDeviceState.mLights.push_back(light);
-
 	mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
-	//revisit - light should be sized dynamically. Really more that 4 lights is stupid but this limit isn't correct behavior.
-	CreateBuffer(sizeof(Light) * 4, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mLightBuffer, mLightBufferMemory);
-	CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mMaterialBuffer, mMaterialBufferMemory);
-	CreateBuffer(sizeof(D3DMATRIX) * 9, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureMatricesBuffer, mTextureMatricesBufferMemory);
+	CreateBuffer(sizeof(ShaderState), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderStateBuffer, mShaderStateBufferMemory);
 }
 
 RealDevice::~RealDevice()
@@ -675,14 +669,8 @@ RealDevice::~RealDevice()
 
 	mDeviceState.mRenderTarget.reset();
 	
-	mDevice.destroyBuffer(mLightBuffer, nullptr);
-	mDevice.freeMemory(mLightBufferMemory, nullptr);
-
-	mDevice.destroyBuffer(mMaterialBuffer, nullptr);
-	mDevice.freeMemory(mMaterialBufferMemory, nullptr);
-
-	mDevice.destroyBuffer(mTextureMatricesBuffer, nullptr);
-	mDevice.freeMemory(mTextureMatricesBufferMemory, nullptr);
+	mDevice.destroyBuffer(mShaderStateBuffer, nullptr);
+	mDevice.freeMemory(mShaderStateBufferMemory, nullptr);
 
 	mDevice.destroyImageView(mImageView, nullptr);
 

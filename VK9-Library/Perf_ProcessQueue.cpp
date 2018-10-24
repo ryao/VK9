@@ -189,7 +189,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (pRenderTarget != nullptr)
 				{
 					auto& deviceState = realDevice->mDeviceState;
-					auto& constants = deviceState.mSpecializationConstants;
+					auto& constants = deviceState.mShaderState;
 					constants.screenWidth = pRenderTarget->mWidth;
 					constants.screenHeight = pRenderTarget->mHeight;
 
@@ -262,7 +262,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (pNewZStencil != nullptr)
 				{
-					auto& constants = realDevice->mDeviceState.mSpecializationConstants;
+					auto& constants = realDevice->mDeviceState.mShaderState;
 					constants.screenWidth = pNewZStencil->mWidth;
 					constants.screenHeight = pNewZStencil->mHeight;
 
@@ -432,7 +432,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
 				D3DLIGHT9* pLight = bit_cast<D3DLIGHT9*>(workItem->Argument2);
-				auto& light = realDevice->mDeviceState.mLights[Index];
+				auto& light = realDevice->mDeviceState.mShaderState.mLights[Index];
 
 				pLight->Type = (*(D3DLIGHTTYPE*)light.Type);
 				pLight->Diffuse = (*(D3DCOLORVALUE*)light.Diffuse);
@@ -457,7 +457,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Index = bit_cast<DWORD>(workItem->Argument1);
 				BOOL* pEnable = bit_cast<BOOL*>(workItem->Argument2);
 
-				(*pEnable) = realDevice->mDeviceState.mLights[Index].IsEnabled;
+				(*pEnable) = realDevice->mDeviceState.mShaderState.mLights[Index].IsEnabled;
 			}
 			break;
 			case Device_GetMaterial:
@@ -465,7 +465,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				auto& realDevice = commandStreamManager->mRenderManager.mStateManager.mDevices[workItem->Id];
 				D3DMATERIAL9* pMaterial = bit_cast<D3DMATERIAL9*>(workItem->Argument1);
 
-				(*pMaterial) = realDevice->mDeviceState.mMaterial;
+				(*pMaterial) = realDevice->mDeviceState.mShaderState.mMaterial;
 			}
 			break;
 			case Device_GetNPatchMode:
@@ -536,15 +536,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DRENDERSTATETYPE State = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
 				DWORD* pValue = bit_cast<DWORD*>(workItem->Argument2);
 
-				SpecializationConstants* constants = nullptr;
+				ShaderState* constants = nullptr;
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					constants = &realDevice->mCurrentStateRecording->mDeviceState.mSpecializationConstants;
+					constants = &realDevice->mCurrentStateRecording->mDeviceState.mShaderState;
 				}
 				else
 				{
-					constants = &realDevice->mDeviceState.mSpecializationConstants;
+					constants = &realDevice->mDeviceState.mShaderState;
 				}
 
 				switch (State)
@@ -942,563 +942,58 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				switch (Type)
 				{
 				case D3DTSS_COLOROP:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.colorOperation_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.colorOperation_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.colorOperation_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.colorOperation_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.colorOperation_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.colorOperation_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.colorOperation_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.colorOperation_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].colorOperation;
 					break;
 				case D3DTSS_COLORARG1:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.colorArgument1_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].colorArgument1;
 					break;
 				case D3DTSS_COLORARG2:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.colorArgument2_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].colorArgument2;
 					break;
 				case D3DTSS_ALPHAOP:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.alphaOperation_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].alphaOperation;
 					break;
 				case D3DTSS_ALPHAARG1:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.alphaArgument1_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].alphaArgument1;
 					break;
 				case D3DTSS_ALPHAARG2:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.alphaArgument2_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].alphaArgument2;
 					break;
 				case D3DTSS_BUMPENVMAT00:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_0);
-						break;
-					case 1:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_1);
-						break;
-					case 2:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_2);
-						break;
-					case 3:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_3);
-						break;
-					case 4:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_4);
-						break;
-					case 5:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_5);
-						break;
-					case 6:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_6);
-						break;
-					case 7:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix00_7);
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].bumpMapMatrix00;
 					break;
 				case D3DTSS_BUMPENVMAT01:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_0);
-						break;
-					case 1:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_1);
-						break;
-					case 2:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_2);
-						break;
-					case 3:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_3);
-						break;
-					case 4:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_4);
-						break;
-					case 5:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_5);
-						break;
-					case 6:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_6);
-						break;
-					case 7:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix01_7);
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].bumpMapMatrix01;
 					break;
 				case D3DTSS_BUMPENVMAT10:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_0);
-						break;
-					case 1:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_1);
-						break;
-					case 2:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_2);
-						break;
-					case 3:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_3);
-						break;
-					case 4:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_4);
-						break;
-					case 5:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_5);
-						break;
-					case 6:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_6);
-						break;
-					case 7:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix10_7);
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].bumpMapMatrix10;
 					break;
 				case D3DTSS_BUMPENVMAT11:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_0);
-						break;
-					case 1:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_1);
-						break;
-					case 2:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_2);
-						break;
-					case 3:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_3);
-						break;
-					case 4:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_4);
-						break;
-					case 5:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_5);
-						break;
-					case 6:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_6);
-						break;
-					case 7:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapMatrix11_7);
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].bumpMapMatrix11;
 					break;
 				case D3DTSS_TEXCOORDINDEX:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.texureCoordinateIndex_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].texureCoordinateIndex;
 					break;
 				case D3DTSS_BUMPENVLSCALE:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_0);
-						break;
-					case 1:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_1);
-						break;
-					case 2:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_2);
-						break;
-					case 3:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_3);
-						break;
-					case 4:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_4);
-						break;
-					case 5:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_5);
-						break;
-					case 6:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_6);
-						break;
-					case 7:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapScale_7);
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].bumpMapScale;
 					break;
 				case D3DTSS_BUMPENVLOFFSET:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_0);
-						break;
-					case 1:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_1);
-						break;
-					case 2:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_2);
-						break;
-					case 3:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_3);
-						break;
-					case 4:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_4);
-						break;
-					case 5:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_5);
-						break;
-					case 6:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_6);
-						break;
-					case 7:
-						(*pValue) = bit_cast(state->mSpecializationConstants.bumpMapOffset_7);
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].bumpMapOffset;
 					break;
 				case D3DTSS_TEXTURETRANSFORMFLAGS:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.textureTransformationFlags_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].textureTransformationFlags;
 					break;
 				case D3DTSS_COLORARG0:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.colorArgument0_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].colorArgument0;
 					break;
 				case D3DTSS_ALPHAARG0:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.alphaArgument0_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].alphaArgument0;
 					break;
 				case D3DTSS_RESULTARG:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.Result_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.Result_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.Result_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.Result_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.Result_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.Result_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.Result_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.Result_7;
-						break;
-					default:
-						break;
-					}
+					(*pValue) = state->mShaderState.mTextureStages[Stage].Result;
 					break;
 				case D3DTSS_CONSTANT:
-					switch (Stage)
-					{
-					case 0:
-						(*pValue) = state->mSpecializationConstants.Constant_0;
-						break;
-					case 1:
-						(*pValue) = state->mSpecializationConstants.Constant_1;
-						break;
-					case 2:
-						(*pValue) = state->mSpecializationConstants.Constant_2;
-						break;
-					case 3:
-						(*pValue) = state->mSpecializationConstants.Constant_3;
-						break;
-					case 4:
-						(*pValue) = state->mSpecializationConstants.Constant_4;
-						break;
-					case 5:
-						(*pValue) = state->mSpecializationConstants.Constant_5;
-						break;
-					case 6:
-						(*pValue) = state->mSpecializationConstants.Constant_6;
-						break;
-					case 7:
-						(*pValue) = state->mSpecializationConstants.Constant_7;
-						break;
-					default:
-						break;
-					}
-					break;
+					(*pValue) = state->mShaderState.mTextureStages[Stage].Constant;
 				default:
 					break;
 				}
@@ -1607,19 +1102,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
-				if (state->mLights.size() == LightIndex)
-				{
-					Light light = {};
-
-					light.IsEnabled = bEnable;
-					state->mLights.push_back(light);
-					state->mAreLightsDirty = true;
-				}
-				else
-				{
-					state->mLights[LightIndex].IsEnabled = bEnable;
-					state->mAreLightsDirty = true;
-				}
+				state->mShaderState.mLights[LightIndex].IsEnabled = bEnable;
+				state->mIsShaderStateDirty = true;
 			}
 			break;
 			case Device_Reset:
@@ -1744,18 +1228,11 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				light.Theta = pLight->Theta;
 				light.Phi = pLight->Phi;
 
-				if (state->mLights.size() == Index)
-				{
-					state->mLights.push_back(light);
-					state->mAreLightsDirty = true;
-				}
-				else
-				{
-					light.IsEnabled = state->mLights[Index].IsEnabled;
 
-					state->mLights[Index] = light;
-					state->mAreLightsDirty = true;
-				}
+				light.IsEnabled = state->mShaderState.mLights[Index].IsEnabled;
+				state->mShaderState.mLights[Index] = light;
+
+				state->mIsShaderStateDirty = true;
 			}
 			break;
 			case Device_SetMaterial:
@@ -1765,13 +1242,17 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					realDevice->mCurrentStateRecording->mDeviceState.mMaterial = (*pMaterial);
-					realDevice->mCurrentStateRecording->mDeviceState.mIsMaterialDirty = true;
+					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
+
+					deviceState.mShaderState.mMaterial = (*pMaterial);
+					deviceState.mIsShaderStateDirty = true;
 				}
 				else
 				{
-					realDevice->mDeviceState.mMaterial = (*pMaterial);
-					realDevice->mDeviceState.mIsMaterialDirty = true;
+					auto& deviceState = realDevice->mDeviceState;
+
+					deviceState.mShaderState.mMaterial = (*pMaterial);
+					deviceState.mIsShaderStateDirty = true;
 				}
 			}
 			break;
@@ -1876,17 +1357,17 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DRENDERSTATETYPE State = bit_cast<D3DRENDERSTATETYPE>(workItem->Argument1);
 				DWORD Value = bit_cast<DWORD>(workItem->Argument2);
 
-				SpecializationConstants* constants = nullptr;
+				ShaderState* constants = nullptr;
 				DeviceState* state = NULL;
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
-					constants = &realDevice->mCurrentStateRecording->mDeviceState.mSpecializationConstants;
+					constants = &realDevice->mCurrentStateRecording->mDeviceState.mShaderState;
 					state = &realDevice->mCurrentStateRecording->mDeviceState;
 				}
 				else
 				{
-					constants = &realDevice->mDeviceState.mSpecializationConstants;
+					constants = &realDevice->mDeviceState.mShaderState;
 					state = &realDevice->mDeviceState;
 				}
 
@@ -2428,565 +1909,63 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
+				state->mIsShaderStateDirty = true;
+
 				switch (Type)
 				{
 				case D3DTSS_COLOROP:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.colorOperation_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.colorOperation_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.colorOperation_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.colorOperation_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.colorOperation_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.colorOperation_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.colorOperation_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.colorOperation_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].colorOperation = Value;
 					break;
 				case D3DTSS_COLORARG1:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.colorArgument1_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.colorArgument1_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.colorArgument1_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.colorArgument1_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.colorArgument1_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.colorArgument1_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.colorArgument1_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.colorArgument1_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].colorArgument1 = Value;
 					break;
 				case D3DTSS_COLORARG2:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.colorArgument2_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.colorArgument2_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.colorArgument2_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.colorArgument2_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.colorArgument2_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.colorArgument2_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.colorArgument2_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.colorArgument2_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].colorArgument2 = Value;
 					break;
 				case D3DTSS_ALPHAOP:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.alphaOperation_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.alphaOperation_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.alphaOperation_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.alphaOperation_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.alphaOperation_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.alphaOperation_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.alphaOperation_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.alphaOperation_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].alphaOperation = Value;
 					break;
 				case D3DTSS_ALPHAARG1:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.alphaArgument1_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.alphaArgument1_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.alphaArgument1_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.alphaArgument1_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.alphaArgument1_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.alphaArgument1_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.alphaArgument1_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.alphaArgument1_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].alphaArgument1 = Value;
 					break;
 				case D3DTSS_ALPHAARG2:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.alphaArgument2_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.alphaArgument2_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.alphaArgument2_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.alphaArgument2_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.alphaArgument2_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.alphaArgument2_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.alphaArgument2_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.alphaArgument2_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].alphaArgument2 = Value;
 					break;
 				case D3DTSS_BUMPENVMAT00:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.bumpMapMatrix00_0 = bit_cast(Value);
-						break;
-					case 1:
-						state->mSpecializationConstants.bumpMapMatrix00_1 = bit_cast(Value);
-						break;
-					case 2:
-						state->mSpecializationConstants.bumpMapMatrix00_2 = bit_cast(Value);
-						break;
-					case 3:
-						state->mSpecializationConstants.bumpMapMatrix00_3 = bit_cast(Value);
-						break;
-					case 4:
-						state->mSpecializationConstants.bumpMapMatrix00_4 = bit_cast(Value);
-						break;
-					case 5:
-						state->mSpecializationConstants.bumpMapMatrix00_5 = bit_cast(Value);
-						break;
-					case 6:
-						state->mSpecializationConstants.bumpMapMatrix00_6 = bit_cast(Value);
-						break;
-					case 7:
-						state->mSpecializationConstants.bumpMapMatrix00_7 = bit_cast(Value);
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].bumpMapMatrix00 = bit_cast(Value);
 					break;
 				case D3DTSS_BUMPENVMAT01:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.bumpMapMatrix01_0 = bit_cast(Value);
-						break;
-					case 1:
-						state->mSpecializationConstants.bumpMapMatrix01_1 = bit_cast(Value);
-						break;
-					case 2:
-						state->mSpecializationConstants.bumpMapMatrix01_2 = bit_cast(Value);
-						break;
-					case 3:
-						state->mSpecializationConstants.bumpMapMatrix01_3 = bit_cast(Value);
-						break;
-					case 4:
-						state->mSpecializationConstants.bumpMapMatrix01_4 = bit_cast(Value);
-						break;
-					case 5:
-						state->mSpecializationConstants.bumpMapMatrix01_5 = bit_cast(Value);
-						break;
-					case 6:
-						state->mSpecializationConstants.bumpMapMatrix01_6 = bit_cast(Value);
-						break;
-					case 7:
-						state->mSpecializationConstants.bumpMapMatrix01_7 = bit_cast(Value);
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].bumpMapMatrix01 = bit_cast(Value);
 					break;
 				case D3DTSS_BUMPENVMAT10:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.bumpMapMatrix10_0 = bit_cast(Value);
-						break;
-					case 1:
-						state->mSpecializationConstants.bumpMapMatrix10_1 = bit_cast(Value);
-						break;
-					case 2:
-						state->mSpecializationConstants.bumpMapMatrix10_2 = bit_cast(Value);
-						break;
-					case 3:
-						state->mSpecializationConstants.bumpMapMatrix10_3 = bit_cast(Value);
-						break;
-					case 4:
-						state->mSpecializationConstants.bumpMapMatrix10_4 = bit_cast(Value);
-						break;
-					case 5:
-						state->mSpecializationConstants.bumpMapMatrix10_5 = bit_cast(Value);
-						break;
-					case 6:
-						state->mSpecializationConstants.bumpMapMatrix10_6 = bit_cast(Value);
-						break;
-					case 7:
-						state->mSpecializationConstants.bumpMapMatrix10_7 = bit_cast(Value);
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].bumpMapMatrix10 = bit_cast(Value);
 					break;
 				case D3DTSS_BUMPENVMAT11:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.bumpMapMatrix11_0 = bit_cast(Value);
-						break;
-					case 1:
-						state->mSpecializationConstants.bumpMapMatrix11_1 = bit_cast(Value);
-						break;
-					case 2:
-						state->mSpecializationConstants.bumpMapMatrix11_2 = bit_cast(Value);
-						break;
-					case 3:
-						state->mSpecializationConstants.bumpMapMatrix11_3 = bit_cast(Value);
-						break;
-					case 4:
-						state->mSpecializationConstants.bumpMapMatrix11_4 = bit_cast(Value);
-						break;
-					case 5:
-						state->mSpecializationConstants.bumpMapMatrix11_5 = bit_cast(Value);
-						break;
-					case 6:
-						state->mSpecializationConstants.bumpMapMatrix11_6 = bit_cast(Value);
-						break;
-					case 7:
-						state->mSpecializationConstants.bumpMapMatrix11_7 = bit_cast(Value);
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].bumpMapMatrix11 = bit_cast(Value);
 					break;
 				case D3DTSS_TEXCOORDINDEX:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.texureCoordinateIndex_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.texureCoordinateIndex_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.texureCoordinateIndex_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.texureCoordinateIndex_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.texureCoordinateIndex_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.texureCoordinateIndex_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.texureCoordinateIndex_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.texureCoordinateIndex_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].texureCoordinateIndex = Value;
 					break;
 				case D3DTSS_BUMPENVLSCALE:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.bumpMapScale_0 = bit_cast(Value);
-						break;
-					case 1:
-						state->mSpecializationConstants.bumpMapScale_1 = bit_cast(Value);
-						break;
-					case 2:
-						state->mSpecializationConstants.bumpMapScale_2 = bit_cast(Value);
-						break;
-					case 3:
-						state->mSpecializationConstants.bumpMapScale_3 = bit_cast(Value);
-						break;
-					case 4:
-						state->mSpecializationConstants.bumpMapScale_4 = bit_cast(Value);
-						break;
-					case 5:
-						state->mSpecializationConstants.bumpMapScale_5 = bit_cast(Value);
-						break;
-					case 6:
-						state->mSpecializationConstants.bumpMapScale_6 = bit_cast(Value);
-						break;
-					case 7:
-						state->mSpecializationConstants.bumpMapScale_7 = bit_cast(Value);
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].bumpMapScale = bit_cast(Value);
 					break;
 				case D3DTSS_BUMPENVLOFFSET:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.bumpMapOffset_0 = bit_cast(Value);
-						break;
-					case 1:
-						state->mSpecializationConstants.bumpMapOffset_1 = bit_cast(Value);
-						break;
-					case 2:
-						state->mSpecializationConstants.bumpMapOffset_2 = bit_cast(Value);
-						break;
-					case 3:
-						state->mSpecializationConstants.bumpMapOffset_3 = bit_cast(Value);
-						break;
-					case 4:
-						state->mSpecializationConstants.bumpMapOffset_4 = bit_cast(Value);
-						break;
-					case 5:
-						state->mSpecializationConstants.bumpMapOffset_5 = bit_cast(Value);
-						break;
-					case 6:
-						state->mSpecializationConstants.bumpMapOffset_6 = bit_cast(Value);
-						break;
-					case 7:
-						state->mSpecializationConstants.bumpMapOffset_7 = bit_cast(Value);
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].bumpMapOffset = bit_cast(Value);
 					break;
 				case D3DTSS_TEXTURETRANSFORMFLAGS:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.textureTransformationFlags_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.textureTransformationFlags_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.textureTransformationFlags_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.textureTransformationFlags_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.textureTransformationFlags_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.textureTransformationFlags_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.textureTransformationFlags_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.textureTransformationFlags_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].textureTransformationFlags = Value;
 					break;
 				case D3DTSS_COLORARG0:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.colorArgument0_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.colorArgument0_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.colorArgument0_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.colorArgument0_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.colorArgument0_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.colorArgument0_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.colorArgument0_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.colorArgument0_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].colorArgument0 = Value;
 					break;
 				case D3DTSS_ALPHAARG0:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.alphaArgument0_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.alphaArgument0_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.alphaArgument0_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.alphaArgument0_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.alphaArgument0_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.alphaArgument0_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.alphaArgument0_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.alphaArgument0_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].alphaArgument0 = Value;
 					break;
 				case D3DTSS_RESULTARG:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.Result_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.Result_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.Result_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.Result_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.Result_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.Result_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.Result_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.Result_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].Result = Value;
 					break;
 				case D3DTSS_CONSTANT:
-					switch (Stage)
-					{
-					case 0:
-						state->mSpecializationConstants.Constant_0 = Value;
-						break;
-					case 1:
-						state->mSpecializationConstants.Constant_1 = Value;
-						break;
-					case 2:
-						state->mSpecializationConstants.Constant_2 = Value;
-						break;
-					case 3:
-						state->mSpecializationConstants.Constant_3 = Value;
-						break;
-					case 4:
-						state->mSpecializationConstants.Constant_4 = Value;
-						break;
-					case 5:
-						state->mSpecializationConstants.Constant_5 = Value;
-						break;
-					case 6:
-						state->mSpecializationConstants.Constant_6 = Value;
-						break;
-					case 7:
-						state->mSpecializationConstants.Constant_7 = Value;
-						break;
-					default:
-						break;
-					}
+					state->mShaderState.mTextureStages[Stage].Constant = Value;
 					break;
 				default:
 					break;
@@ -3003,89 +1982,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
-					switch (State)
-					{
-					case D3DTS_TEXTURE0:
-						deviceState.mTextureMatrices[0] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE1:
-						deviceState.mTextureMatrices[1] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE2:
-						deviceState.mTextureMatrices[2] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE3:
-						deviceState.mTextureMatrices[3] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE4:
-						deviceState.mTextureMatrices[4] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE5:
-						deviceState.mTextureMatrices[5] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE6:
-						deviceState.mTextureMatrices[6] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE7:
-						deviceState.mTextureMatrices[7] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					default:
-						deviceState.mTransforms[State] = (*pMatrix);
-						deviceState.mHasTransformsChanged = true;
-						break;
-					}
+					deviceState.mShaderState.mTextureStages[State].textureTransformationMatrix = (*pMatrix);
+					deviceState.mIsShaderStateDirty = true;
 				}
 				else
 				{
 					auto& deviceState = realDevice->mDeviceState;
 
-					switch (State)
-					{
-					case D3DTS_TEXTURE0:
-						deviceState.mTextureMatrices[0] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE1:
-						deviceState.mTextureMatrices[1] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE2:
-						deviceState.mTextureMatrices[2] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE3:
-						deviceState.mTextureMatrices[3] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE4:
-						deviceState.mTextureMatrices[4] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE5:
-						deviceState.mTextureMatrices[5] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE6:
-						deviceState.mTextureMatrices[6] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					case D3DTS_TEXTURE7:
-						deviceState.mTextureMatrices[7] = (*pMatrix);
-						deviceState.mAreTextureMaticesDirty = true;
-						break;
-					default:
-						deviceState.mTransforms[State] = (*pMatrix);
-						deviceState.mHasTransformsChanged = true;
-						break;
-					}
+					deviceState.mShaderState.mTextureStages[State].textureTransformationMatrix = (*pMatrix);
+					deviceState.mIsShaderStateDirty = true;
 				}
 			}
 			break;
@@ -3342,7 +2247,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				pCaps->MaxSimultaneousTextures = 16; // properties.limits.maxDescriptorSetSampledImages; //revisit
 
 				pCaps->VertexProcessingCaps = D3DVTXPCAPS_TEXGEN | D3DVTXPCAPS_MATERIALSOURCE7 | D3DVTXPCAPS_DIRECTIONALLIGHTS | D3DVTXPCAPS_POSITIONALLIGHTS | D3DVTXPCAPS_LOCALVIEWER | D3DVTXPCAPS_TWEENING;
-				pCaps->MaxActiveLights = 0;  //Revsit should be infinite but games may not read it that way.
+				pCaps->MaxActiveLights = 8;  //Revsit should be infinite but games may not read it that way.
 				pCaps->MaxUserClipPlanes = 8; //revisit
 				pCaps->MaxVertexBlendMatrices = 4; //revisit
 				pCaps->MaxVertexBlendMatrixIndex = 7; //revisit
@@ -3523,7 +2428,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto& renderTarget = realDevice->mRenderTargets[0];
 					if (renderTarget != nullptr)
 					{
-						auto& constants = realDevice->mDeviceState.mSpecializationConstants;
+						auto& constants = realDevice->mDeviceState.mShaderState;
 						auto surface = renderTarget->mColorSurface;
 						if (surface != nullptr)
 						{
@@ -4432,7 +3337,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				workItem->Caller = nullptr;
 			}
 
-			if (!commandStreamManager->mUnusedWorkItems.Push(workItem,count))
+			if (!commandStreamManager->mUnusedWorkItems.Push(workItem, count))
 			{
 				delete workItem;
 			}

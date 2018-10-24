@@ -96,174 +96,40 @@ struct ShaderConstantSlots
 	float FloatConstants[256 * 4]; //= { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
 };
 
-struct SpecializationConstants
+struct TextureStage
 {
-	int lightCount = 1;
+	int Constant = 0;
+	int Result = D3DTA_CURRENT;
+	int textureTransformationFlags = D3DTTFF_DISABLE;
+	D3DMATRIX textureTransformationMatrix;
+	int texureCoordinateIndex = 0;
+	int colorOperation = D3DTOP_MODULATE;
+	int colorArgument0 = D3DTA_CURRENT;
+	int colorArgument1 = D3DTA_TEXTURE;
+	int colorArgument2 = D3DTA_CURRENT;
+	int alphaOperation = D3DTOP_SELECTARG1;
+	int alphaArgument0 = D3DTA_CURRENT;
+	int alphaArgument1 = D3DTA_TEXTURE;
+	int alphaArgument2 = D3DTA_CURRENT;
+	float bumpMapMatrix00 = 0.0f;
+	float bumpMapMatrix01 = 0.0f;
+	float bumpMapMatrix10 = 0.0f;
+	float bumpMapMatrix11 = 0.0f;
+	float bumpMapScale = 0.0f;
+	float bumpMapOffset = 0.0f;
+};
+
+struct ShaderState
+{
 	int placeholder1 = 0;
 	int placeholder2 = 0;
 	//int shadeMode = D3DSHADE_GOURAUD;
 	//int isLightingEnabled = true;
 	int textureCount = 1;
 
-	//Texture Stage _0
-	int Constant_0 = 0;
-	int Result_0 = D3DTA_CURRENT;
-	int textureTransformationFlags_0 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_0 = 0;
-	int colorOperation_0 = D3DTOP_MODULATE;
-	int colorArgument0_0 = D3DTA_CURRENT;
-	int colorArgument1_0 = D3DTA_TEXTURE;
-	int colorArgument2_0 = D3DTA_CURRENT;
-	int alphaOperation_0 = D3DTOP_SELECTARG1;
-	int alphaArgument0_0 = D3DTA_CURRENT;
-	int alphaArgument1_0 = D3DTA_TEXTURE;
-	int alphaArgument2_0 = D3DTA_CURRENT;
-	float bumpMapMatrix00_0 = 0.0f;
-	float bumpMapMatrix01_0 = 0.0f;
-	float bumpMapMatrix10_0 = 0.0f;
-	float bumpMapMatrix11_0 = 0.0f;
-	float bumpMapScale_0 = 0.0f;
-	float bumpMapOffset_0 = 0.0f;
-
-	//Texture Stage _1
-	int Constant_1 = 0;
-	int Result_1 = D3DTA_CURRENT;
-	int textureTransformationFlags_1 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_1 = 1;
-	int colorOperation_1 = D3DTOP_DISABLE;
-	int colorArgument0_1 = D3DTA_CURRENT;
-	int colorArgument1_1 = D3DTA_TEXTURE;
-	int colorArgument2_1 = D3DTA_CURRENT;
-	int alphaOperation_1 = D3DTOP_DISABLE;
-	int alphaArgument0_1 = D3DTA_CURRENT;
-	int alphaArgument1_1 = D3DTA_TEXTURE;
-	int alphaArgument2_1 = D3DTA_CURRENT;
-	float bumpMapMatrix00_1 = 0.0f;
-	float bumpMapMatrix01_1 = 0.0f;
-	float bumpMapMatrix10_1 = 0.0f;
-	float bumpMapMatrix11_1 = 0.0f;
-	float bumpMapScale_1 = 0.0f;
-	float bumpMapOffset_1 = 0.0f;
-
-	//Texture Stage _2
-	int Constant_2 = 0;
-	int Result_2 = D3DTA_CURRENT;
-	int textureTransformationFlags_2 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_2 = 2;
-	int colorOperation_2 = D3DTOP_DISABLE;
-	int colorArgument0_2 = D3DTA_CURRENT;
-	int colorArgument1_2 = D3DTA_TEXTURE;
-	int colorArgument2_2 = D3DTA_CURRENT;
-	int alphaOperation_2 = D3DTOP_DISABLE;
-	int alphaArgument0_2 = D3DTA_CURRENT;
-	int alphaArgument1_2 = D3DTA_TEXTURE;
-	int alphaArgument2_2 = D3DTA_CURRENT;
-	float bumpMapMatrix00_2 = 0.0f;
-	float bumpMapMatrix01_2 = 0.0f;
-	float bumpMapMatrix10_2 = 0.0f;
-	float bumpMapMatrix11_2 = 0.0f;
-	float bumpMapScale_2 = 0.0f;
-	float bumpMapOffset_2 = 0.0f;
-
-	//Texture Stage _3
-	int Constant_3 = 0;
-	int Result_3 = D3DTA_CURRENT;
-	int textureTransformationFlags_3 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_3 = 3;
-	int colorOperation_3 = D3DTOP_DISABLE;
-	int colorArgument0_3 = D3DTA_CURRENT;
-	int colorArgument1_3 = D3DTA_TEXTURE;
-	int colorArgument2_3 = D3DTA_CURRENT;
-	int alphaOperation_3 = D3DTOP_DISABLE;
-	int alphaArgument0_3 = D3DTA_CURRENT;
-	int alphaArgument1_3 = D3DTA_TEXTURE;
-	int alphaArgument2_3 = D3DTA_CURRENT;
-	float bumpMapMatrix00_3 = 0.0f;
-	float bumpMapMatrix01_3 = 0.0f;
-	float bumpMapMatrix10_3 = 0.0f;
-	float bumpMapMatrix11_3 = 0.0f;
-	float bumpMapScale_3 = 0.0f;
-	float bumpMapOffset_3 = 0.0f;
-
-	//Texture Stage _4
-	int Constant_4 = 0;
-	int Result_4 = D3DTA_CURRENT;
-	int textureTransformationFlags_4 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_4 = 4;
-	int colorOperation_4 = D3DTOP_DISABLE;
-	int colorArgument0_4 = D3DTA_CURRENT;
-	int colorArgument1_4 = D3DTA_TEXTURE;
-	int colorArgument2_4 = D3DTA_CURRENT;
-	int alphaOperation_4 = D3DTOP_DISABLE;
-	int alphaArgument0_4 = D3DTA_CURRENT;
-	int alphaArgument1_4 = D3DTA_TEXTURE;
-	int alphaArgument2_4 = D3DTA_CURRENT;
-	float bumpMapMatrix00_4 = 0.0f;
-	float bumpMapMatrix01_4 = 0.0f;
-	float bumpMapMatrix10_4 = 0.0f;
-	float bumpMapMatrix11_4 = 0.0f;
-	float bumpMapScale_4 = 0.0f;
-	float bumpMapOffset_4 = 0.0f;
-
-	//Texture Stage _5
-	int Constant_5 = 0;
-	int Result_5 = D3DTA_CURRENT;
-	int textureTransformationFlags_5 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_5 = 5;
-	int colorOperation_5 = D3DTOP_DISABLE;
-	int colorArgument0_5 = D3DTA_CURRENT;
-	int colorArgument1_5 = D3DTA_TEXTURE;
-	int colorArgument2_5 = D3DTA_CURRENT;
-	int alphaOperation_5 = D3DTOP_DISABLE;
-	int alphaArgument0_5 = D3DTA_CURRENT;
-	int alphaArgument1_5 = D3DTA_TEXTURE;
-	int alphaArgument2_5 = D3DTA_CURRENT;
-	float bumpMapMatrix00_5 = 0.0f;
-	float bumpMapMatrix01_5 = 0.0f;
-	float bumpMapMatrix10_5 = 0.0f;
-	float bumpMapMatrix11_5 = 0.0f;
-	float bumpMapScale_5 = 0.0f;
-	float bumpMapOffset_5 = 0.0f;
-
-	//Texture Stage _6
-	int Constant_6 = 0;
-	int Result_6 = D3DTA_CURRENT;
-	int textureTransformationFlags_6 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_6 = 6;
-	int colorOperation_6 = D3DTOP_DISABLE;
-	int colorArgument0_6 = D3DTA_CURRENT;
-	int colorArgument1_6 = D3DTA_TEXTURE;
-	int colorArgument2_6 = D3DTA_CURRENT;
-	int alphaOperation_6 = D3DTOP_DISABLE;
-	int alphaArgument0_6 = D3DTA_CURRENT;
-	int alphaArgument1_6 = D3DTA_TEXTURE;
-	int alphaArgument2_6 = D3DTA_CURRENT;
-	float bumpMapMatrix00_6 = 0.0f;
-	float bumpMapMatrix01_6 = 0.0f;
-	float bumpMapMatrix10_6 = 0.0f;
-	float bumpMapMatrix11_6 = 0.0f;
-	float bumpMapScale_6 = 0.0f;
-	float bumpMapOffset_6 = 0.0f;
-
-	//Texture Stage _7
-	int Constant_7 = 0;
-	int Result_7 = D3DTA_CURRENT;
-	int textureTransformationFlags_7 = D3DTTFF_DISABLE;
-	int texureCoordinateIndex_7 = 7;
-	int colorOperation_7 = D3DTOP_DISABLE;
-	int colorArgument0_7 = D3DTA_CURRENT;
-	int colorArgument1_7 = D3DTA_TEXTURE;
-	int colorArgument2_7 = D3DTA_CURRENT;
-	int alphaOperation_7 = D3DTOP_DISABLE;
-	int alphaArgument0_7 = D3DTA_CURRENT;
-	int alphaArgument1_7 = D3DTA_TEXTURE;
-	int alphaArgument2_7 = D3DTA_CURRENT;
-	float bumpMapMatrix00_7 = 0.0f;
-	float bumpMapMatrix01_7 = 0.0f;
-	float bumpMapMatrix10_7 = 0.0f;
-	float bumpMapMatrix11_7 = 0.0f;
-	float bumpMapScale_7 = 0.0f;
-	float bumpMapOffset_7 = 0.0f;
+	TextureStage mTextureStages[9];
+	D3DMATERIAL9 mMaterial = {};
+	Light mLights[8];
 
 	//Render State
 	int zEnable = D3DZB_TRUE;
@@ -378,6 +244,9 @@ struct RealRenderTarget;
 
 struct DeviceState
 {
+	ShaderState mShaderState = {};
+	BOOL mIsShaderStateDirty = true;
+
 	//IDirect3DDevice9::LightEnable
 	//IDirect3DDevice9::SetClipPlane
 	//IDirect3DDevice9::SetCurrentTexturePalette
@@ -392,34 +261,10 @@ struct DeviceState
 	std::shared_ptr<RealRenderTarget> mRenderTarget;
 
 	//IDirect3DDevice9::SetLight
-	//std::vector<Light, 4> mLights;
-	std::vector<Light> mLights;
-	BOOL mAreLightsDirty = true;
+	//BOOL mAreLightsDirty = true;
 
 	//IDirect3DDevice9::SetMaterial
-	D3DMATERIAL9 mMaterial = 
-	{
-		/*1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,
-		1.0f*/
-	};
-	BOOL mIsMaterialDirty = true;
-
-	D3DMATRIX mTextureMatrices[9] = 
-	{
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,
-		1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f,1.0f
-	};
-	BOOL mAreTextureMaticesDirty = true;
+	//BOOL mIsMaterialDirty = true;	
 
 	//IDirect3DDevice9::SetNPatchMode
 	float mNSegments = -1;
@@ -581,19 +426,17 @@ struct DeviceState
 	CVertexShader9* mVertexShader = nullptr;
 	BOOL mHasVertexShader = 0;
 
+
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI
-
-	//Used for shader specialization.
-	SpecializationConstants mSpecializationConstants = {};
-
 	float mPushConstants[64] = {};
-	ShaderConstantSlots mVertexShaderConstantSlots = {};
-	ShaderConstantSlots mPixelShaderConstantSlots = {};
 
-	//ConvertedShader mConvertedVertexShader = {};
-	//ConvertedShader mConvertedPixelShader = {};
+	ShaderConstantSlots mVertexShaderConstantSlots = {};
+	BOOL mAreVertexShaderSlotsDirty = true;
+
+	ShaderConstantSlots mPixelShaderConstantSlots = {};
+	BOOL mArePixelShaderSlotsDirty = true;
 
 	bool hasPresented = true;
 };
