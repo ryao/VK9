@@ -651,6 +651,8 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
 	CreateBuffer(sizeof(ShaderState), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderStateBuffer, mShaderStateBufferMemory);
+	CreateBuffer(sizeof(ShaderConstantSlots), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderVertexConstantBuffer, mShaderVertexConstantBufferMemory);
+	CreateBuffer(sizeof(ShaderConstantSlots), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderPixelConstantBuffer, mShaderPixelConstantBufferMemory);
 }
 
 RealDevice::~RealDevice()
@@ -669,6 +671,12 @@ RealDevice::~RealDevice()
 
 	mDeviceState.mRenderTarget.reset();
 	
+	mDevice.destroyBuffer(mShaderPixelConstantBuffer, nullptr);
+	mDevice.freeMemory(mShaderPixelConstantBufferMemory, nullptr);
+
+	mDevice.destroyBuffer(mShaderVertexConstantBuffer, nullptr);
+	mDevice.freeMemory(mShaderVertexConstantBufferMemory, nullptr);
+
 	mDevice.destroyBuffer(mShaderStateBuffer, nullptr);
 	mDevice.freeMemory(mShaderStateBufferMemory, nullptr);
 
