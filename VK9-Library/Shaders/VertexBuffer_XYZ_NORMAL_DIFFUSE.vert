@@ -26,14 +26,9 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform LightBlock
+layout(std140,binding = 0) uniform ShaderStateBlock
 {
-	Light lights[lightCount];
-};
-
-layout(binding = 1) uniform MaterialBlock
-{
-	Material material;
+	ShaderState shaderState;
 };
 
 layout(push_constant) uniform UniformBufferObject {
@@ -66,12 +61,12 @@ void main()
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
-	if(colorVertex)
+	if(shaderState.colorVertex==1)
 	{
-		switch(diffuseMaterialSource)
+		switch(shaderState.diffuseMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				diffuseColor = material.Diffuse;
+				diffuseColor = shaderState.mMaterial.Diffuse;
 			break;
 			case D3DMCS_COLOR1:
 				diffuseColor = Convert(attr2);
@@ -84,10 +79,10 @@ void main()
 			break;
 		}
 		
-		switch(ambientMaterialSource)
+		switch(shaderState.ambientMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				ambientColor = material.Ambient;
+				ambientColor = shaderState.mMaterial.Ambient;
 			break;
 			case D3DMCS_COLOR1:
 				ambientColor = Convert(attr2);
@@ -100,10 +95,10 @@ void main()
 			break;
 		}
 
-		switch(specularMaterialSource)
+		switch(shaderState.specularMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				specularColor = material.Specular;
+				specularColor = shaderState.mMaterial.Specular;
 			break;
 			case D3DMCS_COLOR1:
 				specularColor = Convert(attr2);
@@ -116,10 +111,10 @@ void main()
 			break;
 		}
 
-		switch(emissiveMaterialSource)
+		switch(shaderState.emissiveMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				emissiveColor = material.Emissive;
+				emissiveColor = shaderState.mMaterial.Emissive;
 			break;
 			case D3DMCS_COLOR1:
 				emissiveColor = Convert(attr2);
@@ -134,17 +129,17 @@ void main()
 	}
 	else
 	{
-		diffuseColor = material.Diffuse;
-		ambientColor = material.Ambient;
-		specularColor = material.Specular;
-		emissiveColor = material.Emissive;
+		diffuseColor = shaderState.mMaterial.Diffuse;
+		ambientColor = shaderState.mMaterial.Ambient;
+		specularColor = shaderState.mMaterial.Specular;
+		emissiveColor = shaderState.mMaterial.Emissive;
 	}
 
 
 
 	normal = ubo.modelTransformation * vec4(attr1,0);
 	normal *= vec4(1.0,-1.0,1.0,1.0);
-	if(normalizeNormals)
+	if(shaderState.normalizeNormals==1)
 	{
 		normal = normalize(normal);
 	}

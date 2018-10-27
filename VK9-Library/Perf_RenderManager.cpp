@@ -1361,7 +1361,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	realDevice->mDescriptorSetLayoutBinding[1].binding = 1;
 	realDevice->mDescriptorSetLayoutBinding[1].descriptorType = vk::DescriptorType::eUniformBuffer;
 	realDevice->mDescriptorSetLayoutBinding[1].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	realDevice->mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eVertex;
 	realDevice->mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
 
 	realDevice->mDescriptorSetLayoutBinding[2].binding = 2;

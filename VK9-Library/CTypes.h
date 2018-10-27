@@ -121,10 +121,6 @@ struct TextureStage
 
 struct ShaderState
 {
-	int placeholder1 = 0;
-	int placeholder2 = 0;
-	//int shadeMode = D3DSHADE_GOURAUD;
-	//int isLightingEnabled = true;
 	int textureCount = 1;
 
 	TextureStage mTextureStages[9];

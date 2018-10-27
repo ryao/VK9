@@ -45,19 +45,19 @@ vec4 GetGlobalIllumination()
 	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
-	for( int i=0; i<lightCount; ++i )
+	for( int i=0; i<8; ++i )
 	{		
-		if(lights[i].IsEnabled)
+		if(shaderState.mLights[i].IsEnabled)
 		{		
-			lightPosition = ubo.modelTransformation * lights[i].Position;
+			lightPosition = ubo.modelTransformation * shaderState.mLights[i].Position;
 			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
 
-			lightDirection = lights[i].Direction;
+			lightDirection = shaderState.mLights[i].Direction;
 			lightDirection *= vec4(1.0,-1.0,1.0,1.0);
 
 			lightDistance = abs(distance(vectorPosition.xyz,lightPosition.xyz));
 
-			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
+			if(shaderState.mLights[i].Type == D3DLIGHT_DIRECTIONAL)
 			{
 				ldir = normalize(lightDirection * vec4(-1.0,-1.0,-1.0,-1.0));
 			}
@@ -66,43 +66,43 @@ vec4 GetGlobalIllumination()
 				ldir = normalize(lightPosition - vectorPosition);
 			}
 
-			if(lights[i].Type == D3DLIGHT_DIRECTIONAL)
+			if(shaderState.mLights[i].Type == D3DLIGHT_DIRECTIONAL)
 			{
 				attenuation = 1;
 			}
-			else if(lights[i].Range < lightDistance)
+			else if(shaderState.mLights[i].Range < lightDistance)
 			{
 				attenuation = 0;
 			}
 			else
 			{
-				attenuation = 1/( lights[i].Attenuation0 + lights[i].Attenuation1 * lightDistance + lights[i].Attenuation2 * pow(lightDistance,2));	
+				attenuation = 1/( shaderState.mLights[i].Attenuation0 + shaderState.mLights[i].Attenuation1 * lightDistance + shaderState.mLights[i].Attenuation2 * pow(lightDistance,2));	
 			}
 
 			rho = clamp(dot(normalize(lightDirection.xyz * vec3(-1.0,-1.0,-1.0)),normalize(lightPosition.xyz - vectorPosition.xyz)),0,1);
 
-			if(lights[i].Type != D3DLIGHT_SPOT || rho > cos(lights[i].Theta/2))
+			if(shaderState.mLights[i].Type != D3DLIGHT_SPOT || rho > cos(shaderState.mLights[i].Theta/2))
 			{
 				spot = 1;
 			}
-			else if(rho <= cos(lights[i].Phi/2))
+			else if(rho <= cos(shaderState.mLights[i].Phi/2))
 			{
 				spot = 0;
 			}
 			else
 			{
-				float u = rho - cos(lights[i].Phi / 2);
-				float v = cos(lights[i].Theta / 2) - cos(lights[i].Phi / 2);
-				spot = pow(clamp(u / v,0,1),lights[i].Falloff);
+				float u = rho - cos(shaderState.mLights[i].Phi / 2);
+				float v = cos(shaderState.mLights[i].Theta / 2) - cos(shaderState.mLights[i].Phi / 2);
+				spot = pow(clamp(u / v,0,1),shaderState.mLights[i].Falloff);
 			}
 
-			ambientTemp += (attenuation * spot * lights[i].Ambient);
-			diffuseTemp += (diffuseColor * lights[i].Diffuse * clamp(dot(normal,ldir),0,1) * attenuation * spot);
+			ambientTemp += (attenuation * spot * shaderState.mLights[i].Ambient);
+			diffuseTemp += (diffuseColor * shaderState.mLights[i].Diffuse * clamp(dot(normal,ldir),0,1) * attenuation * spot);
 
-			if(specularEnable)
+			if(shaderState.specularEnable==1)
 			{
 				vec3 halfway;
-				if(localViewer)
+				if(shaderState.localViewer==1)
 				{
 					halfway = normalize(normalize(cameraPosition - pos.xyz) + ldir.xyz);			
 				}
@@ -113,19 +113,19 @@ vec4 GetGlobalIllumination()
 				
 				//The result is defined if x < 0 or x=0 and y<=0
 				// The clamp will take care of the former and the if will take care of the latter. if the result is zero then this whole line is zero therefore just skip it.
-				if(material.Power > 0)
+				if(shaderState.mMaterial.Power > 0)
 				{
-					specularTemp += (lights[i].Specular * pow(clamp(dot(normal.xyz,halfway),0,1),material.Power) * attenuation * spot);
+					specularTemp += (shaderState.mLights[i].Specular * pow(clamp(dot(normal.xyz,halfway),0,1),shaderState.mMaterial.Power) * attenuation * spot);
 				}
 			}
 		}
 	}
 
-	ambient = material.Ambient * (Convert(globalAmbient) + ambientTemp);
+	ambient = shaderState.mMaterial.Ambient * (Convert(shaderState.globalAmbient) + ambientTemp);
 	diffuse = diffuseTemp;
 	emissive = emissiveColor;
 
-	if(specularEnable)
+	if(shaderState.specularEnable==1)
 	{
 		specular = specularColor * specularTemp;
 	}

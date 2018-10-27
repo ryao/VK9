@@ -26,22 +26,12 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform LightBlock
+layout(std140,binding = 0) uniform ShaderStateBlock
 {
-	Light lights[lightCount];
+	ShaderState shaderState;
 };
 
-layout(binding = 1) uniform MaterialBlock
-{
-	Material material;
-};
-
-layout(binding = 2) uniform Matrices 
-{
-	mat4 textureMatrices[9];
-} matrices;
-
-layout(binding = 3) uniform sampler2D textures[textureCount];
+layout(binding = 3) uniform sampler2D textures[2];
 
 layout(push_constant) uniform UniformBufferObject 
 {
@@ -83,27 +73,27 @@ void main()
 	vec4 temp = vec4(1.0,1.0,1.0,1.0);
 	vec4 result = vec4(1.0,1.0,1.0,1.0); //On stage 0 CURRENT is the same as DIFFUSE
 
-	if(textureCount>0)
+	if(shaderState.textureCount>0)
 	{
-		processStage(textures[0],texureCoordinateIndex_0, Constant_0, Result_0,
+		processStage(textures[0],shaderState.mTextureStages[0].texureCoordinateIndex, shaderState.mTextureStages[0].Constant, shaderState.mTextureStages[0].Result,
 		result, temp, result, temp,
-		colorOperation_0, colorArgument1_0, colorArgument2_0, colorArgument0_0,
-		alphaOperation_0, alphaArgument1_0, alphaArgument2_0, alphaArgument0_0);
+		shaderState.mTextureStages[0].colorOperation, shaderState.mTextureStages[0].colorArgument1, shaderState.mTextureStages[0].colorArgument2, shaderState.mTextureStages[0].colorArgument0,
+		shaderState.mTextureStages[0].alphaOperation, shaderState.mTextureStages[0].alphaArgument1, shaderState.mTextureStages[0].alphaArgument2, shaderState.mTextureStages[0].alphaArgument0);
 	}
 
-	if(textureCount>1)
+	if(shaderState.textureCount>1)
 	{
-		processStage(textures[1],texureCoordinateIndex_1, Constant_1, Result_1,
+		processStage(textures[1],shaderState.mTextureStages[1].texureCoordinateIndex, shaderState.mTextureStages[1].Constant, shaderState.mTextureStages[1].Result,
 		result, temp, result, temp,
-		colorOperation_1, colorArgument1_1, colorArgument2_1, colorArgument0_1,
-		alphaOperation_1, alphaArgument1_1, alphaArgument2_1, alphaArgument0_1);
+		shaderState.mTextureStages[1].colorOperation, shaderState.mTextureStages[1].colorArgument1, shaderState.mTextureStages[1].colorArgument2, shaderState.mTextureStages[1].colorArgument0,
+		shaderState.mTextureStages[1].alphaOperation, shaderState.mTextureStages[1].alphaArgument1, shaderState.mTextureStages[1].alphaArgument2, shaderState.mTextureStages[1].alphaArgument0);
 	}
 		
 	uFragColor = result;
 	
-	if(lighting)
+	if(shaderState.lighting==1)
 	{	
-		if(shadeMode == D3DSHADE_GOURAUD)
+		if(shaderState.shadeMode == D3DSHADE_GOURAUD)
 		{
 			uFragColor.rgb *= globalIllumination.rgb;
 		}

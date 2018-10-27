@@ -47,3 +47,149 @@ struct Material
 	vec4   Emissive;       /* Emissive color RGB */
 	float  Power;          /* Sharpness if specular highlight */
 };
+
+struct ShaderConstantSlots
+{
+	uint IntegerConstants[64];
+	uint BooleanConstants[16]; 
+	float FloatConstants[1024];
+};
+
+struct TextureStage
+{
+	int Constant;
+	int Result;
+	int textureTransformationFlags;
+	mat4 textureTransformationMatrix;
+	int texureCoordinateIndex;
+	int colorOperation;
+	int colorArgument0;
+	int colorArgument1;
+	int colorArgument2;
+	int alphaOperation;
+	int alphaArgument0;
+	int alphaArgument1;
+	int alphaArgument2;
+	float bumpMapMatrix00;
+	float bumpMapMatrix01;
+	float bumpMapMatrix10;
+	float bumpMapMatrix11;
+	float bumpMapScale;
+	float bumpMapOffset;
+};
+
+struct ShaderState
+{
+	int textureCount;
+
+	TextureStage mTextureStages[9];
+	Material mMaterial;
+	Light mLights[8];
+
+	//Render State
+	int zEnable;
+	int fillMode;
+	int shadeMode;
+	int zWriteEnable;
+	int alphaTestEnable;
+	int lastPixel;
+	int sourceBlend;
+	int destinationBlend;
+	int cullMode;
+	int zFunction;
+	int alphaReference;
+	int alphaFunction;
+	int ditherEnable;
+	int alphaBlendEnable;
+	int fogEnable;
+	int specularEnable;
+	uint fogColor;
+	int fogTableMode;
+	float fogStart;
+	float fogEnd;
+	float fogDensity;
+	int rangeFogEnable;
+	int stencilEnable;
+	int stencilFail;
+	int stencilZFail;
+	int stencilPass;
+	int stencilFunction;
+	int stencilReference;
+	uint stencilMask;
+	uint stencilWriteMask;
+	uint textureFactor;
+	int wrap0;
+	int wrap1;
+	int wrap2;
+	int wrap3;
+	int wrap4;
+	int wrap5;
+	int wrap6;
+	int wrap7;
+	int clipping;
+	int lighting;
+	uint ambient;
+	int fogVertexMode;
+	int colorVertex;
+	int localViewer;
+	int normalizeNormals;
+	int diffuseMaterialSource;
+	int specularMaterialSource;
+	int ambientMaterialSource;
+	int emissiveMaterialSource;
+	int vertexBlend;
+	int clipPlaneEnable;
+	float pointSize;
+	float pointSizeMinimum;
+	int pointSpriteEnable;
+	int pointScaleEnable;
+	float pointScaleA;
+	float pointScaleB;
+	float pointScaleC;
+	int multisampleAntiAlias;
+	uint multisampleMask;
+	int patchEdgeStyle;
+	int debugMonitorToken;
+	float pointSizeMaximum;
+	int indexedVertexBlendEnable;
+	int colorWriteEnable;
+	float tweenFactor;
+	int blendOperation;
+	int positionDegree;
+	int normalDegree;
+	int scissorTestEnable;
+	float slopeScaleDepthBias;
+	int antiAliasedLineEnable;
+	float minimumTessellationLevel;
+	float maximumTessellationLevel;
+	float adaptivetessX;
+	float adaptivetessY;
+	float adaptivetessZ;
+	float adaptivetessW;
+	int enableAdaptiveTessellation;
+	int twoSidedStencilMode;
+	int ccwStencilFail;
+	int ccwStencilZFail;
+	int ccwStencilPass;
+	int ccwStencilFunction;
+	int colorWriteEnable1;
+	int colorWriteEnable2;
+	int colorWriteEnable3;
+	uint blendFactor;
+	int srgbWriteEnable;
+	float depthBias;
+	int wrap8;
+	int wrap9;
+	int wrap10;
+	int wrap11;
+	int wrap12;
+	int wrap13;
+	int wrap14;
+	int wrap15;
+	int separateAlphaBlendEnable;
+	int sourceBlendAlpha;
+	int destinationBlendAlpha;
+	int blendOperationAlpha;
+	int screenWidth;
+	int screenHeight;
+};
