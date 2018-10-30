@@ -57,10 +57,10 @@ struct ShaderConstantSlots
 
 struct TextureStage
 {
+	mat4 textureTransformationMatrix;
 	int Constant;
 	int Result;
-	int textureTransformationFlags;
-	mat4 textureTransformationMatrix;
+	int textureTransformationFlags;	
 	int texureCoordinateIndex;
 	int colorOperation;
 	int colorArgument0;
@@ -80,11 +80,9 @@ struct TextureStage
 
 struct ShaderState
 {
-	int textureCount;
-
-	TextureStage mTextureStages[9];
-	Material mMaterial;
 	Light mLights[8];
+
+	int textureCount;
 
 	//Render State
 	int zEnable;
@@ -192,4 +190,7 @@ struct ShaderState
 	int blendOperationAlpha;
 	int screenWidth;
 	int screenHeight;
+
+	TextureStage mTextureStages[9];
+	Material mMaterial;
 };

@@ -121,7 +121,7 @@ vec4 GetGlobalIllumination()
 		}
 	}
 
-	ambient = shaderState.mMaterial.Ambient * (Convert(shaderState.globalAmbient) + ambientTemp);
+	ambient = shaderState.mMaterial.Ambient * (Convert(shaderState.ambient) + ambientTemp);
 	diffuse = diffuseTemp;
 	emissive = emissiveColor;
 

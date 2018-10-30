@@ -98,10 +98,10 @@ struct ShaderConstantSlots
 
 struct TextureStage
 {
+	D3DMATRIX textureTransformationMatrix;
 	int Constant = 0;
 	int Result = D3DTA_CURRENT;
 	int textureTransformationFlags = D3DTTFF_DISABLE;
-	D3DMATRIX textureTransformationMatrix;
 	int texureCoordinateIndex = 0;
 	int colorOperation = D3DTOP_MODULATE;
 	int colorArgument0 = D3DTA_CURRENT;
@@ -121,11 +121,9 @@ struct TextureStage
 
 struct ShaderState
 {
-	int textureCount = 1;
-
-	TextureStage mTextureStages[9];
-	D3DMATERIAL9 mMaterial = {};
 	Light mLights[8];
+
+	int textureCount = 1;
 
 	//Render State
 	int zEnable = D3DZB_TRUE;
@@ -233,6 +231,9 @@ struct ShaderState
 	int blendOperationAlpha = D3DBLENDOP_ADD;
 	int screenWidth = 640;
 	int screenHeight = 480;
+
+	TextureStage mTextureStages[9];
+	D3DMATERIAL9 mMaterial = {};
 };
 
 struct RealIndexBuffer;

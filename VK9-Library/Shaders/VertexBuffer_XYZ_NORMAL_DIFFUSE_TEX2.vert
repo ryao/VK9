@@ -65,7 +65,7 @@ void main()
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
-	if(shaderState.colorVertex)
+	if(shaderState.colorVertex==1)
 	{
 		switch(shaderState.diffuseMaterialSource)
 		{
@@ -159,7 +159,7 @@ void main()
 
 	normal = ubo.modelTransformation * vec4(attr1,0);
 	normal *= vec4(1.0,-1.0,1.0,1.0);
-	if(normalizeNormals)
+	if(shaderState.normalizeNormals==1)
 	{
 		normal = normalize(normal);
 	}
