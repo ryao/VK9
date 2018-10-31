@@ -117,6 +117,8 @@ struct TextureStage
 	float bumpMapMatrix11 = 0.0f;
 	float bumpMapScale = 0.0f;
 	float bumpMapOffset = 0.0f;
+	int filler1 = 0;
+	int filler2 = 0;
 };
 
 struct ShaderState
@@ -231,6 +233,8 @@ struct ShaderState
 	int blendOperationAlpha = D3DBLENDOP_ADD;
 	int screenWidth = 640;
 	int screenHeight = 480;
+	int filler1 = 0;
+	int filler2 = 0;
 
 	TextureStage mTextureStages[9];
 	D3DMATERIAL9 mMaterial = {};

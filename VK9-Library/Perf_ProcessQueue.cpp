@@ -1371,6 +1371,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
+				state->mIsShaderStateDirty = true;
+
 				switch (State)
 				{
 				case D3DRS_ZENABLE:
@@ -2054,6 +2056,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
 				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
+				realDevice->mDeviceState.mAreVertexShaderSlotsDirty = true;
+
 				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
 				{
@@ -2067,6 +2071,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				float* pConstantData = bit_cast<float*>(workItem->Argument2);
 				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
+
+				realDevice->mDeviceState.mAreVertexShaderSlotsDirty = true;
 
 				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -2090,6 +2096,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				int* pConstantData = bit_cast<int*>(workItem->Argument2);
 				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
+
+				realDevice->mDeviceState.mAreVertexShaderSlotsDirty = true;
 
 				auto& slots = realDevice->mDeviceState.mVertexShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);

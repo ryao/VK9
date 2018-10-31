@@ -38,6 +38,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	All https://msdn.microsoft.com/en-us/library/windows/desktop/bb147350(v=vs.85).aspx
 	*/
 
+	targetState.mIsShaderStateDirty = true;
+
 	//if (type == D3DSBT_ALL)
 	//{
 	//	onlyIfExists = false;
