@@ -593,6 +593,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		for (size_t i = 0; i < 9; i++)
 		{
 			targetState.mShaderState.mTextureStages[i].texureCoordinateIndex = sourceState.mShaderState.mTextureStages[i].texureCoordinateIndex;
+			targetState.mShaderState.mTextureStages[i].textureTransformationFlags = sourceState.mShaderState.mTextureStages[i].textureTransformationFlags;
 		}
 	}
 
@@ -600,7 +601,23 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	{
 		for (size_t i = 0; i < 9; i++)
 		{
-			targetState.mShaderState.mTextureStages[i] = sourceState.mShaderState.mTextureStages[i];
+			targetState.mShaderState.mTextureStages[i].colorOperation = sourceState.mShaderState.mTextureStages[i].colorOperation;
+			targetState.mShaderState.mTextureStages[i].colorArgument1 = sourceState.mShaderState.mTextureStages[i].colorArgument1;
+			targetState.mShaderState.mTextureStages[i].colorArgument2 = sourceState.mShaderState.mTextureStages[i].colorArgument2;
+			targetState.mShaderState.mTextureStages[i].alphaOperation = sourceState.mShaderState.mTextureStages[i].alphaOperation;
+			targetState.mShaderState.mTextureStages[i].alphaArgument1 = sourceState.mShaderState.mTextureStages[i].alphaArgument1;
+			targetState.mShaderState.mTextureStages[i].alphaArgument2 = sourceState.mShaderState.mTextureStages[i].alphaArgument2;
+			targetState.mShaderState.mTextureStages[i].bumpMapMatrix00 = sourceState.mShaderState.mTextureStages[i].bumpMapMatrix00;
+			targetState.mShaderState.mTextureStages[i].bumpMapMatrix01 = sourceState.mShaderState.mTextureStages[i].bumpMapMatrix01;
+			targetState.mShaderState.mTextureStages[i].bumpMapMatrix10 = sourceState.mShaderState.mTextureStages[i].bumpMapMatrix10;
+			targetState.mShaderState.mTextureStages[i].bumpMapMatrix11 = sourceState.mShaderState.mTextureStages[i].bumpMapMatrix11;
+			targetState.mShaderState.mTextureStages[i].texureCoordinateIndex = sourceState.mShaderState.mTextureStages[i].texureCoordinateIndex;
+			targetState.mShaderState.mTextureStages[i].bumpMapScale = sourceState.mShaderState.mTextureStages[i].bumpMapScale;
+			targetState.mShaderState.mTextureStages[i].bumpMapOffset = sourceState.mShaderState.mTextureStages[i].bumpMapOffset;
+			targetState.mShaderState.mTextureStages[i].textureTransformationFlags = sourceState.mShaderState.mTextureStages[i].textureTransformationFlags;
+			targetState.mShaderState.mTextureStages[i].colorArgument0 = sourceState.mShaderState.mTextureStages[i].colorArgument0;
+			targetState.mShaderState.mTextureStages[i].alphaArgument0 = sourceState.mShaderState.mTextureStages[i].alphaArgument0;
+			targetState.mShaderState.mTextureStages[i].Result = sourceState.mShaderState.mTextureStages[i].Result;
 		}
 	}
 

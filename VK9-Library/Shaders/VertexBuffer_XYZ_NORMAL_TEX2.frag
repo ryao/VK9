@@ -73,21 +73,15 @@ void main()
 	vec4 temp = vec4(1.0,1.0,1.0,1.0);
 	vec4 result = vec4(1.0,1.0,1.0,1.0); //On stage 0 CURRENT is the same as DIFFUSE
 
-	if(shaderState.textureCount>0)
-	{
-		processStage(textures[0],shaderState.mTextureStages[0].texureCoordinateIndex, shaderState.mTextureStages[0].Constant, shaderState.mTextureStages[0].Result,
-		result, temp, result, temp,
-		shaderState.mTextureStages[0].colorOperation, shaderState.mTextureStages[0].colorArgument1, shaderState.mTextureStages[0].colorArgument2, shaderState.mTextureStages[0].colorArgument0,
-		shaderState.mTextureStages[0].alphaOperation, shaderState.mTextureStages[0].alphaArgument1, shaderState.mTextureStages[0].alphaArgument2, shaderState.mTextureStages[0].alphaArgument0);
-	}
+	processStage(textures[0],shaderState.mTextureStages[0].texureCoordinateIndex, shaderState.mTextureStages[0].Constant, shaderState.mTextureStages[0].Result,
+	result, temp, result, temp,
+	shaderState.mTextureStages[0].colorOperation, shaderState.mTextureStages[0].colorArgument1, shaderState.mTextureStages[0].colorArgument2, shaderState.mTextureStages[0].colorArgument0,
+	shaderState.mTextureStages[0].alphaOperation, shaderState.mTextureStages[0].alphaArgument1, shaderState.mTextureStages[0].alphaArgument2, shaderState.mTextureStages[0].alphaArgument0);
 
-	if(shaderState.textureCount>1)
-	{
-		processStage(textures[1],shaderState.mTextureStages[1].texureCoordinateIndex, shaderState.mTextureStages[1].Constant, shaderState.mTextureStages[1].Result,
-		result, temp, result, temp,
-		shaderState.mTextureStages[1].colorOperation, shaderState.mTextureStages[1].colorArgument1, shaderState.mTextureStages[1].colorArgument2, shaderState.mTextureStages[1].colorArgument0,
-		shaderState.mTextureStages[1].alphaOperation, shaderState.mTextureStages[1].alphaArgument1, shaderState.mTextureStages[1].alphaArgument2, shaderState.mTextureStages[1].alphaArgument0);
-	}
+	processStage(textures[1],shaderState.mTextureStages[1].texureCoordinateIndex, shaderState.mTextureStages[1].Constant, shaderState.mTextureStages[1].Result,
+	result, temp, result, temp,
+	shaderState.mTextureStages[1].colorOperation, shaderState.mTextureStages[1].colorArgument1, shaderState.mTextureStages[1].colorArgument2, shaderState.mTextureStages[1].colorArgument0,
+	shaderState.mTextureStages[1].alphaOperation, shaderState.mTextureStages[1].alphaArgument1, shaderState.mTextureStages[1].alphaArgument2, shaderState.mTextureStages[1].alphaArgument0);
 		
 	uFragColor = result;
 	
