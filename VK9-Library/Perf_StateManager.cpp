@@ -236,7 +236,7 @@ void StateManager::CreateDevice(size_t id, void* argument1)
 	CDevice9* device9 = (CDevice9*)argument1;
 	auto instance = mInstances[id];
 	auto physicalDevice = instance->mPhysicalDevices[device9->mAdapter];
-	auto device = std::make_shared<RealDevice>(instance->mInstance, physicalDevice, device9->mPresentationParameters.BackBufferWidth, device9->mPresentationParameters.BackBufferHeight);
+	auto device = std::make_shared<RealDevice>(instance->mInstance, physicalDevice, device9->mPresentationParameters.BackBufferWidth, device9->mPresentationParameters.BackBufferHeight,(instance->mRenderDocApi!=nullptr));
 
 	if (pfn_vkCmdPushDescriptorSetKHR == nullptr)
 	{

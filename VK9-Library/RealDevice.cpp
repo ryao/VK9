@@ -139,7 +139,7 @@ const uint32_t VERTEX_BUFFER_XYZ_NORMAL_DIFFUSE_TEX2_FRAG[] =
 #include "VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX2.frag.h"
 ;
 
-RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice, int32_t width, int32_t height)
+RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice, int32_t width, int32_t height, bool usingRenderDoc)
 	: mInstance(instance),
 	mPhysicalDevice(physicalDevice)
 {
@@ -211,7 +211,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = (VkPhysicalDevice)mPhysicalDevice;
 	allocatorInfo.device = (VkDevice)mDevice;
-	if (useDedicatedAllocation)
+	if (useDedicatedAllocation && !usingRenderDoc)
 	{
 		allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
 	}

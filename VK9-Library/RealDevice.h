@@ -1230,7 +1230,7 @@ struct RealDevice
 	vk::CommandBufferBeginInfo mBeginInfo;
 	vk::SubmitInfo mSubmitInfo;
 
-	RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,int32_t width, int32_t height);
+	RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,int32_t width, int32_t height, bool usingRenderDoc);
 	~RealDevice();
 
 	void SetImageLayout(vk::Image image, vk::ImageAspectFlags aspectMask, vk::ImageLayout oldImageLayout, vk::ImageLayout newImageLayout, uint32_t levelCount = 1, uint32_t mipIndex = 0, uint32_t layerCount = 1);

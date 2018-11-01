@@ -1192,6 +1192,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
+				state->mIsShaderStateDirty = true;
+
 				Light light = {};
 
 				light.Type = pLight->Type;
@@ -1231,8 +1233,6 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 
 				light.IsEnabled = state->mShaderState.mLights[Index].IsEnabled;
 				state->mShaderState.mLights[Index] = light;
-
-				state->mIsShaderStateDirty = true;
 			}
 			break;
 			case Device_SetMaterial:
