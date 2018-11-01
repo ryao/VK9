@@ -1005,7 +1005,47 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DTRANSFORMSTATETYPE State = bit_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
 				D3DMATRIX* pMatrix = bit_cast<D3DMATRIX*>(workItem->Argument2);
 
-				(*pMatrix) = realDevice->mDeviceState.mTransforms[State];
+				auto& deviceState = realDevice->mDeviceState;
+
+				switch (State)
+				{
+				case D3DTS_WORLD:
+					(*pMatrix) = deviceState.mTransforms[State];
+					break;
+				case D3DTS_VIEW:
+					(*pMatrix) = deviceState.mTransforms[State];
+					break;
+				case D3DTS_PROJECTION:
+					(*pMatrix) = deviceState.mTransforms[State];
+					break;
+				case D3DTS_TEXTURE0:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[0].textureTransformationMatrix;
+					break;
+				case D3DTS_TEXTURE1:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[1].textureTransformationMatrix;
+					break;
+				case D3DTS_TEXTURE2:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[2].textureTransformationMatrix;
+					break;
+				case D3DTS_TEXTURE3:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[3].textureTransformationMatrix;
+					break;
+				case D3DTS_TEXTURE4:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[4].textureTransformationMatrix;
+					break;
+				case D3DTS_TEXTURE5:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[5].textureTransformationMatrix;
+					break;
+				case D3DTS_TEXTURE6:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[6].textureTransformationMatrix;
+					break;
+				case D3DTS_TEXTURE7:
+					(*pMatrix) = deviceState.mShaderState.mTextureStages[7].textureTransformationMatrix;
+					break;
+				default:
+					BOOST_LOG_TRIVIAL(warning) << "Unknown transformation type " << State;
+					break;
+				}
 			}
 			break;
 			case Device_GetVertexDeclaration:
@@ -1980,19 +2020,110 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DTRANSFORMSTATETYPE State = bit_cast<D3DTRANSFORMSTATETYPE>(workItem->Argument1);
 				D3DMATRIX* pMatrix = bit_cast<D3DMATRIX*>(workItem->Argument2);
 
+
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
 					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
-					deviceState.mShaderState.mTextureStages[State].textureTransformationMatrix = (*pMatrix);
-					deviceState.mIsShaderStateDirty = true;
+					switch (State)
+					{
+					case D3DTS_WORLD:
+						deviceState.mTransforms[State] = (*pMatrix);
+						break;
+					case D3DTS_VIEW:
+						deviceState.mTransforms[State] = (*pMatrix);
+						break;
+					case D3DTS_PROJECTION:
+						deviceState.mTransforms[State] = (*pMatrix);
+						break;
+					case D3DTS_TEXTURE0:
+						deviceState.mShaderState.mTextureStages[0].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE1:
+						deviceState.mShaderState.mTextureStages[1].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE2:
+						deviceState.mShaderState.mTextureStages[2].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE3:
+						deviceState.mShaderState.mTextureStages[3].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE4:
+						deviceState.mShaderState.mTextureStages[4].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE5:
+						deviceState.mShaderState.mTextureStages[5].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE6:
+						deviceState.mShaderState.mTextureStages[6].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE7:
+						deviceState.mShaderState.mTextureStages[7].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					default:
+						BOOST_LOG_TRIVIAL(warning) << "Unknown transformation type " << State;
+						break;
+					}
 				}
 				else
 				{
 					auto& deviceState = realDevice->mDeviceState;
 
-					deviceState.mShaderState.mTextureStages[State].textureTransformationMatrix = (*pMatrix);
-					deviceState.mIsShaderStateDirty = true;
+					switch (State)
+					{
+					case D3DTS_WORLD:
+						deviceState.mTransforms[State] = (*pMatrix);
+						break;
+					case D3DTS_VIEW:
+						deviceState.mTransforms[State] = (*pMatrix);
+						break;
+					case D3DTS_PROJECTION:
+						deviceState.mTransforms[State] = (*pMatrix);
+						break;
+					case D3DTS_TEXTURE0:
+						deviceState.mShaderState.mTextureStages[0].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE1:
+						deviceState.mShaderState.mTextureStages[1].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE2:
+						deviceState.mShaderState.mTextureStages[2].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE3:
+						deviceState.mShaderState.mTextureStages[3].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE4:
+						deviceState.mShaderState.mTextureStages[4].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE5:
+						deviceState.mShaderState.mTextureStages[5].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE6:
+						deviceState.mShaderState.mTextureStages[6].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					case D3DTS_TEXTURE7:
+						deviceState.mShaderState.mTextureStages[7].textureTransformationMatrix = (*pMatrix);
+						deviceState.mIsShaderStateDirty = true;
+						break;
+					default:
+						BOOST_LOG_TRIVIAL(warning) << "Unknown transformation type " << State;
+						break;
+					}
 				}
 			}
 			break;
