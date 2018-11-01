@@ -85,9 +85,9 @@ void main()
 		
 	uFragColor = result;
 	
-	if(shaderState.lighting==1)
+	if(shaderState.mRenderState.lighting==1)
 	{	
-		if(shaderState.shadeMode == D3DSHADE_GOURAUD)
+		if(shaderState.mRenderState.shadeMode == D3DSHADE_GOURAUD)
 		{
 			uFragColor.rgb *= globalIllumination.rgb;
 		}

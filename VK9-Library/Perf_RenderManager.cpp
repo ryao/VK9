@@ -592,13 +592,13 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	auto& vertexSlots = context->mVertexShaderConstantSlots;
 	auto& pixelSlots = context->mPixelShaderConstantSlots;
 
-	constants.textureCount = 0;
+	constants.mRenderState.textureCount = 0;
 
 	for (size_t i = 0; i < 16; i++)
 	{
 		if (deviceState.mTextures[i] != nullptr)
 		{
-			constants.textureCount++;
+			constants.mRenderState.textureCount++;
 		}
 		else
 		{
@@ -606,7 +606,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		}
 	}
 
-	deviceState.mShaderState.textureCount = constants.textureCount;
+	deviceState.mShaderState.mRenderState.textureCount = constants.mRenderState.textureCount;
 
 	int i = 0;
 	for (auto& source : deviceState.mStreamSources)
@@ -636,6 +636,9 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 
 			&& drawBuffer.FVF == context->FVF
 			&& drawBuffer.VertexDeclaration == context->VertexDeclaration
+
+			&& memcmp(&drawBuffer.mShaderState.mRenderState, &context->mShaderState.mRenderState, sizeof(RenderState))
+
 			)
 		{
 			if (!memcmp(&drawBuffer.Bindings, &context->Bindings, 64 * sizeof(UINT)))
@@ -660,9 +663,9 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	The units for the D3DRS_DEPTHBIAS and D3DRS_SLOPESCALEDEPTHBIAS render states depend on whether z-buffering or w-buffering is enabled.
 	The bias is not applied to any line and point primitive.
 	*/
-	if (constants.zEnable != D3DZB_FALSE && type > 3)
+	if (constants.mRenderState.zEnable != D3DZB_FALSE && type > 3)
 	{
-		currentBuffer.setDepthBias(constants.depthBias, 0.0f, constants.slopeScaleDepthBias);
+		currentBuffer.setDepthBias(constants.mRenderState.depthBias, 0.0f, constants.mRenderState.slopeScaleDepthBias);
 	}
 	else
 	{
@@ -719,10 +722,10 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 
 		//Image/Sampler
 		realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[3].descriptorCount = constants.textureCount;
+		realDevice->mWriteDescriptorSet[3].descriptorCount = constants.mRenderState.textureCount;
 		realDevice->mWriteDescriptorSet[3].pImageInfo = resourceContext->DescriptorImageInfo;
 
-		if (constants.textureCount)
+		if (constants.mRenderState.textureCount)
 		{
 			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 4, realDevice->mWriteDescriptorSet);
 		}
@@ -780,7 +783,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	BOOL hasColor1 = 0;
 	BOOL hasColor2 = 0;
 	BOOL isTransformed = 0;
-	BOOL isLightingEnabled = constants.lighting;
+	BOOL isLightingEnabled = constants.mRenderState.lighting;
 
 	if (context->VertexDeclaration != nullptr)
 	{
@@ -882,29 +885,29 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	/**********************************************
 	* Figure out render states & texture states
 	**********************************************/
-	realDevice->mPipelineColorBlendAttachmentState[0].colorWriteMask = (vk::ColorComponentFlagBits)constants.colorWriteEnable;
-	realDevice->mPipelineColorBlendAttachmentState[0].blendEnable = constants.alphaBlendEnable;
+	realDevice->mPipelineColorBlendAttachmentState[0].colorWriteMask = (vk::ColorComponentFlagBits)constants.mRenderState.colorWriteEnable;
+	realDevice->mPipelineColorBlendAttachmentState[0].blendEnable = constants.mRenderState.alphaBlendEnable;
 
-	realDevice->mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(constants.blendOperation);
-	realDevice->mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = ConvertColorFactor(constants.sourceBlend);
-	realDevice->mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = ConvertColorFactor(constants.destinationBlend);
+	realDevice->mPipelineColorBlendAttachmentState[0].colorBlendOp = ConvertColorOperation(constants.mRenderState.blendOperation);
+	realDevice->mPipelineColorBlendAttachmentState[0].srcColorBlendFactor = ConvertColorFactor(constants.mRenderState.sourceBlend);
+	realDevice->mPipelineColorBlendAttachmentState[0].dstColorBlendFactor = ConvertColorFactor(constants.mRenderState.destinationBlend);
 
-	realDevice->mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(constants.blendOperationAlpha);
-	realDevice->mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = ConvertColorFactor(constants.sourceBlendAlpha);
-	realDevice->mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = ConvertColorFactor(constants.destinationBlendAlpha);
+	realDevice->mPipelineColorBlendAttachmentState[0].alphaBlendOp = ConvertColorOperation(constants.mRenderState.blendOperationAlpha);
+	realDevice->mPipelineColorBlendAttachmentState[0].srcAlphaBlendFactor = ConvertColorFactor(constants.mRenderState.sourceBlendAlpha);
+	realDevice->mPipelineColorBlendAttachmentState[0].dstAlphaBlendFactor = ConvertColorFactor(constants.mRenderState.destinationBlendAlpha);
 
-	SetCulling(realDevice->mPipelineRasterizationStateCreateInfo, (D3DCULL)constants.cullMode);
-	realDevice->mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)constants.fillMode);
+	SetCulling(realDevice->mPipelineRasterizationStateCreateInfo, (D3DCULL)constants.mRenderState.cullMode);
+	realDevice->mPipelineRasterizationStateCreateInfo.polygonMode = ConvertFillMode((D3DFILLMODE)constants.mRenderState.fillMode);
 
 	realDevice->mPipelineInputAssemblyStateCreateInfo.topology = ConvertPrimitiveType(context->PrimitiveType);
 
 	auto& pipelineDepthStencilStateCreateInfo = realDevice->mPipelineDepthStencilStateCreateInfo;
 
-	pipelineDepthStencilStateCreateInfo.depthTestEnable = constants.zEnable; //= VK_TRUE;
-	pipelineDepthStencilStateCreateInfo.depthWriteEnable = constants.zWriteEnable; //VK_TRUE;
-	pipelineDepthStencilStateCreateInfo.depthCompareOp = ConvertCompareOperation(constants.zFunction);  //VK_COMPARE_OP_LESS_OR_EQUAL;
+	pipelineDepthStencilStateCreateInfo.depthTestEnable = constants.mRenderState.zEnable; //= VK_TRUE;
+	pipelineDepthStencilStateCreateInfo.depthWriteEnable = constants.mRenderState.zWriteEnable; //VK_TRUE;
+	pipelineDepthStencilStateCreateInfo.depthCompareOp = ConvertCompareOperation(constants.mRenderState.zFunction);  //VK_COMPARE_OP_LESS_OR_EQUAL;
 	//pipelineDepthStencilStateCreateInfo.depthBoundsTestEnable = true; //= constants.bound;
-	pipelineDepthStencilStateCreateInfo.stencilTestEnable = constants.stencilEnable; //VK_FALSE;
+	pipelineDepthStencilStateCreateInfo.stencilTestEnable = constants.mRenderState.stencilEnable; //VK_FALSE;
 
 	//twoSidedStencilMode
 
@@ -919,35 +922,35 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	*/
 
 	auto& pipelineDepthStencilStateCreateInfoBack = pipelineDepthStencilStateCreateInfo.back;
-	pipelineDepthStencilStateCreateInfoBack.reference = constants.stencilReference;
-	pipelineDepthStencilStateCreateInfoBack.compareMask = constants.stencilMask;
-	pipelineDepthStencilStateCreateInfoBack.writeMask = constants.stencilWriteMask;
+	pipelineDepthStencilStateCreateInfoBack.reference = constants.mRenderState.stencilReference;
+	pipelineDepthStencilStateCreateInfoBack.compareMask = constants.mRenderState.stencilMask;
+	pipelineDepthStencilStateCreateInfoBack.writeMask = constants.mRenderState.stencilWriteMask;
 
 	auto& pipelineDepthStencilStateCreateInfoFront = pipelineDepthStencilStateCreateInfo.front;
-	pipelineDepthStencilStateCreateInfoFront.reference = constants.stencilReference;
-	pipelineDepthStencilStateCreateInfoFront.compareMask = constants.stencilMask;
-	pipelineDepthStencilStateCreateInfoFront.writeMask = constants.stencilWriteMask;
+	pipelineDepthStencilStateCreateInfoFront.reference = constants.mRenderState.stencilReference;
+	pipelineDepthStencilStateCreateInfoFront.compareMask = constants.mRenderState.stencilMask;
+	pipelineDepthStencilStateCreateInfoFront.writeMask = constants.mRenderState.stencilWriteMask;
 
-	if (constants.cullMode == D3DCULL_CCW)
+	if (constants.mRenderState.cullMode == D3DCULL_CCW)
 	{
-		pipelineDepthStencilStateCreateInfoBack.failOp = ConvertStencilOperation(constants.ccwStencilFail);
-		pipelineDepthStencilStateCreateInfoBack.passOp = ConvertStencilOperation(constants.ccwStencilPass);
-		pipelineDepthStencilStateCreateInfoBack.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+		pipelineDepthStencilStateCreateInfoBack.failOp = ConvertStencilOperation(constants.mRenderState.ccwStencilFail);
+		pipelineDepthStencilStateCreateInfoBack.passOp = ConvertStencilOperation(constants.mRenderState.ccwStencilPass);
+		pipelineDepthStencilStateCreateInfoBack.compareOp = ConvertCompareOperation(constants.mRenderState.ccwStencilFunction);
 
 
-		pipelineDepthStencilStateCreateInfoFront.failOp = ConvertStencilOperation(constants.stencilFail);
-		pipelineDepthStencilStateCreateInfoFront.passOp = ConvertStencilOperation(constants.stencilPass);
-		pipelineDepthStencilStateCreateInfoFront.compareOp = ConvertCompareOperation(constants.stencilFunction);
+		pipelineDepthStencilStateCreateInfoFront.failOp = ConvertStencilOperation(constants.mRenderState.stencilFail);
+		pipelineDepthStencilStateCreateInfoFront.passOp = ConvertStencilOperation(constants.mRenderState.stencilPass);
+		pipelineDepthStencilStateCreateInfoFront.compareOp = ConvertCompareOperation(constants.mRenderState.stencilFunction);
 	}
 	else
 	{
-		pipelineDepthStencilStateCreateInfoBack.failOp = ConvertStencilOperation(constants.stencilFail);
-		pipelineDepthStencilStateCreateInfoBack.passOp = ConvertStencilOperation(constants.stencilPass);
-		pipelineDepthStencilStateCreateInfoBack.compareOp = ConvertCompareOperation(constants.stencilFunction);
+		pipelineDepthStencilStateCreateInfoBack.failOp = ConvertStencilOperation(constants.mRenderState.stencilFail);
+		pipelineDepthStencilStateCreateInfoBack.passOp = ConvertStencilOperation(constants.mRenderState.stencilPass);
+		pipelineDepthStencilStateCreateInfoBack.compareOp = ConvertCompareOperation(constants.mRenderState.stencilFunction);
 
-		pipelineDepthStencilStateCreateInfoFront.failOp = ConvertStencilOperation(constants.ccwStencilFail);
-		pipelineDepthStencilStateCreateInfoFront.passOp = ConvertStencilOperation(constants.ccwStencilPass);
-		pipelineDepthStencilStateCreateInfoFront.compareOp = ConvertCompareOperation(constants.ccwStencilFunction);
+		pipelineDepthStencilStateCreateInfoFront.failOp = ConvertStencilOperation(constants.mRenderState.ccwStencilFail);
+		pipelineDepthStencilStateCreateInfoFront.passOp = ConvertStencilOperation(constants.mRenderState.ccwStencilPass);
+		pipelineDepthStencilStateCreateInfoFront.compareOp = ConvertCompareOperation(constants.mRenderState.ccwStencilFunction);
 	}
 
 
@@ -980,7 +983,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ;
 				}
 
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -999,7 +1002,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX1;
 				}
 
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -1018,7 +1021,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_TEX2;
 				}
 
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && !hasNormal && " << textureCount;
 				}
@@ -1046,7 +1049,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE;
 				}
 
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					realDevice->mGraphicsPipelineCreateInfo.stageCount = 3;
 					realDevice->mPipelineShaderStageCreateInfo[1].module = realDevice->mFragShaderModule_XYZ_DIFFUSE_TEX1;
@@ -1067,7 +1070,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX1;
 				}
 
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && !hasNormal && " << textureCount;
 				}
@@ -1086,7 +1089,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 					realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_DIFFUSE_TEX2;
 				}
 
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && !hasNormal && " << textureCount;
 				}
@@ -1106,7 +1109,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			{
 			case 2:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX2;
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1117,7 +1120,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 1:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE_TEX1;
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1128,7 +1131,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 0:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_DIFFUSE;
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && hasColor && hasNormal && " << textureCount;
 				}
@@ -1148,7 +1151,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			{
 			case 0:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL;
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1159,7 +1162,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 1:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_TEX1;
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1170,7 +1173,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 				break;
 			case 2:
 				realDevice->mPipelineShaderStageCreateInfo[0].module = realDevice->mVertShaderModule_XYZ_NORMAL_TEX2;
-				if (deviceState.mShaderState.pointSpriteEnable)
+				if (deviceState.mShaderState.mRenderState.pointSpriteEnable)
 				{
 					BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreatePipe point sprite not supported with hasPosition && !hasColor && hasNormal && " << textureCount;
 				}
@@ -1372,7 +1375,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 
 	realDevice->mDescriptorSetLayoutBinding[3].binding = 3;
 	realDevice->mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = constants.textureCount; //Update to use mapped texture.
+	realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = constants.mRenderState.textureCount; //Update to use mapped texture.
 	realDevice->mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eFragment;
 	realDevice->mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
 
@@ -1380,7 +1383,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
 	realDevice->mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
-	if (constants.textureCount)
+	if (constants.mRenderState.textureCount)
 	{
 		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 4; //The number of elements in pBindings.			
 	}

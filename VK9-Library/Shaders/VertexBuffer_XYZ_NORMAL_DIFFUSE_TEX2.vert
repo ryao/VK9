@@ -65,9 +65,9 @@ void main()
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
-	if(shaderState.colorVertex==1)
+	if(shaderState.mRenderState.colorVertex==1)
 	{
-		switch(shaderState.diffuseMaterialSource)
+		switch(shaderState.mRenderState.diffuseMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				diffuseColor = shaderState.mMaterial.Diffuse;
@@ -83,7 +83,7 @@ void main()
 			break;
 		}
 		
-		switch(shaderState.ambientMaterialSource)
+		switch(shaderState.mRenderState.ambientMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				ambientColor = shaderState.mMaterial.Ambient;
@@ -99,7 +99,7 @@ void main()
 			break;
 		}
 
-		switch(shaderState.specularMaterialSource)
+		switch(shaderState.mRenderState.specularMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				specularColor = shaderState.mMaterial.Specular;
@@ -115,7 +115,7 @@ void main()
 			break;
 		}
 
-		switch(shaderState.emissiveMaterialSource)
+		switch(shaderState.mRenderState.emissiveMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				emissiveColor = shaderState.mMaterial.Emissive;
@@ -159,7 +159,7 @@ void main()
 
 	normal = ubo.modelTransformation * vec4(attr1,0);
 	normal *= vec4(1.0,-1.0,1.0,1.0);
-	if(shaderState.normalizeNormals==1)
+	if(shaderState.mRenderState.normalizeNormals==1)
 	{
 		normal = normalize(normal);
 	}

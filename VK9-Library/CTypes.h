@@ -121,10 +121,8 @@ struct TextureStage
 	int filler2 = 0;
 };
 
-struct ShaderState
+struct RenderState
 {
-	Light mLights[8];
-
 	int textureCount = 1;
 
 	//Render State
@@ -235,7 +233,12 @@ struct ShaderState
 	int screenHeight = 480;
 	int filler1 = 0;
 	int filler2 = 0;
+};
 
+struct ShaderState
+{
+	Light mLights[8];
+	RenderState mRenderState;
 	TextureStage mTextureStages[9];
 	D3DMATERIAL9 mMaterial = {};
 };

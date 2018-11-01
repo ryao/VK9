@@ -73,7 +73,7 @@ void main()
 	vec4 temp = vec4(1.0,1.0,1.0,1.0);
 	vec4 result = vec4(1.0,1.0,1.0,1.0); 
 
-	if(shaderState.colorVertex==1)
+	if(shaderState.mRenderState.colorVertex==1)
 	{
 		result = diffuseColor; //On stage 0 CURRENT is the same as DIFFUSE
 	}
@@ -85,9 +85,9 @@ void main()
 	
 	uFragColor = result;
 
-	if(shaderState.lighting==1)
+	if(shaderState.mRenderState.lighting==1)
 	{	
-		if(shaderState.shadeMode == D3DSHADE_GOURAUD)
+		if(shaderState.mRenderState.shadeMode == D3DSHADE_GOURAUD)
 		{
 			uFragColor.rgb *= globalIllumination.rgb;
 		}

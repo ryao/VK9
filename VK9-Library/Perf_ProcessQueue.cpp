@@ -190,8 +190,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					auto& deviceState = realDevice->mDeviceState;
 					auto& constants = deviceState.mShaderState;
-					constants.screenWidth = pRenderTarget->mWidth;
-					constants.screenHeight = pRenderTarget->mHeight;
+					constants.mRenderState.screenWidth = pRenderTarget->mWidth;
+					constants.mRenderState.screenHeight = pRenderTarget->mHeight;
 
 					colorSurface = stateManager.mSurfaces[pRenderTarget->mId].get();
 
@@ -263,8 +263,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				if (pNewZStencil != nullptr)
 				{
 					auto& constants = realDevice->mDeviceState.mShaderState;
-					constants.screenWidth = pNewZStencil->mWidth;
-					constants.screenHeight = pNewZStencil->mHeight;
+					constants.mRenderState.screenWidth = pNewZStencil->mWidth;
+					constants.mRenderState.screenHeight = pNewZStencil->mHeight;
 
 					depthSurface = stateManager.mSurfaces[pNewZStencil->mId].get();
 				}
@@ -550,313 +550,313 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				switch (State)
 				{
 				case D3DRS_ZENABLE:
-					(*pValue) = constants->zEnable;
+					(*pValue) = constants->mRenderState.zEnable;
 					break;
 				case D3DRS_FILLMODE:
-					(*pValue) = constants->fillMode;
+					(*pValue) = constants->mRenderState.fillMode;
 					break;
 				case D3DRS_SHADEMODE:
-					(*pValue) = constants->shadeMode;
+					(*pValue) = constants->mRenderState.shadeMode;
 					break;
 				case D3DRS_ZWRITEENABLE:
-					(*pValue) = constants->zWriteEnable;
+					(*pValue) = constants->mRenderState.zWriteEnable;
 					break;
 				case D3DRS_ALPHATESTENABLE:
-					(*pValue) = constants->alphaTestEnable;
+					(*pValue) = constants->mRenderState.alphaTestEnable;
 					break;
 				case D3DRS_LASTPIXEL:
-					(*pValue) = constants->lastPixel;
+					(*pValue) = constants->mRenderState.lastPixel;
 					break;
 				case D3DRS_SRCBLEND:
-					(*pValue) = constants->sourceBlend;
+					(*pValue) = constants->mRenderState.sourceBlend;
 					break;
 				case D3DRS_DESTBLEND:
-					(*pValue) = constants->destinationBlend;
+					(*pValue) = constants->mRenderState.destinationBlend;
 					break;
 				case D3DRS_CULLMODE:
-					(*pValue) = constants->cullMode;
+					(*pValue) = constants->mRenderState.cullMode;
 					break;
 				case D3DRS_ZFUNC:
-					(*pValue) = constants->zFunction;
+					(*pValue) = constants->mRenderState.zFunction;
 					break;
 				case D3DRS_ALPHAREF:
-					(*pValue) = constants->alphaReference;
+					(*pValue) = constants->mRenderState.alphaReference;
 					break;
 				case D3DRS_ALPHAFUNC:
-					(*pValue) = constants->alphaFunction;
+					(*pValue) = constants->mRenderState.alphaFunction;
 					break;
 				case D3DRS_DITHERENABLE:
-					(*pValue) = constants->ditherEnable;
+					(*pValue) = constants->mRenderState.ditherEnable;
 					break;
 				case D3DRS_ALPHABLENDENABLE:
-					(*pValue) = constants->alphaBlendEnable;
+					(*pValue) = constants->mRenderState.alphaBlendEnable;
 					break;
 				case D3DRS_FOGENABLE:
-					(*pValue) = constants->fogEnable;
+					(*pValue) = constants->mRenderState.fogEnable;
 					break;
 				case D3DRS_SPECULARENABLE:
-					(*pValue) = constants->specularEnable;
+					(*pValue) = constants->mRenderState.specularEnable;
 					break;
 				case D3DRS_FOGCOLOR:
-					(*pValue) = constants->fogColor;
+					(*pValue) = constants->mRenderState.fogColor;
 					break;
 				case D3DRS_FOGTABLEMODE:
-					(*pValue) = constants->fogTableMode;
+					(*pValue) = constants->mRenderState.fogTableMode;
 					break;
 				case D3DRS_FOGSTART:
-					(*pValue) = bit_cast(constants->fogStart);
+					(*pValue) = bit_cast(constants->mRenderState.fogStart);
 					break;
 				case D3DRS_FOGEND:
-					(*pValue) = bit_cast(constants->fogEnd);
+					(*pValue) = bit_cast(constants->mRenderState.fogEnd);
 					break;
 				case D3DRS_FOGDENSITY:
-					(*pValue) = bit_cast(constants->fogDensity);
+					(*pValue) = bit_cast(constants->mRenderState.fogDensity);
 					break;
 				case D3DRS_RANGEFOGENABLE:
-					(*pValue) = constants->rangeFogEnable;
+					(*pValue) = constants->mRenderState.rangeFogEnable;
 					break;
 				case D3DRS_STENCILENABLE:
-					(*pValue) = constants->stencilEnable;
+					(*pValue) = constants->mRenderState.stencilEnable;
 					break;
 				case D3DRS_STENCILFAIL:
-					(*pValue) = constants->stencilFail;
+					(*pValue) = constants->mRenderState.stencilFail;
 					break;
 				case D3DRS_STENCILZFAIL:
-					(*pValue) = constants->stencilZFail;
+					(*pValue) = constants->mRenderState.stencilZFail;
 					break;
 				case D3DRS_STENCILPASS:
-					(*pValue) = constants->stencilPass;
+					(*pValue) = constants->mRenderState.stencilPass;
 					break;
 				case D3DRS_STENCILFUNC:
-					(*pValue) = constants->stencilFunction;
+					(*pValue) = constants->mRenderState.stencilFunction;
 					break;
 				case D3DRS_STENCILREF:
-					(*pValue) = constants->stencilReference;
+					(*pValue) = constants->mRenderState.stencilReference;
 					break;
 				case D3DRS_STENCILMASK:
-					(*pValue) = constants->stencilMask;
+					(*pValue) = constants->mRenderState.stencilMask;
 					break;
 				case D3DRS_STENCILWRITEMASK:
-					(*pValue) = constants->stencilWriteMask;
+					(*pValue) = constants->mRenderState.stencilWriteMask;
 					break;
 				case D3DRS_TEXTUREFACTOR:
-					(*pValue) = constants->textureFactor;
+					(*pValue) = constants->mRenderState.textureFactor;
 					break;
 				case D3DRS_WRAP0:
-					(*pValue) = constants->wrap0;
+					(*pValue) = constants->mRenderState.wrap0;
 					break;
 				case D3DRS_WRAP1:
-					(*pValue) = constants->wrap1;
+					(*pValue) = constants->mRenderState.wrap1;
 					break;
 				case D3DRS_WRAP2:
-					(*pValue) = constants->wrap2;
+					(*pValue) = constants->mRenderState.wrap2;
 					break;
 				case D3DRS_WRAP3:
-					(*pValue) = constants->wrap3;
+					(*pValue) = constants->mRenderState.wrap3;
 					break;
 				case D3DRS_WRAP4:
-					(*pValue) = constants->wrap4;
+					(*pValue) = constants->mRenderState.wrap4;
 					break;
 				case D3DRS_WRAP5:
-					(*pValue) = constants->wrap5;
+					(*pValue) = constants->mRenderState.wrap5;
 					break;
 				case D3DRS_WRAP6:
-					(*pValue) = constants->wrap6;
+					(*pValue) = constants->mRenderState.wrap6;
 					break;
 				case D3DRS_WRAP7:
-					(*pValue) = constants->wrap7;
+					(*pValue) = constants->mRenderState.wrap7;
 					break;
 				case D3DRS_CLIPPING:
-					(*pValue) = constants->clipping;
+					(*pValue) = constants->mRenderState.clipping;
 					break;
 				case D3DRS_LIGHTING:
-					(*pValue) = constants->lighting;
+					(*pValue) = constants->mRenderState.lighting;
 					break;
 				case D3DRS_AMBIENT:
-					(*pValue) = constants->ambient;
+					(*pValue) = constants->mRenderState.ambient;
 					break;
 				case D3DRS_FOGVERTEXMODE:
-					(*pValue) = constants->fogVertexMode;
+					(*pValue) = constants->mRenderState.fogVertexMode;
 					break;
 				case D3DRS_COLORVERTEX:
-					(*pValue) = constants->colorVertex;
+					(*pValue) = constants->mRenderState.colorVertex;
 					break;
 				case D3DRS_LOCALVIEWER:
-					(*pValue) = constants->localViewer;
+					(*pValue) = constants->mRenderState.localViewer;
 					break;
 				case D3DRS_NORMALIZENORMALS:
-					(*pValue) = constants->normalizeNormals;
+					(*pValue) = constants->mRenderState.normalizeNormals;
 					break;
 				case D3DRS_DIFFUSEMATERIALSOURCE:
-					(*pValue) = constants->diffuseMaterialSource;
+					(*pValue) = constants->mRenderState.diffuseMaterialSource;
 					break;
 				case D3DRS_SPECULARMATERIALSOURCE:
-					(*pValue) = constants->specularMaterialSource;
+					(*pValue) = constants->mRenderState.specularMaterialSource;
 					break;
 				case D3DRS_AMBIENTMATERIALSOURCE:
-					(*pValue) = constants->ambientMaterialSource;
+					(*pValue) = constants->mRenderState.ambientMaterialSource;
 					break;
 				case D3DRS_EMISSIVEMATERIALSOURCE:
-					(*pValue) = constants->emissiveMaterialSource;
+					(*pValue) = constants->mRenderState.emissiveMaterialSource;
 					break;
 				case D3DRS_VERTEXBLEND:
-					(*pValue) = constants->vertexBlend;
+					(*pValue) = constants->mRenderState.vertexBlend;
 					break;
 				case D3DRS_CLIPPLANEENABLE:
-					(*pValue) = constants->clipPlaneEnable;
+					(*pValue) = constants->mRenderState.clipPlaneEnable;
 					break;
 				case D3DRS_POINTSIZE:
-					(*pValue) = constants->pointSize;
+					(*pValue) = constants->mRenderState.pointSize;
 					break;
 				case D3DRS_POINTSIZE_MIN:
-					(*pValue) = bit_cast(constants->pointSizeMinimum);
+					(*pValue) = bit_cast(constants->mRenderState.pointSizeMinimum);
 					break;
 				case D3DRS_POINTSPRITEENABLE:
-					(*pValue) = constants->pointSpriteEnable;
+					(*pValue) = constants->mRenderState.pointSpriteEnable;
 					break;
 				case D3DRS_POINTSCALEENABLE:
-					(*pValue) = constants->pointScaleEnable;
+					(*pValue) = constants->mRenderState.pointScaleEnable;
 					break;
 				case D3DRS_POINTSCALE_A:
-					(*pValue) = bit_cast(constants->pointScaleA);
+					(*pValue) = bit_cast(constants->mRenderState.pointScaleA);
 					break;
 				case D3DRS_POINTSCALE_B:
-					(*pValue) = bit_cast(constants->pointScaleB);
+					(*pValue) = bit_cast(constants->mRenderState.pointScaleB);
 					break;
 				case D3DRS_POINTSCALE_C:
-					(*pValue) = bit_cast(constants->pointScaleC);
+					(*pValue) = bit_cast(constants->mRenderState.pointScaleC);
 					break;
 				case D3DRS_MULTISAMPLEANTIALIAS:
-					(*pValue) = constants->multisampleAntiAlias;
+					(*pValue) = constants->mRenderState.multisampleAntiAlias;
 					break;
 				case D3DRS_MULTISAMPLEMASK:
-					(*pValue) = constants->multisampleMask;
+					(*pValue) = constants->mRenderState.multisampleMask;
 					break;
 				case D3DRS_PATCHEDGESTYLE:
-					(*pValue) = constants->patchEdgeStyle;
+					(*pValue) = constants->mRenderState.patchEdgeStyle;
 					break;
 				case D3DRS_DEBUGMONITORTOKEN:
-					(*pValue) = constants->debugMonitorToken;
+					(*pValue) = constants->mRenderState.debugMonitorToken;
 					break;
 				case D3DRS_POINTSIZE_MAX:
-					(*pValue) = bit_cast(constants->pointSizeMaximum);
+					(*pValue) = bit_cast(constants->mRenderState.pointSizeMaximum);
 					break;
 				case D3DRS_INDEXEDVERTEXBLENDENABLE:
-					(*pValue) = constants->indexedVertexBlendEnable;
+					(*pValue) = constants->mRenderState.indexedVertexBlendEnable;
 					break;
 				case D3DRS_COLORWRITEENABLE:
-					(*pValue) = constants->colorWriteEnable;
+					(*pValue) = constants->mRenderState.colorWriteEnable;
 					break;
 				case D3DRS_TWEENFACTOR:
-					(*pValue) = bit_cast(constants->tweenFactor);
+					(*pValue) = bit_cast(constants->mRenderState.tweenFactor);
 					break;
 				case D3DRS_BLENDOP:
-					(*pValue) = constants->blendOperation;
+					(*pValue) = constants->mRenderState.blendOperation;
 					break;
 				case D3DRS_POSITIONDEGREE:
-					(*pValue) = constants->positionDegree;
+					(*pValue) = constants->mRenderState.positionDegree;
 					break;
 				case D3DRS_NORMALDEGREE:
-					(*pValue) = constants->normalDegree;
+					(*pValue) = constants->mRenderState.normalDegree;
 					break;
 				case D3DRS_SCISSORTESTENABLE:
-					(*pValue) = constants->scissorTestEnable;
+					(*pValue) = constants->mRenderState.scissorTestEnable;
 					break;
 				case D3DRS_SLOPESCALEDEPTHBIAS:
-					(*pValue) = bit_cast(constants->slopeScaleDepthBias);
+					(*pValue) = bit_cast(constants->mRenderState.slopeScaleDepthBias);
 					break;
 				case D3DRS_ANTIALIASEDLINEENABLE:
-					(*pValue) = constants->antiAliasedLineEnable;
+					(*pValue) = constants->mRenderState.antiAliasedLineEnable;
 					break;
 				case D3DRS_MINTESSELLATIONLEVEL:
-					(*pValue) = bit_cast(constants->minimumTessellationLevel);
+					(*pValue) = bit_cast(constants->mRenderState.minimumTessellationLevel);
 					break;
 				case D3DRS_MAXTESSELLATIONLEVEL:
-					(*pValue) = bit_cast(constants->maximumTessellationLevel);
+					(*pValue) = bit_cast(constants->mRenderState.maximumTessellationLevel);
 					break;
 				case D3DRS_ADAPTIVETESS_X:
-					(*pValue) = bit_cast(constants->adaptivetessX);
+					(*pValue) = bit_cast(constants->mRenderState.adaptivetessX);
 					break;
 				case D3DRS_ADAPTIVETESS_Y:
-					(*pValue) = bit_cast(constants->adaptivetessY);
+					(*pValue) = bit_cast(constants->mRenderState.adaptivetessY);
 					break;
 				case D3DRS_ADAPTIVETESS_Z:
-					(*pValue) = bit_cast(constants->adaptivetessZ);
+					(*pValue) = bit_cast(constants->mRenderState.adaptivetessZ);
 					break;
 				case D3DRS_ADAPTIVETESS_W:
-					(*pValue) = bit_cast(constants->adaptivetessW);
+					(*pValue) = bit_cast(constants->mRenderState.adaptivetessW);
 					break;
 				case D3DRS_ENABLEADAPTIVETESSELLATION:
-					(*pValue) = constants->enableAdaptiveTessellation;
+					(*pValue) = constants->mRenderState.enableAdaptiveTessellation;
 					break;
 				case D3DRS_TWOSIDEDSTENCILMODE:
-					(*pValue) = constants->twoSidedStencilMode;
+					(*pValue) = constants->mRenderState.twoSidedStencilMode;
 					break;
 				case D3DRS_CCW_STENCILFAIL:
-					(*pValue) = constants->ccwStencilFail;
+					(*pValue) = constants->mRenderState.ccwStencilFail;
 					break;
 				case D3DRS_CCW_STENCILZFAIL:
-					(*pValue) = constants->ccwStencilZFail;
+					(*pValue) = constants->mRenderState.ccwStencilZFail;
 					break;
 				case D3DRS_CCW_STENCILPASS:
-					(*pValue) = constants->ccwStencilPass;
+					(*pValue) = constants->mRenderState.ccwStencilPass;
 					break;
 				case D3DRS_CCW_STENCILFUNC:
-					(*pValue) = constants->ccwStencilFunction;
+					(*pValue) = constants->mRenderState.ccwStencilFunction;
 					break;
 				case D3DRS_COLORWRITEENABLE1:
-					(*pValue) = constants->colorWriteEnable1;
+					(*pValue) = constants->mRenderState.colorWriteEnable1;
 					break;
 				case D3DRS_COLORWRITEENABLE2:
-					(*pValue) = constants->colorWriteEnable2;
+					(*pValue) = constants->mRenderState.colorWriteEnable2;
 					break;
 				case D3DRS_COLORWRITEENABLE3:
-					(*pValue) = constants->colorWriteEnable3;
+					(*pValue) = constants->mRenderState.colorWriteEnable3;
 					break;
 				case D3DRS_BLENDFACTOR:
-					(*pValue) = constants->blendFactor;
+					(*pValue) = constants->mRenderState.blendFactor;
 					break;
 				case D3DRS_SRGBWRITEENABLE:
-					(*pValue) = constants->srgbWriteEnable;
+					(*pValue) = constants->mRenderState.srgbWriteEnable;
 					break;
 				case D3DRS_DEPTHBIAS:
-					(*pValue) = bit_cast(constants->depthBias);
+					(*pValue) = bit_cast(constants->mRenderState.depthBias);
 					break;
 				case D3DRS_WRAP8:
-					(*pValue) = constants->wrap8;
+					(*pValue) = constants->mRenderState.wrap8;
 					break;
 				case D3DRS_WRAP9:
-					(*pValue) = constants->wrap9;
+					(*pValue) = constants->mRenderState.wrap9;
 					break;
 				case D3DRS_WRAP10:
-					(*pValue) = constants->wrap10;
+					(*pValue) = constants->mRenderState.wrap10;
 					break;
 				case D3DRS_WRAP11:
-					(*pValue) = constants->wrap11;
+					(*pValue) = constants->mRenderState.wrap11;
 					break;
 				case D3DRS_WRAP12:
-					(*pValue) = constants->wrap12;
+					(*pValue) = constants->mRenderState.wrap12;
 					break;
 				case D3DRS_WRAP13:
-					(*pValue) = constants->wrap13;
+					(*pValue) = constants->mRenderState.wrap13;
 					break;
 				case D3DRS_WRAP14:
-					(*pValue) = constants->wrap14;
+					(*pValue) = constants->mRenderState.wrap14;
 					break;
 				case D3DRS_WRAP15:
-					(*pValue) = constants->wrap15;
+					(*pValue) = constants->mRenderState.wrap15;
 					break;
 				case D3DRS_SEPARATEALPHABLENDENABLE:
-					(*pValue) = constants->separateAlphaBlendEnable;
+					(*pValue) = constants->mRenderState.separateAlphaBlendEnable;
 					break;
 				case D3DRS_SRCBLENDALPHA:
-					(*pValue) = constants->sourceBlendAlpha;
+					(*pValue) = constants->mRenderState.sourceBlendAlpha;
 					break;
 				case D3DRS_DESTBLENDALPHA:
-					(*pValue) = constants->destinationBlendAlpha;
+					(*pValue) = constants->mRenderState.destinationBlendAlpha;
 					break;
 				case D3DRS_BLENDOPALPHA:
-					(*pValue) = constants->blendOperationAlpha;
+					(*pValue) = constants->mRenderState.blendOperationAlpha;
 					break;
 				default:
 					BOOST_LOG_TRIVIAL(warning) << "ProcessQueue unknown state! " << State;
@@ -1416,425 +1416,425 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				switch (State)
 				{
 				case D3DRS_ZENABLE:
-					constants->zEnable = Value;
+					constants->mRenderState.zEnable = Value;
 					state->wasDsaGroupModified = true;
 					state->wasMultisampleGroupModified = true;
 					break;
 				case D3DRS_FILLMODE:
-					constants->fillMode = Value;
+					constants->mRenderState.fillMode = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_SHADEMODE:
-					constants->shadeMode = Value;
+					constants->mRenderState.shadeMode = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_ZWRITEENABLE:
-					constants->zWriteEnable = Value;
+					constants->mRenderState.zWriteEnable = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_ALPHATESTENABLE:
-					constants->alphaTestEnable = Value;
+					constants->mRenderState.alphaTestEnable = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_LASTPIXEL:
-					constants->lastPixel = Value;
+					constants->mRenderState.lastPixel = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_SRCBLEND:
-					constants->sourceBlend = Value;
+					constants->mRenderState.sourceBlend = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_DESTBLEND:
-					constants->destinationBlend = Value;
+					constants->mRenderState.destinationBlend = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_CULLMODE:
-					constants->cullMode = Value;
+					constants->mRenderState.cullMode = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_ZFUNC:
-					constants->zFunction = Value;
+					constants->mRenderState.zFunction = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_ALPHAREF:
-					constants->alphaReference = Value;
+					constants->mRenderState.alphaReference = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_ALPHAFUNC:
-					constants->alphaFunction = Value;
+					constants->mRenderState.alphaFunction = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_DITHERENABLE:
-					constants->ditherEnable = Value;
+					constants->mRenderState.ditherEnable = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_ALPHABLENDENABLE:
-					constants->alphaBlendEnable = Value;
+					constants->mRenderState.alphaBlendEnable = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_FOGENABLE:
-					constants->fogEnable = Value;
+					constants->mRenderState.fogEnable = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					state->wasFogGroupModified = true;
 					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_SPECULARENABLE:
-					constants->specularEnable = Value;
+					constants->mRenderState.specularEnable = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_FOGCOLOR:
-					constants->fogColor = Value;
+					constants->mRenderState.fogColor = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGTABLEMODE:
-					constants->fogTableMode = Value;
+					constants->mRenderState.fogTableMode = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					state->wasFogGroupModified = true;
 					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGSTART:
-					constants->fogStart = bit_cast(Value);
+					constants->mRenderState.fogStart = bit_cast(Value);
 					state->wasFixedFunctionOtherGroupModified = true;
 					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGEND:
-					constants->fogEnd = bit_cast(Value);
+					constants->mRenderState.fogEnd = bit_cast(Value);
 					state->wasFixedFunctionOtherGroupModified = true;
 					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_FOGDENSITY:
-					constants->fogDensity = bit_cast(Value);
+					constants->mRenderState.fogDensity = bit_cast(Value);
 					state->wasFixedFunctionOtherGroupModified = true;
 					state->wasPixelShaderConstantGroupModified = true;
 					break;
 				case D3DRS_RANGEFOGENABLE:
-					constants->rangeFogEnable = Value;
+					constants->mRenderState.rangeFogEnable = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_STENCILENABLE:
-					constants->stencilEnable = Value;
+					constants->mRenderState.stencilEnable = Value;
 					state->wasDsaGroupModified = true;
 					state->wasMultisampleGroupModified = true;
 					break;
 				case D3DRS_STENCILFAIL:
-					constants->stencilFail = Value;
+					constants->mRenderState.stencilFail = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILZFAIL:
-					constants->stencilZFail = Value;
+					constants->mRenderState.stencilZFail = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILPASS:
-					constants->stencilPass = Value;
+					constants->mRenderState.stencilPass = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILFUNC:
-					constants->stencilFunction = Value;
+					constants->mRenderState.stencilFunction = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILREF:
-					constants->stencilReference = Value;
+					constants->mRenderState.stencilReference = Value;
 					state->hasStencilReference = true;
 					break;
 				case D3DRS_STENCILMASK:
-					constants->stencilMask = Value;
+					constants->mRenderState.stencilMask = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_STENCILWRITEMASK:
-					constants->stencilWriteMask = Value;
+					constants->mRenderState.stencilWriteMask = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_TEXTUREFACTOR:
-					constants->textureFactor = Value;
+					constants->mRenderState.textureFactor = Value;
 					state->hasTextureFactor = true;
 					break;
 				case D3DRS_WRAP0:
-					constants->wrap0 = Value;
+					constants->mRenderState.wrap0 = Value;
 					state->hasWrap0 = true;
 					break;
 				case D3DRS_WRAP1:
-					constants->wrap1 = Value;
+					constants->mRenderState.wrap1 = Value;
 					state->hasWrap1 = true;
 					break;
 				case D3DRS_WRAP2:
-					constants->wrap2 = Value;
+					constants->mRenderState.wrap2 = Value;
 					state->hasWrap2 = true;
 					break;
 				case D3DRS_WRAP3:
-					constants->wrap3 = Value;
+					constants->mRenderState.wrap3 = Value;
 					state->hasWrap3 = true;
 					break;
 				case D3DRS_WRAP4:
-					constants->wrap4 = Value;
+					constants->mRenderState.wrap4 = Value;
 					state->hasWrap4 = true;
 					break;
 				case D3DRS_WRAP5:
-					constants->wrap5 = Value;
+					constants->mRenderState.wrap5 = Value;
 					state->hasWrap5 = true;
 					break;
 				case D3DRS_WRAP6:
-					constants->wrap6 = Value;
+					constants->mRenderState.wrap6 = Value;
 					state->hasWrap6 = true;
 					break;
 				case D3DRS_WRAP7:
-					constants->wrap7 = Value;
+					constants->mRenderState.wrap7 = Value;
 					state->hasWrap7 = true;
 					break;
 				case D3DRS_CLIPPING:
-					constants->clipping = Value;
+					constants->mRenderState.clipping = Value;
 					state->hasClipping = true;
 					break;
 				case D3DRS_LIGHTING:
-					constants->lighting = Value;
+					constants->mRenderState.lighting = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_AMBIENT:
-					constants->ambient = Value;
+					constants->mRenderState.ambient = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_FOGVERTEXMODE:
-					constants->fogVertexMode = Value;
+					constants->mRenderState.fogVertexMode = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_COLORVERTEX:
-					constants->colorVertex = Value;
+					constants->mRenderState.colorVertex = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_LOCALVIEWER:
-					constants->localViewer = Value;
+					constants->mRenderState.localViewer = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_NORMALIZENORMALS:
-					constants->normalizeNormals = Value;
+					constants->mRenderState.normalizeNormals = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_DIFFUSEMATERIALSOURCE:
-					constants->diffuseMaterialSource = Value;
+					constants->mRenderState.diffuseMaterialSource = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_SPECULARMATERIALSOURCE:
-					constants->specularMaterialSource = Value;
+					constants->mRenderState.specularMaterialSource = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_AMBIENTMATERIALSOURCE:
-					constants->ambientMaterialSource = Value;
+					constants->mRenderState.ambientMaterialSource = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_EMISSIVEMATERIALSOURCE:
-					constants->emissiveMaterialSource = Value;
+					constants->mRenderState.emissiveMaterialSource = Value;
 					state->wasFixedFunctionLightingGroupModified = true;
 					break;
 				case D3DRS_VERTEXBLEND:
-					constants->vertexBlend = Value;
+					constants->mRenderState.vertexBlend = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_CLIPPLANEENABLE:
-					constants->clipPlaneEnable = Value;
+					constants->mRenderState.clipPlaneEnable = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSIZE:
-					constants->pointSize = bit_cast(Value);
+					constants->mRenderState.pointSize = bit_cast(Value);
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSIZE_MIN:
-					constants->pointSizeMinimum = bit_cast(Value);
+					constants->mRenderState.pointSizeMinimum = bit_cast(Value);
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSPRITEENABLE:
-					constants->pointSpriteEnable = Value;
+					constants->mRenderState.pointSpriteEnable = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_POINTSCALEENABLE:
-					constants->pointScaleEnable = Value;
+					constants->mRenderState.pointScaleEnable = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_POINTSCALE_A:
-					constants->pointScaleA = bit_cast(Value);
+					constants->mRenderState.pointScaleA = bit_cast(Value);
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_POINTSCALE_B:
-					constants->pointScaleB = bit_cast(Value);
+					constants->mRenderState.pointScaleB = bit_cast(Value);
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_POINTSCALE_C:
-					constants->pointScaleC = bit_cast(Value);
+					constants->mRenderState.pointScaleC = bit_cast(Value);
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_MULTISAMPLEANTIALIAS:
-					constants->multisampleAntiAlias = Value;
+					constants->mRenderState.multisampleAntiAlias = Value;
 					state->wasMultisampleGroupModified = true;
 					break;
 				case D3DRS_MULTISAMPLEMASK:
-					constants->multisampleMask = Value;
+					constants->mRenderState.multisampleMask = Value;
 					state->hasMultisampleMask = true;
 					break;
 				case D3DRS_PATCHEDGESTYLE:
-					constants->patchEdgeStyle = Value;
+					constants->mRenderState.patchEdgeStyle = Value;
 					state->hasPatchEdgeStyle = true;
 					break;
 				case D3DRS_DEBUGMONITORTOKEN:
-					constants->debugMonitorToken = Value;
+					constants->mRenderState.debugMonitorToken = Value;
 					state->hasDebugMonitorToken = true;
 					break;
 				case D3DRS_POINTSIZE_MAX:
-					constants->pointSizeMaximum = bit_cast(Value);
+					constants->mRenderState.pointSizeMaximum = bit_cast(Value);
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_INDEXEDVERTEXBLENDENABLE:
-					constants->indexedVertexBlendEnable = Value;
+					constants->mRenderState.indexedVertexBlendEnable = Value;
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE:
-					constants->colorWriteEnable = Value;
+					constants->mRenderState.colorWriteEnable = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_TWEENFACTOR:
-					constants->tweenFactor = bit_cast(Value);
+					constants->mRenderState.tweenFactor = bit_cast(Value);
 					state->wasFixedFunctionOtherGroupModified = true;
 					break;
 				case D3DRS_BLENDOP:
-					constants->blendOperation = Value;
+					constants->mRenderState.blendOperation = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_POSITIONDEGREE:
-					constants->positionDegree = Value;
+					constants->mRenderState.positionDegree = Value;
 					state->hasPositionDegree = true;
 					break;
 				case D3DRS_NORMALDEGREE:
-					constants->normalDegree = Value;
+					constants->mRenderState.normalDegree = Value;
 					state->hasNormalDegree = true;
 					break;
 				case D3DRS_SCISSORTESTENABLE:
-					constants->scissorTestEnable = Value;
+					constants->mRenderState.scissorTestEnable = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_SLOPESCALEDEPTHBIAS:
-					constants->slopeScaleDepthBias = bit_cast(Value);
+					constants->mRenderState.slopeScaleDepthBias = bit_cast(Value);
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_ANTIALIASEDLINEENABLE:
-					constants->antiAliasedLineEnable = Value;
+					constants->mRenderState.antiAliasedLineEnable = Value;
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_MINTESSELLATIONLEVEL:
-					constants->minimumTessellationLevel = bit_cast(Value);
+					constants->mRenderState.minimumTessellationLevel = bit_cast(Value);
 					state->hasMinimumTessellationLevel = true;
 					break;
 				case D3DRS_MAXTESSELLATIONLEVEL:
-					constants->maximumTessellationLevel = bit_cast(Value);
+					constants->mRenderState.maximumTessellationLevel = bit_cast(Value);
 					state->hasMaximumTessellationLevel = true;
 					break;
 				case D3DRS_ADAPTIVETESS_X:
-					constants->adaptivetessX = bit_cast(Value);
+					constants->mRenderState.adaptivetessX = bit_cast(Value);
 					state->hasAdaptivetessX = true;
 					break;
 				case D3DRS_ADAPTIVETESS_Y:
-					constants->adaptivetessY = bit_cast(Value);
+					constants->mRenderState.adaptivetessY = bit_cast(Value);
 					state->hasAdaptivetessY = true;
 					break;
 				case D3DRS_ADAPTIVETESS_Z:
-					constants->adaptivetessZ = bit_cast(Value);
+					constants->mRenderState.adaptivetessZ = bit_cast(Value);
 					state->hasAdaptivetessZ = true;
 					break;
 				case D3DRS_ADAPTIVETESS_W:
-					constants->adaptivetessW = bit_cast(Value);
+					constants->mRenderState.adaptivetessW = bit_cast(Value);
 					state->hasAdaptivetessW = true;
 					break;
 				case D3DRS_ENABLEADAPTIVETESSELLATION:
-					constants->enableAdaptiveTessellation = Value;
+					constants->mRenderState.enableAdaptiveTessellation = Value;
 					state->hasEnableAdaptiveTessellation = true;
 					break;
 				case D3DRS_TWOSIDEDSTENCILMODE:
-					constants->twoSidedStencilMode = Value;
+					constants->mRenderState.twoSidedStencilMode = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILFAIL:
-					constants->ccwStencilFail = Value;
+					constants->mRenderState.ccwStencilFail = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILZFAIL:
-					constants->ccwStencilZFail = Value;
+					constants->mRenderState.ccwStencilZFail = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILPASS:
-					constants->ccwStencilPass = Value;
+					constants->mRenderState.ccwStencilPass = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_CCW_STENCILFUNC:
-					constants->ccwStencilFunction = Value;
+					constants->mRenderState.ccwStencilFunction = Value;
 					state->wasDsaGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE1:
-					constants->colorWriteEnable1 = Value;
+					constants->mRenderState.colorWriteEnable1 = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE2:
-					constants->colorWriteEnable2 = Value;
+					constants->mRenderState.colorWriteEnable2 = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_COLORWRITEENABLE3:
-					constants->colorWriteEnable3 = Value;
+					constants->mRenderState.colorWriteEnable3 = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_BLENDFACTOR:
-					constants->blendFactor = Value;
+					constants->mRenderState.blendFactor = Value;
 					state->hasBlendFactor = true;
 					break;
 				case D3DRS_SRGBWRITEENABLE:
-					constants->srgbWriteEnable = Value;
+					constants->mRenderState.srgbWriteEnable = Value;
 					state->hasSrgbWriteEnable = true;
 					break;
 				case D3DRS_DEPTHBIAS:
-					constants->depthBias = bit_cast(Value);
+					constants->mRenderState.depthBias = bit_cast(Value);
 					state->wasRasterizerGroupModified = true;
 					break;
 				case D3DRS_WRAP8:
-					constants->wrap8 = Value;
+					constants->mRenderState.wrap8 = Value;
 					state->hasWrap8 = true;
 					break;
 				case D3DRS_WRAP9:
-					constants->wrap9 = Value;
+					constants->mRenderState.wrap9 = Value;
 					state->hasWrap9 = true;
 					break;
 				case D3DRS_WRAP10:
-					constants->wrap10 = Value;
+					constants->mRenderState.wrap10 = Value;
 					state->hasWrap10 = true;
 					break;
 				case D3DRS_WRAP11:
-					constants->wrap11 = Value;
+					constants->mRenderState.wrap11 = Value;
 					state->hasWrap11 = true;
 					break;
 				case D3DRS_WRAP12:
-					constants->wrap12 = Value;
+					constants->mRenderState.wrap12 = Value;
 					state->hasWrap12 = true;
 					break;
 				case D3DRS_WRAP13:
-					constants->wrap13 = Value;
+					constants->mRenderState.wrap13 = Value;
 					state->hasWrap13 = true;
 					break;
 				case D3DRS_WRAP14:
-					constants->wrap14 = Value;
+					constants->mRenderState.wrap14 = Value;
 					state->hasWrap14 = true;
 					break;
 				case D3DRS_WRAP15:
-					constants->wrap15 = Value;
+					constants->mRenderState.wrap15 = Value;
 					state->hasWrap15 = true;
 					break;
 				case D3DRS_SEPARATEALPHABLENDENABLE:
-					constants->separateAlphaBlendEnable = Value;
+					constants->mRenderState.separateAlphaBlendEnable = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_SRCBLENDALPHA:
-					constants->sourceBlendAlpha = Value;
+					constants->mRenderState.sourceBlendAlpha = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_DESTBLENDALPHA:
-					constants->destinationBlendAlpha = Value;
+					constants->mRenderState.destinationBlendAlpha = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				case D3DRS_BLENDOPALPHA:
-					constants->blendOperationAlpha = Value;
+					constants->mRenderState.blendOperationAlpha = Value;
 					state->wasBlendGroupModified = true;
 					break;
 				default:
@@ -2572,8 +2572,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						if (surface != nullptr)
 						{
 							auto& extent = surface->mExtent;
-							constants.screenWidth = extent.width;
-							constants.screenHeight = extent.height;
+							constants.mRenderState.screenWidth = extent.width;
+							constants.mRenderState.screenHeight = extent.height;
 						}
 					}
 				}

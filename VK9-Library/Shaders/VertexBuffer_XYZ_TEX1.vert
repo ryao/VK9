@@ -63,9 +63,9 @@ void main()
 		texcoord1 = (attr * shaderState.mTextureStages[0].textureTransformationMatrix).xy;
 	}
 
-	if(shaderState.colorVertex==1)
+	if(shaderState.mRenderState.colorVertex==1)
 	{
-		switch(shaderState.diffuseMaterialSource)
+		switch(shaderState.mRenderState.diffuseMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				diffuseColor = shaderState.mMaterial.Diffuse;
@@ -81,7 +81,7 @@ void main()
 			break;
 		}
 		
-		switch(shaderState.ambientMaterialSource)
+		switch(shaderState.mRenderState.ambientMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				ambientColor = shaderState.mMaterial.Ambient;
@@ -97,7 +97,7 @@ void main()
 			break;
 		}
 
-		switch(shaderState.specularMaterialSource)
+		switch(shaderState.mRenderState.specularMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				specularColor = shaderState.mMaterial.Specular;
@@ -113,7 +113,7 @@ void main()
 			break;
 		}
 
-		switch(shaderState.emissiveMaterialSource)
+		switch(shaderState.mRenderState.emissiveMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				emissiveColor = shaderState.mMaterial.Emissive;

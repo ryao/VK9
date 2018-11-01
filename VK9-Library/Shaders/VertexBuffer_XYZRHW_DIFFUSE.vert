@@ -55,7 +55,7 @@ void main()
 	
 	if(position.x > 0)
 	{
-		x = (position.x / (shaderState.screenWidth/2));
+		x = (position.x / (shaderState.mRenderState.screenWidth/2));
 	}
 	else
 	{
@@ -64,7 +64,7 @@ void main()
 	
 	if(position.y > 0)
 	{
-		y = (position.y / (shaderState.screenHeight/2));
+		y = (position.y / (shaderState.mRenderState.screenHeight/2));
 	}
 	else
 	{
@@ -73,9 +73,9 @@ void main()
 	
 	gl_Position = vec4((x-1),(y-1),0.0,1.0);
 
-	if(shaderState.colorVertex==1)
+	if(shaderState.mRenderState.colorVertex==1)
 	{
-		switch(shaderState.diffuseMaterialSource)
+		switch(shaderState.mRenderState.diffuseMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				diffuseColor = shaderState.mMaterial.Diffuse;
@@ -91,7 +91,7 @@ void main()
 			break;
 		}
 		
-		switch(shaderState.ambientMaterialSource)
+		switch(shaderState.mRenderState.ambientMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				ambientColor = shaderState.mMaterial.Ambient;
@@ -107,7 +107,7 @@ void main()
 			break;
 		}
 
-		switch(shaderState.specularMaterialSource)
+		switch(shaderState.mRenderState.specularMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				specularColor = shaderState.mMaterial.Specular;
@@ -123,7 +123,7 @@ void main()
 			break;
 		}
 
-		switch(shaderState.emissiveMaterialSource)
+		switch(shaderState.mRenderState.emissiveMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
 				emissiveColor = shaderState.mMaterial.Emissive;

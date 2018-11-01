@@ -99,10 +99,10 @@ vec4 GetGlobalIllumination()
 			ambientTemp += (attenuation * spot * shaderState.mLights[i].Ambient);
 			diffuseTemp += (diffuseColor * shaderState.mLights[i].Diffuse * clamp(dot(normal,ldir),0,1) * attenuation * spot);
 
-			if(shaderState.specularEnable==1)
+			if(shaderState.mRenderState.specularEnable==1)
 			{
 				vec3 halfway;
-				if(shaderState.localViewer==1)
+				if(shaderState.mRenderState.localViewer==1)
 				{
 					halfway = normalize(normalize(cameraPosition - pos.xyz) + ldir.xyz);			
 				}
@@ -121,11 +121,11 @@ vec4 GetGlobalIllumination()
 		}
 	}
 
-	ambient = shaderState.mMaterial.Ambient * (Convert(shaderState.ambient) + ambientTemp);
+	ambient = shaderState.mMaterial.Ambient * (Convert(shaderState.mRenderState.ambient) + ambientTemp);
 	diffuse = diffuseTemp;
 	emissive = emissiveColor;
 
-	if(shaderState.specularEnable==1)
+	if(shaderState.mRenderState.specularEnable==1)
 	{
 		specular = specularColor * specularTemp;
 	}

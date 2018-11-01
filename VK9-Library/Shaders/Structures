@@ -80,10 +80,8 @@ struct TextureStage
 	int filler2;
 };
 
-struct ShaderState
+struct RenderState
 {
-	Light mLights[8];
-
 	int textureCount;
 
 	//Render State
@@ -194,7 +192,12 @@ struct ShaderState
 	int screenHeight;
 	int filler1;
 	int filler2;
+};
 
+struct ShaderState
+{
+	Light mLights[8];
+	RenderState mRenderState;
 	TextureStage mTextureStages[9];
 	Material mMaterial;
 };

@@ -131,20 +131,23 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 			targetState.wasFixedFunctionOtherGroupModified = true;
 			targetState.wasFogGroupModified = true;
 			targetState.wasPixelShaderConstantGroupModified = true;
-			targetState.mShaderState.fogEnable = sourceState.mShaderState.fogEnable;
+			targetState.mShaderState.mRenderState.fogEnable = sourceState.mShaderState.mRenderState.fogEnable;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.normalizeNormals = sourceState.mShaderState.normalizeNormals;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.normalizeNormals = sourceState.mShaderState.mRenderState.normalizeNormals;
 		}
 		if (sourceState.hasDebugMonitorToken && (targetState.hasDebugMonitorToken || !onlyIfExists)) {
-			targetState.hasDebugMonitorToken = true; targetState.mShaderState.debugMonitorToken = sourceState.mShaderState.debugMonitorToken;
+			targetState.hasDebugMonitorToken = true; 
+			targetState.mShaderState.mRenderState.debugMonitorToken = sourceState.mShaderState.mRenderState.debugMonitorToken;
 		}
 	}
 
 	if (type == D3DSBT_ALL || type == D3DSBT_VERTEXSTATE || type == D3DSBT_FORCE_DWORD)
 	{
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.cullMode = sourceState.mShaderState.cullMode;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.cullMode = sourceState.mShaderState.mRenderState.cullMode;
 		}
 
 		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
@@ -152,7 +155,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		{
 			targetState.wasFixedFunctionOtherGroupModified = true;
 			targetState.wasPixelShaderConstantGroupModified = true;
-			targetState.mShaderState.fogColor = sourceState.mShaderState.fogColor;
+			targetState.mShaderState.mRenderState.fogColor = sourceState.mShaderState.mRenderState.fogColor;
 		}
 
 		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasFogGroupModified || sourceState.wasPixelShaderConstantGroupModified)
@@ -161,7 +164,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 			targetState.wasFixedFunctionOtherGroupModified = true;
 			targetState.wasFogGroupModified = true;
 			targetState.wasPixelShaderConstantGroupModified = true;
-			targetState.mShaderState.fogTableMode = sourceState.mShaderState.fogTableMode;
+			targetState.mShaderState.mRenderState.fogTableMode = sourceState.mShaderState.mRenderState.fogTableMode;
 		}
 
 		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
@@ -169,7 +172,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		{
 			targetState.wasFixedFunctionOtherGroupModified = true;
 			targetState.wasPixelShaderConstantGroupModified = true;
-			targetState.mShaderState.fogStart = sourceState.mShaderState.fogStart;
+			targetState.mShaderState.mRenderState.fogStart = sourceState.mShaderState.mRenderState.fogStart;
 		}
 
 		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
@@ -177,7 +180,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		{
 			targetState.wasFixedFunctionOtherGroupModified = true;
 			targetState.wasPixelShaderConstantGroupModified = true;
-			targetState.mShaderState.fogEnd = sourceState.mShaderState.fogEnd;
+			targetState.mShaderState.mRenderState.fogEnd = sourceState.mShaderState.mRenderState.fogEnd;
 		}
 
 		if ((sourceState.wasFixedFunctionOtherGroupModified || sourceState.wasPixelShaderConstantGroupModified)
@@ -185,112 +188,147 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		{
 			targetState.wasFixedFunctionOtherGroupModified = true;
 			targetState.wasPixelShaderConstantGroupModified = true;
-			targetState.mShaderState.fogDensity = sourceState.mShaderState.fogDensity;
+			targetState.mShaderState.mRenderState.fogDensity = sourceState.mShaderState.mRenderState.fogDensity;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.rangeFogEnable = sourceState.mShaderState.rangeFogEnable;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.rangeFogEnable = sourceState.mShaderState.mRenderState.rangeFogEnable;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.ambient = sourceState.mShaderState.ambient;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.ambient = sourceState.mShaderState.mRenderState.ambient;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true; targetState.mShaderState.colorVertex = sourceState.mShaderState.colorVertex;
+			targetState.wasFixedFunctionLightingGroupModified = true; 
+			targetState.mShaderState.mRenderState.colorVertex = sourceState.mShaderState.mRenderState.colorVertex;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mShaderState.fogVertexMode = sourceState.mShaderState.fogVertexMode;
+			targetState.wasFixedFunctionOtherGroupModified = true;  
+			targetState.mShaderState.mRenderState.fogVertexMode = sourceState.mShaderState.mRenderState.fogVertexMode;
 		}
 		if (sourceState.hasClipping && (targetState.hasClipping || !onlyIfExists)) {
-			targetState.hasClipping = true;  targetState.mShaderState.clipping = sourceState.mShaderState.clipping;
+			targetState.hasClipping = true;  
+			targetState.mShaderState.mRenderState.clipping = sourceState.mShaderState.mRenderState.clipping;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.lighting = sourceState.mShaderState.lighting;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.lighting = sourceState.mShaderState.mRenderState.lighting;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.localViewer = sourceState.mShaderState.localViewer;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.localViewer = sourceState.mShaderState.mRenderState.localViewer;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.emissiveMaterialSource = sourceState.mShaderState.emissiveMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.emissiveMaterialSource = sourceState.mShaderState.mRenderState.emissiveMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.ambientMaterialSource = sourceState.mShaderState.ambientMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.ambientMaterialSource = sourceState.mShaderState.mRenderState.ambientMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.diffuseMaterialSource = sourceState.mShaderState.diffuseMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.diffuseMaterialSource = sourceState.mShaderState.mRenderState.diffuseMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true; targetState.mShaderState.specularMaterialSource = sourceState.mShaderState.specularMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true; 
+			targetState.mShaderState.mRenderState.specularMaterialSource = sourceState.mShaderState.mRenderState.specularMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mShaderState.vertexBlend = sourceState.mShaderState.vertexBlend;
+			targetState.wasFixedFunctionOtherGroupModified = true;  
+			targetState.mShaderState.mRenderState.vertexBlend = sourceState.mShaderState.mRenderState.vertexBlend;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.clipPlaneEnable = sourceState.mShaderState.clipPlaneEnable;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.clipPlaneEnable = sourceState.mShaderState.mRenderState.clipPlaneEnable;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.pointSize = sourceState.mShaderState.pointSize;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.pointSize = sourceState.mShaderState.mRenderState.pointSize;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.pointSizeMinimum = sourceState.mShaderState.pointSizeMinimum;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.pointSizeMinimum = sourceState.mShaderState.mRenderState.pointSizeMinimum;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.pointSpriteEnable = sourceState.mShaderState.pointSpriteEnable;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.pointSpriteEnable = sourceState.mShaderState.mRenderState.pointSpriteEnable;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.pointScaleEnable = sourceState.mShaderState.pointScaleEnable;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.pointScaleEnable = sourceState.mShaderState.mRenderState.pointScaleEnable;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.pointScaleA = sourceState.mShaderState.pointScaleA;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.pointScaleA = sourceState.mShaderState.mRenderState.pointScaleA;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.pointScaleB = sourceState.mShaderState.pointScaleB;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.pointScaleB = sourceState.mShaderState.mRenderState.pointScaleB;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.pointScaleC = sourceState.mShaderState.pointScaleC;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.pointScaleC = sourceState.mShaderState.mRenderState.pointScaleC;
 		}
 		if (sourceState.wasMultisampleGroupModified && (targetState.wasMultisampleGroupModified || !onlyIfExists)) {
-			targetState.wasMultisampleGroupModified = true; targetState.mShaderState.multisampleAntiAlias = sourceState.mShaderState.multisampleAntiAlias;
+			targetState.wasMultisampleGroupModified = true; 
+			targetState.mShaderState.mRenderState.multisampleAntiAlias = sourceState.mShaderState.mRenderState.multisampleAntiAlias;
 		}
 		if (sourceState.hasMultisampleMask && (targetState.hasMultisampleMask || !onlyIfExists)) {
-			targetState.hasMultisampleMask = true;  targetState.mShaderState.multisampleMask = sourceState.mShaderState.multisampleMask;
+			targetState.hasMultisampleMask = true;  
+			targetState.mShaderState.mRenderState.multisampleMask = sourceState.mShaderState.mRenderState.multisampleMask;
 		}
 		if (sourceState.hasPatchEdgeStyle && (targetState.hasPatchEdgeStyle || !onlyIfExists)) {
-			targetState.hasPatchEdgeStyle = true;  targetState.mShaderState.patchEdgeStyle = sourceState.mShaderState.patchEdgeStyle;
+			targetState.hasPatchEdgeStyle = true;  
+			targetState.mShaderState.mRenderState.patchEdgeStyle = sourceState.mShaderState.mRenderState.patchEdgeStyle;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true; targetState.mShaderState.pointSizeMaximum = sourceState.mShaderState.pointSizeMaximum;
+			targetState.wasRasterizerGroupModified = true; 
+			targetState.mShaderState.mRenderState.pointSizeMaximum = sourceState.mShaderState.mRenderState.pointSizeMaximum;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.indexedVertexBlendEnable = sourceState.mShaderState.indexedVertexBlendEnable;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.indexedVertexBlendEnable = sourceState.mShaderState.mRenderState.indexedVertexBlendEnable;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mShaderState.tweenFactor = sourceState.mShaderState.tweenFactor;
+			targetState.wasFixedFunctionOtherGroupModified = true;  
+			targetState.mShaderState.mRenderState.tweenFactor = sourceState.mShaderState.mRenderState.tweenFactor;
 		}
 		if (sourceState.hasPositionDegree && (targetState.hasPositionDegree || !onlyIfExists)) {
-			targetState.hasPositionDegree = true; targetState.mShaderState.positionDegree = sourceState.mShaderState.positionDegree;
+			targetState.hasPositionDegree = true; 
+			targetState.mShaderState.mRenderState.positionDegree = sourceState.mShaderState.mRenderState.positionDegree;
 		}
 		if (sourceState.hasNormalDegree && (targetState.hasNormalDegree || !onlyIfExists)) {
-			targetState.hasNormalDegree = true;  targetState.mShaderState.normalDegree = sourceState.mShaderState.normalDegree;
+			targetState.hasNormalDegree = true;  
+			targetState.mShaderState.mRenderState.normalDegree = sourceState.mShaderState.mRenderState.normalDegree;
 		}
 		if (sourceState.hasMinimumTessellationLevel && (targetState.hasMinimumTessellationLevel || !onlyIfExists)) {
-			targetState.hasMinimumTessellationLevel = true; targetState.mShaderState.minimumTessellationLevel = sourceState.mShaderState.minimumTessellationLevel;
+			targetState.hasMinimumTessellationLevel = true; 
+			targetState.mShaderState.mRenderState.minimumTessellationLevel = sourceState.mShaderState.mRenderState.minimumTessellationLevel;
 		}
 		if (sourceState.hasMaximumTessellationLevel && (targetState.hasMaximumTessellationLevel || !onlyIfExists)) {
-			targetState.hasMaximumTessellationLevel = true; targetState.mShaderState.maximumTessellationLevel = sourceState.mShaderState.maximumTessellationLevel;
+			targetState.hasMaximumTessellationLevel = true; 
+			targetState.mShaderState.mRenderState.maximumTessellationLevel = sourceState.mShaderState.mRenderState.maximumTessellationLevel;
 		}
 		if (sourceState.hasAdaptivetessX && (targetState.hasAdaptivetessX || !onlyIfExists)) {
-			targetState.hasAdaptivetessX = true; targetState.mShaderState.adaptivetessX = sourceState.mShaderState.adaptivetessX;
+			targetState.hasAdaptivetessX = true; 
+			targetState.mShaderState.mRenderState.adaptivetessX = sourceState.mShaderState.mRenderState.adaptivetessX;
 		}
 		if (sourceState.hasAdaptivetessY && (targetState.hasAdaptivetessY || !onlyIfExists)) {
-			targetState.hasAdaptivetessY = true;  targetState.mShaderState.adaptivetessY = sourceState.mShaderState.adaptivetessY;
+			targetState.hasAdaptivetessY = true;  
+			targetState.mShaderState.mRenderState.adaptivetessY = sourceState.mShaderState.mRenderState.adaptivetessY;
 		}
 		if (sourceState.hasAdaptivetessZ && (targetState.hasAdaptivetessZ || !onlyIfExists)) {
-			targetState.hasAdaptivetessZ = true;  targetState.mShaderState.adaptivetessZ = sourceState.mShaderState.adaptivetessZ;
+			targetState.hasAdaptivetessZ = true;  
+			targetState.mShaderState.mRenderState.adaptivetessZ = sourceState.mShaderState.mRenderState.adaptivetessZ;
 		}
 		if (sourceState.hasAdaptivetessW && (targetState.hasAdaptivetessW || !onlyIfExists)) {
-			targetState.hasAdaptivetessW = true; targetState.mShaderState.adaptivetessW = sourceState.mShaderState.adaptivetessW;
+			targetState.hasAdaptivetessW = true; 
+			targetState.mShaderState.mRenderState.adaptivetessW = sourceState.mShaderState.mRenderState.adaptivetessW;
 		}
 		if (sourceState.hasEnableAdaptiveTessellation && (targetState.hasEnableAdaptiveTessellation || !onlyIfExists)) {
-			targetState.hasEnableAdaptiveTessellation = true;  targetState.mShaderState.enableAdaptiveTessellation = sourceState.mShaderState.enableAdaptiveTessellation;
+			targetState.hasEnableAdaptiveTessellation = true;  
+			targetState.mShaderState.mRenderState.enableAdaptiveTessellation = sourceState.mShaderState.mRenderState.enableAdaptiveTessellation;
 		}
 	}
 
@@ -300,211 +338,276 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 		{
 			targetState.wasDsaGroupModified = true;
 			targetState.wasMultisampleGroupModified = true;
-			targetState.mShaderState.zEnable = sourceState.mShaderState.zEnable;
+			targetState.mShaderState.mRenderState.zEnable = sourceState.mShaderState.mRenderState.zEnable;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.specularEnable = sourceState.mShaderState.specularEnable;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.specularEnable = sourceState.mShaderState.mRenderState.specularEnable;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.fillMode = sourceState.mShaderState.fillMode;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.fillMode = sourceState.mShaderState.mRenderState.fillMode;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.shadeMode = sourceState.mShaderState.shadeMode;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.shadeMode = sourceState.mShaderState.mRenderState.shadeMode;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.zWriteEnable = sourceState.mShaderState.zWriteEnable;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.zWriteEnable = sourceState.mShaderState.mRenderState.zWriteEnable;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true; targetState.mShaderState.alphaTestEnable = sourceState.mShaderState.alphaTestEnable;
+			targetState.wasDsaGroupModified = true; 
+			targetState.mShaderState.mRenderState.alphaTestEnable = sourceState.mShaderState.mRenderState.alphaTestEnable;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true; targetState.mShaderState.lastPixel = sourceState.mShaderState.lastPixel;
+			targetState.wasRasterizerGroupModified = true; 
+			targetState.mShaderState.mRenderState.lastPixel = sourceState.mShaderState.mRenderState.lastPixel;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true;  targetState.mShaderState.sourceBlend = sourceState.mShaderState.sourceBlend;
+			targetState.wasBlendGroupModified = true;  
+			targetState.mShaderState.mRenderState.sourceBlend = sourceState.mShaderState.mRenderState.sourceBlend;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true; targetState.mShaderState.destinationBlend = sourceState.mShaderState.destinationBlend;
+			targetState.wasBlendGroupModified = true; 
+			targetState.mShaderState.mRenderState.destinationBlend = sourceState.mShaderState.mRenderState.destinationBlend;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true; targetState.mShaderState.zFunction = sourceState.mShaderState.zFunction;
+			targetState.wasDsaGroupModified = true; 
+			targetState.mShaderState.mRenderState.zFunction = sourceState.mShaderState.mRenderState.zFunction;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.alphaReference = sourceState.mShaderState.alphaReference;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.alphaReference = sourceState.mShaderState.mRenderState.alphaReference;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.alphaFunction = sourceState.mShaderState.alphaFunction;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.alphaFunction = sourceState.mShaderState.mRenderState.alphaFunction;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true;  targetState.mShaderState.ditherEnable = sourceState.mShaderState.ditherEnable;
+			targetState.wasBlendGroupModified = true;  
+			targetState.mShaderState.mRenderState.ditherEnable = sourceState.mShaderState.mRenderState.ditherEnable;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.fogStart = sourceState.mShaderState.fogStart;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.fogStart = sourceState.mShaderState.mRenderState.fogStart;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true;  targetState.mShaderState.fogEnd = sourceState.mShaderState.fogEnd;
+			targetState.wasFixedFunctionOtherGroupModified = true;  
+			targetState.mShaderState.mRenderState.fogEnd = sourceState.mShaderState.mRenderState.fogEnd;
 		}
 		if (sourceState.wasFixedFunctionOtherGroupModified && (targetState.wasFixedFunctionOtherGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionOtherGroupModified = true; targetState.mShaderState.fogDensity = sourceState.mShaderState.fogDensity;
+			targetState.wasFixedFunctionOtherGroupModified = true; 
+			targetState.mShaderState.mRenderState.fogDensity = sourceState.mShaderState.mRenderState.fogDensity;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true;  targetState.mShaderState.alphaBlendEnable = sourceState.mShaderState.alphaBlendEnable;
+			targetState.wasBlendGroupModified = true;  
+			targetState.mShaderState.mRenderState.alphaBlendEnable = sourceState.mShaderState.mRenderState.alphaBlendEnable;
 		}
 
 		//targetState.mShaderState.alphaBlendEnable = sourceState.mShaderState.alphaBlendEnable;
 
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.depthBias = sourceState.mShaderState.depthBias;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.depthBias = sourceState.mShaderState.mRenderState.depthBias;
 		}
 		if ((sourceState.wasDsaGroupModified || sourceState.wasMultisampleGroupModified) && (targetState.wasDsaGroupModified || targetState.wasMultisampleGroupModified || !onlyIfExists))
 		{
 			targetState.wasDsaGroupModified = true;  
 			targetState.wasMultisampleGroupModified = true;
-			targetState.mShaderState.stencilEnable = sourceState.mShaderState.stencilEnable;
+			targetState.mShaderState.mRenderState.stencilEnable = sourceState.mShaderState.mRenderState.stencilEnable;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.stencilFail = sourceState.mShaderState.stencilFail;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.stencilFail = sourceState.mShaderState.mRenderState.stencilFail;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.stencilZFail = sourceState.mShaderState.stencilZFail;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.stencilZFail = sourceState.mShaderState.mRenderState.stencilZFail;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.stencilPass = sourceState.mShaderState.stencilPass;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.stencilPass = sourceState.mShaderState.mRenderState.stencilPass;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.stencilFunction = sourceState.mShaderState.stencilFunction;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.stencilFunction = sourceState.mShaderState.mRenderState.stencilFunction;
 		}
 		if (sourceState.hasStencilReference && (targetState.hasStencilReference || !onlyIfExists)) {
-			targetState.hasStencilReference = true; targetState.mShaderState.stencilReference = sourceState.mShaderState.stencilReference;
+			targetState.hasStencilReference = true; 
+			targetState.mShaderState.mRenderState.stencilReference = sourceState.mShaderState.mRenderState.stencilReference;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true; targetState.mShaderState.stencilMask = sourceState.mShaderState.stencilMask;
+			targetState.wasDsaGroupModified = true; 
+			targetState.mShaderState.mRenderState.stencilMask = sourceState.mShaderState.mRenderState.stencilMask;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true; targetState.mShaderState.stencilWriteMask = sourceState.mShaderState.stencilWriteMask;
+			targetState.wasDsaGroupModified = true; 
+			targetState.mShaderState.mRenderState.stencilWriteMask = sourceState.mShaderState.mRenderState.stencilWriteMask;
 		}
 		if (sourceState.hasTextureFactor && (targetState.hasTextureFactor || !onlyIfExists)) {
-			targetState.hasTextureFactor = true;  targetState.mShaderState.textureFactor = sourceState.mShaderState.textureFactor;
+			targetState.hasTextureFactor = true;  
+			targetState.mShaderState.mRenderState.textureFactor = sourceState.mShaderState.mRenderState.textureFactor;
 		}
 		if (sourceState.hasWrap0 && (targetState.hasWrap0 || !onlyIfExists)) {
-			targetState.hasWrap0 = true;  targetState.mShaderState.wrap0 = sourceState.mShaderState.wrap0;
+			targetState.hasWrap0 = true;  
+			targetState.mShaderState.mRenderState.wrap0 = sourceState.mShaderState.mRenderState.wrap0;
 		}
 		if (sourceState.hasWrap1 && (targetState.hasWrap1 || !onlyIfExists)) {
-			targetState.hasWrap1 = true; targetState.mShaderState.wrap1 = sourceState.mShaderState.wrap1;
+			targetState.hasWrap1 = true; 
+			targetState.mShaderState.mRenderState.wrap1 = sourceState.mShaderState.mRenderState.wrap1;
 		}
 		if (sourceState.hasWrap2 && (targetState.hasWrap2 || !onlyIfExists)) {
-			targetState.hasWrap2 = true;  targetState.mShaderState.wrap2 = sourceState.mShaderState.wrap2;
+			targetState.hasWrap2 = true;  
+			targetState.mShaderState.mRenderState.wrap2 = sourceState.mShaderState.mRenderState.wrap2;
 		}
 		if (sourceState.hasWrap3 && (targetState.hasWrap3 || !onlyIfExists)) {
-			targetState.hasWrap3 = true;  targetState.mShaderState.wrap3 = sourceState.mShaderState.wrap3;
+			targetState.hasWrap3 = true;  
+			targetState.mShaderState.mRenderState.wrap3 = sourceState.mShaderState.mRenderState.wrap3;
 		}
 		if (sourceState.hasWrap4 && (targetState.hasWrap4 || !onlyIfExists)) {
-			targetState.hasWrap4 = true;  targetState.mShaderState.wrap4 = sourceState.mShaderState.wrap4;
+			targetState.hasWrap4 = true;  
+			targetState.mShaderState.mRenderState.wrap4 = sourceState.mShaderState.mRenderState.wrap4;
 		}
 		if (sourceState.hasWrap5 && (targetState.hasWrap5 || !onlyIfExists)) {
-			targetState.hasWrap5 = true; targetState.mShaderState.wrap5 = sourceState.mShaderState.wrap5;
+			targetState.hasWrap5 = true; 
+			targetState.mShaderState.mRenderState.wrap5 = sourceState.mShaderState.mRenderState.wrap5;
 		}
 		if (sourceState.hasWrap6 && (targetState.hasWrap6 || !onlyIfExists)) {
-			targetState.hasWrap6 = true; targetState.mShaderState.wrap6 = sourceState.mShaderState.wrap6;
+			targetState.hasWrap6 = true; 
+			targetState.mShaderState.mRenderState.wrap6 = sourceState.mShaderState.mRenderState.wrap6;
 		}
 		if (sourceState.hasWrap7 && (targetState.hasWrap7 || !onlyIfExists)) {
-			targetState.hasWrap7 = true; targetState.mShaderState.wrap7 = sourceState.mShaderState.wrap7;
+			targetState.hasWrap7 = true; 
+			targetState.mShaderState.mRenderState.wrap7 = sourceState.mShaderState.mRenderState.wrap7;
 		}
 		if (sourceState.hasWrap8 && (targetState.hasWrap8 || !onlyIfExists)) {
-			targetState.hasWrap8 = true;  targetState.mShaderState.wrap8 = sourceState.mShaderState.wrap8;
+			targetState.hasWrap8 = true;  
+			targetState.mShaderState.mRenderState.wrap8 = sourceState.mShaderState.mRenderState.wrap8;
 		}
 		if (sourceState.hasWrap9 && (targetState.hasWrap9 || !onlyIfExists)) {
-			targetState.hasWrap9 = true; targetState.mShaderState.wrap9 = sourceState.mShaderState.wrap9;
+			targetState.hasWrap9 = true; 
+			targetState.mShaderState.mRenderState.wrap9 = sourceState.mShaderState.mRenderState.wrap9;
 		}
 		if (sourceState.hasWrap10 && (targetState.hasWrap10 || !onlyIfExists)) {
-			targetState.hasWrap10 = true; targetState.mShaderState.wrap10 = sourceState.mShaderState.wrap10;
+			targetState.hasWrap10 = true; 
+			targetState.mShaderState.mRenderState.wrap10 = sourceState.mShaderState.mRenderState.wrap10;
 		}
 		if (sourceState.hasWrap11 && (targetState.hasWrap11 || !onlyIfExists)) {
-			targetState.hasWrap11 = true;  targetState.mShaderState.wrap11 = sourceState.mShaderState.wrap11;
+			targetState.hasWrap11 = true;  
+			targetState.mShaderState.mRenderState.wrap11 = sourceState.mShaderState.mRenderState.wrap11;
 		}
 		if (sourceState.hasWrap12 && (targetState.hasWrap12 || !onlyIfExists)) {
-			targetState.hasWrap12 = true;  targetState.mShaderState.wrap12 = sourceState.mShaderState.wrap12;
+			targetState.hasWrap12 = true;  
+			targetState.mShaderState.mRenderState.wrap12 = sourceState.mShaderState.mRenderState.wrap12;
 		}
 		if (sourceState.hasWrap13 && (targetState.hasWrap13 || !onlyIfExists)) {
-			targetState.hasWrap13 = true; targetState.mShaderState.wrap13 = sourceState.mShaderState.wrap13;
+			targetState.hasWrap13 = true; 
+			targetState.mShaderState.mRenderState.wrap13 = sourceState.mShaderState.mRenderState.wrap13;
 		}
 		if (sourceState.hasWrap14 && (targetState.hasWrap14 || !onlyIfExists)) {
-			targetState.hasWrap14 = true; targetState.mShaderState.wrap14 = sourceState.mShaderState.wrap14;
+			targetState.hasWrap14 = true; 
+			targetState.mShaderState.mRenderState.wrap14 = sourceState.mShaderState.mRenderState.wrap14;
 		}
 		if (sourceState.hasWrap15 && (targetState.hasWrap15 || !onlyIfExists)) {
-			targetState.hasWrap15 = true;  targetState.mShaderState.wrap15 = sourceState.mShaderState.wrap15;
+			targetState.hasWrap15 = true;  
+			targetState.mShaderState.mRenderState.wrap15 = sourceState.mShaderState.mRenderState.wrap15;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.localViewer = sourceState.mShaderState.localViewer;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.localViewer = sourceState.mShaderState.mRenderState.localViewer;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.emissiveMaterialSource = sourceState.mShaderState.emissiveMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.emissiveMaterialSource = sourceState.mShaderState.mRenderState.emissiveMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.ambientMaterialSource = sourceState.mShaderState.ambientMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.ambientMaterialSource = sourceState.mShaderState.mRenderState.ambientMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true;  targetState.mShaderState.diffuseMaterialSource = sourceState.mShaderState.diffuseMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true;  
+			targetState.mShaderState.mRenderState.diffuseMaterialSource = sourceState.mShaderState.mRenderState.diffuseMaterialSource;
 		}
 		if (sourceState.wasFixedFunctionLightingGroupModified && (targetState.wasFixedFunctionLightingGroupModified || !onlyIfExists)) {
-			targetState.wasFixedFunctionLightingGroupModified = true; targetState.mShaderState.specularMaterialSource = sourceState.mShaderState.specularMaterialSource;
+			targetState.wasFixedFunctionLightingGroupModified = true; 
+			targetState.mShaderState.mRenderState.specularMaterialSource = sourceState.mShaderState.mRenderState.specularMaterialSource;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true; targetState.mShaderState.colorWriteEnable = sourceState.mShaderState.colorWriteEnable;
+			targetState.wasBlendGroupModified = true; 
+			targetState.mShaderState.mRenderState.colorWriteEnable = sourceState.mShaderState.mRenderState.colorWriteEnable;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true; targetState.mShaderState.blendOperation = sourceState.mShaderState.blendOperation;
+			targetState.wasBlendGroupModified = true; 
+			targetState.mShaderState.mRenderState.blendOperation = sourceState.mShaderState.mRenderState.blendOperation;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true; targetState.mShaderState.scissorTestEnable = sourceState.mShaderState.scissorTestEnable;
+			targetState.wasRasterizerGroupModified = true; 
+			targetState.mShaderState.mRenderState.scissorTestEnable = sourceState.mShaderState.mRenderState.scissorTestEnable;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.slopeScaleDepthBias = sourceState.mShaderState.slopeScaleDepthBias;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.slopeScaleDepthBias = sourceState.mShaderState.mRenderState.slopeScaleDepthBias;
 		}
 		if (sourceState.wasRasterizerGroupModified && (targetState.wasRasterizerGroupModified || !onlyIfExists)) {
-			targetState.wasRasterizerGroupModified = true;  targetState.mShaderState.antiAliasedLineEnable = sourceState.mShaderState.antiAliasedLineEnable;
+			targetState.wasRasterizerGroupModified = true;  
+			targetState.mShaderState.mRenderState.antiAliasedLineEnable = sourceState.mShaderState.mRenderState.antiAliasedLineEnable;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true; targetState.mShaderState.twoSidedStencilMode = sourceState.mShaderState.twoSidedStencilMode;
+			targetState.wasDsaGroupModified = true; 
+			targetState.mShaderState.mRenderState.twoSidedStencilMode = sourceState.mShaderState.mRenderState.twoSidedStencilMode;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.ccwStencilFail = sourceState.mShaderState.ccwStencilFail;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.ccwStencilFail = sourceState.mShaderState.mRenderState.ccwStencilFail;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true; targetState.mShaderState.ccwStencilZFail = sourceState.mShaderState.ccwStencilZFail;
+			targetState.wasDsaGroupModified = true; 
+			targetState.mShaderState.mRenderState.ccwStencilZFail = sourceState.mShaderState.mRenderState.ccwStencilZFail;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true;  targetState.mShaderState.ccwStencilPass = sourceState.mShaderState.ccwStencilPass;
+			targetState.wasDsaGroupModified = true;  
+			targetState.mShaderState.mRenderState.ccwStencilPass = sourceState.mShaderState.mRenderState.ccwStencilPass;
 		}
 		if (sourceState.wasDsaGroupModified && (targetState.wasDsaGroupModified || !onlyIfExists)) {
-			targetState.wasDsaGroupModified = true; targetState.mShaderState.ccwStencilFunction = sourceState.mShaderState.ccwStencilFunction;
+			targetState.wasDsaGroupModified = true; 
+			targetState.mShaderState.mRenderState.ccwStencilFunction = sourceState.mShaderState.mRenderState.ccwStencilFunction;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true; targetState.mShaderState.colorWriteEnable1 = sourceState.mShaderState.colorWriteEnable1;
+			targetState.wasBlendGroupModified = true; 
+			targetState.mShaderState.mRenderState.colorWriteEnable1 = sourceState.mShaderState.mRenderState.colorWriteEnable1;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true; targetState.mShaderState.colorWriteEnable2 = sourceState.mShaderState.colorWriteEnable2;
+			targetState.wasBlendGroupModified = true; 
+			targetState.mShaderState.mRenderState.colorWriteEnable2 = sourceState.mShaderState.mRenderState.colorWriteEnable2;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true;  targetState.mShaderState.colorWriteEnable3 = sourceState.mShaderState.colorWriteEnable3;
+			targetState.wasBlendGroupModified = true;  
+			targetState.mShaderState.mRenderState.colorWriteEnable3 = sourceState.mShaderState.mRenderState.colorWriteEnable3;
 		}
 		if (sourceState.hasBlendFactor && (targetState.hasBlendFactor || !onlyIfExists)) {
-			targetState.hasBlendFactor = true;  targetState.mShaderState.blendFactor = sourceState.mShaderState.blendFactor;
+			targetState.hasBlendFactor = true;  
+			targetState.mShaderState.mRenderState.blendFactor = sourceState.mShaderState.mRenderState.blendFactor;
 		}
 		if (sourceState.hasSrgbWriteEnable && (targetState.hasSrgbWriteEnable || !onlyIfExists)) {
-			targetState.hasSrgbWriteEnable = true;  targetState.mShaderState.srgbWriteEnable = sourceState.mShaderState.srgbWriteEnable;
+			targetState.hasSrgbWriteEnable = true;  
+			targetState.mShaderState.mRenderState.srgbWriteEnable = sourceState.mShaderState.mRenderState.srgbWriteEnable;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true; targetState.mShaderState.separateAlphaBlendEnable = sourceState.mShaderState.separateAlphaBlendEnable;
+			targetState.wasBlendGroupModified = true; 
+			targetState.mShaderState.mRenderState.separateAlphaBlendEnable = sourceState.mShaderState.mRenderState.separateAlphaBlendEnable;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true;  targetState.mShaderState.sourceBlendAlpha = sourceState.mShaderState.sourceBlendAlpha;
+			targetState.wasBlendGroupModified = true;  
+			targetState.mShaderState.mRenderState.sourceBlendAlpha = sourceState.mShaderState.mRenderState.sourceBlendAlpha;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true;  targetState.mShaderState.destinationBlendAlpha = sourceState.mShaderState.destinationBlendAlpha;
+			targetState.wasBlendGroupModified = true;  
+			targetState.mShaderState.mRenderState.destinationBlendAlpha = sourceState.mShaderState.mRenderState.destinationBlendAlpha;
 		}
 		if (sourceState.wasBlendGroupModified && (targetState.wasBlendGroupModified || !onlyIfExists)) {
-			targetState.wasBlendGroupModified = true;  targetState.mShaderState.blendOperationAlpha = sourceState.mShaderState.blendOperationAlpha;
+			targetState.wasBlendGroupModified = true;  
+			targetState.mShaderState.mRenderState.blendOperationAlpha = sourceState.mShaderState.mRenderState.blendOperationAlpha;
 		}
 	}
 

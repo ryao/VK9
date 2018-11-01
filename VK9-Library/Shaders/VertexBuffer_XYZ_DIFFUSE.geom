@@ -53,15 +53,15 @@ layout (location = 4) out vec2 texcoord;
 void main() 
 {	
 		vec4 position = gl_in[0].gl_Position;
-		float calculatedPointSize = shaderState.pointSize;
+		float calculatedPointSize = shaderState.mRenderState.pointSize;
 
-		if(shaderState.pointScaleEnable==1)
+		if(shaderState.mRenderState.pointScaleEnable==1)
 		{
 			float d = sqrt(pow(position.x,2) + pow(position.y,2) + pow(position.z,2));
-			calculatedPointSize = 1 * calculatedPointSize * sqrt(1/(shaderState.pointScaleA + shaderState.pointScaleB * d + shaderState.pointScaleC * pow(d,2)));
+			calculatedPointSize = 1 * calculatedPointSize * sqrt(1/(shaderState.mRenderState.pointScaleA + shaderState.mRenderState.pointScaleB * d + shaderState.mRenderState.pointScaleC * pow(d,2)));
 		}	
 
-		calculatedPointSize = clamp(calculatedPointSize,shaderState.pointSizeMinimum,shaderState.pointSizeMaximum);
+		calculatedPointSize = clamp(calculatedPointSize,shaderState.mRenderState.pointSizeMinimum,shaderState.mRenderState.pointSizeMaximum);
 
 		gl_Position = vec4(position.x - calculatedPointSize/2, position.y + calculatedPointSize/2, position.z, position.w);
 		outdiffuseColor = indiffuseColor[0];
