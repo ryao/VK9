@@ -607,7 +607,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 			&& drawBuffer.FVF == context->FVF
 			&& drawBuffer.VertexDeclaration == context->VertexDeclaration
 
-			&& memcmp(&drawBuffer.mShaderState.mRenderState, &context->mShaderState.mRenderState, sizeof(RenderState))
+			&& !memcmp(&drawBuffer.mShaderState.mRenderState, &context->mShaderState.mRenderState, sizeof(RenderState))
 
 			)
 		{
