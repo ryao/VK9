@@ -648,7 +648,7 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mDeviceState.m9Scissor.left = 0;
 	mDeviceState.m9Scissor.top = 0;
 
-	mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+	//mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
 	CreateBuffer(sizeof(ShaderState), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderStateBuffer, mShaderStateBufferMemory);
 	CreateBuffer(sizeof(ShaderConstantSlots), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderVertexConstantBuffer, mShaderVertexConstantBufferMemory);

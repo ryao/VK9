@@ -1930,6 +1930,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
+				state->mIsShaderStateDirty = true;
+
 				state->mTextures[Sampler] = pTexture;
 			}
 			break;

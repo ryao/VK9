@@ -46,7 +46,7 @@ struct RenderManager
 	void UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirect3DBaseTexture9* pSourceTexture, IDirect3DBaseTexture9* pDestinationTexture);
 
 	void BeginDraw(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context, std::shared_ptr<ResourceContext> resourceContext, D3DPRIMITIVETYPE type);
-	void CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context);
+	void CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context, int textureCount);
 	void CreateSampler(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<SamplerRequest> request);
 	void UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context);
 	void FlushDrawBufffer(std::shared_ptr<RealDevice> realDevice);
