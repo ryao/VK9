@@ -49,7 +49,7 @@ layout (location = 6) in vec4 pos;
 layout (location = 7) in vec4 globalIllumination;
 layout (location = 0) out vec4 uFragColor;
 
-vec2 getTextureCoord(int index)
+vec2 getTextureCoord(uint index)
 {
 	switch(index)
 	{

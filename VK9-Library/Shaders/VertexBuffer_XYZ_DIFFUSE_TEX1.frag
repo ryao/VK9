@@ -46,7 +46,7 @@ layout (location = 3) in vec4 emissiveColor;
 layout (location = 4) in vec2 texcoord;
 layout (location = 0) out vec4 uFragColor;
 
-vec2 getTextureCoord(int index)
+vec2 getTextureCoord(uint index)
 {
 	switch(index)
 	{

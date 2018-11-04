@@ -77,7 +77,7 @@ struct RealDevice
 	//Misc
 	vk::DeviceSize mEstimatedMemoryUsed = 0;
 	vk::DeviceSize mEstimatedMemory = 2147483648;
-	DeviceState mDeviceState = {};
+	DeviceState mDeviceState;
 	CStateBlock9* mCurrentStateRecording = nullptr;
 	std::vector< std::shared_ptr<SamplerRequest> > mSamplerRequests;
 	std::vector< std::shared_ptr<DrawContext> > mDrawBuffer;

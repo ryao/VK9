@@ -19,7 +19,7 @@ misrepresented as being the original software.
 */
 
 //https://msdn.microsoft.com/en-us/library/windows/desktop/bb172616(v=vs.85).aspx
-vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argument0, float alpha, float factorAlpha)
+vec4 calculateResult(uint operation, vec4 argument1, vec4 argument2, vec4 argument0, float alpha, float factorAlpha)
 {
 	vec4 result = vec4(1.0,1.0,1.0,1.0);
 
@@ -115,7 +115,7 @@ vec4 calculateResult(int operation, vec4 argument1, vec4 argument2, vec4 argumen
 	return result;
 }
 
-vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D tex,vec2 texcoord)
+vec4 getStageArgument(uint argument,vec4 temp,uint constant,vec4 result,sampler2D tex,vec2 texcoord)
 {
 	vec4 realResult;
 	switch(argument & D3DTA_SELECTMASK)
@@ -159,7 +159,7 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result,sampler2D 
 	return realResult;
 }
 
-vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
+vec4 getStageArgument(uint argument,vec4 temp,uint constant,vec4 result)
 {
 	vec4 realResult;
 	switch(argument & D3DTA_SELECTMASK)
@@ -203,10 +203,10 @@ vec4 getStageArgument(int argument,vec4 temp,int constant,vec4 result)
 	return realResult;
 }
 
-void processStage(sampler2D tex,int textureIndex, int constant, int resultArgument,
+void processStage(sampler2D tex,uint textureIndex, uint constant, uint resultArgument,
 vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
-int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
-int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
+uint colorOperation, uint colorArgument1, uint colorArgument2, uint colorArgument0,
+uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgument0)
 {
 	vec4 temp = tempIn;
 	vec4 result = resultIn;
@@ -286,10 +286,10 @@ int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
 	tempOut = temp;
 }
 
-void processStage(int constant, int resultArgument,
+void processStage(uint constant, uint resultArgument,
 vec4 resultIn, vec4 tempIn, out vec4 resultOut, out vec4 tempOut,
-int colorOperation, int colorArgument1, int colorArgument2, int colorArgument0,
-int alphaOperation, int alphaArgument1, int alphaArgument2, int alphaArgument0)
+uint colorOperation, uint colorArgument1, uint colorArgument2, uint colorArgument0,
+uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgument0)
 {
 	vec4 temp = tempIn;
 	vec4 result = resultIn;

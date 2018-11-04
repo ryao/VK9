@@ -49,7 +49,7 @@ struct DrawContext
 	ShaderConstantSlots mPixelShaderConstantSlots = {};
 
 	//Constant Registers
-	ShaderState mShaderState = {};
+	ShaderState mShaderState;
 
 	//Resource Handling.
 	std::chrono::steady_clock::time_point LastUsed = std::chrono::steady_clock::now();

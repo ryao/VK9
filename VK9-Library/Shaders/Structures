@@ -25,7 +25,7 @@ struct Light
 	vec4       Ambient;         /* Ambient color of light */
 	vec4       Position;        /* Position in world space */
 	vec4       Direction;       /* Direction in world space */
-	int        Type;            /* Type of light source */
+	uint       Type;            /* Type of light source */
 	float      Range;           /* Cutoff range */
 	float      Falloff;         /* Falloff */
 	float      Attenuation0;    /* Constant attenuation */
@@ -33,10 +33,10 @@ struct Light
 	float      Attenuation2;    /* Quadratic attenuation */
 	float      Theta;           /* Inner angle of spotlight cone */
 	float      Phi;             /* Outer angle of spotlight cone */
-	bool       IsEnabled;
-	int        filler1;
-	int        filler2;
-	int        filler3;	
+	uint       IsEnabled;
+	uint       filler1;
+	uint       filler2;
+	uint       filler3;	
 };
  
 struct Material
@@ -58,146 +58,146 @@ struct ShaderConstantSlots
 struct TextureStage
 {
 	mat4 textureTransformationMatrix;
-	int Constant;
-	int Result;
-	int textureTransformationFlags;	
-	int texureCoordinateIndex;
-	int colorOperation;
-	int colorArgument0;
-	int colorArgument1;
-	int colorArgument2;
-	int alphaOperation;
-	int alphaArgument0;
-	int alphaArgument1;
-	int alphaArgument2;
+	uint Constant;
+	uint Result;
+	uint textureTransformationFlags;	
+	uint texureCoordinateIndex;
+	uint colorOperation;
+	uint colorArgument0;
+	uint colorArgument1;
+	uint colorArgument2;
+	uint alphaOperation;
+	uint alphaArgument0;
+	uint alphaArgument1;
+	uint alphaArgument2;
 	float bumpMapMatrix00;
 	float bumpMapMatrix01;
 	float bumpMapMatrix10;
 	float bumpMapMatrix11;
 	float bumpMapScale;
 	float bumpMapOffset;
-	int filler1;
-	int filler2;
+	uint filler1;
+	uint filler2;
 };
 
 struct RenderState
 {
-	int textureCount;
+	uint textureCount;
 
 	//Render State
-	int zEnable;
-	int fillMode;
-	int shadeMode;
-	int zWriteEnable;
-	int alphaTestEnable;
-	int lastPixel;
-	int sourceBlend;
-	int destinationBlend;
-	int cullMode;
-	int zFunction;
-	int alphaReference;
-	int alphaFunction;
-	int ditherEnable;
-	int alphaBlendEnable;
-	int fogEnable;
-	int specularEnable;
+	uint zEnable;
+	uint fillMode;
+	uint shadeMode;
+	uint zWriteEnable;
+	uint alphaTestEnable;
+	uint lastPixel;
+	uint sourceBlend;
+	uint destinationBlend;
+	uint cullMode;
+	uint zFunction;
+	uint alphaReference;
+	uint alphaFunction;
+	uint ditherEnable;
+	uint alphaBlendEnable;
+	uint fogEnable;
+	uint specularEnable;
 	uint fogColor;
-	int fogTableMode;
+	uint fogTableMode;
 	float fogStart;
 	float fogEnd;
 	float fogDensity;
-	int rangeFogEnable;
-	int stencilEnable;
-	int stencilFail;
-	int stencilZFail;
-	int stencilPass;
-	int stencilFunction;
-	int stencilReference;
+	uint rangeFogEnable;
+	uint stencilEnable;
+	uint stencilFail;
+	uint stencilZFail;
+	uint stencilPass;
+	uint stencilFunction;
+	uint stencilReference;
 	uint stencilMask;
 	uint stencilWriteMask;
 	uint textureFactor;
-	int wrap0;
-	int wrap1;
-	int wrap2;
-	int wrap3;
-	int wrap4;
-	int wrap5;
-	int wrap6;
-	int wrap7;
-	int clipping;
-	int lighting;
+	uint wrap0;
+	uint wrap1;
+	uint wrap2;
+	uint wrap3;
+	uint wrap4;
+	uint wrap5;
+	uint wrap6;
+	uint wrap7;
+	uint clipping;
+	uint lighting;
 	uint ambient;
-	int fogVertexMode;
-	int colorVertex;
-	int localViewer;
-	int normalizeNormals;
-	int diffuseMaterialSource;
-	int specularMaterialSource;
-	int ambientMaterialSource;
-	int emissiveMaterialSource;
-	int vertexBlend;
-	int clipPlaneEnable;
+	uint fogVertexMode;
+	uint colorVertex;
+	uint localViewer;
+	uint normalizeNormals;
+	uint diffuseMaterialSource;
+	uint specularMaterialSource;
+	uint ambientMaterialSource;
+	uint emissiveMaterialSource;
+	uint vertexBlend;
+	uint clipPlaneEnable;
 	float pointSize;
 	float pointSizeMinimum;
-	int pointSpriteEnable;
-	int pointScaleEnable;
+	uint pointSpriteEnable;
+	uint pointScaleEnable;
 	float pointScaleA;
 	float pointScaleB;
 	float pointScaleC;
-	int multisampleAntiAlias;
+	uint multisampleAntiAlias;
 	uint multisampleMask;
-	int patchEdgeStyle;
-	int debugMonitorToken;
+	uint patchEdgeStyle;
+	uint debugMonitorToken;
 	float pointSizeMaximum;
-	int indexedVertexBlendEnable;
-	int colorWriteEnable;
+	uint indexedVertexBlendEnable;
+	uint colorWriteEnable;
 	float tweenFactor;
-	int blendOperation;
-	int positionDegree;
-	int normalDegree;
-	int scissorTestEnable;
+	uint blendOperation;
+	uint positionDegree;
+	uint normalDegree;
+	uint scissorTestEnable;
 	float slopeScaleDepthBias;
-	int antiAliasedLineEnable;
+	uint antiAliasedLineEnable;
 	float minimumTessellationLevel;
 	float maximumTessellationLevel;
 	float adaptivetessX;
 	float adaptivetessY;
 	float adaptivetessZ;
 	float adaptivetessW;
-	int enableAdaptiveTessellation;
-	int twoSidedStencilMode;
-	int ccwStencilFail;
-	int ccwStencilZFail;
-	int ccwStencilPass;
-	int ccwStencilFunction;
-	int colorWriteEnable1;
-	int colorWriteEnable2;
-	int colorWriteEnable3;
+	uint enableAdaptiveTessellation;
+	uint twoSidedStencilMode;
+	uint ccwStencilFail;
+	uint ccwStencilZFail;
+	uint ccwStencilPass;
+	uint ccwStencilFunction;
+	uint colorWriteEnable1;
+	uint colorWriteEnable2;
+	uint colorWriteEnable3;
 	uint blendFactor;
-	int srgbWriteEnable;
+	uint srgbWriteEnable;
 	float depthBias;
-	int wrap8;
-	int wrap9;
-	int wrap10;
-	int wrap11;
-	int wrap12;
-	int wrap13;
-	int wrap14;
-	int wrap15;
-	int separateAlphaBlendEnable;
-	int sourceBlendAlpha;
-	int destinationBlendAlpha;
-	int blendOperationAlpha;
-	int screenWidth;
-	int screenHeight;
-	int filler1;
-	int filler2;
+	uint wrap8;
+	uint wrap9;
+	uint wrap10;
+	uint wrap11;
+	uint wrap12;
+	uint wrap13;
+	uint wrap14;
+	uint wrap15;
+	uint separateAlphaBlendEnable;
+	uint sourceBlendAlpha;
+	uint destinationBlendAlpha;
+	uint blendOperationAlpha;
+	uint screenWidth;
+	uint screenHeight;
+	uint filler1;
+	uint filler2;
 };
 
 struct ShaderState
-{
-	Light mLights[8];
+{	
 	RenderState mRenderState;
 	TextureStage mTextureStages[9];
+	Light mLights[8];
 	Material mMaterial;
 };

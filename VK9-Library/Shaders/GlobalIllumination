@@ -47,7 +47,7 @@ vec4 GetGlobalIllumination()
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
 	for( int i=0; i<8; ++i )
 	{		
-		if(shaderState.mLights[i].IsEnabled)
+		if(shaderState.mLights[i].IsEnabled==1)
 		{		
 			lightPosition = ubo.modelTransformation * shaderState.mLights[i].Position;
 			lightPosition *= vec4(1.0,-1.0,1.0,1.0);

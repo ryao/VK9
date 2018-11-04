@@ -42,7 +42,7 @@ public:
 
 	//Device State
 	D3DSTATEBLOCKTYPE mType = D3DSBT_FORCE_DWORD;
-	DeviceState mDeviceState = {};
+	DeviceState mDeviceState;
 
 public:
 

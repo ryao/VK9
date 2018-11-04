@@ -190,6 +190,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				{
 					auto& deviceState = realDevice->mDeviceState;
 					auto& constants = deviceState.mShaderState;
+
 					constants.mRenderState.screenWidth = pRenderTarget->mWidth;
 					constants.mRenderState.screenHeight = pRenderTarget->mHeight;
 
@@ -907,7 +908,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Stage = bit_cast<DWORD>(workItem->Argument1);
 				IDirect3DBaseTexture9** ppTexture = bit_cast<IDirect3DBaseTexture9**>(workItem->Argument2);
 
-				DeviceState* state = NULL;
+				DeviceState* state = nullptr;
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
@@ -1398,7 +1399,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Value = bit_cast<DWORD>(workItem->Argument2);
 
 				ShaderState* constants = nullptr;
-				DeviceState* state = NULL;
+				DeviceState* state = nullptr;
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
@@ -1850,7 +1851,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				D3DSAMPLERSTATETYPE Type = bit_cast<D3DSAMPLERSTATETYPE>(workItem->Argument2);
 				DWORD Value = bit_cast<DWORD>(workItem->Argument3);
 
-				DeviceState* state = NULL;
+				DeviceState* state = nullptr;
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{
@@ -1919,7 +1920,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				DWORD Sampler = bit_cast<DWORD>(workItem->Argument1);
 				IDirect3DBaseTexture9* pTexture = bit_cast<IDirect3DBaseTexture9*>(workItem->Argument2);
 
-				DeviceState* state = NULL;
+				DeviceState* state = nullptr;
 
 				if (realDevice->mCurrentStateRecording != nullptr)
 				{

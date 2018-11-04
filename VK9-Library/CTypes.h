@@ -58,7 +58,7 @@ struct Light
 	float                 Ambient[4] = {};         /* Ambient color of light */
 	float                 Position[4] = {};        /* Position in world space */
 	float                 Direction[4] = {};       /* Direction in world space */
-	int                   Type = 0;            /* Type of light source */
+	uint32_t              Type = 0;            /* Type of light source */
 	float                 Range = 0;           /* Cutoff range */
 	float                 Falloff = 0;         /* Falloff */
 	float                 Attenuation0 = 0;    /* Constant attenuation */
@@ -66,10 +66,10 @@ struct Light
 	float                 Attenuation2 = 0;    /* Quadratic attenuation */
 	float                 Theta = 0;           /* Inner angle of spotlight cone */
 	float                 Phi = 0;             /* Outer angle of spotlight cone */
-	int                   IsEnabled = 0;       /*Replaces separate enable structure.*/
-	int                   Filler1 = 0;
-	int                   Filler2 = 0;
-	int                   Filler3 = 0;
+	uint32_t              IsEnabled = 0;       /*Replaces separate enable structure.*/
+	uint32_t              Filler1 = 0;
+	uint32_t              Filler2 = 0;
+	uint32_t              Filler3 = 0;
 };
 
 class StreamSource
@@ -99,147 +99,147 @@ struct ShaderConstantSlots
 struct TextureStage
 {
 	D3DMATRIX textureTransformationMatrix;
-	int Constant = 0;
-	int Result = D3DTA_CURRENT;
-	int textureTransformationFlags = D3DTTFF_DISABLE;
-	int texureCoordinateIndex = 0;
-	int colorOperation = D3DTOP_MODULATE;
-	int colorArgument0 = D3DTA_CURRENT;
-	int colorArgument1 = D3DTA_TEXTURE;
-	int colorArgument2 = D3DTA_CURRENT;
-	int alphaOperation = D3DTOP_SELECTARG1;
-	int alphaArgument0 = D3DTA_CURRENT;
-	int alphaArgument1 = D3DTA_TEXTURE;
-	int alphaArgument2 = D3DTA_CURRENT;
+	uint32_t Constant = 0;
+	uint32_t Result = D3DTA_CURRENT;
+	uint32_t textureTransformationFlags = D3DTTFF_DISABLE;
+	uint32_t texureCoordinateIndex = 0;
+	uint32_t colorOperation = D3DTOP_MODULATE;
+	uint32_t colorArgument0 = D3DTA_CURRENT;
+	uint32_t colorArgument1 = D3DTA_TEXTURE;
+	uint32_t colorArgument2 = D3DTA_CURRENT;
+	uint32_t alphaOperation = D3DTOP_SELECTARG1;
+	uint32_t alphaArgument0 = D3DTA_CURRENT;
+	uint32_t alphaArgument1 = D3DTA_TEXTURE;
+	uint32_t alphaArgument2 = D3DTA_CURRENT;
 	float bumpMapMatrix00 = 0.0f;
 	float bumpMapMatrix01 = 0.0f;
 	float bumpMapMatrix10 = 0.0f;
 	float bumpMapMatrix11 = 0.0f;
 	float bumpMapScale = 0.0f;
 	float bumpMapOffset = 0.0f;
-	int filler1 = 0;
-	int filler2 = 0;
+	uint32_t filler1 = 0;
+	uint32_t filler2 = 0;
 };
 
 struct RenderState
 {
-	int textureCount = 1;
+	uint32_t textureCount = 1;
 
 	//Render State
-	int zEnable = D3DZB_TRUE;
-	int fillMode = D3DFILL_SOLID;
-	int shadeMode = D3DSHADE_GOURAUD;
-	int zWriteEnable = TRUE;
-	int alphaTestEnable = FALSE;
-	int lastPixel = TRUE;
-	int sourceBlend = D3DBLEND_ONE;
-	int destinationBlend = D3DBLEND_ZERO;
-	int cullMode = D3DCULL_CCW; // D3DCULL_CW;
-	int zFunction = D3DCMP_LESSEQUAL;
-	int alphaReference = 0;
-	int alphaFunction = D3DCMP_ALWAYS;
-	int ditherEnable = FALSE;
-	int alphaBlendEnable = FALSE;
-	int fogEnable = FALSE;
-	int specularEnable = FALSE;
+	uint32_t zEnable = D3DZB_TRUE;
+	uint32_t fillMode = D3DFILL_SOLID;
+	uint32_t shadeMode = D3DSHADE_GOURAUD;
+	uint32_t zWriteEnable = TRUE;
+	uint32_t alphaTestEnable = FALSE;
+	uint32_t lastPixel = TRUE;
+	uint32_t sourceBlend = D3DBLEND_ONE;
+	uint32_t destinationBlend = D3DBLEND_ZERO;
+	uint32_t cullMode = D3DCULL_CCW; // D3DCULL_CW;
+	uint32_t zFunction = D3DCMP_LESSEQUAL;
+	uint32_t alphaReference = 0;
+	uint32_t alphaFunction = D3DCMP_ALWAYS;
+	uint32_t ditherEnable = FALSE;
+	uint32_t alphaBlendEnable = FALSE;
+	uint32_t fogEnable = FALSE;
+	uint32_t specularEnable = FALSE;
 	uint32_t fogColor = 0;
-	int fogTableMode = D3DFOG_NONE;
+	uint32_t fogTableMode = D3DFOG_NONE;
 	float fogStart = 0.0f;
 	float fogEnd = 1.0f;
 	float fogDensity = 1.0f;
-	int rangeFogEnable = FALSE;
-	int stencilEnable = FALSE;
-	int stencilFail = D3DSTENCILOP_KEEP;
-	int stencilZFail = D3DSTENCILOP_KEEP;
-	int stencilPass = D3DSTENCILOP_KEEP;
-	int stencilFunction = D3DCMP_ALWAYS;
-	int stencilReference = 0;
+	uint32_t rangeFogEnable = FALSE;
+	uint32_t stencilEnable = FALSE;
+	uint32_t stencilFail = D3DSTENCILOP_KEEP;
+	uint32_t stencilZFail = D3DSTENCILOP_KEEP;
+	uint32_t stencilPass = D3DSTENCILOP_KEEP;
+	uint32_t stencilFunction = D3DCMP_ALWAYS;
+	uint32_t stencilReference = 0;
 	uint32_t stencilMask = 0xFFFFFFFF;
 	uint32_t stencilWriteMask = 0xFFFFFFFF;
 	uint32_t textureFactor = 0xFFFFFFFF;
-	int wrap0 = 0;
-	int wrap1 = 0;
-	int wrap2 = 0;
-	int wrap3 = 0;
-	int wrap4 = 0;
-	int wrap5 = 0;
-	int wrap6 = 0;
-	int wrap7 = 0;
-	int clipping = TRUE;
-	int lighting = TRUE;
+	uint32_t wrap0 = 0;
+	uint32_t wrap1 = 0;
+	uint32_t wrap2 = 0;
+	uint32_t wrap3 = 0;
+	uint32_t wrap4 = 0;
+	uint32_t wrap5 = 0;
+	uint32_t wrap6 = 0;
+	uint32_t wrap7 = 0;
+	uint32_t clipping = TRUE;
+	uint32_t lighting = TRUE;
 	uint32_t ambient = 0;
-	int fogVertexMode = D3DFOG_NONE;
-	int colorVertex = TRUE;
-	int localViewer = TRUE;
-	int normalizeNormals = FALSE;
-	int diffuseMaterialSource = D3DMCS_COLOR1;
-	int specularMaterialSource = D3DMCS_COLOR2;
-	int ambientMaterialSource = D3DMCS_MATERIAL;
-	int emissiveMaterialSource = D3DMCS_MATERIAL;
-	int vertexBlend = D3DVBF_DISABLE;
-	int clipPlaneEnable = 0;
+	uint32_t fogVertexMode = D3DFOG_NONE;
+	uint32_t colorVertex = TRUE;
+	uint32_t localViewer = TRUE;
+	uint32_t normalizeNormals = FALSE;
+	uint32_t diffuseMaterialSource = D3DMCS_COLOR1;
+	uint32_t specularMaterialSource = D3DMCS_COLOR2;
+	uint32_t ambientMaterialSource = D3DMCS_MATERIAL;
+	uint32_t emissiveMaterialSource = D3DMCS_MATERIAL;
+	uint32_t vertexBlend = D3DVBF_DISABLE;
+	uint32_t clipPlaneEnable = 0;
 	float pointSize = 64.0f;
 	float pointSizeMinimum = 1.0f;
-	int pointSpriteEnable = FALSE;
-	int pointScaleEnable = FALSE;
+	uint32_t pointSpriteEnable = FALSE;
+	uint32_t pointScaleEnable = FALSE;
 	float pointScaleA = 1.0f;
 	float pointScaleB = 0.0f;
 	float pointScaleC = 0.0f;
-	int multisampleAntiAlias = TRUE;
+	uint32_t multisampleAntiAlias = TRUE;
 	uint32_t multisampleMask = 0xFFFFFFFF;
-	int patchEdgeStyle = D3DPATCHEDGE_DISCRETE;
-	int debugMonitorToken = D3DDMT_ENABLE;
+	uint32_t patchEdgeStyle = D3DPATCHEDGE_DISCRETE;
+	uint32_t debugMonitorToken = D3DDMT_ENABLE;
 	float pointSizeMaximum = 64.0f;
-	int indexedVertexBlendEnable = FALSE;
-	int colorWriteEnable = 0x0000000F;
+	uint32_t indexedVertexBlendEnable = FALSE;
+	uint32_t colorWriteEnable = 0x0000000F;
 	float tweenFactor = 0.0f;
-	int blendOperation = D3DBLENDOP_ADD;
-	int positionDegree = D3DDEGREE_CUBIC;
-	int normalDegree = D3DDEGREE_LINEAR;
-	int scissorTestEnable = FALSE;
+	uint32_t blendOperation = D3DBLENDOP_ADD;
+	uint32_t positionDegree = D3DDEGREE_CUBIC;
+	uint32_t normalDegree = D3DDEGREE_LINEAR;
+	uint32_t scissorTestEnable = FALSE;
 	float slopeScaleDepthBias = 0.00f;
-	int antiAliasedLineEnable = FALSE;
+	uint32_t antiAliasedLineEnable = FALSE;
 	float minimumTessellationLevel = 1.0f;
 	float maximumTessellationLevel = 1.0f;
 	float adaptivetessX = 0.0f;
 	float adaptivetessY = 0.0f;
 	float adaptivetessZ = 1.0f;
 	float adaptivetessW = 0.0f;
-	int enableAdaptiveTessellation = FALSE;
-	int twoSidedStencilMode = FALSE;
-	int ccwStencilFail = D3DSTENCILOP_KEEP;
-	int ccwStencilZFail = D3DSTENCILOP_KEEP;
-	int ccwStencilPass = D3DSTENCILOP_KEEP;
-	int ccwStencilFunction = D3DCMP_ALWAYS;
-	int colorWriteEnable1 = 0x0000000f;
-	int colorWriteEnable2 = 0x0000000f;
-	int colorWriteEnable3 = 0x0000000f;
+	uint32_t enableAdaptiveTessellation = FALSE;
+	uint32_t twoSidedStencilMode = FALSE;
+	uint32_t ccwStencilFail = D3DSTENCILOP_KEEP;
+	uint32_t ccwStencilZFail = D3DSTENCILOP_KEEP;
+	uint32_t ccwStencilPass = D3DSTENCILOP_KEEP;
+	uint32_t ccwStencilFunction = D3DCMP_ALWAYS;
+	uint32_t colorWriteEnable1 = 0x0000000f;
+	uint32_t colorWriteEnable2 = 0x0000000f;
+	uint32_t colorWriteEnable3 = 0x0000000f;
 	uint32_t blendFactor = 0xffffffff;
-	int srgbWriteEnable = 0;
+	uint32_t srgbWriteEnable = 0;
 	float depthBias = 0.00f;
-	int wrap8 = 0;
-	int wrap9 = 0;
-	int wrap10 = 0;
-	int wrap11 = 0;
-	int wrap12 = 0;
-	int wrap13 = 0;
-	int wrap14 = 0;
-	int wrap15 = 0;
-	int separateAlphaBlendEnable = FALSE;
-	int sourceBlendAlpha = D3DBLEND_ONE;
-	int destinationBlendAlpha = D3DBLEND_ZERO;
-	int blendOperationAlpha = D3DBLENDOP_ADD;
-	int screenWidth = 640;
-	int screenHeight = 480;
-	int filler1 = 0;
-	int filler2 = 0;
+	uint32_t wrap8 = 0;
+	uint32_t wrap9 = 0;
+	uint32_t wrap10 = 0;
+	uint32_t wrap11 = 0;
+	uint32_t wrap12 = 0;
+	uint32_t wrap13 = 0;
+	uint32_t wrap14 = 0;
+	uint32_t wrap15 = 0;
+	uint32_t separateAlphaBlendEnable = FALSE;
+	uint32_t sourceBlendAlpha = D3DBLEND_ONE;
+	uint32_t destinationBlendAlpha = D3DBLEND_ZERO;
+	uint32_t blendOperationAlpha = D3DBLENDOP_ADD;
+	uint32_t screenWidth = 640;
+	uint32_t screenHeight = 480;
+	uint32_t filler1 = 0;
+	uint32_t filler2 = 0;
 };
 
 struct ShaderState
 {
-	Light mLights[8];
 	RenderState mRenderState;
 	TextureStage mTextureStages[9];
+	Light mLights[8];
 	D3DMATERIAL9 mMaterial = {};
 };
 
@@ -248,7 +248,7 @@ struct RealRenderTarget;
 
 struct DeviceState
 {
-	ShaderState mShaderState = {};
+	ShaderState mShaderState;
 	BOOL mIsShaderStateDirty = true;
 
 	//IDirect3DDevice9::LightEnable
