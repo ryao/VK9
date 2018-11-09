@@ -599,12 +599,33 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mWriteDescriptorSet[2].descriptorCount = 1;
 	mWriteDescriptorSet[2].pBufferInfo = &mDescriptorBufferInfo[2];
 
-	//mWriteDescriptorSet[3].dstSet = descriptorSet;
+	//mWriteDescriptorSet[2].dstSet = descriptorSet;
 	mWriteDescriptorSet[3].dstBinding = 3;
 	mWriteDescriptorSet[3].dstArrayElement = 0;
-	mWriteDescriptorSet[3].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	mWriteDescriptorSet[3].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mWriteDescriptorSet[3].descriptorCount = 1;
-	mWriteDescriptorSet[3].pImageInfo = mDeviceState.mDescriptorImageInfo;
+	mWriteDescriptorSet[3].pBufferInfo = &mDescriptorBufferInfo[3];
+
+	//mWriteDescriptorSet[2].dstSet = descriptorSet;
+	mWriteDescriptorSet[4].dstBinding = 4;
+	mWriteDescriptorSet[4].dstArrayElement = 0;
+	mWriteDescriptorSet[4].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[4].descriptorCount = 1;
+	mWriteDescriptorSet[4].pBufferInfo = &mDescriptorBufferInfo[4];
+
+	//mWriteDescriptorSet[2].dstSet = descriptorSet;
+	mWriteDescriptorSet[5].dstBinding = 5;
+	mWriteDescriptorSet[5].dstArrayElement = 0;
+	mWriteDescriptorSet[5].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[5].descriptorCount = 1;
+	mWriteDescriptorSet[5].pBufferInfo = &mDescriptorBufferInfo[5];
+
+	//mWriteDescriptorSet[3].dstSet = descriptorSet;
+	mWriteDescriptorSet[6].dstBinding = 6;
+	mWriteDescriptorSet[6].dstArrayElement = 0;
+	mWriteDescriptorSet[6].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	mWriteDescriptorSet[6].descriptorCount = 1;
+	mWriteDescriptorSet[6].pImageInfo = mDeviceState.mDescriptorImageInfo;
 
 	mCommandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
 	mCommandBufferAllocateInfo.commandPool = mCommandPool;
@@ -650,7 +671,13 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 
 	//mBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
-	CreateBuffer(sizeof(ShaderState), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderStateBuffer, mShaderStateBufferMemory);
+	//FF Buffers
+	CreateBuffer(sizeof(RenderState), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mRenderStateBuffer, mRenderStateBufferMemory);
+	CreateBuffer(sizeof(TextureStage)*9, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureStageBuffer, mTextureStageBufferMemory);
+	CreateBuffer(sizeof(Light)*8, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mLightBuffer, mLightBufferMemory);
+	CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mMaterialBuffer, mMaterialBufferMemory);
+
+	//Shader Buffers
 	CreateBuffer(sizeof(ShaderConstantSlots), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderVertexConstantBuffer, mShaderVertexConstantBufferMemory);
 	CreateBuffer(sizeof(ShaderConstantSlots), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderPixelConstantBuffer, mShaderPixelConstantBufferMemory);
 }
@@ -670,15 +697,29 @@ RealDevice::~RealDevice()
 	mSamplerRequests.clear();
 
 	mDeviceState.mRenderTarget.reset();
-	
+
+
+	//Shader Buffers
 	mDevice.destroyBuffer(mShaderPixelConstantBuffer, nullptr);
 	mDevice.freeMemory(mShaderPixelConstantBufferMemory, nullptr);
 
 	mDevice.destroyBuffer(mShaderVertexConstantBuffer, nullptr);
 	mDevice.freeMemory(mShaderVertexConstantBufferMemory, nullptr);
 
-	mDevice.destroyBuffer(mShaderStateBuffer, nullptr);
-	mDevice.freeMemory(mShaderStateBufferMemory, nullptr);
+
+	//FF Buffers
+	mDevice.destroyBuffer(mMaterialBuffer, nullptr);
+	mDevice.freeMemory(mMaterialBufferMemory, nullptr);
+
+	mDevice.destroyBuffer(mLightBuffer, nullptr);
+	mDevice.freeMemory(mLightBufferMemory, nullptr);
+
+	mDevice.destroyBuffer(mTextureStageBuffer, nullptr);
+	mDevice.freeMemory(mTextureStageBufferMemory, nullptr);
+
+	mDevice.destroyBuffer(mRenderStateBuffer, nullptr);
+	mDevice.freeMemory(mRenderStateBufferMemory, nullptr);
+
 
 	mDevice.destroyImageView(mImageView, nullptr);
 

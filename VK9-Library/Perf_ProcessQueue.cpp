@@ -1144,7 +1144,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				}
 
 				state->mShaderState.mLights[LightIndex].IsEnabled = bEnable;
-				state->mIsShaderStateDirty = true;
+				state->mAreLightsDirty = true;
 			}
 			break;
 			case Device_Reset:
@@ -1233,7 +1233,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
-				state->mIsShaderStateDirty = true;
+				state->mAreLightsDirty = true;
 
 				Light light = {};
 
@@ -1286,14 +1286,14 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
 					deviceState.mShaderState.mMaterial = (*pMaterial);
-					deviceState.mIsShaderStateDirty = true;
+					deviceState.mIsMaterialDirty = true;
 				}
 				else
 				{
 					auto& deviceState = realDevice->mDeviceState;
 
 					deviceState.mShaderState.mMaterial = (*pMaterial);
-					deviceState.mIsShaderStateDirty = true;
+					deviceState.mIsMaterialDirty = true;
 				}
 			}
 			break;
@@ -1412,7 +1412,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
-				state->mIsShaderStateDirty = true;
+				state->mIsRenderStateDirty = true;
 
 				switch (State)
 				{
@@ -1931,7 +1931,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
-				state->mIsShaderStateDirty = true;
+				state->mIsRenderStateDirty = true;
+				state->mAreTextureStagesDirty = true;
 
 				state->mTextures[Sampler] = pTexture;
 			}
@@ -1954,7 +1955,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					state = &realDevice->mDeviceState;
 				}
 
-				state->mIsShaderStateDirty = true;
+				state->mAreTextureStagesDirty = true;
 
 				switch (Type)
 				{
@@ -2041,35 +2042,35 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						break;
 					case D3DTS_TEXTURE0:
 						deviceState.mShaderState.mTextureStages[0].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE1:
 						deviceState.mShaderState.mTextureStages[1].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE2:
 						deviceState.mShaderState.mTextureStages[2].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE3:
 						deviceState.mShaderState.mTextureStages[3].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE4:
 						deviceState.mShaderState.mTextureStages[4].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE5:
 						deviceState.mShaderState.mTextureStages[5].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE6:
 						deviceState.mShaderState.mTextureStages[6].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE7:
 						deviceState.mShaderState.mTextureStages[7].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					default:
 						BOOST_LOG_TRIVIAL(warning) << "Unknown transformation type " << State;
@@ -2093,35 +2094,35 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 						break;
 					case D3DTS_TEXTURE0:
 						deviceState.mShaderState.mTextureStages[0].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE1:
 						deviceState.mShaderState.mTextureStages[1].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE2:
 						deviceState.mShaderState.mTextureStages[2].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE3:
 						deviceState.mShaderState.mTextureStages[3].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE4:
 						deviceState.mShaderState.mTextureStages[4].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE5:
 						deviceState.mShaderState.mTextureStages[5].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE6:
 						deviceState.mShaderState.mTextureStages[6].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					case D3DTS_TEXTURE7:
 						deviceState.mShaderState.mTextureStages[7].textureTransformationMatrix = (*pMatrix);
-						deviceState.mIsShaderStateDirty = true;
+						deviceState.mAreTextureStagesDirty = true;
 						break;
 					default:
 						BOOST_LOG_TRIVIAL(warning) << "Unknown transformation type " << State;

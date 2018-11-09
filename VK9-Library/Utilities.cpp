@@ -38,7 +38,7 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	All https://msdn.microsoft.com/en-us/library/windows/desktop/bb147350(v=vs.85).aspx
 	*/
 
-	targetState.mIsShaderStateDirty = true;
+	targetState.mIsRenderStateDirty = true;
 
 	//if (type == D3DSBT_ALL)
 	//{
@@ -94,10 +94,12 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 			targetState.mShaderState.mLights[i] = sourceState.mShaderState.mLights[i];
 		}
 
+		targetState.mAreLightsDirty = true;
+
 		//IDirect3DDevice9::SetMaterial
 		targetState.mShaderState.mMaterial = sourceState.mShaderState.mMaterial;
-
-		targetState.mIsShaderStateDirty = true;
+	
+		targetState.mIsMaterialDirty = true;
 	}
 
 	//IDirect3DDevice9::SetNPatchMode
@@ -693,6 +695,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 	//IDirect3DDevice9::SetTextureStageState
 	if (type == D3DSBT_VERTEXSTATE || type == D3DSBT_ALL || type == D3DSBT_FORCE_DWORD)
 	{
+		targetState.mAreTextureStagesDirty = true;
+
 		for (size_t i = 0; i < 9; i++)
 		{
 			targetState.mShaderState.mTextureStages[i].texureCoordinateIndex = sourceState.mShaderState.mTextureStages[i].texureCoordinateIndex;
@@ -702,6 +706,8 @@ void MergeState(const DeviceState& sourceState, DeviceState& targetState, D3DSTA
 
 	if (type == D3DSBT_PIXELSTATE || type == D3DSBT_ALL || type == D3DSBT_FORCE_DWORD)
 	{
+		targetState.mAreTextureStagesDirty = true;
+
 		for (size_t i = 0; i < 9; i++)
 		{
 			targetState.mShaderState.mTextureStages[i].colorOperation = sourceState.mShaderState.mTextureStages[i].colorOperation;

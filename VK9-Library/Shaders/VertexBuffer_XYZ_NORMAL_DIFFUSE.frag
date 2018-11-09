@@ -26,9 +26,24 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock
+layout(std140,binding = 0) uniform ShaderStateBlock0
 {
-	ShaderState shaderState;
+	RenderState renderState;
+};
+
+layout(std140,binding = 1) uniform ShaderStateBlock1
+{
+	TextureStage textureStages[9];
+};
+
+layout(std140,binding = 2) uniform ShaderStateBlock2
+{
+	Light lights[8];
+};
+
+layout(std140,binding = 3) uniform ShaderStateBlock3
+{
+	Material material;
 };
 
 layout(push_constant) uniform UniformBufferObject 
@@ -70,21 +85,21 @@ void main()
 	vec4 temp = vec4(1.0,1.0,1.0,1.0);
 	vec4 result = vec4(1.0,1.0,1.0,1.0); 
 
-	if(shaderState.mRenderState.colorVertex==1)
+	if(renderState.colorVertex==1)
 	{
 		result = diffuseColor; //On stage 0 CURRENT is the same as DIFFUSE
 	}
 	
-	processStage(shaderState.mTextureStages[0].Constant, shaderState.mTextureStages[0].Result,
+	processStage(textureStages[0].Constant, textureStages[0].Result,
 	result, temp, result, temp,
-	shaderState.mTextureStages[0].colorOperation, shaderState.mTextureStages[0].colorArgument1, shaderState.mTextureStages[0].colorArgument2, shaderState.mTextureStages[0].colorArgument0,
-	shaderState.mTextureStages[0].alphaOperation, shaderState.mTextureStages[0].alphaArgument1, shaderState.mTextureStages[0].alphaArgument2, shaderState.mTextureStages[0].alphaArgument0);
+	textureStages[0].colorOperation, textureStages[0].colorArgument1, textureStages[0].colorArgument2, textureStages[0].colorArgument0,
+	textureStages[0].alphaOperation, textureStages[0].alphaArgument1, textureStages[0].alphaArgument2, textureStages[0].alphaArgument0);
 	
 	uFragColor = result;
    
-	if(shaderState.mRenderState.lighting==1)
+	if(renderState.lighting==1)
 	{	
-		if(shaderState.mRenderState.shadeMode == D3DSHADE_GOURAUD)
+		if(renderState.shadeMode == D3DSHADE_GOURAUD)
 		{
 			uFragColor.rgb *= globalIllumination.rgb;
 		}

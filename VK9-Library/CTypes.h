@@ -249,7 +249,11 @@ struct RealRenderTarget;
 struct DeviceState
 {
 	ShaderState mShaderState;
-	BOOL mIsShaderStateDirty = true;
+
+	BOOL mIsRenderStateDirty = true;
+	BOOL mAreTextureStagesDirty = true;
+	BOOL mAreLightsDirty = true;
+	BOOL mIsMaterialDirty = true;
 
 	//IDirect3DDevice9::LightEnable
 	//IDirect3DDevice9::SetClipPlane

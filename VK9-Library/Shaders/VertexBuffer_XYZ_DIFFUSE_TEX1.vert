@@ -26,9 +26,24 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock
+layout(std140,binding = 0) uniform ShaderStateBlock0
 {
-	ShaderState shaderState;
+	RenderState renderState;
+};
+
+layout(std140,binding = 1) uniform ShaderStateBlock1
+{
+	TextureStage textureStages[9];
+};
+
+layout(std140,binding = 2) uniform ShaderStateBlock2
+{
+	Light lights[8];
+};
+
+layout(std140,binding = 3) uniform ShaderStateBlock3
+{
+	Material material;
 };
 
 layout(push_constant) uniform UniformBufferObject {
@@ -55,21 +70,21 @@ void main()
 	gl_Position = ubo.totalTransformation * vec4(position.xyz,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	
-	if(shaderState.mTextureStages[0].textureTransformationFlags == D3DTTFF_DISABLE)
+	if(textureStages[0].textureTransformationFlags == D3DTTFF_DISABLE)
 	{
 		texcoord1 = attr2.xy;
 	}
 	else
 	{
-		texcoord1 = (attr2 * shaderState.mTextureStages[0].textureTransformationMatrix).xy;
+		texcoord1 = (attr2 * textureStages[0].textureTransformationMatrix).xy;
 	}
 
-	if(shaderState.mRenderState.colorVertex==1)
+	if(renderState.colorVertex==1)
 	{
-		switch(shaderState.mRenderState.diffuseMaterialSource)
+		switch(renderState.diffuseMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				diffuseColor = shaderState.mMaterial.Diffuse;
+				diffuseColor = material.Diffuse;
 			break;
 			case D3DMCS_COLOR1:
 				diffuseColor = Convert(attr1);
@@ -82,10 +97,10 @@ void main()
 			break;
 		}
 		
-		switch(shaderState.mRenderState.ambientMaterialSource)
+		switch(renderState.ambientMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				ambientColor = shaderState.mMaterial.Ambient;
+				ambientColor = material.Ambient;
 			break;
 			case D3DMCS_COLOR1:
 				ambientColor = Convert(attr1);
@@ -98,10 +113,10 @@ void main()
 			break;
 		}
 
-		switch(shaderState.mRenderState.specularMaterialSource)
+		switch(renderState.specularMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				specularColor = shaderState.mMaterial.Specular;
+				specularColor = material.Specular;
 			break;
 			case D3DMCS_COLOR1:
 				specularColor = Convert(attr1);
@@ -114,10 +129,10 @@ void main()
 			break;
 		}
 
-		switch(shaderState.mRenderState.emissiveMaterialSource)
+		switch(renderState.emissiveMaterialSource)
 		{
 			case D3DMCS_MATERIAL:
-				emissiveColor = shaderState.mMaterial.Emissive;
+				emissiveColor = material.Emissive;
 			break;
 			case D3DMCS_COLOR1:
 				emissiveColor = Convert(attr1);
@@ -132,10 +147,10 @@ void main()
 	}
 	else
 	{
-		diffuseColor = shaderState.mMaterial.Diffuse;
-		ambientColor = shaderState.mMaterial.Ambient;
-		specularColor = shaderState.mMaterial.Specular;
-		emissiveColor = shaderState.mMaterial.Emissive;
+		diffuseColor = material.Diffuse;
+		ambientColor = material.Ambient;
+		specularColor = material.Specular;
+		emissiveColor = material.Emissive;
 	}
 
 

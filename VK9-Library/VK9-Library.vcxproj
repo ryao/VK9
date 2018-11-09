@@ -639,6 +639,9 @@
     <None Include="Shaders\Functions" />
     <None Include="Shaders\GlobalIllumination" />
     <None Include="Shaders\Structures" />
+    <None Include="Shaders\VertexBuffer_XYZ.frag" />
+    <None Include="Shaders\VertexBuffer_XYZ.vert" />
+    <None Include="Shaders\VertexBuffer_XYZRHW.vert" />
     <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE.vert" />
     <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX1.vert" />
     <None Include="Shaders\VertexBuffer_XYZRHW_DIFFUSE_TEX2.vert" />

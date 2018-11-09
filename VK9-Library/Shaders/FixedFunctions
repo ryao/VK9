@@ -224,14 +224,14 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 	//TODO: review alpha factor logic.
 	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
 	
-	if(shaderState.mRenderState.alphaTestEnable==1)
+	if(renderState.alphaTestEnable==1)
 	{
-		float ref = shaderState.mRenderState.alphaReference / 255.0f;
+		float ref = renderState.alphaReference / 255.0f;
 		float alpha = 0.0f;
 		
 		alpha = tempResult.a;
 						
-		switch(shaderState.mRenderState.alphaFunction)
+		switch(renderState.alphaFunction)
 		{
 		    case D3DCMP_NEVER:
 				discard;
@@ -259,7 +259,7 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 		}
 	}	
 	
-	if(shaderState.mRenderState.alphaBlendEnable==0)
+	if(renderState.alphaBlendEnable==0)
 	{
 		tempResult.a = 1.0f;
 	}
@@ -306,14 +306,14 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 	//TODO: review alpha factor logic.
 	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
 
-	if(shaderState.mRenderState.alphaTestEnable==1)
+	if(renderState.alphaTestEnable==1)
 	{
-		float ref = shaderState.mRenderState.alphaReference / 255.0f;
+		float ref = renderState.alphaReference / 255.0f;
 		float alpha = 0.0f;
 		
 		alpha = tempResult.a;
 				
-		switch(shaderState.mRenderState.alphaFunction)
+		switch(renderState.alphaFunction)
 		{
 		    case D3DCMP_NEVER:
 				discard;
@@ -341,7 +341,7 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 		}
 	}	
 	
-	if(shaderState.mRenderState.alphaBlendEnable==0)
+	if(renderState.alphaBlendEnable==0)
 	{
 		tempResult.a = 1.0f;
 	}

@@ -1180,12 +1180,23 @@ struct RealDevice
 	//	nullptr,// pData
 	//};
 
-	//Buffer Stuff
 	vk::BufferCopy mCopyRegion;
 
-	vk::Buffer mShaderStateBuffer;
-	vk::DeviceMemory mShaderStateBufferMemory;
+	//FF Buffer Stuff
+	vk::Buffer mRenderStateBuffer;
+	vk::DeviceMemory mRenderStateBufferMemory;
 
+	vk::Buffer mTextureStageBuffer;
+	vk::DeviceMemory mTextureStageBufferMemory;
+
+	vk::Buffer mLightBuffer;
+	vk::DeviceMemory mLightBufferMemory;
+
+	vk::Buffer mMaterialBuffer;
+	vk::DeviceMemory mMaterialBufferMemory;
+
+
+	//Shader Buffer Stuff
 	vk::Buffer mShaderVertexConstantBuffer;
 	vk::DeviceMemory mShaderVertexConstantBufferMemory;
 
@@ -1221,8 +1232,8 @@ struct RealDevice
 	vk::GraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
 	vk::PipelineCacheCreateInfo mPipelineCacheCreateInfo;
 	vk::PipelineCache mPipelineCache;
-	vk::DescriptorBufferInfo mDescriptorBufferInfo[3];
-	vk::WriteDescriptorSet mWriteDescriptorSet[4];
+	vk::DescriptorBufferInfo mDescriptorBufferInfo[7];
+	vk::WriteDescriptorSet mWriteDescriptorSet[7];
 
 	//Utility Buffer
 	vk::CommandBufferAllocateInfo mCommandBufferAllocateInfo;

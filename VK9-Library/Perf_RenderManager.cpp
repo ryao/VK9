@@ -80,25 +80,82 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 	vk::BufferMemoryBarrier uboBarrier;
 	uboBarrier.offset = 0;
 
-	//The dirty flag for lights can be set by enable light or set light.
-	if (deviceState.mIsShaderStateDirty)
+
+	//FF Buffers
+	if (deviceState.mIsRenderStateDirty)
 	{
-		uboBarrier.buffer = realDevice->mShaderStateBuffer;
-		uboBarrier.size = sizeof(ShaderState);
+		uboBarrier.buffer = realDevice->mRenderStateBuffer;
+		uboBarrier.size = sizeof(RenderState);
 
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		currentBuffer.updateBuffer(realDevice->mShaderStateBuffer, 0, uboBarrier.size, &deviceState.mShaderState);
+		currentBuffer.updateBuffer(realDevice->mRenderStateBuffer, 0, uboBarrier.size, &deviceState.mShaderState.mRenderState);
 		
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
-		deviceState.mIsShaderStateDirty = false;
+		deviceState.mIsRenderStateDirty = false;
 	}
 
+	if (deviceState.mAreTextureStagesDirty)
+	{
+		uboBarrier.buffer = realDevice->mTextureStageBuffer;
+		uboBarrier.size = sizeof(TextureStage) * 9;
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		currentBuffer.updateBuffer(realDevice->mTextureStageBuffer, 0, uboBarrier.size, &deviceState.mShaderState.mTextureStages);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		deviceState.mAreTextureStagesDirty = false;
+	}
+
+	if (deviceState.mAreLightsDirty)
+	{
+		uboBarrier.buffer = realDevice->mLightBuffer;
+		uboBarrier.size = sizeof(Light)*8;
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		currentBuffer.updateBuffer(realDevice->mLightBuffer, 0, uboBarrier.size, &deviceState.mShaderState.mLights);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		deviceState.mAreLightsDirty = false;
+	}
+
+	if (deviceState.mIsMaterialDirty)
+	{
+		uboBarrier.buffer = realDevice->mMaterialBuffer;
+		uboBarrier.size = sizeof(D3DMATERIAL9);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		currentBuffer.updateBuffer(realDevice->mMaterialBuffer, 0, uboBarrier.size, &deviceState.mShaderState.mMaterial);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		deviceState.mIsMaterialDirty = false;
+	}
+
+
+	//Shader Buffers
 	if (deviceState.mAreVertexShaderSlotsDirty)
 	{
 		uboBarrier.buffer = realDevice->mShaderVertexConstantBuffer;
@@ -594,7 +651,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	/**********************************************
 	* Update the stuff that need to be done outside of a render pass.
 	**********************************************/
-	if (deviceState.mIsShaderStateDirty || deviceState.mAreVertexShaderSlotsDirty || deviceState.mArePixelShaderSlotsDirty)
+	if (deviceState.mIsRenderStateDirty || deviceState.mAreTextureStagesDirty || deviceState.mAreLightsDirty || deviceState.mIsMaterialDirty || deviceState.mAreVertexShaderSlotsDirty || deviceState.mArePixelShaderSlotsDirty)
 	{
 		currentBuffer.endRenderPass();
 		UpdateBuffer(realDevice);
@@ -671,46 +728,78 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	{
 		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
-		//Shader state
-		realDevice->mDescriptorBufferInfo[0].buffer = realDevice->mShaderStateBuffer;
+		//Render State
+		realDevice->mDescriptorBufferInfo[0].buffer = realDevice->mRenderStateBuffer;
 		realDevice->mDescriptorBufferInfo[0].offset = 0;
-		realDevice->mDescriptorBufferInfo[0].range = sizeof(ShaderState);
+		realDevice->mDescriptorBufferInfo[0].range = sizeof(RenderState);
 
 		realDevice->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
 		realDevice->mWriteDescriptorSet[0].descriptorCount = 1;
 		realDevice->mWriteDescriptorSet[0].pBufferInfo = &realDevice->mDescriptorBufferInfo[0];
 
-		//Vertex Shader Const
-		realDevice->mDescriptorBufferInfo[1].buffer = realDevice->mShaderVertexConstantBuffer;
+		//Texture Stages
+		realDevice->mDescriptorBufferInfo[1].buffer = realDevice->mTextureStageBuffer;
 		realDevice->mDescriptorBufferInfo[1].offset = 0;
-		realDevice->mDescriptorBufferInfo[1].range = sizeof(ShaderConstantSlots);
+		realDevice->mDescriptorBufferInfo[1].range = sizeof(TextureStage) * 9;
 
+		realDevice->mWriteDescriptorSet[1].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
 		realDevice->mWriteDescriptorSet[1].descriptorCount = 1;
 		realDevice->mWriteDescriptorSet[1].pBufferInfo = &realDevice->mDescriptorBufferInfo[1];
 
-		//Pixel Shader Const
-		realDevice->mDescriptorBufferInfo[2].buffer = realDevice->mShaderPixelConstantBuffer;
+		//Lights
+		realDevice->mDescriptorBufferInfo[2].buffer = realDevice->mLightBuffer;
 		realDevice->mDescriptorBufferInfo[2].offset = 0;
-		realDevice->mDescriptorBufferInfo[2].range = sizeof(ShaderConstantSlots);
+		realDevice->mDescriptorBufferInfo[2].range = sizeof(Light) * 8;
 
+		realDevice->mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
 		realDevice->mWriteDescriptorSet[2].descriptorCount = 1;
 		realDevice->mWriteDescriptorSet[2].pBufferInfo = &realDevice->mDescriptorBufferInfo[2];
 
-		//Image/Sampler
+		//Material
+		realDevice->mDescriptorBufferInfo[3].buffer = realDevice->mMaterialBuffer;
+		realDevice->mDescriptorBufferInfo[3].offset = 0;
+		realDevice->mDescriptorBufferInfo[3].range = sizeof(D3DMATERIAL9);
+
+		realDevice->mWriteDescriptorSet[3].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[3].descriptorCount = context->mShaderState.mRenderState.textureCount;
-		realDevice->mWriteDescriptorSet[3].pImageInfo = resourceContext->DescriptorImageInfo;
+		realDevice->mWriteDescriptorSet[3].descriptorCount = 1;
+		realDevice->mWriteDescriptorSet[3].pBufferInfo = &realDevice->mDescriptorBufferInfo[3];
+
+
+
+		//Vertex Shader Const
+		realDevice->mDescriptorBufferInfo[4].buffer = realDevice->mShaderVertexConstantBuffer;
+		realDevice->mDescriptorBufferInfo[4].offset = 0;
+		realDevice->mDescriptorBufferInfo[4].range = sizeof(ShaderConstantSlots);
+
+		realDevice->mWriteDescriptorSet[4].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[4].descriptorCount = 1;
+		realDevice->mWriteDescriptorSet[4].pBufferInfo = &realDevice->mDescriptorBufferInfo[4];
+
+		//Pixel Shader Const
+		realDevice->mDescriptorBufferInfo[5].buffer = realDevice->mShaderPixelConstantBuffer;
+		realDevice->mDescriptorBufferInfo[5].offset = 0;
+		realDevice->mDescriptorBufferInfo[5].range = sizeof(ShaderConstantSlots);
+
+		realDevice->mWriteDescriptorSet[5].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[5].descriptorCount = 1;
+		realDevice->mWriteDescriptorSet[5].pBufferInfo = &realDevice->mDescriptorBufferInfo[5];
+
+		//Image/Sampler
+		realDevice->mWriteDescriptorSet[6].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[6].descriptorCount = context->mShaderState.mRenderState.textureCount;
+		realDevice->mWriteDescriptorSet[6].pImageInfo = resourceContext->DescriptorImageInfo;
 
 		if (deviceRenderState.textureCount)
 		{
-			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 4, realDevice->mWriteDescriptorSet);
+			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 7, realDevice->mWriteDescriptorSet);
 		}
 		else
 		{
-			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 3, realDevice->mWriteDescriptorSet);
+			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 6, realDevice->mWriteDescriptorSet);
 		}
 	}
 
@@ -1340,20 +1429,38 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	realDevice->mDescriptorSetLayoutBinding[1].binding = 1;
 	realDevice->mDescriptorSetLayoutBinding[1].descriptorType = vk::DescriptorType::eUniformBuffer;
 	realDevice->mDescriptorSetLayoutBinding[1].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eVertex;
+	realDevice->mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
 	realDevice->mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
 
 	realDevice->mDescriptorSetLayoutBinding[2].binding = 2;
 	realDevice->mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eUniformBuffer;
 	realDevice->mDescriptorSetLayoutBinding[2].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	realDevice->mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
 	realDevice->mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
 
 	realDevice->mDescriptorSetLayoutBinding[3].binding = 3;
-	realDevice->mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = deviceRenderState.textureCount; //Update to use mapped texture.
-	realDevice->mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	realDevice->mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eUniformBuffer;
+	realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = 1;
+	realDevice->mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
 	realDevice->mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
+
+	realDevice->mDescriptorSetLayoutBinding[4].binding = 4;
+	realDevice->mDescriptorSetLayoutBinding[4].descriptorType = vk::DescriptorType::eUniformBuffer;
+	realDevice->mDescriptorSetLayoutBinding[4].descriptorCount = 1;
+	realDevice->mDescriptorSetLayoutBinding[4].stageFlags = vk::ShaderStageFlagBits::eVertex;
+	realDevice->mDescriptorSetLayoutBinding[4].pImmutableSamplers = nullptr;
+
+	realDevice->mDescriptorSetLayoutBinding[5].binding = 5;
+	realDevice->mDescriptorSetLayoutBinding[5].descriptorType = vk::DescriptorType::eUniformBuffer;
+	realDevice->mDescriptorSetLayoutBinding[5].descriptorCount = 1;
+	realDevice->mDescriptorSetLayoutBinding[5].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	realDevice->mDescriptorSetLayoutBinding[5].pImmutableSamplers = nullptr;
+
+	realDevice->mDescriptorSetLayoutBinding[6].binding = 6;
+	realDevice->mDescriptorSetLayoutBinding[6].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
+	realDevice->mDescriptorSetLayoutBinding[6].descriptorCount = deviceRenderState.textureCount; //Update to use mapped texture.
+	realDevice->mDescriptorSetLayoutBinding[6].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	realDevice->mDescriptorSetLayoutBinding[6].pImmutableSamplers = nullptr;
 
 	realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
 	realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
@@ -1361,11 +1468,11 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 
 	if (deviceRenderState.textureCount)
 	{
-		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 4; //The number of elements in pBindings.			
+		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 7; //The number of elements in pBindings.			
 	}
 	else
 	{
-		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 3; //The number of elements in pBindings.	
+		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 6; //The number of elements in pBindings.	
 	}
 
 	result = device.createDescriptorSetLayout(&realDevice->mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);

@@ -344,6 +344,15 @@
     <None Include="Shaders\VertexBuffer_XYZ_NORMAL_DIFFUSE_TEX1.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\VertexBuffer_XYZ.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZ.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexBuffer_XYZRHW.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Shaders.rc">

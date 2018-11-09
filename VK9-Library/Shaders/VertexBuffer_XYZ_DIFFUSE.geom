@@ -29,9 +29,24 @@ layout(triangle_strip, max_vertices = 6) out;
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock
+layout(std140,binding = 0) uniform ShaderStateBlock0
 {
-	ShaderState shaderState;
+	RenderState renderState;
+};
+
+layout(std140,binding = 1) uniform ShaderStateBlock1
+{
+	TextureStage textureStages[9];
+};
+
+layout(std140,binding = 2) uniform ShaderStateBlock2
+{
+	Light lights[8];
+};
+
+layout(std140,binding = 3) uniform ShaderStateBlock3
+{
+	Material material;
 };
 
 layout(push_constant) uniform UniformBufferObject {
@@ -53,15 +68,15 @@ layout (location = 4) out vec2 texcoord;
 void main() 
 {	
 		vec4 position = gl_in[0].gl_Position;
-		float calculatedPointSize = shaderState.mRenderState.pointSize;
+		float calculatedPointSize = renderState.pointSize;
 
-		if(shaderState.mRenderState.pointScaleEnable==1)
+		if(renderState.pointScaleEnable==1)
 		{
 			float d = sqrt(pow(position.x,2) + pow(position.y,2) + pow(position.z,2));
-			calculatedPointSize = 1 * calculatedPointSize * sqrt(1/(shaderState.mRenderState.pointScaleA + shaderState.mRenderState.pointScaleB * d + shaderState.mRenderState.pointScaleC * pow(d,2)));
+			calculatedPointSize = 1 * calculatedPointSize * sqrt(1/(renderState.pointScaleA + renderState.pointScaleB * d + renderState.pointScaleC * pow(d,2)));
 		}	
 
-		calculatedPointSize = clamp(calculatedPointSize,shaderState.mRenderState.pointSizeMinimum,shaderState.mRenderState.pointSizeMaximum);
+		calculatedPointSize = clamp(calculatedPointSize,renderState.pointSizeMinimum,renderState.pointSizeMaximum);
 
 		gl_Position = vec4(position.x - calculatedPointSize/2, position.y + calculatedPointSize/2, position.z, position.w);
 		outdiffuseColor = indiffuseColor[0];
