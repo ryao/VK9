@@ -1165,6 +1165,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
 					deviceState.mFVF = FVF;
+					deviceState.mVertexDeclaration = nullptr;
+
 					deviceState.mHasFVF = true;
 					deviceState.mHasVertexDeclaration = false;
 				}
@@ -1173,6 +1175,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto& deviceState = realDevice->mDeviceState;
 
 					deviceState.mFVF = FVF;
+					deviceState.mVertexDeclaration = nullptr;
+
 					deviceState.mHasFVF = true;
 					deviceState.mHasVertexDeclaration = false;
 				}
@@ -2141,6 +2145,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto& deviceState = realDevice->mCurrentStateRecording->mDeviceState;
 
 					deviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+					deviceState.mFVF = 0;
 
 					deviceState.mHasVertexDeclaration = true;
 					deviceState.mHasFVF = false;
@@ -2150,6 +2155,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					auto& deviceState = realDevice->mDeviceState;
 
 					deviceState.mVertexDeclaration = (CVertexDeclaration9*)pDecl;
+					deviceState.mFVF = 0;
 
 					deviceState.mHasVertexDeclaration = true;
 					deviceState.mHasFVF = false;

@@ -416,14 +416,56 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mPipelineMultisampleStateCreateInfo.pSampleMask = nullptr;
 	mPipelineMultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
 
-	mDescriptorSetLayoutCreateInfo.bindingCount = 1;
+	mDescriptorSetLayoutBinding[0].binding = 0;
+	mDescriptorSetLayoutBinding[0].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	mDescriptorSetLayoutBinding[0].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutBinding[1].binding = 1;
+	mDescriptorSetLayoutBinding[1].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mDescriptorSetLayoutBinding[1].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutBinding[2].binding = 2;
+	mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mDescriptorSetLayoutBinding[2].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutBinding[3].binding = 3;
+	mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mDescriptorSetLayoutBinding[3].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutBinding[4].binding = 4;
+	mDescriptorSetLayoutBinding[4].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mDescriptorSetLayoutBinding[4].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[4].stageFlags = vk::ShaderStageFlagBits::eVertex;
+	mDescriptorSetLayoutBinding[4].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutBinding[5].binding = 5;
+	mDescriptorSetLayoutBinding[5].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mDescriptorSetLayoutBinding[5].descriptorCount = 1;
+	mDescriptorSetLayoutBinding[5].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	mDescriptorSetLayoutBinding[5].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutBinding[6].binding = 6;
+	mDescriptorSetLayoutBinding[6].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	mDescriptorSetLayoutBinding[6].descriptorCount = 16;
+	mDescriptorSetLayoutBinding[6].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	mDescriptorSetLayoutBinding[6].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutCreateInfo.bindingCount = 7;
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mDescriptorSetLayoutCreateInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptorKHR;
 
 	mDescriptorSetAllocateInfo.descriptorPool = mDescriptorPool;
 	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
-	//mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
 
+	//mDescriptorSetAllocateInfo.pSetLayouts = &mDescriptorSetLayout;
 	mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
 	mPipelineShaderStageCreateInfo[0].stage = vk::ShaderStageFlagBits::eVertex;

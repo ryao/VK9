@@ -33,7 +33,7 @@ misrepresented as being the original software.
 #ifndef STATEMANAGER_H
 #define STATEMANAGER_H
 
-#define CACHE_SECONDS 1
+#define CACHE_SECONDS 30
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* layerPrefix, const char* message, void* userData);
 

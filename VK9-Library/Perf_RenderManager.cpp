@@ -65,17 +65,19 @@ RenderManager::~RenderManager()
 {
 }
 
-void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
+void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context)
 { //Vulkan doesn't allow vkCmdUpdateBuffer inside of a render pass.
 
 	auto& device = realDevice->mDevice;
 	auto& deviceState = realDevice->mDeviceState;
-	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
 
 	if (!deviceState.mRenderTarget->mIsSceneStarted)
 	{
 		this->StartScene(realDevice, false, false, false);
 	}
+
+	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
+	//context
 
 	vk::BufferMemoryBarrier uboBarrier;
 	uboBarrier.offset = 0;
@@ -92,7 +94,7 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
 		currentBuffer.updateBuffer(realDevice->mRenderStateBuffer, 0, uboBarrier.size, &deviceState.mShaderState.mRenderState);
-		
+
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
@@ -121,7 +123,7 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 	if (deviceState.mAreLightsDirty)
 	{
 		uboBarrier.buffer = realDevice->mLightBuffer;
-		uboBarrier.size = sizeof(Light)*8;
+		uboBarrier.size = sizeof(Light) * 8;
 
 		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
 		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
@@ -293,7 +295,7 @@ vk::Result RenderManager::Present(std::shared_ptr<RealDevice> realDevice, const 
 	auto& device = realDevice->mDevice;
 	auto& deviceState = realDevice->mDeviceState;
 	auto& currentBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
-	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride,0,0, realDevice->mUseVsync);
+	auto swapchain = mStateManager.GetSwapChain(realDevice, hDestWindowOverride, 0, 0, realDevice->mUseVsync);
 
 	auto colorSurface = deviceState.mRenderTarget->mColorSurface;
 
@@ -455,7 +457,7 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 			ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mEdgeLength, source9.mEdgeLength, 1, i, i, 0, 0);
 		}
 
-		
+
 	}
 	else if (pSourceTexture->GetType() == D3DRTYPE_VOLUMETEXTURE)
 	{
@@ -463,11 +465,11 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 		source = mStateManager.mTextures[source9.mId];
 
 		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
-		
+
 		for (size_t i = 0; i < source->mLevels; i++)
 		{
 			ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, source9.mDepth, i, i, 0, 0);
-		}		
+		}
 	}
 	else
 	{
@@ -475,11 +477,11 @@ void RenderManager::UpdateTexture(std::shared_ptr<RealDevice> realDevice, IDirec
 		source = mStateManager.mTextures[source9.mId];
 
 		ReallySetImageLayout(commandBuffer, source->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
-		
+
 		for (size_t i = 0; i < source->mLevels; i++)
 		{
 			ReallyCopyImage(commandBuffer, source->mImage, target->mImage, 0, 0, source9.mWidth, source9.mHeight, 1, i, i, 0, 0);
-		}	
+		}
 	}
 
 	ReallySetImageLayout(commandBuffer, target->mImage, vk::ImageAspectFlags(), vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eGeneral, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
@@ -518,7 +520,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 
 	auto& device = realDevice->mDevice;
 	auto& deviceState = realDevice->mDeviceState;
-	auto& deviceShaderState = deviceState.mShaderState;	
+	auto& deviceShaderState = deviceState.mShaderState;
 	auto& deviceRenderState = deviceShaderState.mRenderState;
 	auto& deviceSamplerStates = deviceState.mSamplerStates;
 
@@ -526,11 +528,44 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	auto& contextVertexSlots = context->mVertexShaderConstantSlots;
 	auto& contextPixelSlots = context->mPixelShaderConstantSlots;
 
+	if (deviceState.mHasVertexShader || deviceState.mHasPixelShader)
+	{
+		resourceContext->WasShader = true;
+	}
+
+	if (deviceState.mHasVertexDeclaration)
+	{
+		if (deviceState.mVertexDeclaration != nullptr)
+		{
+			textureCount = deviceState.mVertexDeclaration->mTextureCount;
+		}
+	}
+	else if (deviceState.mHasFVF)
+	{
+		textureCount = ConvertFormat(deviceState.mFVF);
+	}
+
 	/**********************************************
 	* Update the textures that are currently mapped.
 	**********************************************/
-	deviceRenderState.textureCount = 0;
 
+	context->StreamCount = deviceState.mStreamSources.size();
+	//context->Bindings = {};
+	memset(&context->Bindings, 0, sizeof(UINT) * 64);
+
+	int i = 0;
+	for (auto& source : deviceState.mStreamSources)
+	{
+		realDevice->mVertexInputBindingDescription[i].binding = source.first;
+		realDevice->mVertexInputBindingDescription[i].stride = source.second.Stride;
+		realDevice->mVertexInputBindingDescription[i].inputRate = vk::VertexInputRate::eVertex;
+
+		context->Bindings[source.first] = source.second.Stride;
+
+		i++;
+	}
+
+	deviceRenderState.textureCount = 0;
 	for (size_t i = 0; i < 16; i++)
 	{
 		auto& targetSampler = deviceState.mDescriptorImageInfo[i];
@@ -604,58 +639,93 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		}
 	}
 
+	deviceRenderState.textureCount = std::max(deviceRenderState.textureCount, textureCount);
+
 	/**********************************************
 	* Setup context.
 	**********************************************/
-	if (deviceState.mHasVertexDeclaration)
-	{
-		if (deviceState.mVertexDeclaration != nullptr)
-		{
-			textureCount = deviceState.mVertexDeclaration->mTextureCount;
-		}
-	}
-	else if (deviceState.mHasFVF)
-	{
-		textureCount = ConvertFormat(deviceState.mFVF);
-	}
-
-	deviceRenderState.textureCount = std::max(deviceRenderState.textureCount, textureCount);
-
 	context->PrimitiveType = type;
+
 	context->VertexDeclaration = deviceState.mVertexDeclaration;
 	context->FVF = deviceState.mFVF;
-	context->StreamCount = deviceState.mStreamSources.size();
+
 	context->VertexShader = deviceState.mVertexShader;
 	context->mVertexShaderConstantSlots = deviceState.mVertexShaderConstantSlots;
+
 	context->PixelShader = deviceState.mPixelShader;
 	context->mPixelShaderConstantSlots = deviceState.mPixelShaderConstantSlots;
+
 	context->mShaderState = deviceState.mShaderState;
 
-	if (deviceState.mHasVertexShader || deviceState.mHasPixelShader)
-	{
-		resourceContext->WasShader = true;
-	}
-	
-	int i = 0;
-	for (auto& source : deviceState.mStreamSources)
-	{
-		realDevice->mVertexInputBindingDescription[i].binding = source.first;
-		realDevice->mVertexInputBindingDescription[i].stride = source.second.Stride;
-		realDevice->mVertexInputBindingDescription[i].inputRate = vk::VertexInputRate::eVertex;
-
-		context->Bindings[source.first] = source.second.Stride;
-
-		i++;
-	}
-	
 	/**********************************************
 	* Update the stuff that need to be done outside of a render pass.
 	**********************************************/
 	if (deviceState.mIsRenderStateDirty || deviceState.mAreTextureStagesDirty || deviceState.mAreLightsDirty || deviceState.mIsMaterialDirty || deviceState.mAreVertexShaderSlotsDirty || deviceState.mArePixelShaderSlotsDirty)
 	{
 		currentBuffer.endRenderPass();
-		UpdateBuffer(realDevice);
+		UpdateBuffer(realDevice, context);
 		currentBuffer.beginRenderPass(&deviceState.mRenderTarget->mRenderPassBeginInfo, vk::SubpassContents::eInline);
+	}
+
+	/**********************************************
+	* Check for existing pipeline. Create one if there isn't a matching one.
+	**********************************************/
+	for (size_t i = 0; i < realDevice->mDrawBuffer.size(); i++)
+	{
+		auto& drawBuffer = (*realDevice->mDrawBuffer[i]);
+
+		if (drawBuffer.PrimitiveType == context->PrimitiveType)
+		{
+			if (drawBuffer.FVF == context->FVF && drawBuffer.VertexDeclaration == context->VertexDeclaration)
+			{
+				if (drawBuffer.VertexShader == context->VertexShader && drawBuffer.PixelShader == context->PixelShader)
+				{
+					if (!memcmp(&drawBuffer.mShaderState.mRenderState, &context->mShaderState.mRenderState, sizeof(RenderState)))
+					{
+						if (drawBuffer.StreamCount == context->StreamCount && !memcmp(&drawBuffer.Bindings, &context->Bindings, 64 * sizeof(UINT)))
+						{
+							context->Pipeline = drawBuffer.Pipeline;
+							context->PipelineLayout = drawBuffer.PipelineLayout;
+							context->DescriptorSetLayout = drawBuffer.DescriptorSetLayout;
+							context->mRealDevice = nullptr; //Not owner.
+							drawBuffer.LastUsed = std::chrono::steady_clock::now();
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (context->Pipeline == vk::Pipeline())
+	{
+		CreatePipe(realDevice, context, textureCount); //If we didn't find a matching pipeline then create a new one.	
+	}
+
+	/**********************************************
+	* Setup bindings
+	**********************************************/
+
+	//TODO: I need to find a way to prevent binding on every draw call.
+
+	//if (!mIsDirty || mLastVkPipeline != context->Pipeline)
+	//{
+	currentBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, context->Pipeline);
+	//	mLastVkPipeline = context->Pipeline;
+	//}
+
+	realDevice->mVertexCount = 0;
+
+	if (deviceState.mIndexBuffer != nullptr)
+	{
+		currentBuffer.bindIndexBuffer(deviceState.mIndexBuffer->mBuffer, 0, deviceState.mIndexBuffer->mIndexType);
+	}
+
+	for (auto& source : deviceState.mStreamSources)
+	{
+		auto& buffer = mStateManager.mVertexBuffers[source.second.StreamData->mId];
+		currentBuffer.bindVertexBuffers(source.first, 1, &buffer->mBuffer, &source.second.OffsetInBytes);
+		realDevice->mVertexCount += source.second.StreamData->mSize;
 	}
 
 	/*
@@ -670,43 +740,6 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	else
 	{
 		currentBuffer.setDepthBias(0.0f, 0.0f, 0.0f);
-	}
-
-	/**********************************************
-	* Check for existing pipeline. Create one if there isn't a matching one.
-	**********************************************/
-	for (size_t i = 0; i < realDevice->mDrawBuffer.size(); i++)
-	{
-		auto& drawBuffer = (*realDevice->mDrawBuffer[i]);
-
-		if (drawBuffer.PrimitiveType == context->PrimitiveType
-			&& drawBuffer.StreamCount == context->StreamCount
-
-			&& drawBuffer.VertexShader == context->VertexShader
-			&& drawBuffer.PixelShader == context->PixelShader
-
-			&& drawBuffer.FVF == context->FVF
-			&& drawBuffer.VertexDeclaration == context->VertexDeclaration
-
-			&& !memcmp(&drawBuffer.mShaderState.mRenderState, &context->mShaderState.mRenderState, sizeof(RenderState))
-
-			)
-		{
-			if (!memcmp(&drawBuffer.Bindings, &context->Bindings, 64 * sizeof(UINT)))
-			{
-				context->Pipeline = drawBuffer.Pipeline;
-				context->PipelineLayout = drawBuffer.PipelineLayout;
-				context->DescriptorSetLayout = drawBuffer.DescriptorSetLayout;
-				context->mRealDevice = nullptr; //Not owner.
-				drawBuffer.LastUsed = std::chrono::steady_clock::now();
-				break;
-			}
-		}
-	}
-
-	if (context->Pipeline == vk::Pipeline())
-	{
-		CreatePipe(realDevice, context, textureCount); //If we didn't find a matching pipeline then create a new one.	
 	}
 
 	/**********************************************
@@ -790,7 +823,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 
 		//Image/Sampler
 		realDevice->mWriteDescriptorSet[6].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[6].descriptorCount = context->mShaderState.mRenderState.textureCount;
+		realDevice->mWriteDescriptorSet[6].descriptorCount = 16;
 		realDevice->mWriteDescriptorSet[6].pImageInfo = resourceContext->DescriptorImageInfo;
 
 		if (deviceRenderState.textureCount)
@@ -801,32 +834,6 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		{
 			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 6, realDevice->mWriteDescriptorSet);
 		}
-	}
-
-	/**********************************************
-	* Setup bindings
-	**********************************************/
-
-	//TODO: I need to find a way to prevent binding on every draw call.
-
-	//if (!mIsDirty || mLastVkPipeline != context->Pipeline)
-	//{
-	currentBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, context->Pipeline);
-	//	mLastVkPipeline = context->Pipeline;
-	//}
-
-	realDevice->mVertexCount = 0;
-
-	if (deviceState.mIndexBuffer != nullptr)
-	{
-		currentBuffer.bindIndexBuffer(deviceState.mIndexBuffer->mBuffer, 0, deviceState.mIndexBuffer->mIndexType);
-	}
-
-	for (auto& source : deviceState.mStreamSources)
-	{
-		auto& buffer = mStateManager.mVertexBuffers[source.second.StreamData->mId];
-		currentBuffer.bindVertexBuffers(source.first, 1, &buffer->mBuffer, &source.second.OffsetInBytes);
-		realDevice->mVertexCount += source.second.StreamData->mSize;
 	}
 
 	realDevice->mIsDirty = false;
@@ -853,9 +860,9 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	BOOL isTransformed = 0;
 	BOOL isLightingEnabled = deviceRenderState.lighting;
 
-	if (context->VertexDeclaration != nullptr)
+	if (deviceState.mVertexDeclaration != nullptr)
 	{
-		auto vertexDeclaration = context->VertexDeclaration;
+		auto vertexDeclaration = deviceState.mVertexDeclaration;
 
 		hasPosition = vertexDeclaration->mHasPosition;
 		hasNormal = vertexDeclaration->mHasNormal;
@@ -863,9 +870,9 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		hasColor1 = vertexDeclaration->mHasColor1;
 		hasColor2 = vertexDeclaration->mHasColor2;
 	}
-	else if (context->FVF)
+	else if (deviceState.mFVF)
 	{
-		if ((context->FVF & D3DFVF_XYZRHW) == D3DFVF_XYZRHW)
+		if ((deviceState.mFVF & D3DFVF_XYZRHW) == D3DFVF_XYZRHW)
 		{
 			positionSize = 4;
 			hasPosition = true;
@@ -873,67 +880,67 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		}
 		else
 		{
-			if ((context->FVF & D3DFVF_XYZW) == D3DFVF_XYZW)
+			if ((deviceState.mFVF & D3DFVF_XYZW) == D3DFVF_XYZW)
 			{
 				positionSize = 4;
 				hasPosition = true;
 			}
-			else if ((context->FVF & D3DFVF_XYZ) == D3DFVF_XYZ)
+			else if ((deviceState.mFVF & D3DFVF_XYZ) == D3DFVF_XYZ)
 			{
 				positionSize = 3;
 				hasPosition = true;
 			}
-			else if ((context->FVF & D3DFVF_XYZB1) == D3DFVF_XYZB1)
-			{
-				positionSize = 3;
-				hasPosition = true;
-				hasColor1 = true;
-			}
-			else if ((context->FVF & D3DFVF_XYZB2) == D3DFVF_XYZB2)
+			else if ((deviceState.mFVF & D3DFVF_XYZB1) == D3DFVF_XYZB1)
 			{
 				positionSize = 3;
 				hasPosition = true;
 				hasColor1 = true;
 			}
-			else if ((context->FVF & D3DFVF_XYZB3) == D3DFVF_XYZB3)
+			else if ((deviceState.mFVF & D3DFVF_XYZB2) == D3DFVF_XYZB2)
 			{
 				positionSize = 3;
 				hasPosition = true;
 				hasColor1 = true;
 			}
-			else if ((context->FVF & D3DFVF_XYZB4) == D3DFVF_XYZB4)
+			else if ((deviceState.mFVF & D3DFVF_XYZB3) == D3DFVF_XYZB3)
 			{
 				positionSize = 3;
 				hasPosition = true;
 				hasColor1 = true;
 			}
-			else if ((context->FVF & D3DFVF_XYZB5) == D3DFVF_XYZB5)
+			else if ((deviceState.mFVF & D3DFVF_XYZB4) == D3DFVF_XYZB4)
+			{
+				positionSize = 3;
+				hasPosition = true;
+				hasColor1 = true;
+			}
+			else if ((deviceState.mFVF & D3DFVF_XYZB5) == D3DFVF_XYZB5)
 			{
 				positionSize = 3;
 				hasPosition = true;
 				hasColor1 = true;
 			}
 
-			if ((context->FVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
+			if ((deviceState.mFVF & D3DFVF_NORMAL) == D3DFVF_NORMAL)
 			{
 				hasNormal = true;
 			}
 		}
 
-		if ((context->FVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
+		if ((deviceState.mFVF & D3DFVF_PSIZE) == D3DFVF_PSIZE)
 		{
 			hasPSize = true;
 		}
 
-		if ((context->FVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
+		if ((deviceState.mFVF & D3DFVF_DIFFUSE) == D3DFVF_DIFFUSE)
 		{
 			hasColor1 = true;
 		}
 
-		if ((context->FVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
+		if ((deviceState.mFVF & D3DFVF_SPECULAR) == D3DFVF_SPECULAR)
 		{
 			hasColor2 = true;
-		}		
+		}
 	}
 	else
 	{
@@ -1268,15 +1275,15 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	* Figure out attributes
 	**********************************************/
 
-	if (context->VertexDeclaration != nullptr)
+	if (deviceState.mVertexDeclaration != nullptr)
 	{
 		uint32_t textureIndex = 0;
 
-		attributeCount = context->VertexDeclaration->mVertexElements.size();
+		attributeCount = deviceState.mVertexDeclaration->mVertexElements.size();
 
 		for (size_t i = 0; i < attributeCount; i++)
 		{
-			D3DVERTEXELEMENT9& element = context->VertexDeclaration->mVertexElements[i];
+			D3DVERTEXELEMENT9& element = deviceState.mVertexDeclaration->mVertexElements[i];
 
 			int t = D3DDECLTYPE_FLOAT3;
 
@@ -1335,7 +1342,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 			}
 		}
 	}
-	else if (context->FVF)
+	else if (deviceState.mFVF)
 	{
 		uint32_t attributeIndex = 0;
 		uint32_t offset = 0;
@@ -1412,60 +1419,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::BeginDraw unknown vertex format.";
 	}
 
-	auto& pipelineLayoutCreateInfo = realDevice->mPipelineLayoutCreateInfo;
-
-	pipelineLayoutCreateInfo.pPushConstantRanges = realDevice->mPushConstantRanges;
-	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
-
-	realDevice->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
-	realDevice->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
-
-	realDevice->mDescriptorSetLayoutBinding[0].binding = 0;
-	realDevice->mDescriptorSetLayoutBinding[0].descriptorType = vk::DescriptorType::eUniformBuffer;
-	realDevice->mDescriptorSetLayoutBinding[0].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
-	realDevice->mDescriptorSetLayoutBinding[0].pImmutableSamplers = nullptr;
-
-	realDevice->mDescriptorSetLayoutBinding[1].binding = 1;
-	realDevice->mDescriptorSetLayoutBinding[1].descriptorType = vk::DescriptorType::eUniformBuffer;
-	realDevice->mDescriptorSetLayoutBinding[1].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
-	realDevice->mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
-
-	realDevice->mDescriptorSetLayoutBinding[2].binding = 2;
-	realDevice->mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eUniformBuffer;
-	realDevice->mDescriptorSetLayoutBinding[2].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
-	realDevice->mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
-
-	realDevice->mDescriptorSetLayoutBinding[3].binding = 3;
-	realDevice->mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eUniformBuffer;
-	realDevice->mDescriptorSetLayoutBinding[3].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
-	realDevice->mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
-
-	realDevice->mDescriptorSetLayoutBinding[4].binding = 4;
-	realDevice->mDescriptorSetLayoutBinding[4].descriptorType = vk::DescriptorType::eUniformBuffer;
-	realDevice->mDescriptorSetLayoutBinding[4].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[4].stageFlags = vk::ShaderStageFlagBits::eVertex;
-	realDevice->mDescriptorSetLayoutBinding[4].pImmutableSamplers = nullptr;
-
-	realDevice->mDescriptorSetLayoutBinding[5].binding = 5;
-	realDevice->mDescriptorSetLayoutBinding[5].descriptorType = vk::DescriptorType::eUniformBuffer;
-	realDevice->mDescriptorSetLayoutBinding[5].descriptorCount = 1;
-	realDevice->mDescriptorSetLayoutBinding[5].stageFlags = vk::ShaderStageFlagBits::eFragment;
-	realDevice->mDescriptorSetLayoutBinding[5].pImmutableSamplers = nullptr;
-
-	realDevice->mDescriptorSetLayoutBinding[6].binding = 6;
-	realDevice->mDescriptorSetLayoutBinding[6].descriptorType = vk::DescriptorType::eCombinedImageSampler; //VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER'
-	realDevice->mDescriptorSetLayoutBinding[6].descriptorCount = deviceRenderState.textureCount; //Update to use mapped texture.
-	realDevice->mDescriptorSetLayoutBinding[6].stageFlags = vk::ShaderStageFlagBits::eFragment;
-	realDevice->mDescriptorSetLayoutBinding[6].pImmutableSamplers = nullptr;
-
 	realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
-	realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
-	realDevice->mPipelineLayoutCreateInfo.setLayoutCount = 1;
-
 	if (deviceRenderState.textureCount)
 	{
 		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 7; //The number of elements in pBindings.			
@@ -1485,6 +1439,16 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	/**********************************************
 	* Create pipeline & descriptor set layout.
 	**********************************************/
+	auto& pipelineLayoutCreateInfo = realDevice->mPipelineLayoutCreateInfo;
+
+	pipelineLayoutCreateInfo.pPushConstantRanges = realDevice->mPushConstantRanges;
+	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+
+	realDevice->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
+	realDevice->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
+
+	realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+	realDevice->mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
 	result = device.createPipelineLayout(&realDevice->mPipelineLayoutCreateInfo, nullptr, &context->PipelineLayout);
 	if (result != vk::Result::eSuccess)
@@ -1503,6 +1467,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::BeginDraw vkCreateGraphicsPipelines failed with return code of " << GetResultString((VkResult)result);
 	}
 
+	context->LastUsed = std::chrono::steady_clock::now();
 	realDevice->mDrawBuffer.push_back(context);
 }
 
