@@ -46,6 +46,8 @@ layout(std140,binding = 3) uniform ShaderStateBlock3
 	Material material;
 };
 
+layout(binding = 6) uniform sampler2D textures[9];
+
 layout(push_constant) uniform UniformBufferObject 
 {
     mat4 totalTransformation;
@@ -84,10 +86,18 @@ void main()
 	vec4 temp = vec4(1.0,1.0,1.0,1.0);
 	vec4 result = vec4(1.0,1.0,1.0,1.0); //On stage 0 CURRENT is the same as DIFFUSE
 
-	processStage(textureStages[0].Constant, textureStages[0].Result,
-	result, temp, result, temp,
-	textureStages[0].colorOperation, textureStages[0].colorArgument1, textureStages[0].colorArgument2, textureStages[0].colorArgument0,
-	textureStages[0].alphaOperation, textureStages[0].alphaArgument1, textureStages[0].alphaArgument2, textureStages[0].alphaArgument0);
+	if(renderState.colorVertex==1)
+	{
+		result = diffuseColor; //On stage 0 CURRENT is the same as DIFFUSE
+	}
+
+	for(int i = 0; i < 9; i++) 
+	{
+		processStage(textures[i],textureStages[i].texureCoordinateIndex, textureStages[i].Constant, textureStages[i].Result,
+		result, temp, result, temp,
+		textureStages[i].colorOperation, textureStages[i].colorArgument1, textureStages[i].colorArgument2, textureStages[i].colorArgument0,
+		textureStages[i].alphaOperation, textureStages[i].alphaArgument1, textureStages[i].alphaArgument2, textureStages[i].alphaArgument0);
+	}
 	
 	uFragColor = result;
 

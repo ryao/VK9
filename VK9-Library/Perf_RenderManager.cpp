@@ -545,6 +545,20 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		textureCount = ConvertFormat(deviceState.mFVF);
 	}
 
+	/*
+	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205599(v=vs.85).aspx
+	The units for the D3DRS_DEPTHBIAS and D3DRS_SLOPESCALEDEPTHBIAS render states depend on whether z-buffering or w-buffering is enabled.
+	The bias is not applied to any line and point primitive.
+	*/
+	if (deviceRenderState.zEnable != D3DZB_FALSE && type > 3)
+	{
+		currentBuffer.setDepthBias(deviceRenderState.depthBias, 0.0f, deviceRenderState.slopeScaleDepthBias);
+	}
+	else
+	{
+		currentBuffer.setDepthBias(0.0f, 0.0f, 0.0f);
+	}
+
 	/**********************************************
 	* Update the textures that are currently mapped.
 	**********************************************/
@@ -728,20 +742,6 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		realDevice->mVertexCount += source.second.StreamData->mSize;
 	}
 
-	/*
-	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205599(v=vs.85).aspx
-	The units for the D3DRS_DEPTHBIAS and D3DRS_SLOPESCALEDEPTHBIAS render states depend on whether z-buffering or w-buffering is enabled.
-	The bias is not applied to any line and point primitive.
-	*/
-	if (deviceRenderState.zEnable != D3DZB_FALSE && type > 3)
-	{
-		currentBuffer.setDepthBias(deviceRenderState.depthBias, 0.0f, deviceRenderState.slopeScaleDepthBias);
-	}
-	else
-	{
-		currentBuffer.setDepthBias(0.0f, 0.0f, 0.0f);
-	}
-
 	/**********************************************
 	* Update transformation structure.
 	**********************************************/
@@ -826,14 +826,14 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		realDevice->mWriteDescriptorSet[6].descriptorCount = 16;
 		realDevice->mWriteDescriptorSet[6].pImageInfo = resourceContext->DescriptorImageInfo;
 
-		if (deviceRenderState.textureCount)
-		{
+		//if (deviceRenderState.textureCount)
+		//{
 			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 7, realDevice->mWriteDescriptorSet);
-		}
-		else
-		{
-			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 6, realDevice->mWriteDescriptorSet);
-		}
+		//}
+		//else
+		//{
+		//	currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 6, realDevice->mWriteDescriptorSet);
+		//}
 	}
 
 	realDevice->mIsDirty = false;
@@ -1420,14 +1420,14 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	}
 
 	realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
-	if (deviceRenderState.textureCount)
-	{
+	//if (deviceRenderState.textureCount)
+	//{
 		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 7; //The number of elements in pBindings.			
-	}
-	else
-	{
-		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 6; //The number of elements in pBindings.	
-	}
+	//}
+	//else
+	//{
+	//	realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 6; //The number of elements in pBindings.	
+	//}
 
 	result = device.createDescriptorSetLayout(&realDevice->mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
 	if (result != vk::Result::eSuccess)

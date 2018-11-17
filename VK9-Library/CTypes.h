@@ -240,7 +240,14 @@ struct ShaderState
 	RenderState mRenderState;
 	TextureStage mTextureStages[9];
 	Light mLights[8];
-	D3DMATERIAL9 mMaterial = {};
+	D3DMATERIAL9 mMaterial = 
+	{
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f
+	};
 };
 
 struct RealIndexBuffer;
@@ -248,6 +255,16 @@ struct RealRenderTarget;
 
 struct DeviceState
 {
+	DeviceState()
+	{
+		for (size_t i = 1; i < 9; i++)
+		{
+			mShaderState.mTextureStages[i].colorOperation = D3DTOP_DISABLE;
+			mShaderState.mTextureStages[i].alphaOperation = D3DTOP_DISABLE;
+			mShaderState.mTextureStages[i].texureCoordinateIndex = i;
+		}
+	}
+
 	ShaderState mShaderState;
 
 	BOOL mIsRenderStateDirty = true;

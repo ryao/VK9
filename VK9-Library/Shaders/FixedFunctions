@@ -221,16 +221,12 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn, tex, texcoord);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn, tex, texcoord);
 	
-	//TODO: review alpha factor logic.
-	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
-	
+	float alpha = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+
 	if(renderState.alphaTestEnable==1)
 	{
 		float ref = renderState.alphaReference / 255.0f;
-		float alpha = 0.0f;
-		
-		alpha = tempResult.a;
-						
+								
 		switch(renderState.alphaFunction)
 		{
 		    case D3DCMP_NEVER:
@@ -259,14 +255,21 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 		}
 	}	
 	
+	if(colorOperation != D3DTOP_DISABLE)
+	{
+		tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rgb;	
+	}
+
 	if(renderState.alphaBlendEnable==0)
 	{
 		tempResult.a = 1.0f;
 	}
-
-	if(colorOperation != D3DTOP_DISABLE)
+	else
 	{
-		tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rgb;	
+		if(alphaOperation != D3DTOP_DISABLE)
+		{
+			tempResult.a = alpha;
+		}
 	}
 
 	switch(resultArgument)
@@ -303,16 +306,12 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 	vec4 alphaArg2 = getStageArgument(alphaArgument2,tempIn,constant,resultIn);
 	vec4 alphaArg0 = getStageArgument(alphaArgument0,tempIn,constant,resultIn);
 
-	//TODO: review alpha factor logic.
-	tempResult.a = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
+	float alpha = calculateResult(alphaOperation,alphaArg1,alphaArg2,alphaArg0,1.0,1.0).a;
 
 	if(renderState.alphaTestEnable==1)
 	{
 		float ref = renderState.alphaReference / 255.0f;
-		float alpha = 0.0f;
-		
-		alpha = tempResult.a;
-				
+								
 		switch(renderState.alphaFunction)
 		{
 		    case D3DCMP_NEVER:
@@ -341,14 +340,21 @@ uint alphaOperation, uint alphaArgument1, uint alphaArgument2, uint alphaArgumen
 		}
 	}	
 	
+	if(colorOperation != D3DTOP_DISABLE)
+	{
+		tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rgb;	
+	}
+
 	if(renderState.alphaBlendEnable==0)
 	{
 		tempResult.a = 1.0f;
 	}
-
-	if(colorOperation != D3DTOP_DISABLE)
+	else
 	{
-		tempResult.rgb = calculateResult(colorOperation,colorArg1,colorArg2,colorArg0,tempResult.a,tempResult.a).rgb;	
+		if(alphaOperation != D3DTOP_DISABLE)
+		{
+			tempResult.a = alpha;
+		}
 	}
 
 	switch(resultArgument)
