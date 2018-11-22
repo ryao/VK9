@@ -26,31 +26,6 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock0
-{
-	RenderState renderState;
-};
-
-layout(std140,binding = 1) uniform ShaderStateBlock1
-{
-	TextureStage textureStages[9];
-};
-
-layout(std140,binding = 2) uniform ShaderStateBlock2
-{
-	Light lights[8];
-};
-
-layout(std140,binding = 3) uniform ShaderStateBlock3
-{
-	Material material;
-};
-
-layout(push_constant) uniform UniformBufferObject {
-    mat4 totalTransformation;
-	mat4 modelTransformation;
-} ubo;
-
 layout (location = 0) in vec3 position;
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 ambientColor;
@@ -62,9 +37,11 @@ out gl_PerVertex
         vec4 gl_Position;
 };
 
+#include "GlobalIllumination"
+
 void main() 
 {
-	gl_Position = ubo.totalTransformation * vec4(position,1.0);
+	gl_Position = ubo.worldViewProjection * vec4(position,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 
 	if(renderState.colorVertex==1)

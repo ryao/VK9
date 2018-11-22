@@ -29,31 +29,6 @@ layout(triangle_strip, max_vertices = 6) out;
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock0
-{
-	RenderState renderState;
-};
-
-layout(std140,binding = 1) uniform ShaderStateBlock1
-{
-	TextureStage textureStages[9];
-};
-
-layout(std140,binding = 2) uniform ShaderStateBlock2
-{
-	Light lights[8];
-};
-
-layout(std140,binding = 3) uniform ShaderStateBlock3
-{
-	Material material;
-};
-
-layout(push_constant) uniform UniformBufferObject {
-    mat4 totalTransformation;
-	mat4 modelTransformation;
-} ubo;
-
 layout (location = 0) in vec4 indiffuseColor[];
 layout (location = 1) in vec4 inAmbientColor[];
 layout (location = 2) in vec4 inSpecularColor[];

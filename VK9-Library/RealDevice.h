@@ -1195,6 +1195,8 @@ struct RealDevice
 	vk::Buffer mMaterialBuffer;
 	vk::DeviceMemory mMaterialBufferMemory;
 
+	vk::Buffer mMatrixBuffer;
+	vk::DeviceMemory mMatrixBufferMemory;
 
 	//Shader Buffer Stuff
 	vk::Buffer mShaderVertexConstantBuffer;
@@ -1232,8 +1234,8 @@ struct RealDevice
 	vk::GraphicsPipelineCreateInfo mGraphicsPipelineCreateInfo;
 	vk::PipelineCacheCreateInfo mPipelineCacheCreateInfo;
 	vk::PipelineCache mPipelineCache;
-	vk::DescriptorBufferInfo mDescriptorBufferInfo[7];
-	vk::WriteDescriptorSet mWriteDescriptorSet[7];
+	vk::DescriptorBufferInfo mDescriptorBufferInfo[8];
+	vk::WriteDescriptorSet mWriteDescriptorSet[8];
 
 	//Utility Buffer
 	vk::CommandBufferAllocateInfo mCommandBufferAllocateInfo;

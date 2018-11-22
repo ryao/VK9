@@ -65,7 +65,7 @@ RenderManager::~RenderManager()
 {
 }
 
-void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context)
+void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 { //Vulkan doesn't allow vkCmdUpdateBuffer inside of a render pass.
 
 	auto& device = realDevice->mDevice;
@@ -154,6 +154,87 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice, std::sh
 		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
 
 		deviceState.mIsMaterialDirty = false;
+	}
+
+	if (deviceState.mHasTransformsChanged)
+	{
+		auto& transformations = realDevice->mTransformations;
+
+		transformations.mWorld <<
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1;
+
+		transformations.mView <<
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1;
+
+		transformations.mProjection <<
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1;
+
+		for (const auto& pair1 : deviceState.mTransforms)
+		{
+			switch (pair1.first)
+			{
+			case D3DTS_WORLD:
+
+				transformations.mWorld <<
+					pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
+					pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
+					pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
+					pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
+
+				break;
+			case D3DTS_VIEW:
+
+				transformations.mView <<
+					pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
+					pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
+					pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
+					pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
+				
+				break;
+			case D3DTS_PROJECTION:
+
+				transformations.mProjection <<
+					pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
+					pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
+					pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
+					pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
+
+				break;
+			default:
+				//These are handled with other uniform buffers.
+				break;
+			}
+		}
+
+		transformations.mViewInverted = transformations.mView.inverse();
+		transformations.mWorldViewInverted = (transformations.mView * transformations.mWorld).inverse();
+
+		transformations.mTotalTransformation = transformations.mProjection * transformations.mView * transformations.mWorld;
+
+
+		uboBarrier.buffer = realDevice->mMatrixBuffer;
+		uboBarrier.size = sizeof(Transformations);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		currentBuffer.updateBuffer(realDevice->mMatrixBuffer, 0, uboBarrier.size, &transformations);
+
+		//uboBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+		//uboBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+		//currentBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0, nullptr, 1, &uboBarrier, 0, nullptr);
+
+		deviceState.mHasTransformsChanged = false;
 	}
 
 
@@ -545,6 +626,16 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 		textureCount = ConvertFormat(deviceState.mFVF);
 	}
 
+	/**********************************************
+	* Update the stuff that need to be done outside of a render pass.
+	**********************************************/
+	if (deviceState.mIsRenderStateDirty || deviceState.mAreTextureStagesDirty || deviceState.mAreLightsDirty || deviceState.mIsMaterialDirty || deviceState.mAreVertexShaderSlotsDirty || deviceState.mArePixelShaderSlotsDirty || deviceState.mHasTransformsChanged)
+	{
+		currentBuffer.endRenderPass();
+		UpdateBuffer(realDevice);
+		currentBuffer.beginRenderPass(&deviceState.mRenderTarget->mRenderPassBeginInfo, vk::SubpassContents::eInline);
+	}
+
 	/*
 	https://msdn.microsoft.com/en-us/library/windows/desktop/bb205599(v=vs.85).aspx
 	The units for the D3DRS_DEPTHBIAS and D3DRS_SLOPESCALEDEPTHBIAS render states depend on whether z-buffering or w-buffering is enabled.
@@ -672,16 +763,6 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	context->mShaderState = deviceState.mShaderState;
 
 	/**********************************************
-	* Update the stuff that need to be done outside of a render pass.
-	**********************************************/
-	if (deviceState.mIsRenderStateDirty || deviceState.mAreTextureStagesDirty || deviceState.mAreLightsDirty || deviceState.mIsMaterialDirty || deviceState.mAreVertexShaderSlotsDirty || deviceState.mArePixelShaderSlotsDirty)
-	{
-		currentBuffer.endRenderPass();
-		UpdateBuffer(realDevice, context);
-		currentBuffer.beginRenderPass(&deviceState.mRenderTarget->mRenderPassBeginInfo, vk::SubpassContents::eInline);
-	}
-
-	/**********************************************
 	* Check for existing pipeline. Create one if there isn't a matching one.
 	**********************************************/
 	for (size_t i = 0; i < realDevice->mDrawBuffer.size(); i++)
@@ -743,96 +824,29 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	}
 
 	/**********************************************
-	* Update transformation structure.
-	**********************************************/
-	if (context->VertexShader == nullptr)
-	{
-		UpdatePushConstants(realDevice, context);
-	}
-	else
-	{
-		currentBuffer.pushConstants(context->PipelineLayout, vk::ShaderStageFlagBits::eAllGraphics, 0, UBO_SIZE * 2, &deviceState.mPushConstants);
-	}
-
-	/**********************************************
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
 	if (context->DescriptorSetLayout != vk::DescriptorSetLayout())
 	{
 		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
-		//Render State
-		realDevice->mDescriptorBufferInfo[0].buffer = realDevice->mRenderStateBuffer;
-		realDevice->mDescriptorBufferInfo[0].offset = 0;
-		realDevice->mDescriptorBufferInfo[0].range = sizeof(RenderState);
-
-		realDevice->mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[0].descriptorCount = 1;
-		realDevice->mWriteDescriptorSet[0].pBufferInfo = &realDevice->mDescriptorBufferInfo[0];
-
-		//Texture Stages
-		realDevice->mDescriptorBufferInfo[1].buffer = realDevice->mTextureStageBuffer;
-		realDevice->mDescriptorBufferInfo[1].offset = 0;
-		realDevice->mDescriptorBufferInfo[1].range = sizeof(TextureStage) * 9;
-
-		realDevice->mWriteDescriptorSet[1].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[1].descriptorCount = 1;
-		realDevice->mWriteDescriptorSet[1].pBufferInfo = &realDevice->mDescriptorBufferInfo[1];
-
-		//Lights
-		realDevice->mDescriptorBufferInfo[2].buffer = realDevice->mLightBuffer;
-		realDevice->mDescriptorBufferInfo[2].offset = 0;
-		realDevice->mDescriptorBufferInfo[2].range = sizeof(Light) * 8;
-
-		realDevice->mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[2].descriptorCount = 1;
-		realDevice->mWriteDescriptorSet[2].pBufferInfo = &realDevice->mDescriptorBufferInfo[2];
-
-		//Material
-		realDevice->mDescriptorBufferInfo[3].buffer = realDevice->mMaterialBuffer;
-		realDevice->mDescriptorBufferInfo[3].offset = 0;
-		realDevice->mDescriptorBufferInfo[3].range = sizeof(D3DMATERIAL9);
-
-		realDevice->mWriteDescriptorSet[3].descriptorType = vk::DescriptorType::eUniformBuffer;
 		realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[3].descriptorCount = 1;
-		realDevice->mWriteDescriptorSet[3].pBufferInfo = &realDevice->mDescriptorBufferInfo[3];
-
-
-
-		//Vertex Shader Const
-		realDevice->mDescriptorBufferInfo[4].buffer = realDevice->mShaderVertexConstantBuffer;
-		realDevice->mDescriptorBufferInfo[4].offset = 0;
-		realDevice->mDescriptorBufferInfo[4].range = sizeof(ShaderConstantSlots);
-
 		realDevice->mWriteDescriptorSet[4].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[4].descriptorCount = 1;
-		realDevice->mWriteDescriptorSet[4].pBufferInfo = &realDevice->mDescriptorBufferInfo[4];
-
-		//Pixel Shader Const
-		realDevice->mDescriptorBufferInfo[5].buffer = realDevice->mShaderPixelConstantBuffer;
-		realDevice->mDescriptorBufferInfo[5].offset = 0;
-		realDevice->mDescriptorBufferInfo[5].range = sizeof(ShaderConstantSlots);
-
 		realDevice->mWriteDescriptorSet[5].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[5].descriptorCount = 1;
-		realDevice->mWriteDescriptorSet[5].pBufferInfo = &realDevice->mDescriptorBufferInfo[5];
-
-		//Image/Sampler
 		realDevice->mWriteDescriptorSet[6].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[6].descriptorCount = 16;
-		realDevice->mWriteDescriptorSet[6].pImageInfo = resourceContext->DescriptorImageInfo;
+		realDevice->mWriteDescriptorSet[7].dstSet = resourceContext->DescriptorSet;
+		realDevice->mWriteDescriptorSet[7].pImageInfo = resourceContext->DescriptorImageInfo;
 
 		//if (deviceRenderState.textureCount)
 		//{
-			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 7, realDevice->mWriteDescriptorSet);
+			currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 8, realDevice->mWriteDescriptorSet);
 		//}
 		//else
 		//{
-		//	currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 6, realDevice->mWriteDescriptorSet);
+		//	currentBuffer.pushDescriptorSetKHR(vk::PipelineBindPoint::eGraphics, context->PipelineLayout, 0, 7, realDevice->mWriteDescriptorSet);
 		//}
 	}
 
@@ -1422,11 +1436,11 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
 	//if (deviceRenderState.textureCount)
 	//{
-		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 7; //The number of elements in pBindings.			
+		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 8; //The number of elements in pBindings.			
 	//}
 	//else
 	//{
-	//	realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 6; //The number of elements in pBindings.	
+	//	realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 7; //The number of elements in pBindings.	
 	//}
 
 	result = device.createDescriptorSetLayout(&realDevice->mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
@@ -1441,8 +1455,8 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	**********************************************/
 	auto& pipelineLayoutCreateInfo = realDevice->mPipelineLayoutCreateInfo;
 
-	pipelineLayoutCreateInfo.pPushConstantRanges = realDevice->mPushConstantRanges;
-	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+	//pipelineLayoutCreateInfo.pPushConstantRanges = realDevice->mPushConstantRanges;
+	//pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 
 	realDevice->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 	realDevice->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
@@ -1535,82 +1549,6 @@ void RenderManager::CreateSampler(std::shared_ptr<RealDevice> realDevice, std::s
 	}
 
 	realDevice->mSamplerRequests.push_back(request);
-}
-
-void RenderManager::UpdatePushConstants(std::shared_ptr<RealDevice> realDevice, std::shared_ptr<DrawContext> context)
-{
-	//vk::Result result;
-	auto& deviceState = realDevice->mDeviceState;
-	//auto& device = realDevice.mRealDevice.mDevice;
-	auto& currentSwapChainBuffer = realDevice->mCommandBuffers[realDevice->mCurrentCommandBuffer];
-	void* data = nullptr;
-
-	//if (!mDevice->mDeviceState.mHasTransformsChanged)
-	//{
-	//	return;
-	//}
-
-	auto& transformations = realDevice->mTransformations;
-
-	transformations.mModel <<
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1;
-
-	transformations.mView <<
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1;
-
-	transformations.mProjection <<
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1;
-
-	for (const auto& pair1 : deviceState.mTransforms)
-	{
-		switch (pair1.first)
-		{
-		case D3DTS_WORLD:
-
-			transformations.mModel <<
-				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
-				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
-				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
-				pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
-
-			break;
-		case D3DTS_VIEW:
-
-			transformations.mView <<
-				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
-				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
-				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
-				pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
-
-			break;
-		case D3DTS_PROJECTION:
-
-			transformations.mProjection <<
-				pair1.second.m[0][0], pair1.second.m[1][0], pair1.second.m[2][0], pair1.second.m[3][0],
-				pair1.second.m[0][1], pair1.second.m[1][1], pair1.second.m[2][1], pair1.second.m[3][1],
-				pair1.second.m[0][2], pair1.second.m[1][2], pair1.second.m[2][2], pair1.second.m[3][2],
-				pair1.second.m[0][3], pair1.second.m[1][3], pair1.second.m[2][3], pair1.second.m[3][3];
-
-			break;
-		default:
-			//These are handled with a uniform buffer.
-			break;
-		}
-	}
-
-	transformations.mTotalTransformation = transformations.mProjection * transformations.mView * transformations.mModel;
-	//mTotalTransformation = mModel * mView * mProjection;
-
-	currentSwapChainBuffer.pushConstants(context->PipelineLayout, vk::ShaderStageFlagBits::eAllGraphics, 0, UBO_SIZE * 2, &transformations);
 }
 
 void RenderManager::FlushDrawBufffer(std::shared_ptr<RealDevice> realDevice)

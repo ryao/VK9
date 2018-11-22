@@ -2037,12 +2037,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					{
 					case D3DTS_WORLD:
 						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
 						break;
 					case D3DTS_VIEW:
 						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
 						break;
 					case D3DTS_PROJECTION:
 						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
 						break;
 					case D3DTS_TEXTURE0:
 						deviceState.mShaderState.mTextureStages[0].textureTransformationMatrix = (*pMatrix);
@@ -2089,12 +2092,15 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 					{
 					case D3DTS_WORLD:
 						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
 						break;
 					case D3DTS_VIEW:
 						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
 						break;
 					case D3DTS_PROJECTION:
 						deviceState.mTransforms[State] = (*pMatrix);
+						deviceState.mHasTransformsChanged = true;
 						break;
 					case D3DTS_TEXTURE0:
 						deviceState.mShaderState.mTextureStages[0].textureTransformationMatrix = (*pMatrix);

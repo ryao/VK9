@@ -26,31 +26,6 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock0
-{
-	RenderState renderState;
-};
-
-layout(std140,binding = 1) uniform ShaderStateBlock1
-{
-	TextureStage textureStages[9];
-};
-
-layout(std140,binding = 2) uniform ShaderStateBlock2
-{
-	Light lights[8];
-};
-
-layout(std140,binding = 3) uniform ShaderStateBlock3
-{
-	Material material;
-};
-
-layout(push_constant) uniform UniformBufferObject {
-    mat4 totalTransformation;
-	mat4 modelTransformation;
-} ubo;
-
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec3 attr1;
 layout (location = 2) in vec4 attr2;
@@ -74,27 +49,12 @@ out gl_PerVertex
 
 void main() 
 {	
-	gl_Position = ubo.totalTransformation * vec4(position.xyz,1.0);
+	gl_Position = ubo.worldViewProjection * vec4(position.xyz,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 	pos = gl_Position;
 
-	if(textureStages[0].textureTransformationFlags == D3DTTFF_DISABLE)
-	{
-		texcoord1 = attr2.xy;
-	}
-	else
-	{
-		texcoord1 = (attr2 * textureStages[0].textureTransformationMatrix).xy;
-	}
-	
-	if(textureStages[1].textureTransformationFlags == D3DTTFF_DISABLE)
-	{
-		texcoord2 = attr3.xy;
-	}
-	else
-	{
-		texcoord2 = (attr3 * textureStages[1].textureTransformationMatrix).xy;
-	}
+	texcoord1 = attr2.xy;
+	texcoord2 = attr3.xy;
 
 	if(renderState.colorVertex==1)
 	{
@@ -170,12 +130,12 @@ void main()
 		emissiveColor = material.Emissive;
 	}
 
-	normal = ubo.modelTransformation * vec4(attr1,0);
+	normal = ubo.worldViewProjection * vec4(attr1,0);
 	normal *= vec4(1.0,-1.0,1.0,1.0);
 	if(renderState.normalizeNormals==1)
 	{
 		normal = normalize(normal);
 	}	
 
-	globalIllumination = GetGlobalIllumination();
+	globalIllumination = GetGlobalIllumination(normal);
 }

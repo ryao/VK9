@@ -416,49 +416,63 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mPipelineMultisampleStateCreateInfo.pSampleMask = nullptr;
 	mPipelineMultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
 
+	//Render State
 	mDescriptorSetLayoutBinding[0].binding = 0;
 	mDescriptorSetLayoutBinding[0].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mDescriptorSetLayoutBinding[0].descriptorCount = 1;
 	mDescriptorSetLayoutBinding[0].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
 	mDescriptorSetLayoutBinding[0].pImmutableSamplers = nullptr;
 
+	//Texture Stages
 	mDescriptorSetLayoutBinding[1].binding = 1;
 	mDescriptorSetLayoutBinding[1].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mDescriptorSetLayoutBinding[1].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	mDescriptorSetLayoutBinding[1].stageFlags = vk::ShaderStageFlagBits::eFragment;
 	mDescriptorSetLayoutBinding[1].pImmutableSamplers = nullptr;
 
+	//Lights
 	mDescriptorSetLayoutBinding[2].binding = 2;
 	mDescriptorSetLayoutBinding[2].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mDescriptorSetLayoutBinding[2].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	mDescriptorSetLayoutBinding[2].stageFlags = vk::ShaderStageFlagBits::eVertex;
 	mDescriptorSetLayoutBinding[2].pImmutableSamplers = nullptr;
 
+	//Material
 	mDescriptorSetLayoutBinding[3].binding = 3;
 	mDescriptorSetLayoutBinding[3].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mDescriptorSetLayoutBinding[3].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eAllGraphics;
+	mDescriptorSetLayoutBinding[3].stageFlags = vk::ShaderStageFlagBits::eVertex;
 	mDescriptorSetLayoutBinding[3].pImmutableSamplers = nullptr;
 
+	//Matrix
 	mDescriptorSetLayoutBinding[4].binding = 4;
 	mDescriptorSetLayoutBinding[4].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mDescriptorSetLayoutBinding[4].descriptorCount = 1;
 	mDescriptorSetLayoutBinding[4].stageFlags = vk::ShaderStageFlagBits::eVertex;
 	mDescriptorSetLayoutBinding[4].pImmutableSamplers = nullptr;
 
+	//Vertex Shader Const
 	mDescriptorSetLayoutBinding[5].binding = 5;
 	mDescriptorSetLayoutBinding[5].descriptorType = vk::DescriptorType::eUniformBuffer;
 	mDescriptorSetLayoutBinding[5].descriptorCount = 1;
-	mDescriptorSetLayoutBinding[5].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	mDescriptorSetLayoutBinding[5].stageFlags = vk::ShaderStageFlagBits::eVertex;
 	mDescriptorSetLayoutBinding[5].pImmutableSamplers = nullptr;
 
+	//Pixel Shader Const
 	mDescriptorSetLayoutBinding[6].binding = 6;
-	mDescriptorSetLayoutBinding[6].descriptorType = vk::DescriptorType::eCombinedImageSampler;
-	mDescriptorSetLayoutBinding[6].descriptorCount = 16;
+	mDescriptorSetLayoutBinding[6].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mDescriptorSetLayoutBinding[6].descriptorCount = 1;
 	mDescriptorSetLayoutBinding[6].stageFlags = vk::ShaderStageFlagBits::eFragment;
 	mDescriptorSetLayoutBinding[6].pImmutableSamplers = nullptr;
 
-	mDescriptorSetLayoutCreateInfo.bindingCount = 7;
+	//Image/Sampler
+	mDescriptorSetLayoutBinding[7].binding = 7;
+	mDescriptorSetLayoutBinding[7].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	mDescriptorSetLayoutBinding[7].descriptorCount = 16;
+	mDescriptorSetLayoutBinding[7].stageFlags = vk::ShaderStageFlagBits::eFragment;
+	mDescriptorSetLayoutBinding[7].pImmutableSamplers = nullptr;
+
+	mDescriptorSetLayoutCreateInfo.bindingCount = 8;
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mDescriptorSetLayoutCreateInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptorKHR;
 
@@ -620,55 +634,6 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 		return;
 	}
 
-	//mWriteDescriptorSet[0].dstSet = descriptorSet;
-	mWriteDescriptorSet[0].dstBinding = 0;
-	mWriteDescriptorSet[0].dstArrayElement = 0;
-	mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
-	mWriteDescriptorSet[0].descriptorCount = 1;
-	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
-
-	//mWriteDescriptorSet[1].dstSet = descriptorSet;
-	mWriteDescriptorSet[1].dstBinding = 1;
-	mWriteDescriptorSet[1].dstArrayElement = 0;
-	mWriteDescriptorSet[1].descriptorType = vk::DescriptorType::eUniformBuffer;
-	mWriteDescriptorSet[1].descriptorCount = 1;
-	mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
-
-	//mWriteDescriptorSet[2].dstSet = descriptorSet;
-	mWriteDescriptorSet[2].dstBinding = 2;
-	mWriteDescriptorSet[2].dstArrayElement = 0;
-	mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eUniformBuffer;
-	mWriteDescriptorSet[2].descriptorCount = 1;
-	mWriteDescriptorSet[2].pBufferInfo = &mDescriptorBufferInfo[2];
-
-	//mWriteDescriptorSet[2].dstSet = descriptorSet;
-	mWriteDescriptorSet[3].dstBinding = 3;
-	mWriteDescriptorSet[3].dstArrayElement = 0;
-	mWriteDescriptorSet[3].descriptorType = vk::DescriptorType::eUniformBuffer;
-	mWriteDescriptorSet[3].descriptorCount = 1;
-	mWriteDescriptorSet[3].pBufferInfo = &mDescriptorBufferInfo[3];
-
-	//mWriteDescriptorSet[2].dstSet = descriptorSet;
-	mWriteDescriptorSet[4].dstBinding = 4;
-	mWriteDescriptorSet[4].dstArrayElement = 0;
-	mWriteDescriptorSet[4].descriptorType = vk::DescriptorType::eUniformBuffer;
-	mWriteDescriptorSet[4].descriptorCount = 1;
-	mWriteDescriptorSet[4].pBufferInfo = &mDescriptorBufferInfo[4];
-
-	//mWriteDescriptorSet[2].dstSet = descriptorSet;
-	mWriteDescriptorSet[5].dstBinding = 5;
-	mWriteDescriptorSet[5].dstArrayElement = 0;
-	mWriteDescriptorSet[5].descriptorType = vk::DescriptorType::eUniformBuffer;
-	mWriteDescriptorSet[5].descriptorCount = 1;
-	mWriteDescriptorSet[5].pBufferInfo = &mDescriptorBufferInfo[5];
-
-	//mWriteDescriptorSet[3].dstSet = descriptorSet;
-	mWriteDescriptorSet[6].dstBinding = 6;
-	mWriteDescriptorSet[6].dstArrayElement = 0;
-	mWriteDescriptorSet[6].descriptorType = vk::DescriptorType::eCombinedImageSampler;
-	mWriteDescriptorSet[6].descriptorCount = 1;
-	mWriteDescriptorSet[6].pImageInfo = mDeviceState.mDescriptorImageInfo;
-
 	mCommandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
 	mCommandBufferAllocateInfo.commandPool = mCommandPool;
 	mCommandBufferAllocateInfo.commandBufferCount = 1;
@@ -681,12 +646,6 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mSubmitInfo.pCommandBuffers = &mCommandBuffer;
 
 	//Set some device state stuff.
-	for (size_t i = 0; i < 16; i++)
-	{
-		mDeviceState.mDescriptorImageInfo[i].sampler = mSampler;
-		mDeviceState.mDescriptorImageInfo[i].imageView = mImageView;
-		mDeviceState.mDescriptorImageInfo[i].imageLayout = vk::ImageLayout::eGeneral;
-	}
 
 	//initialize vulkan/d3d9 viewport and scissor structures.
 	//mDeviceState.mViewport.y = (float)mPresentationParameters.BackBufferHeight;
@@ -718,10 +677,106 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	CreateBuffer(sizeof(TextureStage)*9, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mTextureStageBuffer, mTextureStageBufferMemory);
 	CreateBuffer(sizeof(Light)*8, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mLightBuffer, mLightBufferMemory);
 	CreateBuffer(sizeof(D3DMATERIAL9), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mMaterialBuffer, mMaterialBufferMemory);
+	CreateBuffer(sizeof(Transformations), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mMatrixBuffer, mMatrixBufferMemory);
 
 	//Shader Buffers
 	CreateBuffer(sizeof(ShaderConstantSlots), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderVertexConstantBuffer, mShaderVertexConstantBufferMemory);
 	CreateBuffer(sizeof(ShaderConstantSlots), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, mShaderPixelConstantBuffer, mShaderPixelConstantBufferMemory);
+
+	/**********************************************
+	* Setup the descriptors.
+	**********************************************/
+
+	//Render State
+	mDescriptorBufferInfo[0].buffer = mRenderStateBuffer;
+	mDescriptorBufferInfo[0].offset = 0;
+	mDescriptorBufferInfo[0].range = sizeof(RenderState);
+
+	mWriteDescriptorSet[0].dstBinding = 0;
+	mWriteDescriptorSet[0].dstArrayElement = 0;
+	mWriteDescriptorSet[0].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[0].descriptorCount = 1;
+	mWriteDescriptorSet[0].pBufferInfo = &mDescriptorBufferInfo[0];
+
+	//Texture Stages
+	mDescriptorBufferInfo[1].buffer = mTextureStageBuffer;
+	mDescriptorBufferInfo[1].offset = 0;
+	mDescriptorBufferInfo[1].range = sizeof(TextureStage) * 9;
+
+	mWriteDescriptorSet[1].dstBinding = 1;
+	mWriteDescriptorSet[1].dstArrayElement = 0;
+	mWriteDescriptorSet[1].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[1].descriptorCount = 1;
+	mWriteDescriptorSet[1].pBufferInfo = &mDescriptorBufferInfo[1];
+
+	//Lights
+	mDescriptorBufferInfo[2].buffer = mLightBuffer;
+	mDescriptorBufferInfo[2].offset = 0;
+	mDescriptorBufferInfo[2].range = sizeof(Light) * 8;
+
+	mWriteDescriptorSet[2].dstBinding = 2;
+	mWriteDescriptorSet[2].dstArrayElement = 0;
+	mWriteDescriptorSet[2].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[2].descriptorCount = 1;
+	mWriteDescriptorSet[2].pBufferInfo = &mDescriptorBufferInfo[2];
+
+	//Material
+	mDescriptorBufferInfo[3].buffer = mMaterialBuffer;
+	mDescriptorBufferInfo[3].offset = 0;
+	mDescriptorBufferInfo[3].range = sizeof(D3DMATERIAL9);
+
+	mWriteDescriptorSet[3].dstBinding = 3;
+	mWriteDescriptorSet[3].dstArrayElement = 0;
+	mWriteDescriptorSet[3].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[3].descriptorCount = 1;
+	mWriteDescriptorSet[3].pBufferInfo = &mDescriptorBufferInfo[3];
+
+	//Matrix
+	mDescriptorBufferInfo[4].buffer = mMatrixBuffer;
+	mDescriptorBufferInfo[4].offset = 0;
+	mDescriptorBufferInfo[4].range = sizeof(Transformations);
+
+	mWriteDescriptorSet[4].dstBinding = 4;
+	mWriteDescriptorSet[4].dstArrayElement = 0;
+	mWriteDescriptorSet[4].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[4].descriptorCount = 1;
+	mWriteDescriptorSet[4].pBufferInfo = &mDescriptorBufferInfo[4];
+
+	//Vertex Shader Const
+	mDescriptorBufferInfo[5].buffer = mShaderVertexConstantBuffer;
+	mDescriptorBufferInfo[5].offset = 0;
+	mDescriptorBufferInfo[5].range = sizeof(ShaderConstantSlots);
+
+	mWriteDescriptorSet[5].dstBinding = 5;
+	mWriteDescriptorSet[5].dstArrayElement = 0;
+	mWriteDescriptorSet[5].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[5].descriptorCount = 1;
+	mWriteDescriptorSet[5].pBufferInfo = &mDescriptorBufferInfo[5];
+
+	//Pixel Shader Const
+	mDescriptorBufferInfo[6].buffer = mShaderPixelConstantBuffer;
+	mDescriptorBufferInfo[6].offset = 0;
+	mDescriptorBufferInfo[6].range = sizeof(ShaderConstantSlots);
+
+	mWriteDescriptorSet[6].dstBinding = 6;
+	mWriteDescriptorSet[6].dstArrayElement = 0;
+	mWriteDescriptorSet[6].descriptorType = vk::DescriptorType::eUniformBuffer;
+	mWriteDescriptorSet[6].descriptorCount = 1;
+	mWriteDescriptorSet[6].pBufferInfo = &mDescriptorBufferInfo[6];
+
+	//Image/Sampler
+	for (size_t i = 0; i < 16; i++)
+	{
+		mDeviceState.mDescriptorImageInfo[i].sampler = mSampler;
+		mDeviceState.mDescriptorImageInfo[i].imageView = mImageView;
+		mDeviceState.mDescriptorImageInfo[i].imageLayout = vk::ImageLayout::eGeneral;
+	}
+
+	mWriteDescriptorSet[7].dstBinding = 7;
+	mWriteDescriptorSet[7].dstArrayElement = 0;
+	mWriteDescriptorSet[7].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	mWriteDescriptorSet[7].descriptorCount = 16;
+	mWriteDescriptorSet[7].pImageInfo = mDeviceState.mDescriptorImageInfo;
 }
 
 RealDevice::~RealDevice()
@@ -750,6 +805,9 @@ RealDevice::~RealDevice()
 
 
 	//FF Buffers
+	mDevice.destroyBuffer(mMatrixBuffer, nullptr);
+	mDevice.freeMemory(mMatrixBufferMemory, nullptr);
+
 	mDevice.destroyBuffer(mMaterialBuffer, nullptr);
 	mDevice.freeMemory(mMaterialBufferMemory, nullptr);
 

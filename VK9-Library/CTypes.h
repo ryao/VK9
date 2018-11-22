@@ -478,9 +478,12 @@ struct Transformations
 {
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mTotalTransformation;
-	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mModel;
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mWorld;
 	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mView;
 	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mProjection;
+
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mWorldViewInverted;
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mViewInverted;
 };
 
 union PushConstants

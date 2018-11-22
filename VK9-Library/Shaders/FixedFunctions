@@ -18,6 +18,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+layout(std140,binding = 1) uniform ShaderStateBlock1
+{
+	TextureStage textureStages[9];
+};
+
+layout(binding = 7) uniform sampler2D textures[9];
+
 //https://msdn.microsoft.com/en-us/library/windows/desktop/bb172616(v=vs.85).aspx
 vec4 calculateResult(uint operation, vec4 argument1, vec4 argument2, vec4 argument0, float alpha, float factorAlpha)
 {

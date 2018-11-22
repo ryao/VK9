@@ -26,34 +26,6 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock0
-{
-	RenderState renderState;
-};
-
-layout(std140,binding = 1) uniform ShaderStateBlock1
-{
-	TextureStage textureStages[9];
-};
-
-layout(std140,binding = 2) uniform ShaderStateBlock2
-{
-	Light lights[8];
-};
-
-layout(std140,binding = 3) uniform ShaderStateBlock3
-{
-	Material material;
-};
-
-layout(binding = 6) uniform sampler2D textures[9];
-
-layout(push_constant) uniform UniformBufferObject 
-{
-    mat4 totalTransformation;
-	mat4 modelTransformation;
-} ubo;
-
 layout (location = 0) in vec4 diffuseColor;
 layout (location = 1) in vec4 ambientColor;
 layout (location = 2) in vec4 specularColor;
@@ -93,7 +65,7 @@ void main()
 		result = diffuseColor; //On stage 0 CURRENT is the same as DIFFUSE
 	}
 
-	for(int i = 0; i < 9; i++) 
+	for(int i = 0; i < max(1,renderState.textureCount); i++) 
 	{
 		processStage(textures[i],textureStages[i].texureCoordinateIndex, textureStages[i].Constant, textureStages[i].Result,
 		result, temp, result, temp,

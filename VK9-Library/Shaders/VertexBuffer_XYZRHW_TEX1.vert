@@ -26,31 +26,6 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout(std140,binding = 0) uniform ShaderStateBlock0
-{
-	RenderState renderState;
-};
-
-layout(std140,binding = 1) uniform ShaderStateBlock1
-{
-	TextureStage textureStages[9];
-};
-
-layout(std140,binding = 2) uniform ShaderStateBlock2
-{
-	Light lights[8];
-};
-
-layout(std140,binding = 3) uniform ShaderStateBlock3
-{
-	Material material;
-};
-
-layout(push_constant) uniform UniformBufferObject {
-    mat4 totalTransformation;
-	mat4 modelTransformation;
-} ubo;
-
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec4 attr;
 layout (location = 0) out vec4 diffuseColor;
@@ -63,6 +38,8 @@ out gl_PerVertex
 {
         vec4 gl_Position;
 };
+
+#include "GlobalIllumination"
 
 void main() 
 {
@@ -89,14 +66,7 @@ void main()
 	
 	gl_Position = vec4((x-1),(y-1),0.0,1.0);
 	
-	if(textureStages[0].textureTransformationFlags == D3DTTFF_DISABLE)
-	{
-		texcoord1 = attr.xy;
-	}
-	else
-	{
-		texcoord1 = (attr * textureStages[0].textureTransformationMatrix).xy;
-	}
+	texcoord1 = attr.xy;
 
 	if(renderState.colorVertex==1)
 	{

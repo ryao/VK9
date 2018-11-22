@@ -166,3 +166,5 @@ misrepresented as being the original software.
 #define D3DDEGREE_QUADRATIC 2
 #define D3DDEGREE_CUBIC 3
 #define D3DDEGREE_QUINTIC 5
+
+#define PI 3.14

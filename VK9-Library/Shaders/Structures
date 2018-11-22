@@ -201,3 +201,8 @@ struct ShaderState
 	Light mLights[8];
 	Material mMaterial;
 };
+
+layout(std140,binding = 0) uniform ShaderStateBlock0
+{
+	RenderState renderState;
+};

@@ -18,10 +18,142 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
+layout(std140,binding = 2) uniform ShaderStateBlock2
+{
+	Light lights[8];
+};
+
+layout(std140,binding = 3) uniform ShaderStateBlock3
+{
+	Material material;
+};
+
+layout(std140,binding = 4) uniform ShaderStateBlock4
+{
+    mat4 worldViewProjection;
+	mat4 world;
+	mat4 view;
+	mat4 projection;
+	mat4 worldViewInverted;
+	mat4 viewInverted;
+} ubo;
+
+struct ColorPair
+{
+	vec4   Diffuse;
+	vec4   Specular;
+};
+
+ColorPair CalculateDirectionalLight(vec3 N, vec3 V, int i)
+{
+   ColorPair returnValue;
+   vec3 L = mat3(ubo.viewInverted) * vec3(-normalize(lights[i].Direction));
+   float NdotL = dot(N, L);
+   returnValue.Diffuse = lights[i].Ambient;
+   returnValue.Specular = vec4(0);
+   if(NdotL > 0.0f)
+   {
+      //compute diffuse color
+      returnValue.Diffuse += NdotL * lights[i].Diffuse;
+
+      //add specular component
+      if(renderState.specularEnable==1)
+      {
+         vec3 H = normalize(L + V);   //half vector
+         returnValue.Specular = pow(max(0, dot(H, N)), material.Power) * lights[i].Specular;
+      }
+   }
+   return returnValue;
+}
+
+ColorPair CalculatePointLight(vec4 vPosition, vec3 N, vec3 V, int i)
+{
+   vec3 L = mat3(ubo.viewInverted) * normalize(vec3(lights[i].Position-(ubo.world * vPosition)));
+   ColorPair returnValue;
+   float NdotL = dot(N, L);
+   returnValue.Diffuse = lights[i].Ambient;
+   returnValue.Specular = vec4(0);
+   float fAtten = 1.f;
+   if(NdotL >= 0.f)
+   {
+      //compute diffuse color
+      returnValue.Diffuse += NdotL * lights[i].Diffuse;
+
+      //add specular component
+      if(renderState.specularEnable==1)
+      {
+         vec3 H = normalize(L + V);   //half vector
+         returnValue.Specular = pow(max(0, dot(H, N)), material.Power) * lights[i].Specular;
+      }
+
+      float LD = length(vec3(lights[i].Position)-vec3(ubo.world * vPosition));
+      if(LD > lights[i].Range)
+      {
+         fAtten = 0.f;
+      }
+      else
+      {
+         fAtten *= 1.f/(lights[i].Attenuation0 + lights[i].Attenuation1*LD + lights[i].Attenuation2*LD*LD);
+      }
+      returnValue.Diffuse *= fAtten;
+      returnValue.Specular *= fAtten;
+   }
+   return returnValue;
+}
+
+ColorPair CalculateSpotLight(vec4 vPosition, vec3 N, vec3 V, int i)
+{
+   vec3 L = mat3(ubo.viewInverted) * normalize(vec3(lights[i].Position-(ubo.world * vPosition)));
+   ColorPair returnValue;
+   float NdotL = dot(N, L);
+   returnValue.Diffuse = lights[i].Ambient;
+   returnValue.Specular = vec4(0);
+   float fAttenSpot = 1.f;
+   if(NdotL >= 0.f)
+   {
+      //compute diffuse color
+      returnValue.Diffuse += NdotL * lights[i].Diffuse;
+
+      //add specular component
+      if(renderState.specularEnable==1)
+      {
+         vec3 H = normalize(L + V);   //half vector
+         returnValue.Specular = pow(max(0, dot(H, N)), material.Power) * lights[i].Specular;
+      }
+
+      float LD = length(vec3(lights[i].Position)-vec3(ubo.world * vPosition));
+      if(LD > lights[i].Range)
+      {
+         fAttenSpot = 0.f;
+      }
+      else
+      {
+         fAttenSpot *= 1.f/(lights[i].Attenuation0 + lights[i].Attenuation1*LD + lights[i].Attenuation2*LD*LD);
+      }
+
+      //spot cone computation
+      vec3 L2 = mat3(ubo.viewInverted) * vec3(-normalize(lights[i].Direction));
+      float rho = dot(L, L2);
+	  vec3 vSpot = vec3(cos(lights[i].Theta/2),cos(lights[i].Phi/2),cos(lights[i].Falloff));
+      fAttenSpot *= pow(clamp((rho - vSpot.y)/(vSpot.x - vSpot.y),0.0,1.0), vSpot.z);
+
+      returnValue.Diffuse *= fAttenSpot;
+      returnValue.Specular *= fAttenSpot;
+   }
+   return returnValue;
+}
+
+ColorPair CalculateGlobalIllumination(vec4 vPosition, vec3 N, vec3 V, int i)
+{
+	ColorPair returnValue;
+
+	return returnValue;
+}
+
 /*
 https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 */
-vec4 GetGlobalIllumination()
+vec4 GetGlobalIllumination(vec4 norm)
 {
 	vec4 ambient = vec4(0);
 	vec4 diffuse = vec4(0);
@@ -41,7 +173,7 @@ vec4 GetGlobalIllumination()
 	float rho = 0;
 	float spot = 0;
 
-	vectorPosition = ubo.modelTransformation * vec4(position.xyz,1.0);
+	vectorPosition = vec4(mat3(ubo.world) * position.xyz,1.0);
 	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
@@ -49,7 +181,7 @@ vec4 GetGlobalIllumination()
 	{		
 		if(lights[i].IsEnabled==1)
 		{		
-			lightPosition = ubo.modelTransformation * lights[i].Position;
+			lightPosition = ubo.world * lights[i].Position;
 			lightPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 			lightDirection = lights[i].Direction;
@@ -97,14 +229,14 @@ vec4 GetGlobalIllumination()
 			}
 
 			ambientTemp += (attenuation * spot * lights[i].Ambient);
-			diffuseTemp += (diffuseColor * lights[i].Diffuse * clamp(dot(normal,ldir),0,1) * attenuation * spot);
+			diffuseTemp += (diffuseColor * lights[i].Diffuse * clamp(dot(norm,ldir),0,1) * attenuation * spot);
 
 			if(renderState.specularEnable==1)
 			{
 				vec3 halfway;
 				if(renderState.localViewer==1)
 				{
-					halfway = normalize(normalize(cameraPosition - pos.xyz) + ldir.xyz);			
+					halfway = normalize(normalize(cameraPosition - position.xyz) + ldir.xyz);			
 				}
 				else
 				{
@@ -115,7 +247,7 @@ vec4 GetGlobalIllumination()
 				// The clamp will take care of the former and the if will take care of the latter. if the result is zero then this whole line is zero therefore just skip it.
 				if(material.Power > 0)
 				{
-					specularTemp += (lights[i].Specular * pow(clamp(dot(normal.xyz,halfway),0,1),material.Power) * attenuation * spot);
+					specularTemp += (lights[i].Specular * pow(clamp(dot(norm.xyz,halfway),0,1),material.Power) * attenuation * spot);
 				}
 			}
 		}
