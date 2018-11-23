@@ -34,6 +34,7 @@ layout(std140,binding = 4) uniform ShaderStateBlock4
 	mat4 world;
 	mat4 view;
 	mat4 projection;
+	mat4 worldView;
 	mat4 worldViewInverted;
 	mat4 viewInverted;
 } ubo;
@@ -53,10 +54,8 @@ ColorPair CalculateDirectionalLight(vec3 N, vec3 V, int i)
    returnValue.Specular = vec4(0);
    if(NdotL > 0.0f)
    {
-      //compute diffuse color
       returnValue.Diffuse += NdotL * lights[i].Diffuse;
 
-      //add specular component
       if(renderState.specularEnable==1)
       {
          vec3 H = normalize(L + V);   //half vector
@@ -76,10 +75,8 @@ ColorPair CalculatePointLight(vec4 vPosition, vec3 N, vec3 V, int i)
    float fAtten = 1.f;
    if(NdotL >= 0.f)
    {
-      //compute diffuse color
       returnValue.Diffuse += NdotL * lights[i].Diffuse;
 
-      //add specular component
       if(renderState.specularEnable==1)
       {
          vec3 H = normalize(L + V);   //half vector
@@ -111,10 +108,8 @@ ColorPair CalculateSpotLight(vec4 vPosition, vec3 N, vec3 V, int i)
    float fAttenSpot = 1.f;
    if(NdotL >= 0.f)
    {
-      //compute diffuse color
       returnValue.Diffuse += NdotL * lights[i].Diffuse;
 
-      //add specular component
       if(renderState.specularEnable==1)
       {
          vec3 H = normalize(L + V);   //half vector
@@ -131,7 +126,6 @@ ColorPair CalculateSpotLight(vec4 vPosition, vec3 N, vec3 V, int i)
          fAttenSpot *= 1.f/(lights[i].Attenuation0 + lights[i].Attenuation1*LD + lights[i].Attenuation2*LD*LD);
       }
 
-      //spot cone computation
       vec3 L2 = mat3(ubo.viewInverted) * vec3(-normalize(lights[i].Direction));
       float rho = dot(L, L2);
 	  vec3 vSpot = vec3(cos(lights[i].Theta/2),cos(lights[i].Phi/2),cos(lights[i].Falloff));
@@ -143,11 +137,171 @@ ColorPair CalculateSpotLight(vec4 vPosition, vec3 N, vec3 V, int i)
    return returnValue;
 }
 
-ColorPair CalculateGlobalIllumination(vec4 vPosition, vec3 N, vec3 V, int i)
+ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inColor1, vec4 inColor2)
 {
+	vec4 diffuse;
+	vec4 ambient;
+	vec4 specular;
+	vec4 emissive;
+
+	if(renderState.colorVertex==1)
+	{
+		switch(renderState.diffuseMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				diffuse = material.Diffuse;
+			break;
+			case D3DMCS_COLOR1:
+				diffuse = inColor1;
+			break;
+			case D3DMCS_COLOR2:
+				diffuse = inColor2;
+			break;
+			default:
+				diffuse = vec4(1.0);
+			break;
+		}
+		
+		switch(renderState.ambientMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				ambient = material.Ambient;
+			break;
+			case D3DMCS_COLOR1:
+				ambient = inColor1;
+			break;
+			case D3DMCS_COLOR2:
+				ambient = inColor2;
+			break;
+			default:
+				ambient = vec4(0.0);
+			break;
+		}
+
+		switch(renderState.specularMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				specular = material.Specular;
+			break;
+			case D3DMCS_COLOR1:
+				specular = inColor1;
+			break;
+			case D3DMCS_COLOR2:
+				specular = inColor2;
+			break;
+			default:
+				specularColor = vec4(0.0);
+			break;
+		}
+
+		switch(renderState.emissiveMaterialSource)
+		{
+			case D3DMCS_MATERIAL:
+				emissive = material.Emissive;
+			break;
+			case D3DMCS_COLOR1:
+				emissive = inColor1;
+			break;
+			case D3DMCS_COLOR2:
+				emissive = inColor2;
+			break;
+			default:
+				emissiveColor = vec4(0.0);
+			break;
+		}		
+	}
+	else
+	{
+		diffuse = material.Diffuse;
+		ambient = material.Ambient;
+		specular = material.Specular;
+		emissive = material.Emissive;
+	}
+
 	ColorPair returnValue;
 
+	if(renderState.lighting==1)
+	{
+		returnValue.Diffuse = Convert(renderState.ambient);
+		returnValue.Specular = vec4(0.0);
+
+		vec4 calculatePosition;
+		vec3 calculateNormal;
+
+		calculatePosition = inPosition1;
+
+		if(renderState.normalizeNormals==1)
+		{
+			calculateNormal = vec3(inNormal1);
+		}
+		else
+		{
+			calculateNormal = vec3(normalize(inNormal1));
+		}
+
+		vec3 P = vec3(ubo.worldView * calculatePosition);
+		vec3 N = mat3(ubo.worldViewInverted) * calculateNormal;
+		vec3 V = -normalize(P);                          
+
+		for( int i=0; i<8; ++i )
+		{
+			if(lights[i].IsEnabled==1)
+			{
+				ColorPair lightResult;
+
+				switch(lights[i].Type)
+				{
+					case D3DLIGHT_POINT:
+						lightResult = CalculatePointLight(calculatePosition, N, V, i);
+					break;
+					case D3DLIGHT_SPOT:
+						lightResult = CalculateSpotLight(calculatePosition, N, V, i);
+					break;
+					case D3DLIGHT_DIRECTIONAL:
+						lightResult = CalculateDirectionalLight(N, V, i);
+					break;
+				}
+
+				returnValue.Diffuse += lightResult.Diffuse;
+				returnValue.Specular += lightResult.Specular;
+			}
+		}
+
+		returnValue.Diffuse.a = 1.0;
+		returnValue.Specular.a = 1.0;
+
+		returnValue.Diffuse *= diffuse;
+		returnValue.Specular *= specular;
+	}
+	else
+	{
+		returnValue.Diffuse = diffuse;
+		returnValue.Specular = specular;
+	}
+
+	returnValue.Diffuse = min(vec4(1.0),returnValue.Diffuse);
+	returnValue.Specular = min(vec4(1.0),returnValue.Specular);
+
 	return returnValue;
+}
+
+ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inPosition2, vec4 inNormal1, vec4 inNormal2, vec4 inColor1, vec4 inColor2)
+{
+	vec4 calculatePosition;
+	vec3 calculateNormal;
+
+	calculatePosition =  (1.f-renderState.tweenFactor) * inPosition1 + renderState.tweenFactor * inPosition2;
+
+	if(renderState.normalizeNormals==1)
+	{
+		calculateNormal   = vec3( (1.f-renderState.tweenFactor) * normalize(inNormal1) + renderState.tweenFactor * normalize(inNormal2) );
+	}
+	else
+	{
+		calculateNormal   = vec3( (1.f-renderState.tweenFactor) * inNormal1 + renderState.tweenFactor * inNormal2 );
+	}
+	
+	return CalculateGlobalIllumination(calculatePosition, vec4(calculateNormal,1), inColor1, inColor2);
 }
 
 /*

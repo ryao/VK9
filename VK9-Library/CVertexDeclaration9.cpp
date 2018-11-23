@@ -42,7 +42,7 @@ CVertexDeclaration9::CVertexDeclaration9(CDevice9* device, const D3DVERTEXELEMEN
 			mHasPosition = true;
 			break;
 		case D3DDECLUSAGE_POSITIONT:
-			mHasPosition = true;
+			mHasPositionT = true;
 			break;
 		case D3DDECLUSAGE_NORMAL:
 			mHasNormal = true;

@@ -482,6 +482,7 @@ struct Transformations
 	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mView;
 	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mProjection;
 
+	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mWorldView;
 	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mWorldViewInverted;
 	Eigen::Matrix<float, 4, 4, Eigen::DontAlign> mViewInverted;
 };

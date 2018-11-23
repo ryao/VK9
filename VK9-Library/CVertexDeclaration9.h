@@ -36,6 +36,7 @@ public:
 
 	std::vector<D3DVERTEXELEMENT9> mVertexElements;
 	BOOL mHasPosition=0;
+	BOOL mHasPositionT = 0;
 	BOOL mHasNormal = 0;
 	BOOL mHasPSize = 0;
 	BOOL mHasColor1=0;

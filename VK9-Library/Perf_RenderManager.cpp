@@ -216,7 +216,8 @@ void RenderManager::UpdateBuffer(std::shared_ptr<RealDevice> realDevice)
 		}
 
 		transformations.mViewInverted = transformations.mView.inverse();
-		transformations.mWorldViewInverted = (transformations.mView * transformations.mWorld).inverse();
+		transformations.mWorldView = (transformations.mView * transformations.mWorld);
+		transformations.mWorldViewInverted = transformations.mWorldView.inverse();
 
 		transformations.mTotalTransformation = transformations.mProjection * transformations.mView * transformations.mWorld;
 
@@ -867,6 +868,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	uint32_t attributeCount = 0;
 	uint32_t positionSize = 3;
 	BOOL hasPosition = 0;
+	BOOL hasPositionT = 0;
 	BOOL hasNormal = 0;
 	BOOL hasPSize = 0;
 	BOOL hasColor1 = 0;
@@ -879,6 +881,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		auto vertexDeclaration = deviceState.mVertexDeclaration;
 
 		hasPosition = vertexDeclaration->mHasPosition;
+		hasPositionT = vertexDeclaration->mHasPositionT;
 		hasNormal = vertexDeclaration->mHasNormal;
 		hasPSize = vertexDeclaration->mHasPSize;
 		hasColor1 = vertexDeclaration->mHasColor1;
