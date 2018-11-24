@@ -674,7 +674,7 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	deviceRenderState.textureCount = 0;
 	for (size_t i = 0; i < 16; i++)
 	{
-		auto& targetSampler = deviceState.mDescriptorImageInfo[i];
+		auto& targetSampler = realDevice->mDescriptorImageInfo[i];
 
 		if (deviceState.mTextures[i] != nullptr)
 		{
@@ -782,7 +782,6 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 						{
 							context->Pipeline = drawBuffer.Pipeline;
 							context->PipelineLayout = drawBuffer.PipelineLayout;
-							context->DescriptorSetLayout = drawBuffer.DescriptorSetLayout;
 							context->mRealDevice = nullptr; //Not owner.
 							drawBuffer.LastUsed = std::chrono::steady_clock::now();
 							break;
@@ -827,19 +826,19 @@ void RenderManager::BeginDraw(std::shared_ptr<RealDevice> realDevice, std::share
 	/**********************************************
 	* Check for existing DescriptorSet. Create one if there isn't a matching one.
 	**********************************************/
-	if (context->DescriptorSetLayout != vk::DescriptorSetLayout())
+	if (realDevice->mDescriptorSetLayout != vk::DescriptorSetLayout())
 	{
-		std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
+		//std::copy(std::begin(deviceState.mDescriptorImageInfo), std::end(deviceState.mDescriptorImageInfo), std::begin(resourceContext->DescriptorImageInfo));
 
-		realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[4].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[5].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[6].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[7].dstSet = resourceContext->DescriptorSet;
-		realDevice->mWriteDescriptorSet[7].pImageInfo = resourceContext->DescriptorImageInfo;
+		//realDevice->mWriteDescriptorSet[0].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[1].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[2].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[3].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[4].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[5].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[6].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[7].dstSet = resourceContext->DescriptorSet;
+		//realDevice->mWriteDescriptorSet[7].pImageInfo = device->mDescriptorImageInfo;
 
 		//if (deviceRenderState.textureCount)
 		//{
@@ -1436,23 +1435,6 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::BeginDraw unknown vertex format.";
 	}
 
-	realDevice->mDescriptorSetLayoutCreateInfo.pBindings = realDevice->mDescriptorSetLayoutBinding;
-	//if (deviceRenderState.textureCount)
-	//{
-		realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 8; //The number of elements in pBindings.			
-	//}
-	//else
-	//{
-	//	realDevice->mDescriptorSetLayoutCreateInfo.bindingCount = 7; //The number of elements in pBindings.	
-	//}
-
-	result = device.createDescriptorSetLayout(&realDevice->mDescriptorSetLayoutCreateInfo, nullptr, &context->DescriptorSetLayout);
-	if (result != vk::Result::eSuccess)
-	{
-		BOOST_LOG_TRIVIAL(fatal) << "RenderManager::CreateDescriptorSet vkCreateDescriptorSetLayout failed with return code of " << GetResultString((VkResult)result);
-		return;
-	}
-
 	/**********************************************
 	* Create pipeline & descriptor set layout.
 	**********************************************/
@@ -1464,7 +1446,7 @@ void RenderManager::CreatePipe(std::shared_ptr<RealDevice> realDevice, std::shar
 	realDevice->mPipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = context->StreamCount;
 	realDevice->mPipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = attributeCount;
 
-	realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &context->DescriptorSetLayout;
+	realDevice->mPipelineLayoutCreateInfo.pSetLayouts = &realDevice->mDescriptorSetLayout;
 	realDevice->mPipelineLayoutCreateInfo.setLayoutCount = 1;
 
 	result = device.createPipelineLayout(&realDevice->mPipelineLayoutCreateInfo, nullptr, &context->PipelineLayout);

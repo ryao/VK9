@@ -28,7 +28,7 @@ misrepresented as being the original software.
 struct DrawContext
 {
 	//Vulkan State
-	vk::DescriptorSetLayout DescriptorSetLayout;
+	//vk::DescriptorSetLayout DescriptorSetLayout;
 	vk::Pipeline Pipeline;
 	vk::PipelineLayout PipelineLayout;
 

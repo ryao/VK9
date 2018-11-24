@@ -70,6 +70,8 @@ struct RealDevice
 	uint32_t mCurrentCommandBuffer = 0;
 	vk::Queue mQueue;
 	vk::Sampler mSampler;
+	vk::DescriptorSetLayout mDescriptorSetLayout;
+	vk::DescriptorImageInfo mDescriptorImageInfo[16];
 
 	//Memory Management
 	VmaAllocator mAllocator;

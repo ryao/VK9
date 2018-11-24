@@ -430,7 +430,6 @@ struct DeviceState
 
 	//IDirect3DDevice9::SetStreamSourceFreq
 	//IDirect3DDevice9::SetTexture
-	vk::DescriptorImageInfo mDescriptorImageInfo[16];
 	//std::unordered_map<DWORD, IDirect3DBaseTexture9*> mTextures;
 	IDirect3DBaseTexture9* mTextures[16] = {};
 

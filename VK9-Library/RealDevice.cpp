@@ -476,6 +476,13 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	mDescriptorSetLayoutCreateInfo.pBindings = mDescriptorSetLayoutBinding;
 	mDescriptorSetLayoutCreateInfo.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptorKHR;
 
+	result = mDevice.createDescriptorSetLayout(&mDescriptorSetLayoutCreateInfo, nullptr, &mDescriptorSetLayout);
+	if (result != vk::Result::eSuccess)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "RealDevice::RealDevice vkCreateDescriptorSetLayout failed with return code of " << GetResultString((VkResult)result);
+		return;
+	}
+
 	mDescriptorSetAllocateInfo.descriptorPool = mDescriptorPool;
 	mDescriptorSetAllocateInfo.descriptorSetCount = 1;
 
@@ -767,16 +774,16 @@ RealDevice::RealDevice(vk::Instance instance, vk::PhysicalDevice physicalDevice,
 	//Image/Sampler
 	for (size_t i = 0; i < 16; i++)
 	{
-		mDeviceState.mDescriptorImageInfo[i].sampler = mSampler;
-		mDeviceState.mDescriptorImageInfo[i].imageView = mImageView;
-		mDeviceState.mDescriptorImageInfo[i].imageLayout = vk::ImageLayout::eGeneral;
+		mDescriptorImageInfo[i].sampler = mSampler;
+		mDescriptorImageInfo[i].imageView = mImageView;
+		mDescriptorImageInfo[i].imageLayout = vk::ImageLayout::eGeneral;
 	}
 
 	mWriteDescriptorSet[7].dstBinding = 7;
 	mWriteDescriptorSet[7].dstArrayElement = 0;
 	mWriteDescriptorSet[7].descriptorType = vk::DescriptorType::eCombinedImageSampler;
 	mWriteDescriptorSet[7].descriptorCount = 16;
-	mWriteDescriptorSet[7].pImageInfo = mDeviceState.mDescriptorImageInfo;
+	mWriteDescriptorSet[7].pImageInfo = mDescriptorImageInfo;
 }
 
 RealDevice::~RealDevice()
@@ -795,6 +802,7 @@ RealDevice::~RealDevice()
 
 	mDeviceState.mRenderTarget.reset();
 
+	mDevice.destroyDescriptorSetLayout(mDescriptorSetLayout, nullptr);
 
 	//Shader Buffers
 	mDevice.destroyBuffer(mShaderPixelConstantBuffer, nullptr);

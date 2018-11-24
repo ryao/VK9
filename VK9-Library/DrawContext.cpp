@@ -32,6 +32,6 @@ DrawContext::~DrawContext()
 		auto& device = mRealDevice->mDevice;
 		device.destroyPipeline(Pipeline, nullptr);
 		device.destroyPipelineLayout(PipelineLayout, nullptr);
-		device.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);
+		//device.destroyDescriptorSetLayout(DescriptorSetLayout, nullptr);
 	}
 }
