@@ -29,11 +29,10 @@ misrepresented as being the original software.
 layout (location = 0) in vec4 position;
 layout (location = 1) in uvec4 attr1;
 layout (location = 2) in vec4 attr2;
+
 layout (location = 0) out vec4 diffuseColor;
-layout (location = 1) out vec4 ambientColor;
-layout (location = 2) out vec4 specularColor;
-layout (location = 3) out vec4 emissiveColor;
-layout (location = 4) out vec2 texcoord1;
+layout (location = 1) out vec4 specularColor;
+layout (location = 2) out vec2 texcoord1;
 
 out gl_PerVertex 
 {
@@ -49,80 +48,8 @@ void main()
 	
 	texcoord1 = attr2.xy;
 
-	if(renderState.colorVertex==1)
-	{
-		switch(renderState.diffuseMaterialSource)
-		{
-			case D3DMCS_MATERIAL:
-				diffuseColor = material.Diffuse;
-			break;
-			case D3DMCS_COLOR1:
-				diffuseColor = Convert(attr1);
-			break;
-			case D3DMCS_COLOR2:
-				diffuseColor = vec4(1.0);
-			break;
-			default:
-				diffuseColor = vec4(1.0);
-			break;
-		}
-		
-		switch(renderState.ambientMaterialSource)
-		{
-			case D3DMCS_MATERIAL:
-				ambientColor = material.Ambient;
-			break;
-			case D3DMCS_COLOR1:
-				ambientColor = Convert(attr1);
-			break;
-			case D3DMCS_COLOR2:
-				ambientColor = vec4(1.0);
-			break;
-			default:
-				ambientColor = vec4(1.0);
-			break;
-		}
+	ColorPair color = CalculateGlobalIllumination(position, vec4(0.0), Convert(attr1), vec4(0.0));
 
-		switch(renderState.specularMaterialSource)
-		{
-			case D3DMCS_MATERIAL:
-				specularColor = material.Specular;
-			break;
-			case D3DMCS_COLOR1:
-				specularColor = Convert(attr1);
-			break;
-			case D3DMCS_COLOR2:
-				specularColor = vec4(1.0);
-			break;
-			default:
-				specularColor = vec4(1.0);
-			break;
-		}
-
-		switch(renderState.emissiveMaterialSource)
-		{
-			case D3DMCS_MATERIAL:
-				emissiveColor = material.Emissive;
-			break;
-			case D3DMCS_COLOR1:
-				emissiveColor = Convert(attr1);
-			break;
-			case D3DMCS_COLOR2:
-				emissiveColor = vec4(1.0);
-			break;
-			default:
-				emissiveColor = vec4(1.0);
-			break;
-		}		
-	}
-	else
-	{
-		diffuseColor = material.Diffuse;
-		ambientColor = material.Ambient;
-		specularColor = material.Specular;
-		emissiveColor = material.Emissive;
-	}
-
-
-	
+	diffuseColor = color.Diffuse;
+	specularColor = color.Specular;	
 }

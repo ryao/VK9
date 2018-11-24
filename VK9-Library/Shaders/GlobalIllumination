@@ -190,7 +190,7 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 				specular = inColor2;
 			break;
 			default:
-				specularColor = vec4(0.0);
+				specular = vec4(0.0);
 			break;
 		}
 
@@ -206,7 +206,7 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 				emissive = inColor2;
 			break;
 			default:
-				emissiveColor = vec4(0.0);
+				emissive = vec4(0.0);
 			break;
 		}		
 	}
@@ -267,6 +267,9 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 			}
 		}
 
+		returnValue.Diffuse = min(vec4(1.0),returnValue.Diffuse);
+		returnValue.Specular = min(vec4(1.0),returnValue.Specular);
+
 		returnValue.Diffuse.a = 1.0;
 		returnValue.Specular.a = 1.0;
 
@@ -278,9 +281,6 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 		returnValue.Diffuse = diffuse;
 		returnValue.Specular = specular;
 	}
-
-	returnValue.Diffuse = min(vec4(1.0),returnValue.Diffuse);
-	returnValue.Specular = min(vec4(1.0),returnValue.Specular);
 
 	return returnValue;
 }
@@ -307,7 +307,7 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inPosition2, vec4 i
 /*
 https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 */
-vec4 GetGlobalIllumination(vec4 norm)
+/*vec4 GetGlobalIllumination(vec4 norm)
 {
 	vec4 ambient = vec4(0);
 	vec4 diffuse = vec4(0);
@@ -409,7 +409,7 @@ vec4 GetGlobalIllumination(vec4 norm)
 
 	ambient = material.Ambient * (Convert(renderState.ambient) + ambientTemp);
 	diffuse = diffuseTemp;
-	emissive = emissiveColor;
+	//emissive = emissiveColor;
 
 	if(renderState.specularEnable==1)
 	{
@@ -419,4 +419,4 @@ vec4 GetGlobalIllumination(vec4 norm)
 	vec4 lightColor = (ambient + diffuse + specular + emissive);
 	lightColor.a = 1.0;
 	return lightColor;
-}
+}*/

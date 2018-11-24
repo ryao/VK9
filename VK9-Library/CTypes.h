@@ -242,11 +242,13 @@ struct ShaderState
 	Light mLights[8];
 	D3DMATERIAL9 mMaterial = 
 	{
+		/*
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f
+		*/
 	};
 };
 

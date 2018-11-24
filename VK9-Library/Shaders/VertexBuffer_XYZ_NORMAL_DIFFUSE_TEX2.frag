@@ -27,14 +27,9 @@ misrepresented as being the original software.
 #include "Functions"
 
 layout (location = 0) in vec4 diffuseColor;
-layout (location = 1) in vec4 ambientColor;
-layout (location = 2) in vec4 specularColor;
-layout (location = 3) in vec4 emissiveColor;
-layout (location = 4) in vec4 normal;
-layout (location = 5) in vec2 texcoord1;
-layout (location = 6) in vec2 texcoord2;
-layout (location = 7) in vec4 pos;
-layout (location = 8) in vec4 globalIllumination;
+layout (location = 1) in vec4 specularColor;
+layout (location = 2) in vec2 texcoord1;
+layout (location = 3) in vec2 texcoord2;
 
 layout (location = 0) out vec4 uFragColor;
 
@@ -59,12 +54,7 @@ vec2 getTextureCoord(uint index)
 void main() 
 {
 	vec4 temp = vec4(1.0,1.0,1.0,1.0);
-	vec4 result = vec4(1.0,1.0,1.0,1.0); 
-
-	if(renderState.colorVertex==1)
-	{
-		result = diffuseColor; //On stage 0 CURRENT is the same as DIFFUSE
-	}
+	vec4 result = diffuseColor; 
 
 	for(int i = 0; i < max(1,renderState.textureCount); i++) 
 	{
@@ -75,12 +65,4 @@ void main()
 	}
 	
 	uFragColor = result;
-
-	if(renderState.lighting==1)
-	{	
-		if(renderState.shadeMode == D3DSHADE_GOURAUD)
-		{
-			uFragColor.rgb *= globalIllumination.rgb;
-		}
-	}
 }
