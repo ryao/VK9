@@ -41,6 +41,7 @@ layout(std140,binding = 4) uniform ShaderStateBlock4
 
 struct ColorPair
 {
+	vec4   Ambient;
 	vec4   Diffuse;
 	vec4   Specular;
 };
@@ -50,8 +51,10 @@ ColorPair CalculateDirectionalLight(vec3 N, vec3 V, int i)
    ColorPair returnValue;
    vec3 L = mat3(ubo.viewInverted) * vec3(-normalize(lights[i].Direction));
    float NdotL = dot(N, L);
-   returnValue.Diffuse = lights[i].Ambient;
+   returnValue.Diffuse = vec4(0);
    returnValue.Specular = vec4(0);
+   returnValue.Ambient = lights[i].Ambient;
+
    if(NdotL > 0.0f)
    {
       returnValue.Diffuse += NdotL * lights[i].Diffuse;
@@ -70,8 +73,10 @@ ColorPair CalculatePointLight(vec4 vPosition, vec3 N, vec3 V, int i)
    vec3 L = mat3(ubo.viewInverted) * normalize(vec3(lights[i].Position-(ubo.world * vPosition)));
    ColorPair returnValue;
    float NdotL = dot(N, L);
-   returnValue.Diffuse = lights[i].Ambient;
+   returnValue.Diffuse = vec4(0);
    returnValue.Specular = vec4(0);
+   returnValue.Ambient = lights[i].Ambient;
+
    float fAtten = 1.f;
    if(NdotL >= 0.f)
    {
@@ -92,6 +97,8 @@ ColorPair CalculatePointLight(vec4 vPosition, vec3 N, vec3 V, int i)
       {
          fAtten *= 1.f/(lights[i].Attenuation0 + lights[i].Attenuation1*LD + lights[i].Attenuation2*LD*LD);
       }
+
+	  returnValue.Ambient *= fAtten;
       returnValue.Diffuse *= fAtten;
       returnValue.Specular *= fAtten;
    }
@@ -103,8 +110,10 @@ ColorPair CalculateSpotLight(vec4 vPosition, vec3 N, vec3 V, int i)
    vec3 L = mat3(ubo.viewInverted) * normalize(vec3(lights[i].Position-(ubo.world * vPosition)));
    ColorPair returnValue;
    float NdotL = dot(N, L);
-   returnValue.Diffuse = lights[i].Ambient;
+   returnValue.Diffuse = vec4(0);
    returnValue.Specular = vec4(0);
+   returnValue.Ambient = lights[i].Ambient;
+
    float fAttenSpot = 1.f;
    if(NdotL >= 0.f)
    {
@@ -131,6 +140,7 @@ ColorPair CalculateSpotLight(vec4 vPosition, vec3 N, vec3 V, int i)
 	  vec3 vSpot = vec3(cos(lights[i].Theta/2),cos(lights[i].Phi/2),cos(lights[i].Falloff));
       fAttenSpot *= pow(clamp((rho - vSpot.y)/(vSpot.x - vSpot.y),0.0,1.0), vSpot.z);
 
+	  returnValue.Ambient *= fAttenSpot;
       returnValue.Diffuse *= fAttenSpot;
       returnValue.Specular *= fAttenSpot;
    }
@@ -222,7 +232,8 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 
 	if(renderState.lighting==1)
 	{
-		returnValue.Diffuse = Convert(renderState.ambient);
+		returnValue.Ambient = vec4(0.0);
+		returnValue.Diffuse = vec4(0.0);
 		returnValue.Specular = vec4(0.0);
 
 		vec4 calculatePosition;
@@ -261,20 +272,21 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 						lightResult = CalculateDirectionalLight(N, V, i);
 					break;
 				}
-
+				returnValue.Ambient += lightResult.Ambient;
 				returnValue.Diffuse += lightResult.Diffuse;
 				returnValue.Specular += lightResult.Specular;
 			}
 		}
 
+		returnValue.Ambient.a = 1.0;
+		returnValue.Diffuse.a = 1.0;
+		returnValue.Specular.a = 1.0;	
+
+		returnValue.Diffuse = (ambient * (Convert(renderState.ambient) + returnValue.Ambient) ) + (diffuse * returnValue.Diffuse) + (diffuse * returnValue.Diffuse) + emissive;
+		returnValue.Specular *= specular;		
+
 		returnValue.Diffuse = min(vec4(1.0),returnValue.Diffuse);
 		returnValue.Specular = min(vec4(1.0),returnValue.Specular);
-
-		returnValue.Diffuse.a = 1.0;
-		returnValue.Specular.a = 1.0;
-
-		returnValue.Diffuse *= diffuse;
-		returnValue.Specular *= specular;
 	}
 	else
 	{
