@@ -456,7 +456,7 @@ struct DeviceState
 	//IDirect3DDevice9::SetVertexShaderConstantB
 	//IDirect3DDevice9::SetVertexShaderConstantF
 	//IDirect3DDevice9::SetVertexShaderConstantI
-	float mPushConstants[64] = {};
+	//float mPushConstants[64] = {};
 
 	ShaderConstantSlots mVertexShaderConstantSlots = {};
 	BOOL mAreVertexShaderSlotsDirty = true;

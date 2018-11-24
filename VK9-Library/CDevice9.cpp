@@ -357,6 +357,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreatePixelShader(const DWORD *pFunction, ID
 	workItem->Argument3 = (void*)&obj->mSize;
 	obj->mId = this->mCommandStreamManager->RequestWorkAndWait(workItem);
 
+	//The application is allowed to dispose of the shader data it passes in after this call returns but can request it later so we need to make a copy.
+	obj->mFunction = (DWORD*)malloc(obj->mSize);
+	memcpy(obj->mFunction, pFunction, obj->mSize);
+
 	(*ppShader) = (IDirect3DPixelShader9*)obj;
 
 	return result;
@@ -490,6 +494,10 @@ HRESULT STDMETHODCALLTYPE CDevice9::CreateVertexShader(const DWORD *pFunction, I
 	workItem->Argument2 = (void*)true;
 	workItem->Argument3 = (void*)&obj->mSize;
 	obj->mId = mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	//The application is allowed to dispose of the shader data it passes in after this call returns but can request it later so we need to make a copy.
+	obj->mFunction = (DWORD*)malloc(obj->mSize);
+	memcpy(obj->mFunction, pFunction, obj->mSize);
 
 	(*ppShader) = (IDirect3DVertexShader9*)obj;
 

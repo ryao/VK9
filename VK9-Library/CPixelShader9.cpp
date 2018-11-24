@@ -43,6 +43,8 @@ CPixelShader9::~CPixelShader9()
 	workItem->WorkItemType = WorkItemType::Shader_Destroy;
 	workItem->Id = mId;
 	mCommandStreamManager->RequestWorkAndWait(workItem);
+
+	free(mFunction);
 }
 
 ULONG STDMETHODCALLTYPE CPixelShader9::AddRef(void)

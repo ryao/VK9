@@ -1091,14 +1091,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				uint32_t length = (Vector4fCount * 4);
 				for (size_t i = 0; i < length; i++)
 				{
-					if ((startIndex + i) < 128)
-					{
-						pConstantData[i] = realDevice->mDeviceState.mPushConstants[startIndex + i];
-					}
-					else
-					{
-						pConstantData[i] = slots.FloatConstants[startIndex + i];
-					}
+					pConstantData[i] = slots.FloatConstants[startIndex + i];
 				}
 			}
 			break;
@@ -1357,6 +1350,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				BOOL* pConstantData = bit_cast<BOOL*>(workItem->Argument2);
 				UINT BoolCount = bit_cast<UINT>(workItem->Argument3);
 
+				realDevice->mDeviceState.mArePixelShaderSlotsDirty = true;
+
 				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				for (size_t i = 0; i < BoolCount; i++)
 				{
@@ -1370,6 +1365,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				float* pConstantData = bit_cast<float*>(workItem->Argument2);
 				UINT Vector4fCount = bit_cast<UINT>(workItem->Argument3);
+
+				realDevice->mDeviceState.mArePixelShaderSlotsDirty = true;
 
 				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -1386,6 +1383,8 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				UINT StartRegister = bit_cast<UINT>(workItem->Argument1);
 				int* pConstantData = bit_cast<int*>(workItem->Argument2);
 				UINT Vector4iCount = bit_cast<UINT>(workItem->Argument3);
+
+				realDevice->mDeviceState.mArePixelShaderSlotsDirty = true;
 
 				auto& slots = realDevice->mDeviceState.mPixelShaderConstantSlots;
 				uint32_t startIndex = (StartRegister * 4);
@@ -2226,14 +2225,7 @@ void ProcessQueue(CommandStreamManager* commandStreamManager)
 				uint32_t length = (Vector4fCount * 4);
 				for (size_t i = 0; i < length; i++)
 				{
-					if ((startIndex + i) < 128)
-					{
-						realDevice->mDeviceState.mPushConstants[startIndex + i] = pConstantData[i];
-					}
-					else
-					{
-						slots.FloatConstants[startIndex + i] = pConstantData[i];
-					}
+					slots.FloatConstants[startIndex + i] = pConstantData[i];
 				}
 			}
 			break;
