@@ -457,18 +457,26 @@ These enums will allow the requestor to let methods down the stack know which on
 #define GIVE_ME_SAMPLER 5
 #define GIVE_ME_VECTOR_2 6
 
+typedef enum
+{
+	UNDEF = 0,
+	REP,
+	LOOP
+} Loop_t;
 
 struct LoopIds
 {
+	Loop_t   LoopType;
 	uint32_t VariableId;
+	uint32_t CounterId;
+
+	uint32_t PreLoopId;
 
 	uint32_t PreMergeLabelId;
-	uint32_t PostMergeLabelId;
 
 	uint32_t PreExecuteLabelId;
 
-	uint32_t PreEndLabelId;
-	uint32_t PostEndLabelId;
+	uint32_t EndLabelId;
 };
 
 class CDevice9;
@@ -645,8 +653,13 @@ private:
 	void Process_IF();
 	void Process_ELSE();
 	void Process_ENDIF();
+	void Process_GENERIC_LOOP();
+	void Process_GENERIC_ENDLOOP();
 	void Process_REP();
 	void Process_ENDREP();
+	void Process_LOOP();
+	void Process_ENDLOOP();
+	void Process_BREAK();
 
 	//Unary Operators
 	void Process_NRM();

@@ -4703,35 +4703,31 @@ void ShaderConverter::Process_ENDIF()
 /*
 This is what for loops look like in SPIR-V
 ------------------------------------------------
-%i = OpVariable %_ptr_Function_int Function
-   OpStore %j %int_0
-   OpStore %i %int_0
-   OpBranch %11
+
+; OpPhi needs this to know when to initialize to 0.
+%5 = OpLabel
+OpBranch %11
+
+; e.g. for ( i = 0 ; i <= 10 ;  ) {
 %11 = OpLabel
-	  OpLoopMerge %13 %14 None
-	  OpBranch %15
-%15 = OpLabel
+%16 = OpPhi %int %int_0 %5 %24 %14
+%19 = OpSLessThanEqual %bool %16 %int_10
+OpLoopMerge %13 %14 None
+OpBranchConditional %19 %14 %13
 
-
-%16 = OpLoad %int %i
-%19 = OpSLessThanEqual %bool %16 %int_99
-	  OpBranchConditional %19 %12 %13
-%12 = OpLabel
-
-	(Logic goes here)
-
-	  OpBranch %14
 %14 = OpLabel
+    (Logic goes here)
+; i++
+%24 = OpIAdd %int %16 %int_1
+OpBranch %11
 
-%23 = OpLoad %int %i
-%24 = OpIAdd %int %23 %int_1
-	  OpStore %i %24
-
-	  OpBranch %11
+; }
 %13 = OpLabel
+
+
    */
 
-void ShaderConverter::Process_REP()
+void ShaderConverter::Process_GENERIC_LOOP()
 {
 	Token argumentToken1 = GetNextToken();
 	_D3DSHADER_PARAM_REGISTER_TYPE argumentRegisterType1 = GetRegisterType(argumentToken1.i);
@@ -4764,72 +4760,54 @@ void ShaderConverter::Process_REP()
 	booleanType.PrimaryType = spv::OpTypeBool;
 	uint32_t booleanTypeId = GetSpirVTypeId(booleanType);
 
-	TypeDescription integerPointerType;
-	integerPointerType.PrimaryType = spv::OpTypePointer;
-	integerPointerType.SecondaryType = spv::OpTypeInt;
-	uint32_t integerPointerTypeId = GetSpirVTypeId(integerPointerType);
-
 	TypeDescription labelType;
 	labelType.PrimaryType = spv::OpLabel;
 	uint32_t labelTypeId = GetSpirVTypeId(labelType);
 
 	LoopIds loopIds;
 
+	loopIds.CounterId = GetNextId();
+	mIdTypePairs[loopIds.CounterId] = integerType;
+
 	loopIds.VariableId = GetNextId();
 	mIdTypePairs[loopIds.VariableId] = integerPointerType;
+
+	loopIds.PreLoopId = GetNextId();
+	mIdTypePairs[loopIds.PreLoopId] = labelType;
 
 	loopIds.PreMergeLabelId = GetNextId();
 	mIdTypePairs[loopIds.PreMergeLabelId] = labelType;
 
-	loopIds.PostMergeLabelId = GetNextId();
-	mIdTypePairs[loopIds.PostMergeLabelId] = labelType;
-
 	loopIds.PreExecuteLabelId = GetNextId();
 	mIdTypePairs[loopIds.PreExecuteLabelId] = labelType;
 
-	loopIds.PreEndLabelId = GetNextId();
-	mIdTypePairs[loopIds.PreEndLabelId] = labelType;
-
-	loopIds.PostEndLabelId = GetNextId();
-	mIdTypePairs[loopIds.PostEndLabelId] = labelType;
+	loopIds.EndLabelId = GetNextId();
+	mIdTypePairs[loopIds.EndLabelId] = labelType;
 
 	mLoopIds.push(loopIds);
 
-	//Create Counter variable
-	mTypeInstructions.push_back(Pack(4, spv::OpVariable)); //size,Type
-	mTypeInstructions.push_back(integerPointerTypeId); //ResultType (Id) Must be OpTypePointer with the pointer's type being what you care about.
-	mTypeInstructions.push_back(loopIds.VariableId); //Result (Id)
-	mTypeInstructions.push_back(spv::StorageClassFunction); //Storage Class
-
-	//Zero out the counter.
-	PushStore(loopIds.VariableId, m0Id);
-
-	//Setup top of loop
+	// Start Loop Label
+	Push(spv::OpLabel, loopIds.PreLoopId);
 	Push(spv::OpBranch, loopIds.PreMergeLabelId);
-	Push(spv::OpLabel, loopIds.PreMergeLabelId);
-	Push(spv::OpLoopMerge, loopIds.PostEndLabelId, loopIds.PreEndLabelId, 0);
-	Push(spv::OpBranch, loopIds.PostMergeLabelId);
-	Push(spv::OpLabel, loopIds.PostMergeLabelId);
 
-	//Load counter
-	uint32_t loadedId = GetNextId();
-	mIdTypePairs[loadedId] = integerType;
-	PushLoad(integerTypeId, loadedId, loopIds.VariableId);
+	// Loop
+	Push(spv::OpLabel, loopIds.PreMergeLabelId);
+	Push(spv::OpPhi. counterId, m0Id, loopIds.PreLoopId, loopIds.VariableId, loopIds.PreExecuteLabelId);
 
 	//Check condition
 	uint32_t resultId = GetNextId();
 	mIdTypePairs[resultId] = booleanType;
-	Push(spv::OpSLessThanEqual, booleanTypeId, resultId, loadedId, argumentId1);
+	Push(spv::OpSLessThanEqual, booleanTypeId, resultId, loopIds.CounterId, argumentId1);
 
 	//Branch based on condition
 	uint32_t conditionId = GetNextId();
-	Push(spv::OpBranchConditional, conditionId, loopIds.PreExecuteLabelId, loopIds.PostEndLabelId);
+	Push(spv::OpBranchConditional, conditionId, loopIds.PreExecuteLabelId, loopIds.EndLabelId);
 	Push(spv::OpLabel, loopIds.PreExecuteLabelId);
-
-	PrintTokenInformation("REP", argumentToken1);
 }
 
-void ShaderConverter::Process_ENDREP()
+// XXX: We probably want an assertion or something to check that the loop type
+// matches the actual loop used so that ENDREP cannot close ENDLOOP.
+void ShaderConverter::Process_GENERIC_ENDLOOP()
 {
 	TypeDescription integerType;
 	integerType.PrimaryType = spv::OpTypeInt;
@@ -4838,27 +4816,55 @@ void ShaderConverter::Process_ENDREP()
 	LoopIds loopIds = mLoopIds.top();
 	mLoopIds.pop();
 
-	Push(spv::OpBranch, loopIds.PreEndLabelId);
-	Push(spv::OpLabel, loopIds.PreEndLabelId);
-
-	//Load counter
-	uint32_t loadedId = GetNextId();
-	mIdTypePairs[loadedId] = integerType;
-	PushLoad(integerTypeId, loadedId, loopIds.VariableId);
-
 	//increment counter
 	uint32_t resultId = GetNextId();
 	mIdTypePairs[resultId] = integerType;
-	Push(spv::OpIAdd, integerTypeId, resultId, loadedId, m1Id);
-
-	//store counter
-	PushStore(loopIds.VariableId, resultId);
+	Push(spv::OpIAdd, integerTypeId, loopIds.VariableId, loopIds.CounterId, m1Id);
 
 	//End loop
 	Push(spv::OpBranch, loopIds.PreMergeLabelId);
-	Push(spv::OpLabel, loopIds.PostEndLabelId);
+	Push(spv::OpLabel, loopIds.EndLabelId);
+}
 
+void ShaderConverter::Process_LOOP()
+{
+	Process_GENERIC_LOOP();
+
+	LoopIds &loopIds = mLoopIds.top();
+	loopIds.LoopType = LOOP;
+
+	PrintTokenInformation("LOOP");
+}
+
+void ShaderConverter::Process_ENDLOOP()
+{
+	Process_GENERIC_ENDLOOP();
+	PrintTokenInformation("ENDLOOP");
+}
+
+void ShaderConverter::Process_REP()
+{
+	Process_GENERIC_LOOP();
+
+	LoopIds &loopIds = mLoopIds.top();
+	loopIds.LoopType = REP;
+
+	PrintTokenInformation("REP");
+}
+
+void ShaderConverter::Process_ENDREP()
+{
+	Process_GENERIC_ENDLOOP();
 	PrintTokenInformation("ENDREP");
+}
+
+void ShaderConverter::Process_BREAK()
+{
+	LoopIds loopIds = mLoopIds.top();
+
+	Push(spv::OpBranch, loopIds.EndLabelId);
+
+	PrintTokenInformation("BREAK");
 }
 
 void ShaderConverter::Process_NRM()
@@ -7156,10 +7162,10 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_RET.";
 			break;
 		case D3DSIO_ENDLOOP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_ENDLOOP.";
+			Process_ENDLOOP();
 			break;
 		case D3DSIO_BREAK:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_BREAK.";
+			Process_BREAK();
 			break;
 		case D3DSIO_TEXDEPTH:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_TEXDEPTH.";
@@ -7233,8 +7239,7 @@ ConvertedShader ShaderConverter::Convert(uint32_t* shader)
 			SkipTokens(2);
 			break;
 		case D3DSIO_LOOP:
-			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_LOOP.";
-			SkipTokens(2);
+			Process_LOOP();
 			break;
 		case D3DSIO_BREAKP:
 			BOOST_LOG_TRIVIAL(warning) << "Unsupported instruction D3DSIO_BREAKP.";
