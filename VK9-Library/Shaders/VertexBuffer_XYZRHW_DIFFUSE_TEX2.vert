@@ -33,8 +33,9 @@ layout (location = 3) in vec4 attr3;
 
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 specularColor;
-layout (location = 2) out vec2 texcoord1;
-layout (location = 3) out vec2 texcoord2;
+layout (location = 2) out vec4 globalIllumination;
+layout (location = 3) out vec2 texcoord1;
+layout (location = 4) out vec2 texcoord2;
 
 out gl_PerVertex 
 {
@@ -75,4 +76,5 @@ void main()
 
 	diffuseColor = color.Diffuse;
 	specularColor = color.Specular;
+	globalIllumination = vec4(1.0);
 }

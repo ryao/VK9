@@ -28,6 +28,7 @@ misrepresented as being the original software.
 
 layout (location = 0) in vec4 diffuseColor;
 layout (location = 1) in vec4 specularColor;
+layout (location = 2) in vec4 globalIllumination;
 
 layout (location = 0) out vec4 uFragColor;
 
@@ -63,4 +64,6 @@ void main()
 	}
 	
 	uFragColor = result;
+
+	uFragColor.rgb *= globalIllumination.rgb;
 }

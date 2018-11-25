@@ -34,6 +34,7 @@ layout(std140,binding = 4) uniform ShaderStateBlock4
 	mat4 world;
 	mat4 view;
 	mat4 projection;
+
 	mat4 worldView;
 	mat4 worldViewInverted;
 	mat4 viewInverted;
@@ -230,6 +231,7 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 
 	ColorPair returnValue;
 
+/*
 	if(renderState.lighting==1)
 	{
 		returnValue.Ambient = vec4(0.0);
@@ -287,12 +289,18 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inNormal1, vec4 inC
 
 		returnValue.Diffuse = min(vec4(1.0),returnValue.Diffuse);
 		returnValue.Specular = min(vec4(1.0),returnValue.Specular);
+
 	}
 	else
 	{
 		returnValue.Diffuse = diffuse;
 		returnValue.Specular = specular;
 	}
+*/
+
+	//New light logic doesn't work so use old logic.
+	returnValue.Diffuse = diffuse;
+	returnValue.Specular = specular;
 
 	return returnValue;
 }
@@ -319,7 +327,7 @@ ColorPair CalculateGlobalIllumination(vec4 inPosition1, vec4 inPosition2, vec4 i
 /*
 https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 */
-/*vec4 GetGlobalIllumination(vec4 norm)
+vec4 GetGlobalIllumination(vec4 inNormal, vec4 inPosition)
 {
 	vec4 ambient = vec4(0);
 	vec4 diffuse = vec4(0);
@@ -331,6 +339,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 	vec3 cameraPosition = vec3(0);
 
 	float lightDistance = 0;
+	vec4 norm = vec4(0);
 	vec4 vectorPosition = vec4(0);
 	vec4 lightPosition = vec4(0);
 	vec4 lightDirection = vec4(0);
@@ -339,7 +348,10 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 	float rho = 0;
 	float spot = 0;
 
-	vectorPosition = vec4(mat3(ubo.world) * position.xyz,1.0);
+	norm = vec4(mat3(ubo.world) * inNormal.xyz,1.0);
+	norm *= vec4(1.0,-1.0,1.0,1.0);
+
+	vectorPosition = vec4(mat3(ubo.world) * inPosition.xyz,1.0);
 	vectorPosition *= vec4(1.0,-1.0,1.0,1.0);
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb172279(v=vs.85).aspx
@@ -402,7 +414,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 				vec3 halfway;
 				if(renderState.localViewer==1)
 				{
-					halfway = normalize(normalize(cameraPosition - position.xyz) + ldir.xyz);			
+					halfway = normalize(normalize(cameraPosition - inPosition.xyz) + ldir.xyz);			
 				}
 				else
 				{
@@ -421,7 +433,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 
 	ambient = material.Ambient * (Convert(renderState.ambient) + ambientTemp);
 	diffuse = diffuseTemp;
-	//emissive = emissiveColor;
+	emissive = material.Emissive;
 
 	if(renderState.specularEnable==1)
 	{
@@ -431,4 +443,4 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/bb172256(v=vs.85).aspx
 	vec4 lightColor = (ambient + diffuse + specular + emissive);
 	lightColor.a = 1.0;
 	return lightColor;
-}*/
+}

@@ -26,11 +26,12 @@ misrepresented as being the original software.
 #include "Structures"
 #include "Functions"
 
-layout (location = 0) in vec4 position;
-layout (location = 1) in vec4 attr;
+layout (location = 0) in vec4 position; //position
+layout (location = 1) in vec4 attr1; //normal
 
 layout (location = 0) out vec4 diffuseColor;
 layout (location = 1) out vec4 specularColor;
+layout (location = 2) out vec4 globalIllumination;
 
 out gl_PerVertex 
 {
@@ -44,8 +45,13 @@ void main()
 	gl_Position = ubo.worldViewProjection * vec4(position.xyz,1.0);
 	gl_Position *= vec4(1.0,-1.0,1.0,1.0);
 
-	ColorPair color = CalculateGlobalIllumination(position, attr, vec4(1.0), vec4(0.0));
+	ColorPair color = CalculateGlobalIllumination(position, attr1, vec4(1.0), vec4(0.0));
 
 	diffuseColor = color.Diffuse;
 	specularColor = color.Specular;
+
+	if(renderState.lighting==1)
+	{
+		globalIllumination = GetGlobalIllumination(attr1,position);	
+	}
 }
